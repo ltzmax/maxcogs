@@ -1,0 +1,9 @@
+{
+  "author" : ["MAX"],
+  "bot_version": [3,3,4],
+  "install_msg" : "Thanks for installing.",
+  "short" : "Random cogs.",
+  "description" : "Shows pokemon informations.",
+  "tags" : ["PokeSeries", "pokeseries"],
+  "hidden" : false
+}
