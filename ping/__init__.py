@@ -1,4 +1,4 @@
-from .ping import Ping
+from .ping import setup
 
 def setup(bot):
     n = Ping(bot)
