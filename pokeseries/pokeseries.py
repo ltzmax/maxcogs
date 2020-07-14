@@ -1,8 +1,5 @@
 import discord
 from redbot.core import commands
-from redbot.core import checks, Config, commands
-from redbot.core.utils.chat_formatting import pagify
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 
 class PokeSeries(commands.Cog):
     """Cog that display about a season from pokemon and a movie."""
@@ -10,7 +7,7 @@ class PokeSeries(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
 
     def format_help_for_context(self, ctx):
         """Thanks Sinbad."""
