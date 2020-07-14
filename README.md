@@ -1,11 +1,11 @@
 
 to add this: 
 
-`[p]repo add maax https://github.com/maxbooiii/maax/new`
+`[p]repo add maax https://github.com/maxbooiii/maxcogs/new`
 
 to install:
 
-`[p]cog install maax ping`
+`[p]cog install maxcogs ping`
 
 
 ----------------------------------------------------------------
