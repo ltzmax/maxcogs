@@ -11,7 +11,7 @@ class Ping(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+        self.bot.remove_command("ping")
 
     def cog_unload(self):
         global old_ping
@@ -76,5 +76,5 @@ def setup(bot):
     global old_ping
     old_invite = bot.get_command("ping")
     if old_invite:
-        bot.remove_command(old_ping.name)
+        bot.remove_command(old_ping)
     bot.add_cog(ping)
