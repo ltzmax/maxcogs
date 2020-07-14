@@ -36,7 +36,7 @@ class Ping(commands.Cog):
 
     @ping.command()
     async def t(self, ctx):
-        """Reply with latency of bot."""
+        """Reply with latency and shards."""
         latency = self.bot.latency * 1000
         emb = discord.Embed(title="Ping!\N{TABLE TENNIS PADDLE AND BALL}", color= await ctx.embed_color())
         emb.add_field(
@@ -59,3 +59,4 @@ class Ping(commands.Cog):
         emb.add_field(name="Typing:", value=(str(round(ping)) + " ms"))
         emb.add_field(name="Shards:", value=("".join(shards)), inline=False)
         await message.edit(embed=emb)
+        
