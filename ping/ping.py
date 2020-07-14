@@ -4,12 +4,23 @@ import discord
 from redbot.core import checks, Config, commands
 from redbot.core.utils import chat_formatting as chat
 
+old_ping = None
+
 class Ping(commands.Cog):
     """Reply with latency of bot"""
 
     def __init__(self, bot):
         self.bot = bot
-        self.bot.remove_command("ping")
+
+
+    def cog_unload(self):
+        global old_ping
+        if old_ping:
+            try:
+                self.bot.remove_command("ping")
+            except:
+                pass
+            self.bot.add_command(old_ping)
 
 
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
@@ -36,7 +47,7 @@ class Ping(commands.Cog):
 
     @ping.command()
     async def t(self, ctx):
-        """Reply with latency and shards."""
+        """Reply with latency of bot."""
         latency = self.bot.latency * 1000
         emb = discord.Embed(title="Ping!\N{TABLE TENNIS PADDLE AND BALL}", color= await ctx.embed_color())
         emb.add_field(
@@ -59,4 +70,11 @@ class Ping(commands.Cog):
         emb.add_field(name="Typing:", value=(str(round(ping)) + " ms"))
         emb.add_field(name="Shards:", value=("".join(shards)), inline=False)
         await message.edit(embed=emb)
-        
+
+def setup(bot):
+    ping = Ping(bot)
+    global old_ping
+    old_invite = bot.get_command("ping")
+    if old_invite:
+        bot.remove_command(old_ping.name)
+    bot.add_cog(ping)
