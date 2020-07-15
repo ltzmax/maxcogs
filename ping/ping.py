@@ -13,16 +13,6 @@ class Ping(commands.Cog):
         self.bot = bot
         self.bot.remove_command("ping")
 
-    def cog_unload(self):
-        global old_ping
-        if old_ping:
-            try:
-                self.bot.remove_command("ping")
-            except:
-                pass
-            self.bot.add_command(old_ping)
-
-
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True)
     @commands.group(invoke_without_command=True)
@@ -70,11 +60,3 @@ class Ping(commands.Cog):
         emb.add_field(name="Typing:", value=(str(round(ping)) + " ms"))
         emb.add_field(name="Shards:", value=("".join(shards)), inline=False)
         await message.edit(embed=emb)
-
-def setup(bot):
-    ping = Ping(bot)
-    global old_ping
-    old_invite = bot.get_command("ping")
-    if old_invite:
-        bot.remove_command(old_ping)
-    bot.add_cog(ping)
