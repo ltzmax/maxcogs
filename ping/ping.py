@@ -4,8 +4,6 @@ import discord
 from redbot.core import checks, Config, commands
 from redbot.core.utils import chat_formatting as chat
 
-old_ping = None
-
 class Ping(commands.Cog):
     """Reply with latency of bot"""
 
