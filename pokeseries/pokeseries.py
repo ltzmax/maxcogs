@@ -318,7 +318,7 @@ class PokeSeries(commands.Cog):
 
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     @commands.command()
-    async def poke16(self, ctx):
+    async def pokem16(self, ctx):
         """Pokemon the Movie: I Choose You!"""
         em = discord.Embed(title="Pokemon the Movie: I Choose You", colour=0x11FF00)
         em.description="[**Release Date:**](https://en.wikipedia.org/wiki/Pok%C3%A9mon_the_Movie:_I_Choose_You!) July 15, 2017\n\nAsh Ketchum from Pallet Town is 10 years old today. This means he is now old enough to become a Pokémon Trainer. Ash dreams big about the adventures he will experience after receiving his first Pokémon from Professor Oak."
