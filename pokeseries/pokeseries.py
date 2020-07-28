@@ -4,15 +4,19 @@ from redbot.core import commands
 class PokeSeries(commands.Cog):
     """Cog that display about a season from pokemon and a movie."""
 
-    def __init__(self, bot):
-        self.bot = bot
-
-    __version__ = "1.0.2"
+    __version__ = "1.0.4"
 
     def format_help_for_context(self, ctx):
         """Thanks Sinbad."""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\nCog Version: {self.__version__}"
+    
+    async def red_delete_data_for_user(self, **kwargs):
+        """Nothing to delete."""
+        return    
+    
+    def __init__(self, bot):
+        self.bot = bot
 
         #For you that looks into the codes, yes i know it's pretty easy made.
         #i know i could have done it better than this, but as long as it works, there is nothing wrong with it, right?
