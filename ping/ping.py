@@ -7,6 +7,10 @@ from redbot.core.utils import chat_formatting as chat
 class Ping(commands.Cog):
     """Reply with latency of bot"""
 
+    async def red_delete_data_for_user(self, **kwargs):
+        """Nothing to delete."""
+        return
+    
     def __init__(self, bot):
         self.bot = bot
         self.bot.remove_command("ping")
