@@ -16,6 +16,6 @@ to install:
 ## credits:
 [preda](https://github.com/PredaaA/predacogs) for adding shards. you can edit this to see it.
 
-[senbot](https://github.com/Nesroht/Senbot-Cogs) orginally made the ping. but i've edited it.
+[senbot](https://github.com/Nesroht/Senbot-Cogs) orginally made the ping. but we've edited to be much better and workable ping.
 
 [fixator10](https://github.com/fixator10/Fixator10-Cogs) for helping improve it.
