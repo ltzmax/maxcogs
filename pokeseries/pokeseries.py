@@ -338,7 +338,7 @@ class PokeSeries(commands.Cog):
 
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     @commands.command(aliases=["pokem18"])
-    async def evolution(self, ctx):
+    async def strikes(self, ctx):
         """Mewtwo Strikes Back: Evolution"""
         em = discord.Embed(title="Mewtwo Strikes Back: Evolution", colour=0x11FF00)
         em.description="[**Release Date:**](https://en.wikipedia.org/wiki/Mewtwo_Strikes_Back:_Evolution) July 4, 2019\n\nAfter a scientific experiment leads to the creation of a clone of Mewtwo, he sets out to destroy the world. Ash and his friends then decide to thwart Mewtwo's evil plans."
