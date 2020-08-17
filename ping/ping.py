@@ -15,7 +15,7 @@ class Ping(commands.Cog):
         self.bot = bot
         self.bot.remove_command("ping")
 
-    @commands.command(aliases=["pingtime", "pingt", "pig", "pnig", "pung", "pinf"])
+    @commands.command()
     @commands.has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def ping(self, ctx):
