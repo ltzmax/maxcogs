@@ -4,6 +4,8 @@ import discord
 from redbot.core import checks, Config, commands
 from redbot.core.utils import chat_formatting as chat
 
+old_ping = None
+
 class Ping(commands.Cog):
     """Reply with latency of bot"""
 
@@ -13,11 +15,19 @@ class Ping(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-        self.bot.remove_command("ping")
+
+    def cog_unload(self):
+        global old_ping
+        if old_ping:
+            try:
+                self.bot.remove_command("ping")
+            except:
+                pass
+            self.bot.add_command(old_ping)
 
     @commands.command()
     @commands.has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    @commands.cooldown(rate=1, per=2, type=commands.BucketType.user)
     async def ping(self, ctx):
         """Reply with latency of bot."""
         latency = self.bot.latency * 1000
@@ -51,3 +61,11 @@ class Ping(commands.Cog):
         emb.set_field_at(2, name="Typing", value=chat.box(str(round(ping)) + " ms"))
 
         await message.edit(embed=emb)
+
+def setup(bot):
+    ping = Ping(bot)
+    global old_ping
+    old_ping = bot.get_command("ping")
+    if old_ping:
+        bot.remove_command(old_ping.name)
+    bot.add_cog(ping)
