@@ -1,7 +1,7 @@
 
 to add this: 
 
-`[p]repo add maax https://github.com/maxbooiii/maxcogs/new`
+`[p]repo add maax https://github.com/maxbooiii/maxcogs`
 
 to install:
 
