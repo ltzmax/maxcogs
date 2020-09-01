@@ -33,10 +33,10 @@ class Ping(commands.Cog):
         latency = self.bot.latency * 1000
         emb = discord.Embed(title="Pong!", color=discord.Color.red())
         emb.add_field(
-            name="Discord API", value=chat.box(str(round(latency)) + " ms"),
+            name="Websocket:", value=chat.box(str(round(latency)) + " ms"),
         )
-        emb.add_field(name="Message", value=chat.box("…"))
-        emb.add_field(name="Typing", value=chat.box("…"))
+        emb.add_field(name="Message:", value=chat.box("…"))
+        emb.add_field(name="Typing:", value=chat.box("…"))
         # Thanks preda and fixator for the good improvements done with this command.
         if len(self.bot.latencies) > 1:
             # The chances of this in near future is almost 0, but who knows, what future will bring to us?
@@ -52,13 +52,13 @@ class Ping(commands.Cog):
         emb.colour = await ctx.embed_color()
         emb.set_field_at(
             1,
-            name="Message",
+            name="Message:",
             value=chat.box(
                 str(int((message.created_at - ctx.message.created_at).total_seconds() * 1000))
                 + " ms"
             ),
         )
-        emb.set_field_at(2, name="Typing", value=chat.box(str(round(ping)) + " ms"))
+        emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
 
         await message.edit(embed=emb)
 
