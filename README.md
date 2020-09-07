@@ -7,10 +7,24 @@ to install:
 
 `[p]cog install maxcogs <cog name you want>`
 
-## cogs
-- `ping` - reply with latency
-
-- `pokeseries` - this is a cog i made myself for the pokemon releated bots with displays about seasons and movies. it has aliases with `poke<number>` and `pokem<number>` there are 22 seasons and 18 movies.
+<table>
+<thead>
+<tr>
+<th>Cog Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ping</td>
+<td>This will show the latency of the bot.</td>
+</tr>
+<tr>
+<td>PokeSeries</td>
+<td>A cog for pokemon related bots, it display about a serie and movie from pokemon.</td>
+</tr>
+</tbody>
+</table>
 
 ----------------------------------------------------------------
 ## credits:
