@@ -10,17 +10,17 @@ to install:
 <table>
 <thead>
 <tr>
-<th>Cog Name</th>
+<th>Cog name</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Ping</td>
+<td>ping</td>
 <td>This will show the latency of the bot.</td>
 </tr>
 <tr>
-<td>PokeSeries</td>
+<td>pokeseries</td>
 <td>A cog for pokemon related bots, it display about a serie and movie from pokemon.</td>
 </tr>
 </tbody>
