@@ -7,6 +7,8 @@ to install:
 
 `[p]cog install maxcogs <cog name you want>`
 
+---------------------------------------------------------------
+
 <table>
 <thead>
 <tr>
