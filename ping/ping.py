@@ -37,7 +37,7 @@ class Ping(commands.Cog):
         )
         emb.add_field(name="Message:", value=chat.box("…"))
         emb.add_field(name="Typing:", value=chat.box("…"))
-        # Thanks preda, but i copied this from MAX's version
+        # Thanks preda and fixator.
         if len(self.bot.latencies) > 1:
             # The chances of this in near future is almost 0, but who knows, what future will bring to us?
             shards = [
