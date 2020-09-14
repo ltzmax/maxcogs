@@ -19,7 +19,7 @@ class Ping(commands.Cog):
     """Reply with latency of bot"""
     
     __version__ = "0.3.0"
-
+       """Thanks Sinbad."""
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\nCog Version: {self.__version__}"
