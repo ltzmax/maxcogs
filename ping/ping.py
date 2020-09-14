@@ -17,6 +17,12 @@ QUOTES = [
 
 class Ping(commands.Cog):
     """Reply with latency of bot"""
+    
+    __version__ = "0.3.0"
+
+    def format_help_for_context(self, ctx):
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\nCog Version: {self.__version__}"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -46,7 +52,7 @@ class Ping(commands.Cog):
         )
         emb.add_field(name="Message:", value=chat.box("…"))
         emb.add_field(name="Typing:", value=chat.box("…"))
-        # Thanks preda, but i copied this from MAX's version
+        # Thanks preda and fixator.
         if len(self.bot.latencies) > 1:
             # The chances of this in near future is almost 0, but who knows, what future will bring to us?
             shards = [
