@@ -25,6 +25,10 @@ to install:
 <td>pokeseries</td>
 <td>A cog for pokemon related bots, it display about a serie and movie from pokemon.</td>
 </tr>
+<tr>
+<td>statsinfo</td>
+<td>this shows some info about your bot, servers, channels, voice channels etc.</td>
+</tr>
 </tbody>
 </table>
 
@@ -35,3 +39,5 @@ to install:
 [senbot](https://github.com/Nesroht/Senbot-Cogs) orginally made ping.
 
 [fixator10](https://github.com/fixator10/Fixator10-Cogs) for helping improve ping.
+
+[r.danny](https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/stats.py) Statsinfo.
