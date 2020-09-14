@@ -1,10 +1,19 @@
 import time
+import random
 import discord
 
 from redbot.core import checks, Config, commands
 from redbot.core.utils import chat_formatting as chat
 
 old_ping = None
+
+QUOTES = [
+    "Out of everyone, I chose you {author.display_name}.",
+    "I love everything about you, {author.display_name}",
+    "Imagine if flying cars exist?",
+    "Once last ride",
+    "Listen to the mods, they're your boss.",
+]
 
 class Ping(commands.Cog):
     """Reply with latency of bot"""
@@ -37,7 +46,7 @@ class Ping(commands.Cog):
         )
         emb.add_field(name="Message:", value=chat.box("…"))
         emb.add_field(name="Typing:", value=chat.box("…"))
-        # Thanks preda and fixator.
+        # Thanks preda, but i copied this from MAX's version
         if len(self.bot.latencies) > 1:
             # The chances of this in near future is almost 0, but who knows, what future will bring to us?
             shards = [
@@ -45,6 +54,7 @@ class Ping(commands.Cog):
                 for shard, pingt in self.bot.latencies
             ]
             emb.add_field(name="Shards:", value=chat.box("\n".join(shards)))
+        emb.set_footer(text=random.choice(QUOTES).format(author=ctx.author))
 
         before = time.monotonic()
         message = await ctx.send(embed=emb)
