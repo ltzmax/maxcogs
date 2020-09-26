@@ -10,9 +10,12 @@ old_ping = None
 QUOTES = [
     "Out of everyone, I chose you {author.display_name}.",
     "I love everything about you, {author.display_name}",
-    "Imagine if flying cars exist?",
-    "Once last ride",
-    "Listen to the mods, they're your boss.",
+    "Seven billion people in the world trying to fit in.",
+    "Dreams don’t work unless you do.",
+    "The purpose of our lives is to be happy",
+    "Money and success don’t change people",
+    "Your time is limited, so don’t waste it living someone else’s life.",
+    "Not how long, but how well you have lived is the main thing.",
 ]
 
 class Ping(commands.Cog):
@@ -42,7 +45,7 @@ class Ping(commands.Cog):
         latency = self.bot.latency * 1000
         emb = discord.Embed(title="Pong!", color=discord.Color.red())
         emb.add_field(
-            name="Websocket:", value=chat.box(str(round(latency)) + " ms"),
+            name="Discord WS", value=chat.box(str(round(latency)) + " ms"),
         )
         emb.add_field(name="Message:", value=chat.box("…"))
         emb.add_field(name="Typing:", value=chat.box("…"))
