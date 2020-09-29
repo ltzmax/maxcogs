@@ -45,7 +45,7 @@ class Ping(commands.Cog):
         latency = self.bot.latency * 1000
         emb = discord.Embed(title="Pong!", color=discord.Color.red())
         emb.add_field(
-            name="Discord WS", value=chat.box(str(round(latency)) + " ms"),
+            name="Discord WS:", value=chat.box(str(round(latency)) + " ms"),
         )
         emb.add_field(name="Message:", value=chat.box("…"))
         emb.add_field(name="Typing:", value=chat.box("…"))
