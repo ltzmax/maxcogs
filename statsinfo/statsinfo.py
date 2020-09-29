@@ -41,7 +41,7 @@ class StatsInfo(commands.Cog):
         version = pkg_resources.get_distribution('discord.py').version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
-        emb = discord.Embed(title="Botstats:", color=discord.Color.green())
+        emb = discord.Embed(title=f"Botstats of {self.bot.user.name}:", color=discord.Color.green())
         emb.add_field(name="Ping:", value=chat.box(str(round(latency)) + " ms"))
         emb.add_field(name="Servers:", value=chat.box(servers))
         emb.add_field(name='Members:', inline=False, value=chat.box(f'{total_members} total\n{total_unique} unique'))
