@@ -8,14 +8,10 @@ from redbot.core.utils import chat_formatting as chat
 old_ping = None
 
 QUOTES = [
-    "Out of everyone, I chose you {author.display_name}.",
-    "I love everything about you, {author.display_name}",
     "Seven billion people in the world trying to fit in.",
     "Dreams don’t work unless you do.",
     "The purpose of our lives is to be happy",
     "Money and success don’t change people",
-    "Your time is limited, so don’t waste it living someone else’s life.",
-    "Not how long, but how well you have lived is the main thing.",
 ]
 
 class Ping(commands.Cog):
@@ -37,13 +33,12 @@ class Ping(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
-    @commands.command()
     @commands.has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    @commands.group(invoke_without_command=True)
     async def ping(self, ctx):
         """Reply with latency of bot."""
         latency = self.bot.latency * 1000
-        emb = discord.Embed(title="Pong!", color=discord.Color.red())
+        emb = discord.Embed(title="Pong !", color=discord.Color.red())
         emb.add_field(
             name="Discord WS:", value=chat.box(str(round(latency)) + " ms"),
         )
@@ -57,7 +52,7 @@ class Ping(commands.Cog):
                 for shard, pingt in self.bot.latencies
             ]
             emb.add_field(name="Shards:", value=chat.box("\n".join(shards)))
-        emb.set_footer(text=random.choice(QUOTES).format(author=ctx.author))
+        emb.set_footer(text=random.choice(MEW_QUOTES).format(author=ctx.author))
 
         before = time.monotonic()
         message = await ctx.send(embed=emb)
@@ -73,6 +68,29 @@ class Ping(commands.Cog):
         )
         emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
 
+        await message.edit(embed=emb)
+
+    @commands.has_permissions(embed_links=True)
+    @ping.command(hidden=True)
+    async def t(self, ctx,):
+        """Reply with more latency."""
+        latency = self.bot.latency * 1000
+        emb = discord.Embed(title="Please wait..", color=discord.Color.red())
+        emb.add_field(name="Discord WS:", value=box(str(round(latency)) + " ms"))
+        emb.add_field(name="Typing", value=box("calculating" + " ms"))
+        emb.add_field(name="Message", value=chat.box("…"))
+
+        before = time.monotonic()
+        message = await ctx.send(embed=emb)
+        ping = (time.monotonic() - before) * 1000
+
+        #French people aren't that bad. At least preda is nice, to add shards option.
+        shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
+        emb.add_field(name="Shards:", value=box("".join(shards)))
+        emb.title = "Pong !"
+        emb.color = discord.Color.green()
+        emb.set_field_at(1, name="Message:", value=chat.box(str(int((message.created_at - ctx.message.created_at).total_seconds() * 1000)) + " ms"))
+        emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
         await message.edit(embed=emb)
 
 def setup(bot):
