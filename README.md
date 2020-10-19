@@ -35,5 +35,3 @@ to install:
 [senbot](https://github.com/Nesroht/Senbot-Cogs) orginally made ping.
 
 [fixator10](https://github.com/fixator10/Fixator10-Cogs) for helping improve ping.
-
-[r.danny](https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/stats.py) Statsinfo.
