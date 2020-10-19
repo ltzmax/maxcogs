@@ -52,7 +52,7 @@ class Ping(commands.Cog):
                 for shard, pingt in self.bot.latencies
             ]
             emb.add_field(name="Shards:", value=chat.box("\n".join(shards)))
-        emb.set_footer(text=random.choice(MEW_QUOTES).format(author=ctx.author))
+        emb.set_footer(text=random.choice(QUOTES).format(author=ctx.author))
 
         before = time.monotonic()
         message = await ctx.send(embed=emb)
