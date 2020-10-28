@@ -4,6 +4,9 @@ import discord
 
 from redbot.core import checks, Config, commands
 from redbot.core.utils import chat_formatting as chat
+from redbot.core.utils.chat_formatting import (
+    box,
+)
 
 old_ping = None
 
