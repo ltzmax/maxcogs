@@ -1,4 +1,5 @@
 from asyncio import create_task
+from redbot.core.bot import Red
 from .pokeseries import PokeSeries
 
 __red_end_user_data_statement__ = (
