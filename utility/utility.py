@@ -1,5 +1,6 @@
 import discord
 import datetime
+import humanize
 import pkg_resources
 from lavalink import node
 from tabulate import tabulate
