@@ -70,7 +70,7 @@ class Utility(commands.Cog):
         """Lavalink nodestats"""
         nodes = node.get_nodes_stats()
         if not nodes:
-            await ctx.send(chat.info("No nodes found"))
+            await ctx.send(chat.info("This cog requires the Audio cog to be loaded to show nodestats."))
             return
         stats = [stat for stat in dir(nodes[0]) if not stat.startswith("_")]
         tabs = []
