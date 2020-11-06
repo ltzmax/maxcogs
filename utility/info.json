@@ -4,8 +4,8 @@
   "hidden" : false,
   "min_bot_version": "3.4.1",
   "requirements": [
-		"psutil",
-    "tabulate"
-	],
+   "psutil",
+   "tabulate"
+],
   "end_user_data_statement": "This cog does not store any End User Data."
 }
