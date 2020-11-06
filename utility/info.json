@@ -1,6 +1,6 @@
 {
   "author" : ["Nesroht, r.danny, max, fixator10."],
-  "install_msg" : "Thanks for installing.",
+  "install_msg" : "Thanks for installing. you may need to do `pipinstall tabulate` and `pipinstall psutil` for the commands to work.",
   "hidden" : false,
   "min_bot_version": "3.4.1",
   "requirements": [
