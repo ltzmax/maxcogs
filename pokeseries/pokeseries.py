@@ -4,7 +4,7 @@ from redbot.core import commands
 class PokeSeries(commands.Cog):
     """Cog that display about a season from pokemon and a movie."""
 
-    __version__ = "1.0.4"
+    __version__ = "1.0.5"
 
     def format_help_for_context(self, ctx):
         """Thanks Sinbad."""
