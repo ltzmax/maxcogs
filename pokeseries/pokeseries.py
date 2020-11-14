@@ -351,3 +351,11 @@ class PokeSeries(commands.Cog):
         em = discord.Embed(title="Detective Pikachu", colour=0x11FF00)
         em.description="[**Release Date:**](https://en.wikipedia.org/wiki/Detective_Pikachu_(film) May 3, 2019.\n\nThe story begins when ace detective Harry Goodman goes mysteriously missing, prompting his 21-year-old son Tim to find out what happened. Aiding in the investigation is Harry's former Pokémon partner, Detective Pikachu: a hilariously wise-cracking, adorable super-sleuth who is a puzzlement even to himself. Finding that they are uniquely equipped to communicate with one another, Tim and Pikachu join forces on a thrilling adventure to unravel the tangled mystery. Chasing clues together through the neon-lit streets of Ryme City--a sprawling, modern metropolis where humans and Pokémon live side by side in a hyper-realistic live-action world--they encounter a diverse cast of Pokémon characters and uncover a shocking plot that could destroy this peaceful co-existence and threaten the whole Pokémon universe."
         await ctx.send(embed=em)
+
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    @commands.command(aliases=["pokem20"])
+    async def jungle(self, ctx):
+        """Pokémon the Movie: Secrets of the Jungle"""
+        em = discord.Embed(title="Pokémon the Movie: Secrets of the Jungle", colour=0x11FF00)
+        em.description="**Release Date:** Unknwon, 2021.\n\nPokémon the Movie: Secrets of the Jungle tells the story of Koko, a young boy raised by Pokémon, and the creation of a new bond between humans and Pokémon. ?Deep in the jungle, far from any human settlement, is the Forest of Okoya—a Pokémon paradise forbidden to outsiders and protected by a strict code of rules.? In this jungle lives Koko, a human boy who has been raised as a Pokémon by the Mythical Pokémon Zarude. Koko has grown up never doubting that he is a Pokémon. But one day, a chance meeting with Ash and Pikachu leaves Koko with his first human friend. Is he truly a Pokémon? Or is he, in fact, a human? When danger threatens the Forest of Okoya, the bonds between Pokémon and human—as well as the love between parent and child—will be put to the test."
+        await ctx.send(embed=em)
