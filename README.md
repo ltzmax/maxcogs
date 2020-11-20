@@ -22,13 +22,6 @@ to install:
 <td>This will show the latency of the bot.</td>
 </tr>
 <tr>
-<td>pokeseries</td>
-<td>A cog for pokemon related bots, it display about a serie and movie from pokemon.</td>
-</tr>
-<td>harrypotter</td>
-<td>Same as pokeseries but just about harry potter..</td>
-</>>
-<tr>
 <td>utility</td>
 <td>Some utility stuff will be in this cog. it has statsinfo and llnodestats atm.</td>
 </tr>
