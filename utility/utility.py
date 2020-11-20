@@ -59,7 +59,7 @@ class Utility(commands.Cog):
         emb.add_field(name="Ping:", value=chat.box(str(round(latency)) + " ms"))
         emb.add_field(name="Servers:", value=chat.box(servers))
         emb.add_field(name='Members:', inline=False, value=chat.box(f'{total_members} total\n{total_unique} unique'))
-        emb.add_field(name='Channels:', inline=False, value=chat.box(f'{text + voice} total\n{text} text\n{voice} voice'))
+        emb.add_field(name='Channels:', value=chat.box(f'{text + voice} total\n{text} text\n{voice} voice'))
         emb.set_footer(text=f'discord.py v{version}')
         emb.timestamp = datetime.datetime.utcnow()
         await ctx.send(embed=emb)
