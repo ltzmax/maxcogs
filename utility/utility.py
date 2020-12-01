@@ -1,10 +1,13 @@
 import discord
 import datetime
 import psutil
+import humanize
+from tabulate import tabulate
 import pkg_resources
 from lavalink import node
 from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
+from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, menu
 from redbot.core.utils.chat_formatting import (
     box,
 )
