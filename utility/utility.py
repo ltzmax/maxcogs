@@ -1,12 +1,10 @@
 import discord
 import datetime
-import humanize
+import psutil
 import pkg_resources
 from lavalink import node
-from tabulate import tabulate
 from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, menu
 from redbot.core.utils.chat_formatting import (
     box,
 )
@@ -31,46 +29,27 @@ class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
+    @commands.cooldown(rate=1, per=60, type=commands.BucketType.user)
     @commands.has_permissions(embed_links=True)
-    @commands.group(invoke_without_command=True)
+    @commands.command()
     async def statsinfo(self,ctx):
         """This shows some botstats."""
         total_members = 0
         total_unique = len(self.bot.users)
 
-        text = 0
-        voice = 0
-        guilds = 0
-        for guild in self.bot.guilds:
-            guilds += 1
-            total_members += guild.member_count
-            for channel in guild.channels:
-                if isinstance(channel, discord.TextChannel):
-                    text += 1
-                elif isinstance(channel, discord.VoiceChannel):
-                    voice += 1
+        mem_v = psutil.virtual_memory()
+        memoryused = self._size(mem_v.total - mem_v.available)
+        memorytotal = self._size(mem_v.total)
+        memorypercent = mem_v.percent
 
-        latency = self.bot.latency * 1000
-        version = pkg_resources.get_distribution('discord.py').version
-        servers = str(len(self.bot.guilds))
-        users = str(len(self.bot.users))
-        emb = discord.Embed(title=f"Botstats of {self.bot.user.name}:", color=discord.Color.green())
-        emb.add_field(name="Ping:", value=chat.box(str(round(latency)) + " ms"))
-        emb.add_field(name="Servers:", value=chat.box(servers))
-        emb.add_field(name='Members:', inline=False, value=chat.box(f'{total_members} total\n{total_unique} unique'))
-        emb.add_field(name='Channels:', value=chat.box(f'{text + voice} total\n{text} text\n{voice} voice'))
-        emb.set_footer(text=f'discord.py v{version}')
-        emb.timestamp = datetime.datetime.utcnow()
-        await ctx.send(embed=emb)
+        mem_v = psutil.virtual_memory()
+        memoryused = self._size(mem_v.total - mem_v.available)
+        memorytotal = self._size(mem_v.total)
+        memorypercent = mem_v.percent
 
-    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
-    @commands.has_permissions(embed_links=True)
-    @statsinfo.command(hidden=True)
-    async def t(self,ctx):
-        """Shows some more stats."""
-        total_members = 0
-        total_unique = len(self.bot.users)
+        net_io = psutil.net_io_counters()
+        bytes_recv = self._size(net_io.bytes_recv)
+        bytes_sent = self._size(net_io.bytes_sent)
 
         text = 0
         voice = 0
@@ -84,20 +63,26 @@ class Utility(commands.Cog):
                 elif isinstance(channel, discord.VoiceChannel):
                     voice += 1
 
-        shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
-        latency = self.bot.latency * 1000
         version = pkg_resources.get_distribution('discord.py').version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
         emb = discord.Embed(title=f"Botstats of {self.bot.user.name}:", color=discord.Color.green())
-        emb.add_field(name="Ping:", value=chat.box(str(round(latency)) + " ms"))
-        emb.add_field(name="Servers:", value=chat.box(servers))
-        emb.add_field(name='Members:', inline=False, value=chat.box(f'{total_members} total\n{total_unique} unique'))
-        emb.add_field(name='Channels:', inline=False, value=chat.box(f'{text + voice} total\n{text} text\n{voice} voice'))
-        emb.add_field(name="Shards:", value=box("".join(shards)))
+        emb.add_field(name="Servers:", value=(servers))
+        emb.add_field(name="Members:", value=(f'{total_members} total\n{total_unique} unique'))
+        emb.add_field(name="Channels:", value=(f'{text + voice} total\n{text} text\n{voice} voice'))
+        emb.add_field(name="Memory:", value=("{} / {}".format(memoryused, memorytotal)))
+        emb.add_field(name="Network traffic:", value=('Sent: {}\nReceived: {}'.format(bytes_sent, bytes_recv)))
         emb.set_footer(text=f'discord.py v{version}')
         emb.timestamp = datetime.datetime.utcnow()
         await ctx.send(embed=emb)
+
+    @staticmethod
+    def _size(num):
+        for unit in ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"]:
+            if abs(num) < 1024.0:
+                return "{0:.1f}{1}".format(num, unit)
+            num /= 1024.0
+        return "{0:.1f}{1}".format(num, "YB")
 
     @commands.command()
     @commands.is_owner()
@@ -105,7 +90,7 @@ class Utility(commands.Cog):
         """Lavalink nodestats"""
         nodes = node.get_nodes_stats()
         if not nodes:
-            await ctx.send(chat.info("This cog requires the Audio cog to be loaded to show nodestats."))
+            await ctx.send(chat.info("No nodes found"))
             return
         stats = [stat for stat in dir(nodes[0]) if not stat.startswith("_")]
         tabs = []
