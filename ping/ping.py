@@ -10,13 +10,6 @@ from redbot.core.utils.chat_formatting import (
 
 old_ping = None
 
-QUOTES = [
-    "Seven billion people in the world trying to fit in.",
-    "Dreams don’t work unless you do.",
-    "The purpose of our lives is to be happy",
-    "Money and success don’t change people",
-]
-
 class Ping(commands.Cog):
     """Reply with latency of bot"""
 
@@ -55,7 +48,6 @@ class Ping(commands.Cog):
                 for shard, pingt in self.bot.latencies
             ]
             emb.add_field(name="Shards:", value=chat.box("\n".join(shards)))
-        emb.set_footer(text=random.choice(QUOTES).format(author=ctx.author))
 
         before = time.monotonic()
         message = await ctx.send(embed=emb)
