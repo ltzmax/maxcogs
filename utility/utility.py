@@ -32,18 +32,12 @@ class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.cooldown(rate=1, per=60, type=commands.BucketType.user)
     @commands.has_permissions(embed_links=True)
     @commands.command()
     async def statsinfo(self,ctx):
         """This shows some botstats."""
         total_members = 0
         total_unique = len(self.bot.users)
-
-        mem_v = psutil.virtual_memory()
-        memoryused = self._size(mem_v.total - mem_v.available)
-        memorytotal = self._size(mem_v.total)
-        memorypercent = mem_v.percent
 
         mem_v = psutil.virtual_memory()
         memoryused = self._size(mem_v.total - mem_v.available)
