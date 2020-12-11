@@ -1,8 +1,7 @@
 import time
-import random
 import discord
 
-from redbot.core import checks, Config, commands
+from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
 from redbot.core.utils.chat_formatting import (
     box,
