@@ -23,7 +23,7 @@ to install:
 </tr>
 <tr>
 <td>utility</td>
-<td>Some utility stuff will be in this cog. it has statsinfo and llnodestats atm.</td>
+<td>Some utility stuff will be in this cog.</td>
 </tr>
 </tbody>
 </table>
