@@ -46,11 +46,6 @@ class Utility(commands.Cog):
         memorytotal = self._size(mem_v.total)
         memorypercent = mem_v.percent
 
-        mem_v = psutil.virtual_memory()
-        memoryused = self._size(mem_v.total - mem_v.available)
-        memorytotal = self._size(mem_v.total)
-        memorypercent = mem_v.percent
-
         net_io = psutil.net_io_counters()
         bytes_recv = self._size(net_io.bytes_recv)
         bytes_sent = self._size(net_io.bytes_sent)
