@@ -2,7 +2,7 @@
   "author" : ["Nesroht, max, fixator10."],
   "install_msg" : "Thanks for installing.",
   "hidden" : false,
-  "min_bot_version": "3.4.1",
+  "min_bot_version": "3.4.0",
   "requirements": [
    "psutil",
    "tabulate"
