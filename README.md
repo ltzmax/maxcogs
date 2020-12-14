@@ -30,8 +30,8 @@ to install:
 
 ----------------------------------------------------------------
 ## credits:
-[preda](https://github.com/PredaaA/predacogs) for adding shards in ping. you can edit this to see it.
+- [Red Discord server community](https://discord.gg/red) For all the help with coding. 
 
-[senbot](https://github.com/Nesroht/Senbot-Cogs) orginally made ping.
+- [senbot](https://github.com/Nesroht/Senbot-Cogs) Orginally made ping command. The ping cog is an rewritten verison.
 
-[fixator10](https://github.com/fixator10/Fixator10-Cogs) for helping improve ping.
+- [fixator10](https://github.com/fixator10/Fixator10-Cogs) for helping with the ping cog improvements.
