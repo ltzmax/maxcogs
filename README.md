@@ -34,4 +34,4 @@ to install:
 
 - [senbot](https://github.com/Nesroht/Senbot-Cogs) Orginally made ping command. The ping cog is an rewritten verison.
 
-- [fixator10](https://github.com/fixator10/Fixator10-Cogs) for helping with the ping cog improvements.
+- [fixator10](https://github.com/fixator10/Fixator10-Cogs) and [Preda](https://github.com/PredaaA/predacogs) for helping with the ping cog improvements.
