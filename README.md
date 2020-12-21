@@ -23,7 +23,11 @@ to install:
 </tr>
 <tr>
 <td>utility</td>
-<td>Some utility stuff will be in this cog.</td>
+<td>Some utility stuff is in this cog.</td>
+</tr>
+<tr>
+<td>uptime</td>
+<td>This replaces the uptime in Core with a little better looking.</td>
 </tr>
 </tbody>
 </table>
