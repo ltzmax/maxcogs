@@ -1,7 +1,0 @@
-{
-  "author" : ["max"],
-  "install_msg" : "Thanks for installing. Please do not take this too seriously for yourself, it's a quote cog, not meant to be seriously.",
-  "hidden" : false,
-  "min_bot_version": "3.4.0",
-  "end_user_data_statement": "This cog does not store any End User Data."
-}
