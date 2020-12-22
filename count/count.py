@@ -52,7 +52,7 @@ class Count(commands.Cog):
         Since these has a different timezone and on different day, i set this as 26 december.
         this may not be accurate due to discord that does not count on timezones. 
         
-        - **Examples:** 8:30 AM GMT+1 would be 1 PM somewhere in Asia. 
+        - **Examples:** 8:30 AM GMT+1 would be 1 PM somewhere in Asia and that would be on their day. 
         
         PS: I won't be adding every asian's country to the list, if discord changes their timezone plans in the future this will be removed."""
         now = datetime.datetime.utcnow()
@@ -65,7 +65,7 @@ class Count(commands.Cog):
 
         em = discord.Embed(
             color=await ctx.embed_colour(),
-            title="Time left until Christmas.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}",
+            title="Time left until Christmas Asia.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}",
             description=humanize_timedelta(timedelta=xmas - now),
             )
         em.set_image(url="https://media.giphy.com/media/XBKQjIpKNNMOIY0nRt/giphy.gif")
