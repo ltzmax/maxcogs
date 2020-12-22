@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: "[bug]"
+about: "Create a bug report"
 title: ''
 labels: bug
 assignees: maxbooiii
@@ -9,6 +9,8 @@ assignees: maxbooiii
 
 **Describe the bug**
 
-## A clear and concise description of what the bug is.
+# A clear and concise description of what the bug is.
 
-## what cog it comes from.
+# What actually happened.
+
+# what cog it comes from.
