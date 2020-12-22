@@ -9,8 +9,8 @@ assignees: maxbooiii
 
 **Describe the bug**
 
-# A clear and concise description of what the bug is.
+### A clear and concise description of what the bug is.
 
-# What actually happened.
+### What actually happened.
 
-# what cog it comes from.
+### what cog it comes from.
