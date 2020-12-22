@@ -1,0 +1,7 @@
+{
+  "author": ["max, preda"],
+  "install_msg" : "Thanks for installing. Enjoy the Christmas countdown.🎄",
+  "hidden" : false,
+  "min_bot_version": "3.4.0",
+  "end_user_data_statement": "This cog does not store any End User Data."
+}
