@@ -35,7 +35,14 @@ class Utility(
     commands.Cog,
     metaclass=CompositeMetaClass,
 ):
-    """utility."""
+    """Utility commands to use."""
+
+    __version__ = "0.2.0"
+
+    def format_help_for_context(self, ctx):
+        """Thanks Sinbad."""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\nCog Version: {self.__version__}"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
