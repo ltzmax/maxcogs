@@ -33,6 +33,10 @@ to install:
 <td>quotes</td>
 <td>This will post random quotes to a channel you use the command from.</td>
 </tr>
+<tr>
+<td>count</td>
+<td>Countdowns for: Xmas, Halloween, Discord Anniversary, and Earth Day.</td>
+</tr>
 </tbody>
 </table>
 
