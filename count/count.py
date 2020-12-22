@@ -42,6 +42,39 @@ class Count(commands.Cog):
             await ctx.send("I need the `Embed links` permission "
                                "to send this")
 
+    @commands.command(aliases=["xmasai"])
+    @commands.cooldown(1, 60, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.has_permissions(embed_links=True)
+    async def christmasai(self, ctx: commands.Context):
+        """Sends how many days left until next Christmas in Asia
+        
+        Since these has a different timezone and on different day, i set this as 26 december.
+        this may not be accurate due to discord that does not count on timezones. 
+        
+        - **Examples:** 8:30 AM GMT+1 would be 1 PM somewhere in Asia. 
+        
+        PS: I won't be adding every asian's country to the list, if discord changes their timezone plans in the future this will be removed."""
+        now = datetime.datetime.utcnow()
+        xmas = datetime.datetime(now.year, 12, 26)
+        if now.date() == xmas.date():
+            await ctx.send("Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day and therefore the countdown has ended and will return again tomorrow to let you count until next christmas. have a wonderful Happy holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}")
+            return
+        if xmas < now:
+            xmas = xmas.replace(year=now.year + 1)
+
+        em = discord.Embed(
+            color=await ctx.embed_colour(),
+            title="Time left until Christmas.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}",
+            description=humanize_timedelta(timedelta=xmas - now),
+            )
+        em.set_image(url="https://media.giphy.com/media/XBKQjIpKNNMOIY0nRt/giphy.gif")
+        try:
+            await ctx.send(embed=em)
+        except discord.HTTPException:
+            await ctx.send("I need the `Embed links` permission "
+                               "to send this")
+
     @commands.command(aliases=["dbday"])
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
