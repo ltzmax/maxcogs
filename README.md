@@ -1,9 +1,13 @@
+<h1 align="center">MAXCOGS</h1>
 
-to add this: 
+<img src="https://i.imgur.com/hOnUnpy.png" alt="Banner" style="max-width:100%;">
+
+
+To add this: 
 
 `[p]repo add maxcogs https://github.com/maxbooiii/maxcogs`
 
-to install:
+To install:
 
 `[p]cog install maxcogs <cog name you want>`
 
