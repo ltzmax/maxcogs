@@ -1,9 +1,5 @@
 from abc import ABC
 
-import discord
-from redbot.core import commands
-from redbot.core.bot import Red
-
 
 class MixinMeta(ABC):
     """
