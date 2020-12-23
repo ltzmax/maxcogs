@@ -1,6 +1,6 @@
 <h1 align="center">MAXCOGS</h1>
 
-<img src="https://i.imgur.com/hOnUnpy.png" alt="Banner" style="max-width:100%;">
+<img src="https://i.imgur.com/skewASO.png" alt="Banner" style="max-width:100%;">
 
 
 To add this: 
