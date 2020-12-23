@@ -26,7 +26,7 @@ class Count(commands.Cog):
         This works best for EU and US only due to the timezone between these two.
         Discord does not store timezones, therefore it will be hard to count every timezones out there."""
         now = datetime.datetime.utcnow()
-        xmas = datetime.datetime(now.year, 12, 24)
+        xmas = datetime.datetime(now.year, 12, 25)
         if now.date() == xmas.date():
             await ctx.send("Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day, stay safe and have a wonderful Happy holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}")
             return
