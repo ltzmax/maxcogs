@@ -28,7 +28,7 @@ class Count(commands.Cog):
         now = datetime.datetime.utcnow()
         xmas = datetime.datetime(now.year, 12, 25)
         if now.date() == xmas.date():
-            await ctx.send("Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day, stay safe and have a wonderful Happy holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}")
+            await ctx.send("Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day, stay safe and have a wonderful holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}")
             return
         if xmas < now:
             xmas = xmas.replace(year=now.year + 1)
