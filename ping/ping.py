@@ -9,13 +9,15 @@ from redbot.core.utils.chat_formatting import (
 
 old_ping = None
 
+# Thanks preda and fixator.
+
 class Ping(commands.Cog):
     """Reply with latency of bot"""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
-    
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -30,18 +32,23 @@ class Ping(commands.Cog):
 
     @commands.has_permissions(embed_links=True)
     @commands.command()
-    async def ping(self, ctx):
+    async def ping(
+        self, 
+        ctx
+        ):
         """Reply with latency of bot."""
         latency = self.bot.latency * 1000
         emb = discord.Embed(title="Pong !", color=discord.Color.red())
         emb.add_field(
             name="Discord WS:", value=chat.box(str(round(latency)) + " ms"),
         )
-        emb.add_field(name="Message:", value=chat.box("…"))
-        emb.add_field(name="Typing:", value=chat.box("…"))
-        # Thanks preda and fixator.
+        emb.add_field(
+            name="Message:", value=chat.box("…")
+        )
+        emb.add_field(
+            name="Typing:", value=chat.box("…")
+        )
         if len(self.bot.latencies) > 1:
-            # The chances of this in near future is almost 0, but who knows, what future will bring to us?
             shards = [
                 f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms"
                 for shard, pingt in self.bot.latencies
@@ -51,7 +58,7 @@ class Ping(commands.Cog):
         before = time.monotonic()
         message = await ctx.send(embed=emb)
         ping = (time.monotonic() - before) * 1000
-        emb.colour = await ctx.embed_color()
+        emb.colour = color=discord.Color.green()
         emb.set_field_at(
             1,
             name="Message:",
@@ -61,8 +68,8 @@ class Ping(commands.Cog):
             ),
         )
         emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
-
         await message.edit(embed=emb)
+
 
 def setup(bot):
     ping = Ping(bot)
