@@ -103,7 +103,7 @@ class Count(commands.Cog):
             await ctx.send("I need the `Embed links` permission "
                                "to send this")
 
-    @commands.command(aliases=["earth"])
+    @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.has_permissions(embed_links=True)
