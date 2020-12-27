@@ -21,7 +21,7 @@ class Image(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def earth(self, ctx):
-        """Random earth photos."""
+        """Send a random earth image."""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.martinebot.com/v1/images/subreddit?name=earthporn') as resp:
                 response = await resp.json()
@@ -43,7 +43,7 @@ class Image(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def space(self, ctx):
-        """Random space photos."""
+        """Send a random space image."""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.martinebot.com/v1/images/subreddit?name=spaceporn') as resp:
                 response = await resp.json()
@@ -65,7 +65,7 @@ class Image(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.command()
     async def food(self, ctx):
-        """Random food photos."""
+        """Send a random food image."""
         async with aiohttp.ClientSession() as session:
             async with session.get('https://api.martinebot.com/v1/images/subreddit?name=food') as resp:
                 response = await resp.json()
