@@ -37,6 +37,10 @@ To install:
 <td>count</td>
 <td>Countdowns for: Xmas, Halloween, Discord Anniversary, and Earth Day.</td>
 </tr>
+<tr>
+<td>image</td>
+<td>Random images from space, food and earth.</td>
+</tr>
 </tbody>
 </table>
 
