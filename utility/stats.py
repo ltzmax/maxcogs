@@ -40,7 +40,9 @@ class Stats(MixinMeta):
         version = pkg_resources.get_distribution('discord.py').version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
-        emb = discord.Embed(title=f"Botstats of {self.bot.user.name}:", color=discord.Color.green())
+        emb = discord.Embed(title=f"Botstats of {self.bot.user.name}:", 
+            color=discord.Color.green()
+        )
         emb.add_field(name="Users:", value=(f'{servers} servers\n{total_members} total members\n{total_unique} unique members'), inline=True)
         emb.add_field(name="Channels:", value=(f'{text + voice} total\n{text} text\n{voice} voice'), inline=True)
         emb.add_field(name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False)
@@ -48,7 +50,10 @@ class Stats(MixinMeta):
         emb.add_field(name="Network traffic:", value=('Sent: {}\nReceived: {}'.format(bytes_sent, bytes_recv)), inline=True)
         emb.set_footer(text=f'discord.py v{version}')
         emb.timestamp = datetime.datetime.utcnow()
-        await ctx.send(embed=emb)
+        try:
+            await ctx.send(embed=emb)
+        except discord.HTTPException:
+            await ctx.send("I need the `Embed links` permission to send this")
 
     @staticmethod
     def _size(num):
