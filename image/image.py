@@ -15,15 +15,16 @@ class Image(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
-
+    
+    @commands.command()
+    @commands.guild_only()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command()
     async def earth(self, ctx):
         """Send a random earth image."""
         async with aiohttp.ClientSession() as session:
-            async with session.get('https://api.martinebot.com/v1/images/subreddit?name=earthporn') as resp:
+            async with session.get("https://api.martinebot.com/v1/images/subreddit?name=earthporn") as resp:
                 response = await resp.json()
             embed = await ctx.embed_colour()
             embed = discord.Embed(
@@ -38,14 +39,15 @@ class Image(commands.Cog):
         except discord.HTTPException:
             await ctx.send("Bad reponse, please retry the command again.")
 
+    @commands.command()
+    @commands.guild_only()            
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command()
     async def space(self, ctx):
         """Send a random space image."""
         async with aiohttp.ClientSession() as session:
-            async with session.get('https://api.martinebot.com/v1/images/subreddit?name=spaceporn') as resp:
+            async with session.get("https://api.martinebot.com/v1/images/subreddit?name=spaceporn") as resp:
                 response = await resp.json()
             embed = await ctx.embed_colour()
             embed = discord.Embed(
@@ -59,15 +61,16 @@ class Image(commands.Cog):
             await ctx.send(embed=embed)
         except discord.HTTPException:
             await ctx.send("Bad reponse, please retry the command again.")
-
+            
+    @commands.command()
+    @commands.guild_only()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command()
     async def food(self, ctx):
         """Send a random food image."""
         async with aiohttp.ClientSession() as session:
-            async with session.get('https://api.martinebot.com/v1/images/subreddit?name=food') as resp:
+            async with session.get("https://api.martinebot.com/v1/images/subreddit?name=food") as resp:
                 response = await resp.json()
             embed = await ctx.embed_colour()
             embed = discord.Embed(
