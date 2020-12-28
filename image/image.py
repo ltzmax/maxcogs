@@ -38,7 +38,7 @@ class Image(commands.Cog):
             await ctx.send(embed=embed)
         except discord.HTTPException:
             await ctx.send("Bad reponse, please retry the command again.")
-
+            
     @commands.command()
     @commands.guild_only()            
     @commands.cooldown(1, 3, commands.BucketType.guild)
