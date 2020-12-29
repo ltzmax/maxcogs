@@ -33,9 +33,9 @@ class Uptime(commands.Cog):
         """Shows [botname]'s uptime."""
         since = ctx.bot.uptime.strftime("%m/%d/%Y - %H:%M")
         delta = datetime.datetime.utcnow() - self.bot.uptime
-        uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second")
+        uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         await ctx.send(
-            ("**{name}** has been up since: `{timestamp}` UTC.\nAnd has been online for: `{time_quantity}`").format(
+            ("**{name}** has been up for: `{time_quantity}`. That's since: `{timestamp}` UTC.").format(
                 name=self.bot.user.name, time_quantity=uptime_str, timestamp=since
             )
         )
