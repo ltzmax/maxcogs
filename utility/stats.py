@@ -40,7 +40,7 @@ class Stats(MixinMeta):
         version = pkg_resources.get_distribution('discord.py').version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
-        emb = discord.Embed(title=f"Botstats of {self.bot.user.name}:", 
+        emb = discord.Embed(title=f"Botstats for {self.bot.user.name}:", 
             color=discord.Color.green()
         )
         emb.add_field(name="Users:", value=(f'{servers} servers\n{total_members} total members\n{total_unique} unique members'), inline=True)
