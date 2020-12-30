@@ -10,7 +10,7 @@ old_uptime = None
 class Uptime(commands.Cog):
     """Reply with uptime of the bot.
 
-    This replaces the one in Core with better looking."""
+    This replaces the one in Core."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
