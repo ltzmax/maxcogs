@@ -41,6 +41,10 @@ To install:
 <td>image</td>
 <td>Random images from space, food and earth.</td>
 </tr>
+<tr>
+<td>fun</td>
+<td>Fun commands, give heart and pay some respect.</td>
+</tr>
 </tbody>
 </table>
 
