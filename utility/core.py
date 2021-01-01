@@ -3,6 +3,8 @@ from .stats import Stats
 from .checkabuse import Checkabuse
 from .audionode import Audionode
 
+import discord
+
 from redbot.core import commands
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
@@ -20,7 +22,7 @@ class Utility(
 ):
     """Utility commands to use."""
 
-    __version__ = "0.3.0"
+    __version__ = "0.4.0"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -28,3 +30,32 @@ class Utility(
 
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(embed_links=True)
+    async def mods(self, ctx):
+        """Check which mods are online on current guild."""
+        message = ""
+        all_status = {
+            "online": {"users": [], "emoji": "🟢Online:"},
+            "idle": {"users": [], "emoji": "🟡Idle:"},
+            "dnd": {"users": [], "emoji": "🔴Dnd:"},
+            "offline": {"users": [], "emoji": "⚫Offline:"}
+        }
+
+        for user in ctx.guild.members:
+            user_perm = ctx.channel.permissions_for(user)
+            if user_perm.kick_members or user_perm.ban_members:
+                if not user.bot:
+                    all_status[str(user.status)]["users"].append(f"**{user}**")
+
+        for g in all_status:
+            if all_status[g]["users"]:
+                message += f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n"
+
+        embed = discord.Embed(
+            color=0x30BA8F,
+            description=(f"Mods online in guild **{ctx.guild.name}**\n{message}")
+        )
+        await ctx.send(embed=embed)
