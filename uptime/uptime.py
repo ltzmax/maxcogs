@@ -10,7 +10,7 @@ old_uptime = None
 class Uptime(commands.Cog):
     """Reply with uptime of the bot.
 
-    This replaces the one in Core."""
+    This replaces the one in Core with better looking."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -35,7 +35,7 @@ class Uptime(commands.Cog):
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         await ctx.send(
-            ("**{name}** has been up for: `{time_quantity}`. Since: `{timestamp}` UTC.").format(
+            ("\N{LARGE GREEN CIRCLE} **{name}** has been up for: `{time_quantity}`.\nSince: `{timestamp}` UTC.").format(
                 name=self.bot.user.name, time_quantity=uptime_str, timestamp=since
             )
         )
