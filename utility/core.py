@@ -4,6 +4,7 @@ from .checkabuse import Checkabuse
 from .audionode import Audionode
 
 import discord
+import datetime
 
 from redbot.core import commands
 
@@ -43,7 +44,7 @@ class Utility(
             "online": {"users": [], "emoji": "🟢Online:"},
             "idle": {"users": [], "emoji": "🟡Idle:"},
             "dnd": {"users": [], "emoji": "🔴Dnd:"},
-            "offline": {"users": [], "emoji": "⚫Offline:"}
+            "offline": {"users": [], "emoji": "⚪Offline:"}
         }
 
         for user in ctx.guild.members:
@@ -60,4 +61,5 @@ class Utility(
             color=0x30BA8F,
             description=(f"Mods online in guild **{ctx.guild.name}**\n\n{message}")
         )
+        embed.timestamp = datetime.datetime.utcnow()
         await ctx.send(embed=embed)
