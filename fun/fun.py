@@ -16,7 +16,7 @@ class Fun(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def f(self, ctx, *, text: commands.clean_content = None):
         """Press F to pay respect."""
         reason = f"for {text} " if text else ""
@@ -27,7 +27,7 @@ class Fun(commands.Cog):
         await ctx.send(embed=emb)
 
     @commands.command()
-    @commands.has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def heart(self, ctx, *, text: commands.clean_content = None):
         """Give someone a heart."""
         hearts = ['\N{HEAVY BLACK HEART}\N{VARIATION SELECTOR-16}', '\N{BLUE HEART}', '\N{BROWN HEART}', '\N{PURPLE HEART}', '\N{GREEN HEART}', '\N{WHITE HEART}', '\N{YELLOW HEART}', '\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}', '\N{GROWING HEART}', '\N{BEATING HEART}', '\N{TWO HEARTS}', '\N{SPARKLING HEART}', '\N{REVOLVING HEARTS}']
