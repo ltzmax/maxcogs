@@ -22,7 +22,7 @@ class Utility(
 ):
     """Utility commands to use."""
 
-    __version__ = "0.4.0"
+    __version__ = "0.6.0"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -50,14 +50,14 @@ class Utility(
             user_perm = ctx.channel.permissions_for(user)
             if user_perm.kick_members or user_perm.ban_members:
                 if not user.bot:
-                    all_status[str(user.status)]["users"].append(f"**{user}**")
+                    all_status[str(user.status)]["users"].append(f"\n**{user}**")
 
         for g in all_status:
             if all_status[g]["users"]:
-                message += f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n"
+                message += f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n\n"
 
         embed = discord.Embed(
             color=0x30BA8F,
-            description=(f"Mods online in guild **{ctx.guild.name}**\n{message}")
+            description=(f"Mods online in guild **{ctx.guild.name}**\n\n{message}")
         )
         await ctx.send(embed=embed)
