@@ -9,8 +9,8 @@ from redbot.core import commands
 class Stats(MixinMeta):
     """shows stats of the bot."""
 
-    @commands.has_permissions(embed_links=True)
     @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def statsinfo(self,ctx):
         """This shows some botstats."""
         total_members = 0
@@ -48,7 +48,7 @@ class Stats(MixinMeta):
         emb.add_field(name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False)
         emb.add_field(name="Memory:", value=("{} / {}".format(memoryused, memorytotal)), inline=True)
         emb.add_field(name="Network traffic:", value=('Sent: {}\nReceived: {}'.format(bytes_sent, bytes_recv)), inline=True)
-        emb.set_footer(text=f'discord.py v{version}')
+        emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
         try:
             await ctx.send(embed=emb)
