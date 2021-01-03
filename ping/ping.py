@@ -29,9 +29,9 @@ class Ping(commands.Cog):
             except:
                 pass
             self.bot.add_command(old_ping)
-
-    @commands.has_permissions(embed_links=True)
+            
     @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def ping(
         self, 
         ctx
