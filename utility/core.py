@@ -33,7 +33,9 @@ class Utility(
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(embed_links=True)
+    @commands.cooldown(1, 100, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True)
     async def mods(self, ctx):
         """Check which mods are online on current guild."""
         message = ""
