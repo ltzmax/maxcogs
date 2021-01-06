@@ -31,10 +31,6 @@ To install:
 <td>Some utility stuff is in this cog.</td>
 </tr>
 <tr>
-<td>uptime</td>
-<td>This replaces the uptime in Core with a little better looking.</td>
-</tr>
-<tr>
 <td>count</td>
 <td>Countdowns for: Xmas, Halloween, Discord Anniversary, and Earth Day.</td>
 </tr>
