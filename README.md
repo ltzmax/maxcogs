@@ -36,7 +36,7 @@ To install:
 </tr>
 <tr>
 <td>image</td>
-<td>Random images from space, food and earth.</td>
+<td>Random images from space and earth.</td>
 </tr>
 <tr>
 <td>fun</td>
