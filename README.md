@@ -46,6 +46,9 @@ To install:
 <td>fun</td>
 <td>Fun commands, give heart and pay some respect.</td>
 </tr>
+<td>modcheck</td>
+<td>Check which mods are online right now. (require an server to have your bot in for the emojis.)</td>
+</tr>
 </tbody>
 </table>
 
