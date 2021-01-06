@@ -1,6 +1,8 @@
 {
   "author" : ["max, fixator10."],
   "install_msg" : "Thanks for installing.",
+  "description": "Utility for your bot and your guilds.",
+  "short": "Bot and guild utility.",
   "hidden" : false,
   "min_bot_version": "3.4.0",
   "requirements": [
