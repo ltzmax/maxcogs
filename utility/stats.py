@@ -21,10 +21,6 @@ class Stats(MixinMeta):
         memorytotal = self._size(mem_v.total)
         memorypercent = mem_v.percent
 
-        net_io = psutil.net_io_counters()
-        bytes_recv = self._size(net_io.bytes_recv)
-        bytes_sent = self._size(net_io.bytes_sent)
-
         text = 0
         voice = 0
         guilds = 0
@@ -37,6 +33,7 @@ class Stats(MixinMeta):
                 elif isinstance(channel, discord.VoiceChannel):
                     voice += 1
 
+        commands = len(set(self.bot.walk_commands()))
         version = pkg_resources.get_distribution('discord.py').version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
@@ -47,7 +44,7 @@ class Stats(MixinMeta):
         emb.add_field(name="Channels:", value=(f'{text + voice} total\n{text} text\n{voice} voice'), inline=True)
         emb.add_field(name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False)
         emb.add_field(name="Memory:", value=("{} / {}".format(memoryused, memorytotal)), inline=True)
-        emb.add_field(name="Network traffic:", value=('Sent: {}\nReceived: {}'.format(bytes_sent, bytes_recv)), inline=True)
+        emb.add_field(name="Commands:", value=commands, inline=True)
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
         try:
