@@ -10,6 +10,7 @@ from redbot.core.utils.chat_formatting import (
 old_ping = None
 
 # Thanks preda and fixator.
+# French people aren't that bad. At least preda is nice, to add shards option.
 
 class Ping(commands.Cog):
     """Reply with latency of bot"""
@@ -29,12 +30,12 @@ class Ping(commands.Cog):
             except:
                 pass
             self.bot.add_command(old_ping)
-            
-    @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
+
+    @commands.has_permissions(embed_links=True)
+    @commands.group(invoke_without_command=True)
     async def ping(
         self, 
-        ctx
+        ctx,
         ):
         """Reply with latency of bot."""
         latency = self.bot.latency * 1000
@@ -70,6 +71,27 @@ class Ping(commands.Cog):
         emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
         await message.edit(embed=emb)
 
+    @commands.bot_has_permissions(embed_links=True)
+    @ping.command(hidden=True, aliases=["true", "1", "f"])
+    async def t(self, ctx,):
+        """Reply the latency with shards."""
+        latency = self.bot.latency * 1000
+        emb = discord.Embed(title="Please wait..", color=discord.Color.red())
+        emb.add_field(name="Discord WS:", value=box(str(round(latency)) + " ms"))
+        emb.add_field(name="Typing", value=box("calculating" + " ms"))
+        emb.add_field(name="Message", value=chat.box("…"))
+
+        before = time.monotonic()
+        message = await ctx.send(embed=emb)
+        ping = (time.monotonic() - before) * 1000
+
+        shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
+        emb.add_field(name="Shards:", value=box("".join(shards)))
+        emb.title = "Pong !"
+        emb.color = discord.Color.green()
+        emb.set_field_at(1, name="Message:", value=chat.box(str(int((message.created_at - ctx.message.created_at).total_seconds() * 1000)) + " ms"))
+        emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
+        await message.edit(embed=emb)
 
 def setup(bot):
     ping = Ping(bot)
