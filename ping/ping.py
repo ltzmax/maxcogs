@@ -31,7 +31,7 @@ class Ping(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
-    @commands.has_permissions(embed_links=True)
+    @commands.bot_has_permissions(embed_links=True)
     @commands.group(invoke_without_command=True)
     async def ping(
         self, 
