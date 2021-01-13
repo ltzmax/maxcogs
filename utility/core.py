@@ -32,6 +32,12 @@ class Utility(
     """Utility commands to use."""
 
     __version__ = "1.2.0"
+    __author__ = ["MAX", "Fixator10"]
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthors: {', '.join(self.__author__)}\nCog Version: {self.__version__}"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
