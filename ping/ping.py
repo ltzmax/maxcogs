@@ -32,7 +32,7 @@ class Ping(commands.Cog):
             self.bot.add_command(old_ping)
 
     @commands.bot_has_permissions(embed_links=True)
-    @commands.group(invoke_without_command=True)
+    @commands.command()
     async def ping(
         self, 
         ctx,
@@ -68,28 +68,6 @@ class Ping(commands.Cog):
                 + " ms"
             ),
         )
-        emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
-        await message.edit(embed=emb)
-
-    @commands.bot_has_permissions(embed_links=True)
-    @ping.command(hidden=True, aliases=["true", "1", "f"])
-    async def t(self, ctx,):
-        """Reply the latency with shards."""
-        latency = self.bot.latency * 1000
-        emb = discord.Embed(title="Please wait..", color=discord.Color.red())
-        emb.add_field(name="Discord WS:", value=box(str(round(latency)) + " ms"))
-        emb.add_field(name="Typing", value=box("calculating" + " ms"))
-        emb.add_field(name="Message", value=chat.box("…"))
-
-        before = time.monotonic()
-        message = await ctx.send(embed=emb)
-        ping = (time.monotonic() - before) * 1000
-
-        shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
-        emb.add_field(name="Shards:", value=box("".join(shards)))
-        emb.title = "Pong !"
-        emb.color = discord.Color.green()
-        emb.set_field_at(1, name="Message:", value=chat.box(str(int((message.created_at - ctx.message.created_at).total_seconds() * 1000)) + " ms"))
         emb.set_field_at(2, name="Typing:", value=chat.box(str(round(ping)) + " ms"))
         await message.edit(embed=emb)
 
