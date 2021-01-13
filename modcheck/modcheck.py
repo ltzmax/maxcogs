@@ -20,6 +20,7 @@ class ModCheck(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def mods(self, ctx):
         """Check which mods are online on current guild."""
+        guild = ctx.message.guild
         message = ""
         all_status = {
             "online": {"users": [], "emoji": "<:online:749221433552404581>Online:"},
@@ -42,5 +43,5 @@ class ModCheck(commands.Cog):
             color=0x30BA8F,
             description=(f"Mods online in guild **{ctx.guild.name}**\n\n{message}")
         )
-        embed.timestamp = datetime.datetime.utcnow()
+        embed.set_footer(text="Server ID: " + str(guild.id))
         await ctx.send(embed=embed)
