@@ -25,13 +25,10 @@ async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
         stat = f"{round(stat*100, 2)} %"
     return stat
 
-class Utility(
-    commands.Cog,
-
-):
+class Utility(commands.Cog):
     """Utility commands to use."""
 
-    __version__ = "1.2.0"
+    __version__ = "1.3.0"
     __author__ = ["MAX", "Fixator10"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
