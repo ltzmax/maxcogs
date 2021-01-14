@@ -84,7 +84,7 @@ class Count(commands.Cog):
         await ctx.send(embed=em)
 
 
-    @commands.command(aliases=["earth"])
+    @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
