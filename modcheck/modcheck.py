@@ -1,5 +1,4 @@
 import discord
-import datetime
 
 from redbot.core import commands
 
