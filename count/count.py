@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
 import discord
 
+from datetime import datetime
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import (
     humanize_timedelta,
@@ -22,8 +22,8 @@ class Count(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def christmas(self, ctx: commands.Context):
         """Sends how many days left until next Christmas."""
-        now = datetime.now(timezone.utc)
-        xmas = datetime(now.year, 12, 24, tzinfo=timezone.utc)
+        now = datetime.utcnow()
+        xmas = datetime(now.year, 12, 24)
         if now.date() == xmas.date():
             await ctx.send("Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day and therefore the countdown has ended and will return again tomorrow to let you count until next christmas. have a wonderful Happy holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}")
             return
