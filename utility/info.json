@@ -1,5 +1,5 @@
 {
-  "author" : ["max, fixator10."],
+  "author" : ["max", "fixator10."],
   "install_msg" : "Thanks for installing.\nThis cog may require `[p]pipinstall psutil`, `[p]pipinstall tabulate` and `[p]pipinstall humanize`.",
   "description": "Utility for your bot and your guilds.",
   "short": "Bot and guild utility.",
