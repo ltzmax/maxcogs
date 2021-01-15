@@ -23,6 +23,7 @@ class Ping(commands.Cog):
             self.bot.add_command(old_ping)
 
     @commands.command(hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def ping(self, ctx: commands.Context):
         """This will reply with latency."""
