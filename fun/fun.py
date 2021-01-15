@@ -1,3 +1,4 @@
+# Credits from: https://github.com/AlexFlipnote/discord_bot.py/blob/762ec7c741fb9380767adf7619601f259470ebe6/cogs/fun.py#L83
 import discord
 import random
 
