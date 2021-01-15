@@ -1,5 +1,5 @@
 {
-  "author" : ["max."],
+  "author" : ["max", "AlexFlipnote"],
   "install_msg" : "Thanks for installing. If you wish for the emojis to work, you must have your bot added to the friends of Martine server. You can request it to be added here: https://discord.gg/eKxTEsF",
   "description": "Check which mods are online.",
   "short": "Check which mods are online.",
