@@ -37,6 +37,10 @@ To install:
 <td>modcheck</td>
 <td>Check which mods are online right now. (require an server to have your bot in for the emojis.)</td>
 </tr>
+</tr>
+<td>ping</td>
+<td>This will reply with the latency of your bot.</td>
+</tr>
 </tbody>
 </table>
 
