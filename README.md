@@ -23,20 +23,12 @@ To install:
 </thead>
 <tbody>
 <tr>
-<td>ping</td>
-<td>This will show the latency of the bot.</td>
-</tr>
-<tr>
 <td>utility</td>
 <td>Some utility stuff is in this cog.</td>
 </tr>
 <tr>
 <td>count</td>
 <td>Countdowns for: Xmas, Halloween, Discord Anniversary, and Earth Day.</td>
-</tr>
-<tr>
-<td>image</td>
-<td>Random images from space and earth.</td>
 </tr>
 <tr>
 <td>fun</td>
