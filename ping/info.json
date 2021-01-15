@@ -1,0 +1,9 @@
+{
+  "author" : ["max"],
+  "install_msg" : "Thanks for installing.",
+  "description": "Ping command which shows bot latency in response.",
+  "short": "Ping, which shows bot latency.",
+  "hidden" : false,
+  "min_bot_version": "3.4.0",
+  "end_user_data_statement": "This cog does not store any End User Data."
+}
