@@ -1,3 +1,4 @@
+# Credits: https://github.com/AlexFlipnote/discord_bot.py/blob/762ec7c741fb9380767adf7619601f259470ebe6/cogs/discord.py#L43
 import discord
 
 from redbot.core import commands
