@@ -46,4 +46,6 @@ To install:
 
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) Utility.
 
+- [Prda](https://github.com/PredaaA/predacogs) Count.
+
 - [Alexflipnote](https://github.com/AlexFlipnote/discord_bot.py/blob/762ec7c741fb9380767adf7619601f259470ebe6/cogs/discord.py#L43) modcheck and fun.
