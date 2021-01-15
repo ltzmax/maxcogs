@@ -44,6 +44,6 @@ To install:
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding. 
 
-- [fixator10](https://github.com/fixator10/Fixator10-Cogs) and [Preda](https://github.com/PredaaA/predacogs) for helping with the ping cog improvements.
+- [fixator10](https://github.com/fixator10/Fixator10-Cogs) Utility.
 
 - [Alexflipnote](https://github.com/AlexFlipnote/discord_bot.py/blob/762ec7c741fb9380767adf7619601f259470ebe6/cogs/discord.py#L43) modcheck and fun.
