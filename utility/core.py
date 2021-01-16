@@ -81,10 +81,7 @@ class Utility(commands.Cog):
         emb.add_field(name="Commands:", value=commands, inline=True)
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
-        try:
-            await ctx.send(embed=emb)
-        except discord.HTTPException:
-            await ctx.send("I need the `Embed links` permission to send this")
+        await ctx.send(embed=emb)
             
 
     @staticmethod
