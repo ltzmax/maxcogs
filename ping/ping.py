@@ -9,7 +9,7 @@ from redbot.core.utils import chat_formatting as chat
 old_ping = None
 
 class Ping(commands.Cog):
-    """Reply with latency."""
+    """This will reply with latency of bot."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
