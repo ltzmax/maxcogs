@@ -1,5 +1,5 @@
 {
-  "author" : ["max", "Senroht#5179", "Preda", "Fixator10"],
+  "author" : ["max", "Senroht#5179"],
   "install_msg" : "Thanks for installing.",
   "description": "Ping command which shows bot latency in response.",
   "short": "Ping, which shows bot latency.",
