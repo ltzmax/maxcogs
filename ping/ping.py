@@ -9,7 +9,7 @@ from redbot.core.utils import chat_formatting as chat
 old_ping = None
 
 class Ping(commands.Cog):
-    """This will reply with latency of bot."""
+    """Reply with latency."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -63,6 +63,15 @@ class Ping(commands.Cog):
         )
         emb.set_field_at(2, name="Typing:", value=(str(round(ping)) + " ms"))
         await message.edit(embed=emb)
+
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.command(hidden=True)
+    async def shards(self, ctx,):
+        """Reply with more latency."""
+        shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
+        emb = discord.Embed(color=discord.Color.green())
+        emb.add_field(name="Shard:", value=("".join(shards)))
+        await ctx.send(embed=emb)
 
 def setup(bot):
     ping = Ping(bot)
