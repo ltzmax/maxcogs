@@ -67,7 +67,7 @@ class Ping(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(hidden=True)
     async def shards(self, ctx,):
-        """Reply with more latency."""
+        """This will show your shards."""
         shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
         emb = discord.Embed(color=discord.Color.green())
         emb.add_field(name="Shard:", value=("".join(shards)))
