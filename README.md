@@ -41,6 +41,10 @@ To install:
 <td>ping</td>
 <td>This will reply with the latency of your bot.</td>
 </tr>
+</tr>
+<td>image</td>
+<td>Random images from space and earth.</td>
+</tr>
 </tbody>
 </table>
 
