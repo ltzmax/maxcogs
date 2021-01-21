@@ -68,13 +68,16 @@ class Ping(commands.Cog):
         emb.set_field_at(2, name="Typing:", value=(str(round(ping)) + " ms"))
         await message.edit(embed=emb)
 
+    # todo on shards: Add menus to use while some red bots do have up to 20 shards.
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(hidden=True)
     async def shards(
         self,
         ctx,
     ):
-        """This will show your shards."""
+        """This will show your shards.
+        
+        This only has some better meaning on bot that has more than one shard."""
         shards = [
             f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n"
             for shard, pingt in self.bot.latencies
