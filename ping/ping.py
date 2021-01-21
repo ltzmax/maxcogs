@@ -70,7 +70,7 @@ class Ping(commands.Cog):
         """This will show your shards."""
         shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
         emb = discord.Embed(color=discord.Color.green())
-        emb.add_field(name="Shard:", value=("".join(shards)))
+        emb.add_field(name="Shards:", value=("".join(shards)))
         await ctx.send(embed=emb)
 
 def setup(bot):
