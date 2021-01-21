@@ -5,9 +5,9 @@ import discord
 
 from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 old_ping = None
-
 
 class Ping(commands.Cog):
     """Reply with latency."""
@@ -68,7 +68,6 @@ class Ping(commands.Cog):
         emb.set_field_at(2, name="Typing:", value=(str(round(ping)) + " ms"))
         await message.edit(embed=emb)
 
-    # todo on shards: Add menus to use while some red bots do have up to 20 shards.
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(hidden=True)
     async def shards(
@@ -77,15 +76,15 @@ class Ping(commands.Cog):
     ):
         """This will show your shards.
         
-        This only has some better meaning on bot that has more than one shard."""
+        This only means more for big bots that has moe than one shard."""
         shards = [
             f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n"
             for shard, pingt in self.bot.latencies
-        ]
+        ]   # This will only work up to 60 shards, and then it will no longer work. 
+            # it needs menus and i have no plans currently to add it until later date.
         emb = discord.Embed(color=discord.Color.green())
         emb.add_field(name="Shards:", value=("".join(shards)))
         await ctx.send(embed=emb)
-
 
 def setup(bot):
     ping = Ping(bot)
