@@ -8,6 +8,7 @@ from redbot.core.utils import chat_formatting as chat
 
 old_ping = None
 
+
 class Ping(commands.Cog):
     """Reply with latency."""
 
@@ -30,15 +31,13 @@ class Ping(commands.Cog):
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.guild)
-    async def ping(
-        self, 
-        ctx
-        ):
+    async def ping(self, ctx):
         """Reply with latency of bot. """
         latency = self.bot.latency * 1000
         emb = discord.Embed(color=discord.Color.red())
         emb.add_field(
-            name="Discord WS:", value=(str(round(latency)) + " ms"),
+            name="Discord WS:",
+            value=(str(round(latency)) + " ms"),
         )
         emb.add_field(name="Message:", value=("…"))
         emb.add_field(name="Typing:", value=("…"))
@@ -57,7 +56,12 @@ class Ping(commands.Cog):
             1,
             name="Message:",
             value=(
-                str(int((message.created_at - ctx.message.created_at).total_seconds() * 1000))
+                str(
+                    int(
+                        (message.created_at - ctx.message.created_at).total_seconds()
+                        * 1000
+                    )
+                )
                 + " ms"
             ),
         )
@@ -66,12 +70,19 @@ class Ping(commands.Cog):
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(hidden=True)
-    async def shards(self, ctx,):
+    async def shards(
+        self,
+        ctx,
+    ):
         """This will show your shards."""
-        shards = [f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n" for shard, pingt in self.bot.latencies]
+        shards = [
+            f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n"
+            for shard, pingt in self.bot.latencies
+        ]
         emb = discord.Embed(color=discord.Color.green())
         emb.add_field(name="Shards:", value=("".join(shards)))
         await ctx.send(embed=emb)
+
 
 def setup(bot):
     ping = Ping(bot)
