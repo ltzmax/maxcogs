@@ -116,7 +116,7 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def llnodestats(self, ctx):
-        """Lavalink nodestats"""
+        """Lavalink nodestats."""
         nodes = node.get_nodes_stats()
         if not nodes:
             await ctx.send(chat.info("No nodes found."))
