@@ -22,7 +22,7 @@ class Image(commands.Cog):
         """Message for Safe For Work (SFW) channels."""
         if not ctx.message.channel.is_nsfw():
             em = discord.Embed(
-                title="\N{LOCK} NSFW commands Cannot be used in non NSFW channel.",
+                title="\N{LOCK} NSFW commands cannot be used in non NSFW channel.",
                 color=0xAA0000,
             )
         return em
