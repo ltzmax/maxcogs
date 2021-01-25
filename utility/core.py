@@ -15,6 +15,7 @@ from redbot.core.utils.chat_formatting import (
     box,
 )
 
+
 async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
     stat = getattr(stats, stat_name)
     if isinstance(stat, int) and stat_name.startswith("memory_"):
@@ -24,6 +25,7 @@ async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
     if "load" in stat_name:
         stat = f"{round(stat*100, 2)} %"
     return stat
+
 
 class Utility(commands.Cog):
     """Utility commands to use."""
@@ -45,7 +47,7 @@ class Utility(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def statsinfo(self,ctx):
+    async def statsinfo(self, ctx):
         """This shows some botstats."""
         total_members = 0
         total_unique = len(self.bot.users)
@@ -68,21 +70,36 @@ class Utility(commands.Cog):
                     voice += 1
 
         commands = len(set(self.bot.walk_commands()))
-        version = pkg_resources.get_distribution('discord.py').version
+        version = pkg_resources.get_distribution("discord.py").version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
-        emb = discord.Embed(title=f"Botstats for {self.bot.user.name}:", 
-            color=discord.Color.green()
+        emb = discord.Embed(
+            title=f"Botstats for {self.bot.user.name}:", color=discord.Color.green()
         )
-        emb.add_field(name="Users:", value=(f'{servers} servers\n{total_members} total members\n{total_unique} unique members'), inline=True)
-        emb.add_field(name="Channels:", value=(f'{text + voice} total\n{text} text\n{voice} voice'), inline=True)
-        emb.add_field(name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False)
-        emb.add_field(name="Memory:", value=("{} / {}".format(memoryused, memorytotal)), inline=True)
+        emb.add_field(
+            name="Users:",
+            value=(
+                f"{servers} servers\n{total_members} total members\n{total_unique} unique members"
+            ),
+            inline=True,
+        )
+        emb.add_field(
+            name="Channels:",
+            value=(f"{text + voice} total\n{text} text\n{voice} voice"),
+            inline=True,
+        )
+        emb.add_field(
+            name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False
+        )
+        emb.add_field(
+            name="Memory:",
+            value=("{} / {}".format(memoryused, memorytotal)),
+            inline=True,
+        )
         emb.add_field(name="Commands:", value=commands, inline=True)
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
         await ctx.send(embed=emb)
-            
 
     @staticmethod
     def _size(num):
@@ -104,14 +121,25 @@ class Utility(commands.Cog):
             me[m.guild] += 1
             me_u[m.author] += 1
             if ctx.valid:
-                c[(m.guild, getattr(m.guild, "owner", m.author), ctx.command.qualified_name)] += 1
+                c[
+                    (
+                        m.guild,
+                        getattr(m.guild, "owner", m.author),
+                        ctx.command.qualified_name,
+                    )
+                ] += 1
                 u[(m.author, ctx.command.qualified_name)] += 1
         c_offender = max(c.items(), key=lambda kv: kv[1])
         u_offender = max(u.items(), key=lambda kv: kv[1])
 
         me_offender = max(me.items(), key=lambda kv: kv[1])
         me_u_offender = max(me_u.items(), key=lambda kv: kv[1])
-        await ctx.send(box(f"\nServer with most Message:\n{me_offender}\n\nUser with most messages:\n{me_u_offender}\n\n\nServer with most commands:\n{c_offender}\n\nUser with most commands:\n{u_offender}", lang="py"))
+        await ctx.send(
+            box(
+                f"\nServer with most Message:\n{me_offender}\n\nUser with most messages:\n{me_u_offender}\n\n\nServer with most commands:\n{c_offender}\n\nUser with most commands:\n{u_offender}",
+                lang="py",
+            )
+        )
 
     @commands.command()
     @commands.is_owner()

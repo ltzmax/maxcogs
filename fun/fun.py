@@ -4,6 +4,7 @@ import random
 
 from redbot.core import commands
 
+
 class Fun(commands.Cog):
     """fun commands."""
 
@@ -38,12 +39,30 @@ class Fun(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def heart(self, ctx, *, text: commands.clean_content = None):
         """Give someone a heart."""
-        hearts = ['\N{HEAVY BLACK HEART}\N{VARIATION SELECTOR-16}', '\N{BLUE HEART}', '\N{BROWN HEART}', '\N{PURPLE HEART}', '\N{GREEN HEART}', '\N{WHITE HEART}', '\N{YELLOW HEART}', '\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}', '\N{GROWING HEART}', '\N{BEATING HEART}', '\N{TWO HEARTS}', '\N{SPARKLING HEART}', '\N{REVOLVING HEARTS}']
+        hearts = [
+            "\N{HEAVY BLACK HEART}\N{VARIATION SELECTOR-16}",
+            "\N{BLUE HEART}",
+            "\N{BROWN HEART}",
+            "\N{PURPLE HEART}",
+            "\N{GREEN HEART}",
+            "\N{WHITE HEART}",
+            "\N{YELLOW HEART}",
+            "\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}",
+            "\N{GROWING HEART}",
+            "\N{BEATING HEART}",
+            "\N{TWO HEARTS}",
+            "\N{SPARKLING HEART}",
+            "\N{REVOLVING HEARTS}",
+        ]
         if ctx.channel.permissions_for(ctx.me).embed_links:
             emb = discord.Embed(
-                description=(f"**{ctx.author.name}** has given you a heart {random.choice(hearts)}"),
+                description=(
+                    f"**{ctx.author.name}** has given you a heart {random.choice(hearts)}"
+                ),
                 color=discord.Color.green(),
             )
             await ctx.send(embed=emb)
         else:
-            await ctx.send(f"**{ctx.author.name}** has given you a heart {random.choice(hearts)}")
+            await ctx.send(
+                f"**{ctx.author.name}** has given you a heart {random.choice(hearts)}"
+            )
