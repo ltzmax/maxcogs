@@ -1,8 +1,6 @@
 {
-  "author": [
-    "MAX"
-  ],
-  "short": "Cogs for Red-DiscordBot V3.",
-  "description": "Cogs for Red-DiscordBot V3.",
-  "install_msg": "Thanks for installing my repo. If you have any issues or questions you can either file an issue or join Discord: discord.gg/Duz336X"
+    "author": ["MAX"],
+    "short": "Cogs for Red-DiscordBot V3.",
+    "description": "Cogs for Red-DiscordBot V3.",
+    "install_msg": "Thanks for installing my repo. If you have any issues or questions you can either file an issue or join Discord: discord.gg/Duz336X"
 }
