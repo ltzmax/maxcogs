@@ -6,6 +6,7 @@ from redbot.core.utils.chat_formatting import (
     humanize_timedelta,
 )
 
+
 class Count(commands.Cog):
     """Christmas, halloween and Discord birthday's day countdown."""
 
@@ -25,7 +26,9 @@ class Count(commands.Cog):
         now = datetime.utcnow()
         xmas = datetime(now.year, 12, 24)
         if now.date() == xmas.date():
-            await ctx.send("Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day and therefore the countdown has ended and will return again tomorrow to let you count until next christmas. have a wonderful Happy holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}")
+            await ctx.send(
+                "Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day and therefore the countdown has ended and will return again tomorrow to let you count until next christmas. have a wonderful Happy holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}"
+            )
             return
         if xmas < now:
             xmas = xmas.replace(year=now.year + 1)
@@ -34,7 +37,7 @@ class Count(commands.Cog):
             color=await ctx.embed_colour(),
             title="Time left until Christmas.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}",
             description=humanize_timedelta(timedelta=xmas - now),
-            )
+        )
         em.set_image(url="https://media.giphy.com/media/XBKQjIpKNNMOIY0nRt/giphy.gif")
         await ctx.send(embed=em)
 
@@ -60,7 +63,6 @@ class Count(commands.Cog):
         )
         await ctx.send(embed=em)
 
-
     @commands.command(aliases=["hallow"])
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
@@ -71,7 +73,9 @@ class Count(commands.Cog):
         now = datetime.utcnow()
         hallo = datetime(now.year, 10, 31)
         if now.date() == hallo.date():
-            await ctx.send("Happy Holloween.🎃 Today is the day for you to go and grap all the snacks.")
+            await ctx.send(
+                "Happy Holloween.🎃 Today is the day for you to go and grap all the snacks."
+            )
             return
         if hallo < now:
             hallo = hallo.replace(year=now.year + 1)
@@ -83,7 +87,6 @@ class Count(commands.Cog):
         )
         await ctx.send(embed=em)
 
-
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
@@ -93,7 +96,9 @@ class Count(commands.Cog):
         now = datetime.utcnow()
         earth = datetime(now.year, 10, 31)
         if now.date() == earth.date():
-            await ctx.send("Today is the day of Earth Day.\N{EARTH GLOBE AMERICAS}\N{VARIATION SELECTOR-16}")
+            await ctx.send(
+                "Today is the day of Earth Day.\N{EARTH GLOBE AMERICAS}\N{VARIATION SELECTOR-16}"
+            )
             return
         if earth < now:
             earth = earth.replace(year=now.year + 1)
