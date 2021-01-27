@@ -10,7 +10,7 @@ from lavalink import node
 from redbot.core import commands
 from collections import defaultdict
 from redbot.core.utils import chat_formatting as chat
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, menu
+from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 from redbot.core.utils.chat_formatting import (
     box,
 )
