@@ -135,3 +135,18 @@ class Utility(commands.Cog):
                 )
             )
         await menu(ctx, tabs, DEFAULT_CONTROLS)
+
+    @commands.command(hidden=True)
+    @commands.guild_only()
+    @commands.cooldown(1, 60, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    async def commands(self, ctx):
+        """Shows [botname]'s right help command with their prefix."""
+        if ctx.channel.permissions_for(ctx.me).embed_links:
+            embed = discord.Embed(
+                description=f"Use `{ctx.clean_prefix}help` to see all my commands.",
+                color=discord.Color.green(),
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"> Use `{ctx.clean_prefix}help` to see all my commands.")

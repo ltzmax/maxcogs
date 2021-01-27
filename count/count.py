@@ -47,6 +47,7 @@ class Count(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def countdown(self, ctx: commands.Context):
         """Sends how many time left until Discord's Anniversary.
+        
         This is the countdown when discord has birtday."""
         now = datetime.utcnow()
         disc = datetime(now.year, 5, 13)
