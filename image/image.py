@@ -27,6 +27,9 @@ class Image(commands.Cog):
             )
         return em
 
+        # This might be moved to it's own cog since it's nsfw and it's better off from SFW commands.
+        # TODO: an anime cog with anime based sub reddits is something i think about with this.
+    
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
