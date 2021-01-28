@@ -37,7 +37,10 @@ To install:
 </tr>
 </tr>
 <td>image</td>
-<td>Random images from space and earth + anime.</td>
+<td>Random images from space and earth.</td>
+</tr>
+<td>anime</td>
+<td>Random anime images.</td>
 </tr>
 </tbody>
 </table>
