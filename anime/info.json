@@ -1,0 +1,7 @@
+{
+    "author": ["max"],
+    "install_msg" : "Thanks for installing. Important note: This cog is marked as NSFW, some images may be SFW but it also has NSFW from the subreddits added. This does not suit for everyone.",
+    "hidden" : false,
+    "min_bot_version": "3.4.0",
+    "end_user_data_statement": "This cog does not store any End User Data."
+  }
