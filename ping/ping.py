@@ -10,7 +10,7 @@ old_ping = None
 
 
 class Ping(commands.Cog):
-    """Reply with latency."""
+    """Reply with latency of bot."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -30,9 +30,14 @@ class Ping(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(1, 3, commands.BucketType.guild)
     async def ping(self, ctx):
-        """Reply with latency of bot. """
+        """Reply with latency of bot.
+
+        This ping doesn't mean alot as long as your ping isn't above 300ms.
+        
+        - Discord WS: Websocket latency.
+        - Message: Difference between your command and message.
+        - Time: Time it takes for the bot to send message."""
         latency = self.bot.latency * 1000
         emb = discord.Embed(color=discord.Color.red())
         emb.add_field(
