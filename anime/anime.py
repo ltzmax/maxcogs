@@ -13,6 +13,9 @@ class Anime(commands.Cog):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
+    def cog_unload(self):
+        self.bot.loop.create_task(self.session.close())
+
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
@@ -55,6 +58,35 @@ class Anime(commands.Cog):
             await ctx.send(embed=embed)
         except discord.HTTPException:
             await ctx.send("Bad reponse, please retry the command again.")
+
+#    @commands.command(aliases=["animewallp"])
+#    @commands.cooldown(1, 3, commands.BucketType.guild)
+#    @commands.max_concurrency(1, commands.BucketType.guild)
+#    @commands.bot_has_permissions(embed_links=True)
+#    async def animewallpaper(self, ctx):
+#        """Random anime wallpaper."""
+#        if not ctx.message.channel.is_nsfw():
+#            await ctx.send(embed=await self._nsfw_check(ctx))
+#            return
+
+#        async with aiohttp.ClientSession() as session:
+#            async with session.get(
+#                "https://api.martinebot.com/v1/images/subreddit?name=Animewallpaper"
+#            ) as resp:
+#                response = await resp.json()
+
+#            embed = await ctx.embed_colour()
+#            embed = discord.Embed(
+#                title=response["data"].get("title", "[No Title]"),
+#                url=response["data"]["post_url"],
+#                color=embed,
+#            )
+#            embed.set_footer(text=f"Powered by martinebot.com API")
+#            embed.set_image(url=response["data"]["image_url"])
+#        try:
+#            await ctx.send(embed=embed)
+#        except discord.HTTPException:
+#            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command(aliases=["animegirls"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
