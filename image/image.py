@@ -6,12 +6,14 @@ from redbot.core import commands
 
 class Image(commands.Cog):
     """Random image cog posted from reddit.
-
     Powered by martinebot.com API."""
 
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+
+    def cog_unload(self):
+        self.bot.loop.create_task(self.session.close())
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
