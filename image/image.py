@@ -5,7 +5,8 @@ from redbot.core import commands
 
 
 class Image(commands.Cog):
-    """Random image cog posted from reddit.
+    """Random image cog.
+    
     Powered by martinebot.com API."""
 
     def __init__(self, bot):
