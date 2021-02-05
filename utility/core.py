@@ -145,7 +145,7 @@ class Utility(commands.Cog):
         if ctx.channel.permissions_for(ctx.me).embed_links:
             embed = discord.Embed(
                 description=f"Use `{ctx.clean_prefix}help` to see all my commands.",
-                color=discord.Color.green(),
+                color=await ctx.embed_color(),
             )
             await ctx.send(embed=embed)
         else:
