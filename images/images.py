@@ -37,7 +37,10 @@ class Images(commands.Cog):
                 url=response["data"]["post_url"],
                 color=embed,
             )
-            embed.set_footer(text=f"Powered by martinebot.com API")
+            embed.set_footer(
+                text=f"Powered by martinebot.com API",
+                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+            )
             embed.set_image(url=response["data"]["image_url"])
         try:
             await ctx.send(embed=embed)
@@ -61,7 +64,10 @@ class Images(commands.Cog):
                 url=response["data"]["post_url"],
                 color=embed,
             )
-            embed.set_footer(text=f"Powered by martinebot.com API")
+            embed.set_footer(
+                text=f"Powered by martinebot.com API",
+                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+            )
             embed.set_image(url=response["data"]["image_url"])
         try:
             await ctx.send(embed=embed)
