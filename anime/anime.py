@@ -36,9 +36,6 @@ class Anime(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def anime(self, ctx):
         """Random anime images."""
-        if not ctx.message.channel.is_nsfw():
-            await ctx.send(embed=await self._nsfw_check(ctx))
-            return
 
         async with aiohttp.ClientSession() as session:
             async with session.get(
