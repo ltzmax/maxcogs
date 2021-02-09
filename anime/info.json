@@ -1,9 +1,0 @@
-{
-    "author": ["max"],
-    "install_msg" : "Thanks for installing. Important note: This cog is marked as NSFW, There is alot of sfw images but also has nsfw images, This does not suit for everyone.",
-    "description": "Commands to look for anime images",
-    "short": "Anime images.",
-    "hidden" : false,
-    "min_bot_version": "3.4.0",
-    "end_user_data_statement": "This cog does not store any End User Data."
-  }

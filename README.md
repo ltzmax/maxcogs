@@ -37,11 +37,7 @@ To install:
 </tr>
 </tr>
 <td>image</td>
-<td>Random images from space and earth.</td>
-</tr>
-<td>anime</td>
-<td>Random anime images.</td>
-</tr>
+<td>Random images cog, This is where i'll add image commands.</td>
 </tbody>
 </table>
 
