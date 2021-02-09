@@ -62,11 +62,11 @@ class Images(commands.Cog):
         except discord.HTTPException:
             await ctx.send("Bad reponse, please retry the command again.")
 
-    @commands.command(aliases=["animephonewallp"])
+    @commands.command(aliases=["animepewallp"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
-    async def animephonewallpaper(self, ctx):
+    async def animepwallpaper(self, ctx):
         """Random animephonewallpaper images."""
         if not ctx.message.channel.is_nsfw():
             await ctx.send(embed=await self._nsfw_check(ctx))
