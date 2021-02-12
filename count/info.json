@@ -2,8 +2,8 @@
   "author": ["max", "preda"],
   "description": "Christmas, halloween and Discord birthday's day countdown.",
   "short": "Event countdowns.",
-  "install_msg" : "Thanks for installing. Enjoy all the countdowns.🎄",
+  "install_msg" : "Thanks for installing. Hope you will enjoy it.🎄",
   "hidden" : false,
-  "min_bot_version": "3.4.0",
+  "min_bot_version": "3.4.6",
   "end_user_data_statement": "This cog does not store any End User Data."
 }

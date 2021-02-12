@@ -1,7 +1,7 @@
 {
   "author": ["max"],
-  "install_msg" : "Thanks for installing. Important note: Some image commands are marked as nsfw due to some content from those reddits can be nudity. This does not suit for everyone.",
-  "description": "Random images from earch and space.",
+  "install_msg" : "Thanks for installing.",
+  "description": "Random images from Earth and space.",
   "short": "Random images.",
   "hidden" : false,
   "min_bot_version": "3.4.0",
