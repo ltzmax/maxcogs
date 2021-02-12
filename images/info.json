@@ -1,6 +1,6 @@
 {
   "author": ["max"],
-  "install_msg" : "Thanks for installing.",
+  "install_msg" : "Thanks for installing. If you like seening pictures from space, feel free to add daily Astronomy Pictures `[p]spaceset autopod`",
   "description": "Random images from Earth and space.",
   "short": "Random images.",
   "hidden" : false,
