@@ -29,7 +29,7 @@ async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
 class Utility(commands.Cog):
     """Utility commands to use."""
 
-    __version__ = "1.4.0"
+    __version__ = "1.4.2"
     __author__ = ["MAX", "Fixator10"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -98,7 +98,10 @@ class Utility(commands.Cog):
         emb.add_field(name="Commands:", value=commands, inline=True)
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
-        await ctx.send(embed=emb)
+        try:
+            await ctx.reply(embed=emb, mention_author=False)
+        except discord.HTTPException:
+            await ctx.send(embed=emb)
 
     @staticmethod
     def _size(num):
@@ -136,9 +139,9 @@ class Utility(commands.Cog):
             )
         await menu(ctx, tabs, DEFAULT_CONTROLS)
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.guild_only()
-    @commands.cooldown(1, 60, commands.BucketType.guild)
+    @commands.cooldown(1, 100, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def commands(self, ctx):
         """Shows [botname]'s right help command with their prefix."""
