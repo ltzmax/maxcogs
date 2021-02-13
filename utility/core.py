@@ -73,7 +73,7 @@ class Utility(commands.Cog):
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
         emb = discord.Embed(
-            title=f"Botstats for {self.bot.user.name}:", color=discord.Color.green()
+            title=f"Botstats for {self.bot.user.name}:", color=discord.Color.random()
         )
         emb.add_field(
             name="Users:",
