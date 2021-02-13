@@ -91,9 +91,9 @@ class Ping(commands.Cog):
         emb = discord.Embed(color=discord.Color.green())
         emb.add_field(name="Shards:", value=("".join(shards)))
         try:
-            await ctx.reply(embed=emb, mention_author=False)
-        except discord.HTTPException:
             await ctx.send(embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Error: It seems like you're having more than 60 shards. Reason for this error: This command does not use menus.")
 
 
 def setup(bot):
