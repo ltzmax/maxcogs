@@ -4,6 +4,6 @@
   "description": "Ping command which shows bot latency in response.",
   "short": "Ping, which shows bot latency.",
   "hidden": false,
-  "min_bot_version": "3.4.6",
+  "min_bot_version": "3.4.0",
   "end_user_data_statement": "This cog does not store any End User Data."
 }
