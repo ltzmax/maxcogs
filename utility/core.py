@@ -47,7 +47,7 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def statsinfo(self, ctx):
-        """This shows some botstats."""
+        """This shows some botstats for [botname]."""
         total_members = 0
         total_unique = len(self.bot.users)
 
