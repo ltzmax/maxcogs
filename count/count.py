@@ -49,9 +49,7 @@ class Count(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def countdown(self, ctx: commands.Context):
-        """Sends how many time left until Discord's Anniversary.
-        
-        This is the countdown when discord has birtday."""
+        """Sends how many time left until Discord's Anniversary."""
         now = datetime.utcnow()
         disc = datetime(now.year, 5, 13)
         if now.date() == disc.date():
@@ -75,8 +73,7 @@ class Count(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def halloween(self, ctx: commands.Context):
-        """Sends how many time left until Halloween.
-        Happy halloween, that's all wee need to say."""
+        """Sends how many time left until Halloween."""
         now = datetime.utcnow()
         hallo = datetime(now.year, 10, 31)
         if now.date() == hallo.date():
