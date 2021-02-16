@@ -34,7 +34,7 @@ class Ping(commands.Cog):
         """Reply with latency of bot.
 
         This ping doesn't mean alot as long as your ping isn't above 300ms.
-        
+
         - Discord WS: Websocket latency.
         - Message: Difference between your command and message.
         - Time: Time it takes for the bot to send message."""
@@ -73,23 +73,27 @@ class Ping(commands.Cog):
         emb.set_field_at(2, name="Typing:", value=(str(round(ping)) + " ms"))
         await message.edit(embed=emb)
 
-    @commands.bot_has_permissions(embed_links=True)
     @commands.command(hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def shards(
         self,
         ctx,
     ):
         """This will show your shards.
 
-        This only means more for big bots that has moe than one shard."""
+        This was only added to be used for public bots that has more than one shard."""
+        # This will only work up to 60 shards, and then it will no longer work.
+        # it needs menus and i have no plans currently to add it until later date.
         shards = [
             f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n"
             for shard, pingt in self.bot.latencies
-        ]  # This will only work up to 60 shards, and then it will no longer work.
-        # it needs menus and i have no plans currently to add it until later date.
+        ]
         emb = discord.Embed(color=discord.Color.green())
         emb.add_field(name="Shards:", value=("".join(shards)))
-        await ctx.send(embed=emb)
+        try:
+            await ctx.send(embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Error: It seems like you're having more than 60 shards. Reason for this error: This command does not use menus.")
 
 
 def setup(bot):

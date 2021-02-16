@@ -24,10 +24,10 @@ class Count(commands.Cog):
     async def christmas(self, ctx: commands.Context):
         """Sends how many days left until next Christmas."""
         now = datetime.utcnow()
-        xmas = datetime(now.year, 12, 24)
+        xmas = datetime(now.year, 12, 25)
         if now.date() == xmas.date():
             await ctx.send(
-                "Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}\nToday is christmas day and therefore the countdown has ended and will return again tomorrow to let you count until next christmas. have a wonderful Happy holiday.\N{BLACK HEART SUIT}\N{VARIATION SELECTOR-16}"
+                "Merry Christmas everyone.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}"
             )
             return
         if xmas < now:
@@ -39,20 +39,21 @@ class Count(commands.Cog):
             description=humanize_timedelta(timedelta=xmas - now),
         )
         em.set_image(url="https://media.giphy.com/media/XBKQjIpKNNMOIY0nRt/giphy.gif")
-        await ctx.send(embed=em)
+        try:
+            await ctx.reply(embed=em, mention_author=False)
+        except discord.HTTPException:
+            await ctx.send(embed=em)
 
     @commands.command(aliases=["dbday"])
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def countdown(self, ctx: commands.Context):
-        """Sends how many time left until Discord's Anniversary.
-        
-        This is the countdown when discord has birtday."""
+        """Sends how many time left until Discord's Anniversary."""
         now = datetime.utcnow()
         disc = datetime(now.year, 5, 13)
         if now.date() == disc.date():
-            await ctx.send("Today is the day, Happy birthday Discord.\N{PARTY POPPER}")
+            await ctx.send("Happy birthday Discord.\N{PARTY POPPER}")
             return
         if disc < now:
             disc = disc.replace(year=now.year + 1)
@@ -62,20 +63,22 @@ class Count(commands.Cog):
             title="Time left until Discord's Anniversary.\N{PARTY POPPER}\N{CONFETTI BALL}\N{BIRTHDAY CAKE}",
             description=humanize_timedelta(timedelta=disc - now),
         )
-        await ctx.send(embed=em)
+        try:
+            await ctx.reply(embed=em, mention_author=False)
+        except discord.HTTPException:
+            await ctx.send(embed=em)
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def halloween(self, ctx: commands.Context):
-        """Sends how many time left until Halloween.
-        Happy halloween, that's all wee need to say."""
+        """Sends how many time left until Halloween."""
         now = datetime.utcnow()
         hallo = datetime(now.year, 10, 31)
         if now.date() == hallo.date():
             await ctx.send(
-                "Happy Holloween.🎃 Today is the day for you to go and grap all the snacks."
+                "Happy Holloween.🎃"
             )
             return
         if hallo < now:
@@ -86,7 +89,10 @@ class Count(commands.Cog):
             title="Time left until halloween.🎃",
             description=humanize_timedelta(timedelta=hallo - now),
         )
-        await ctx.send(embed=em)
+        try:
+            await ctx.reply(embed=em, mention_author=False)
+        except discord.HTTPException:
+            await ctx.send(embed=em)
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.guild)
@@ -98,7 +104,7 @@ class Count(commands.Cog):
         earth = datetime(now.year, 10, 31)
         if now.date() == earth.date():
             await ctx.send(
-                "Today is the day of Earth Day.\N{EARTH GLOBE AMERICAS}\N{VARIATION SELECTOR-16}"
+                "Have a good Earth Day.\N{EARTH GLOBE AMERICAS}\N{VARIATION SELECTOR-16}"
             )
             return
         if earth < now:
@@ -109,4 +115,7 @@ class Count(commands.Cog):
             title="Time left until Earth Day.\N{EARTH GLOBE AMERICAS}\N{VARIATION SELECTOR-16}",
             description=humanize_timedelta(timedelta=earth - now),
         )
-        await ctx.send(embed=em)
+        try:
+            await ctx.reply(embed=em, mention_author=False)
+        except discord.HTTPException:
+            await ctx.send(embed=em)
