@@ -38,10 +38,10 @@ class Images(commands.Cog):
                 title=response["data"].get("title", "[No Title]"),
                 url=response["data"]["post_url"],
                 color=embed,
-                description = f"Posted by: {response["data"]["author"]["name"]}"
+                description = f"Posted by: {response['data']['author']['name']}"
             )
             embed.set_footer(
-                text=f"Powered by martinebot.com API | {response["data"]["upvotes"]}\N{UPWARDS BLACK ARROW}\N{VARIATION SELECTOR-16}",
+                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
                 icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png"
             )
             embed.set_image(url=response["data"]["image_url"])
@@ -68,10 +68,10 @@ class Images(commands.Cog):
                 title=response["data"].get("title", "[No Title]"),
                 url=response["data"]["post_url"],
                 color=embed,
-                description = f"Posted by: {response["data"]["author"]["name"]}"
+                description = f"Posted by: {response['data']['author']['name']}"
             )
             embed.set_footer(
-                text=f"Powered by martinebot.com API | {response["data"]["upvotes"]}\N{UPWARDS BLACK ARROW}\N{VARIATION SELECTOR-16}",
+                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
                 icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png"
             )
             embed.set_image(url=response["data"]["image_url"])
@@ -98,10 +98,10 @@ class Images(commands.Cog):
                 title=response["data"].get("title", "[No Title]"),
                 url=response["data"]["post_url"],
                 color=embed,
-                description = f"Posted by: {response["data"]["author"]["name"]}"
+                description = f"Posted by: {response['data']['author']['name']}"
             )
             embed.set_footer(
-                text=f"Powered by martinebot.com API | {response["data"]["upvotes"]}\N{UPWARDS BLACK ARROW}\N{VARIATION SELECTOR-16}",
+                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
                 icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png"
             )
             embed.set_image(url=response["data"]["image_url"])
