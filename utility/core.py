@@ -73,7 +73,7 @@ class Utility(commands.Cog):
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
         emb = discord.Embed(
-            title=f"Botstats for {self.bot.user.name}:", color=discord.Color.random()
+            title=f"Botstats for {self.bot.user.name}:", color=await ctx.embed_color()
         )
         emb.add_field(
             name="Users:",
@@ -98,10 +98,7 @@ class Utility(commands.Cog):
         emb.add_field(name="Commands:", value=commands, inline=True)
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
-        try:
-            await ctx.reply(embed=emb, mention_author=False)
-        except discord.HTTPException:
-            await ctx.send(embed=emb)
+        await ctx.send(embed=emb)
 
     @staticmethod
     def _size(num):
