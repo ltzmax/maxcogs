@@ -7,10 +7,6 @@ from random import choice
 from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
 
-from .constants import (
-    QUOTES
-)
-
 old_ping = None
 
 
@@ -76,7 +72,6 @@ class Ping(commands.Cog):
             ),
         )
         emb.set_field_at(2, name="Typing:", value=(str(round(ping)) + " ms"))
-        emb.set_footer(text=(choice(QUOTES)))
         await message.edit(embed=emb)
 
     @commands.command(hidden=True)
