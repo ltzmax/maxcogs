@@ -38,6 +38,10 @@ To install:
 </tr>
 <td>image</td>
 <td>Random images cog, This is where i'll add image commands.</td>
+</tr>
+<td>embeduptime</td>
+<td>This will reply with your uptime of your bot, this is in embed and shows with the new replies from dpy 1.6.0.</td>
+</tr>
 </tbody>
 </table>
 
