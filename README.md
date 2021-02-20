@@ -2,8 +2,9 @@
 
 <img src="https://i.imgur.com/9WesmVE.png" alt="Banner" style="max-width:100%;">
 
-
-Please note that this repo is not an approved repo.
+  <a href="https://github.com/ambv/black">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
+  </a>
 
 To add this: 
 
