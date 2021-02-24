@@ -6,12 +6,17 @@ import discord
 from random import choice
 from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
+from redbot.core.utils.chat_formatting import (
+    box
+)
 
 old_ping = None
 
 
 class Ping(commands.Cog):
-    """Reply with latency of bot."""
+    """Reply with latency of [botname].
+    
+    This does not matter anything as long as your ping is not above 300ms."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -29,24 +34,24 @@ class Ping(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
-    @commands.command(hidden=True)
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def ping(self, ctx):
-        """Reply with latency of bot.
+        """Reply with latency of [botname].
 
-        This ping doesn't mean alot as long as your ping isn't above 300ms.
+        This does not matter anything as long as your ping is not above 300ms.
 
         - Discord WS: Websocket latency.
         - Message: Difference between your command and message.
         - Time: Time it takes for the bot to send message."""
         latency = self.bot.latency * 1000
-        emb = discord.Embed(color=discord.Color.red())
+        emb = discord.Embed(title="Pong !", color=discord.Color.red())
         emb.add_field(
             name="Discord WS:",
-            value=(str(round(latency)) + " ms"),
+            value=box(str(round(latency)) + " ms", "yaml"),
         )
-        emb.add_field(name="Message:", value=("…"))
-        emb.add_field(name="Typing:", value=("…"))
+        emb.add_field(name="Message:", value=box("…"))
+        emb.add_field(name="Typing:", value=box("…"))
         if len(self.bot.latencies) > 1:
             shards = [
                 f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms"
@@ -61,40 +66,19 @@ class Ping(commands.Cog):
         emb.set_field_at(
             1,
             name="Message:",
-            value=(
+            value=box(
                 str(
                     int(
                         (message.created_at - ctx.message.created_at).total_seconds()
                         * 1000
                     )
                 )
-                + " ms"
+                + " ms",
+                "yaml",
             ),
         )
-        emb.set_field_at(2, name="Typing:", value=(str(round(ping)) + " ms"))
+        emb.set_field_at(2, name="Typing:", value=box(str(round(ping)) + " ms", "yaml"))
         await message.edit(embed=emb)
-
-    @commands.command(hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def shards(
-        self,
-        ctx,
-    ):
-        """This will show your shards.
-
-        This was only added to be used for public bots that has more than one shard."""
-        # This will only work up to 60 shards, and then it will no longer work.
-        # it needs menus and i have no plans currently to add it until later date.
-        shards = [
-            f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n"
-            for shard, pingt in self.bot.latencies
-        ]
-        emb = discord.Embed(color=discord.Color.green())
-        emb.add_field(name="Shards:", value=("".join(shards)))
-        try:
-            await ctx.send(embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Error: It seems like you're having more than 60 shards. Reason for this error: This command does not use menus.")
 
 
 def setup(bot):
