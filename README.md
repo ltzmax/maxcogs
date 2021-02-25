@@ -6,6 +6,7 @@
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
   </a>
 
+
 To add this: 
 
 `[p]repo add maxcogs https://github.com/maxbooiii/maxcogs`
@@ -53,3 +54,5 @@ To install:
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For helping in utility parts and ping.
 
 - [Preda](https://github.com/PredaaA/predacogs) For allowing me to use his code in count cog.
+
+- EmbedUptime is a part of Core so all credits to Red-DiscordBot and the creators for their hard work.
