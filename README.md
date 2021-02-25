@@ -55,4 +55,4 @@ To install:
 
 - [Preda](https://github.com/PredaaA/predacogs) For allowing me to use his code in count cog.
 
-- EmbedUptime is a part of Core so all credits to Red-DiscordBot and the creators for their hard work.
+- EmbedUptime has code from Core so all credits to Red-DiscordBot and the creators for their hard work.
