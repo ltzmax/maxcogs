@@ -50,6 +50,6 @@ To install:
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding. 
 
-- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For utility and a part in ping.
+- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For helping in utility parts and ping.
 
-- [Preda](https://github.com/PredaaA/predacogs) For count and a part in ping.
+- [Preda](https://github.com/PredaaA/predacogs) For allowing me to use his code in count cog.
