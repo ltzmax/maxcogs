@@ -3,7 +3,7 @@ import discord
 from datetime import datetime
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import (
-    humanize_timedelta,
+    humanize_timedelta
 )
 
 

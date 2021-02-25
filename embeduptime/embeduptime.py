@@ -7,7 +7,7 @@ import datetime
 
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import (
-    humanize_timedelta,
+    humanize_timedelta
 )
 
 old_uptime = None
