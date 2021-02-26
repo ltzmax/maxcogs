@@ -36,7 +36,7 @@ class EmbedUptime(commands.Cog):
     async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
 
-        name = ctx.bot.user.name
+        name = ctx.bot.user.name # this make it show botname.
         
         since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
         delta = datetime.datetime.utcnow() - self.bot.uptime
