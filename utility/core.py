@@ -138,7 +138,7 @@ class Utility(commands.Cog):
             )
         await menu(ctx, tabs, DEFAULT_CONTROLS)
 
-    @commands.command(hidden=True) # hidden to avoide being used at pointless spam which its not made for.
+    @commands.command(hidden=True) # hidden to avoide being used for spam which its not made for.
     @commands.guild_only()
     @commands.cooldown(1, 100, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
