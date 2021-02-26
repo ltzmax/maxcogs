@@ -38,7 +38,6 @@ class Count(commands.Cog):
             title="Time left until Christmas.\N{CHRISTMAS TREE}\N{WRAPPED PRESENT}",
             description=humanize_timedelta(timedelta=xmas - now),
         )
-        em.set_image(url="https://media.giphy.com/media/XBKQjIpKNNMOIY0nRt/giphy.gif")
         try:
             await ctx.reply(embed=em, mention_author=False)
         except discord.HTTPException:
