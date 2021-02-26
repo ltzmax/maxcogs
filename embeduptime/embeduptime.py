@@ -13,7 +13,7 @@ from redbot.core.utils.chat_formatting import (
 old_uptime = None
 
 class EmbedUptime(commands.Cog):
-    """Shows your bots uptime."""
+    """Shows [botname]'s uptime."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
