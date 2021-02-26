@@ -29,7 +29,7 @@ async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
 class Utility(commands.Cog):
     """Utility commands to use."""
 
-    __version__ = "1.4.2"
+    __version__ = "1.4.3"
     __author__ = ["MAX", "Fixator10"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -47,7 +47,7 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def statsinfo(self, ctx):
-        """This shows some botstats for [botname]."""
+        """Shows some stats for [botname]."""
         total_members = 0
         total_unique = len(self.bot.users)
 
@@ -111,10 +111,12 @@ class Utility(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def llnodestats(self, ctx):
-        """Lavalink nodestats."""
+        """Lavalink nodestats.
+        
+        This require audio loaded before you using this command."""
         nodes = node.get_nodes_stats()
         if not nodes:
-            await ctx.send(chat.info("No nodes found."))
+            await ctx.send(chat.info("No nodes found. This require audio loaded and wait for lavalink to connect for this to work."))
             return
         stats = [stat for stat in dir(nodes[0]) if not stat.startswith("_")]
         tabs = []
@@ -136,12 +138,15 @@ class Utility(commands.Cog):
             )
         await menu(ctx, tabs, DEFAULT_CONTROLS)
 
-    @commands.command()
+    @commands.command(hidden=True) # hidden to avoide being used at pointless spam which its not made for.
     @commands.guild_only()
     @commands.cooldown(1, 100, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def commands(self, ctx):
-        """Shows [botname]'s right help command with their prefix."""
+        """This will show [botname] right usage of help to get commands.
+        
+        This is just here because alot of people use `[p]commands` instead of `[p]help`.
+        So this will guide to the right help command where commands are."""
         if ctx.channel.permissions_for(ctx.me).embed_links:
             embed = discord.Embed(
                 description=f"Use `{ctx.clean_prefix}help` to see all my commands.",
