@@ -33,17 +33,16 @@ class Images(commands.Cog):
                 "https://api.martinebot.com/v1/images/subreddit?name=earthporn"
             ) as resp:
                 response = await resp.json()
-            embed = await ctx.embed_colour()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
                 url=response["data"]["post_url"],
-                color=embed,
                 description = f"Posted by: {response['data']['author']['name']}"
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
                 icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png"
             )
+            embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
         try:
             await ctx.send(embed=embed)
@@ -63,17 +62,16 @@ class Images(commands.Cog):
                 "https://api.martinebot.com/v1/images/subreddit?name=spaceporn"
             ) as resp:
                 response = await resp.json()
-            embed = await ctx.embed_colour()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
                 url=response["data"]["post_url"],
-                color=embed,
                 description = f"Posted by: {response['data']['author']['name']}"
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
                 icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png"
             )
+            embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
         try:
             await ctx.send(embed=embed)
@@ -93,17 +91,16 @@ class Images(commands.Cog):
                 "https://api.martinebot.com/v1/images/subreddit?name=astrophotography"
             ) as resp:
                 response = await resp.json()
-            embed = await ctx.embed_colour()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
                 url=response["data"]["post_url"],
-                color=embed,
                 description = f"Posted by: {response['data']['author']['name']}"
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
                 icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png"
             )
+            embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
         try:
             await ctx.send(embed=embed)
