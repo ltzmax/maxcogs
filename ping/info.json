@@ -1,6 +1,6 @@
 {
   "author": ["max", "Senroht#5179", "Fixator10", "preda"],
-  "install_msg": "Thanks for installing. Once you load this cog, it will replace the ping in core with this one. If you wanna use the one in core instead, you can unload this one and you should be able to use the one from core.",
+  "install_msg": "Thanks for installing. Once you load this cog, it will replace the ping in core with this one.",
   "description": "Ping command which shows bot latency in response.",
   "short": "Ping, which shows bot latency.",
   "hidden": false,
