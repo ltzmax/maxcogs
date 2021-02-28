@@ -2,21 +2,21 @@
 
 <img src="https://i.imgur.com/9WesmVE.png" alt="Banner" style="max-width:100%;">
 
-  <a href="https://github.com/ambv/black">
-    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
-  </a>
+[p] is your prefix.
 
+To add this repo: 
 
-To add this: 
+```py
+[p]repo add maxcogs https://github.com/maxbooiii/maxcogs
+```
 
-`[p]repo add maxcogs https://github.com/maxbooiii/maxcogs`
+To install any cog you want:
 
-To install:
-
-`[p]cog install maxcogs <cog name you want>`
-
+```py
+[p]cog install maxcogs <cog name you want>
+```
 ---------------------------------------------------------------
-
+## Cogs on this repo: 
 <table>
 <thead>
 <tr>
@@ -47,12 +47,17 @@ To install:
 </tbody>
 </table>
 
-----------------------------------------------------------------
+## Contributing
+PR is always welcome, but do mind that this uses style/black format so you may need to use that if you'd pr something.
+
+  <a href="https://github.com/ambv/black">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
+  </a>
+
+
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding. 
 
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For helping in utility parts and ping.
 
-- [Preda](https://github.com/PredaaA/predacogs) For allowing me to use his code in count cog.
-
-- EmbedUptime has code from Core so all credits to Red-DiscordBot and the creators for their hard work.
+- [Preda](https://github.com/PredaaA/predacogs) For allowing me to use his code in count cog. Also some shard code in ping cog.
