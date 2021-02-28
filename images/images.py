@@ -2,11 +2,12 @@ import aiohttp
 import discord
 from redbot.core import commands
 
+API_URL = "https://api.martinebot.com/v1/images/subreddit?name="
 
 class Images(commands.Cog):
     """Random image cog.
     
-    Powered by martinebot.com API."""
+    This cog is powered by martinebot.com API."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -14,6 +15,14 @@ class Images(commands.Cog):
 
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
+
+    __version__ = "0.1.2"
+    __author__ = ["MAX"]
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthors: {', '.join(self.__author__)}\nCog Version: {self.__version__}"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -29,9 +38,7 @@ class Images(commands.Cog):
         
         EarthPorn is your community of landscape photographers and those who appreciate the natural beauty of our home planet."""
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "https://api.martinebot.com/v1/images/subreddit?name=earthporn"
-            ) as resp:
+            async with session.get(API_URL + "earthporn") as resp:
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -58,9 +65,7 @@ class Images(commands.Cog):
         
         SpacePorn is a subreddit devoted to beautiful space images."""
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "https://api.martinebot.com/v1/images/subreddit?name=spaceporn"
-            ) as resp:
+            async with session.get(API_URL + "spaceporn") as resp:
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -87,9 +92,7 @@ class Images(commands.Cog):
         
         Images of space, taken by amateurs."""
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "https://api.martinebot.com/v1/images/subreddit?name=astrophotography"
-            ) as resp:
+            async with session.get(API_URL + "astrophotography") as resp:
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
