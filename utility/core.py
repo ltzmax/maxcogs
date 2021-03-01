@@ -1,6 +1,5 @@
 import discord
 import datetime
-import psutil
 import humanize
 import time
 import pkg_resources
@@ -29,7 +28,7 @@ async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
 class Utility(commands.Cog):
     """Utility commands to use."""
 
-    __version__ = "1.4.3"
+    __version__ = "1.4.4"
     __author__ = ["MAX", "Fixator10"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -51,11 +50,6 @@ class Utility(commands.Cog):
         total_members = 0
         total_unique = len(self.bot.users)
 
-        mem_v = psutil.virtual_memory()
-        memoryused = self._size(mem_v.total - mem_v.available)
-        memorytotal = self._size(mem_v.total)
-        memorypercent = mem_v.percent
-
         text = 0
         voice = 0
         guilds = 0
@@ -68,7 +62,6 @@ class Utility(commands.Cog):
                 elif isinstance(channel, discord.VoiceChannel):
                     voice += 1
 
-        commands = len(set(self.bot.walk_commands()))
         version = pkg_resources.get_distribution("discord.py").version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
@@ -87,26 +80,23 @@ class Utility(commands.Cog):
             value=(f"{text + voice} total\n{text} text\n{voice} voice"),
             inline=True,
         )
-        emb.add_field(
-            name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False
-        )
-        emb.add_field(
-            name="Memory:",
-            value=("{} / {}".format(memoryused, memorytotal)),
-            inline=True,
-        )
-        emb.add_field(name="Commands:", value=commands, inline=True)
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
         await ctx.send(embed=emb)
 
-    @staticmethod
-    def _size(num):
-        for unit in ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"]:
-            if abs(num) < 1024.0:
-                return "{0:.1f}{1}".format(num, unit)
-            num /= 1024.0
-        return "{0:.1f}{1}".format(num, "YB")
+    @commands.command(aliases=["cmdstats"])
+    @commands.is_owner()
+    async def cmdstat(self, ctx):
+        """Shows how many commands available on [botname]
+        
+        This only shows from cogs loaded."""
+        commands = len(set(self.bot.walk_commands()))
+
+        emb = discord.Embed(
+            title=f"cmdstat on {self.bot.user.name}", color=await ctx.embed_color()
+        )
+        emb.add_field(name="Commands available:", value=commands, inline=True)
+        await ctx.send(embed=emb)
 
     @commands.command()
     @commands.is_owner()
@@ -138,15 +128,12 @@ class Utility(commands.Cog):
             )
         await menu(ctx, tabs, DEFAULT_CONTROLS)
 
-    @commands.command(hidden=True) # hidden to avoide being used for spam which its not made for.
+    @commands.command(hidden=True) # hidden to avoide being used for spam which it's not made for.
     @commands.guild_only()
-    @commands.cooldown(1, 100, commands.BucketType.guild)
+    @commands.cooldown(1, 500, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def commands(self, ctx):
-        """This will show [botname] right usage of help to get commands.
-        
-        This is just here because alot of people use `[p]commands` instead of `[p]help`.
-        So this will guide to the right help command where commands are."""
+        """This will show where commands are for [botname]."""
         if ctx.channel.permissions_for(ctx.me).embed_links:
             embed = discord.Embed(
                 description=f"Use `{ctx.clean_prefix}help` to see all my commands.",
