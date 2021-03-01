@@ -6,7 +6,6 @@
   "hidden" : false,
   "min_bot_version": "3.4.6",
   "requirements": [
-   "psutil",
    "tabulate",
    "humanize"
 ],
