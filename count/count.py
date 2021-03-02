@@ -8,7 +8,7 @@ from redbot.core.utils.chat_formatting import (
 
 
 class Count(commands.Cog):
-    """Christmas, halloween and Discord birthday's day countdown."""
+    """A countdown cog that shows countdown for xmas, Discord Anniversary, Halloween amd Earth day."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""

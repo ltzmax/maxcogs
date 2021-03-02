@@ -1,8 +1,8 @@
 {
   "author": ["max", "preda"],
-  "description": "Christmas, halloween and Discord birthday's day countdown.",
-  "short": "Event countdowns.",
-  "install_msg" : "Thanks for installing. Please note that, this does not follow timezone, this is based on GMT+1.",
+  "description": "A countdown cog that shows countdown for xmas, Discord Anniversary, Halloween amd Earth day.",
+  "short": "Event countdown cog.",
+  "install_msg" : "Thanks for installing. Please note that, this does not follow timezone, this is based on GMT+2.",
   "hidden" : false,
   "min_bot_version": "3.4.6",
   "end_user_data_statement": "This cog does not store any End User Data."
