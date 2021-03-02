@@ -45,10 +45,14 @@ class EmbedUptime(commands.Cog):
         emb.add_field(name=f"{name} has been up for:", value=uptime_str)
         emb.set_footer(text=f"Since: {since}")
 
-        try:
-            await ctx.reply(embed=emb, mention_author=False)
-        except discord.HTTPException:
-            await ctx.send(embed=emb)
+        if await ctx.embed_requested():
+            try:
+                await ctx.reply(embed=emb, mention_author=False)
+            except discord.HTTPException:
+                await ctx.send(embed=emb)
+        else:
+            await ctx.send("I need to be able to send embeds for this command to work.")
+            
 
 def setup(bot):
     uptime = EmbedUptime(bot)
