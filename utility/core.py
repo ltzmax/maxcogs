@@ -86,6 +86,7 @@ class Utility(commands.Cog):
 
     @commands.command(aliases=["cmdstats"])
     @commands.is_owner()
+    @commands.bot_has_permissions(embed_links=True)
     async def cmdstat(self, ctx):
         """Shows how many commands available on [botname]
         
