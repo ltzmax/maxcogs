@@ -1,4 +1,4 @@
-# Thanks preda for shard code and fixator10 for message code.
+# Thanks preda for shard code and fixator10 for message code and probably more stuff. :P
 # Thanks Senroht#5179 for permissions to use his code.
 import time
 import discord
@@ -83,7 +83,7 @@ class Ping(commands.Cog):
                 2, name="Typing:", value=box(str(round(ping)) + " ms", "yaml")
             )
             await message.edit(embed=emb)
-        else:
+        else:   # This ping below will work when bot does not have permissions.
             before = time.monotonic()
             latency = int(round(self.bot.latency * 1000, 1))
             message = await ctx.send("🏓 Pong")

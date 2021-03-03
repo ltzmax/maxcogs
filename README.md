@@ -29,14 +29,8 @@ To install any cog you want:
 <td>utility</td>
 <td>Some utility stuff is in this cog.</td>
 </tr>
-<tr>
-<td>count</td>
-<td>Countdowns for: Xmas, Halloween, Discord Anniversary, and Earth Day.</td>
-</tr>
-</tr>
 <td>ping</td>
 <td>This will reply with the latency of your bot.</td>
-</tr>
 </tr>
 <td>image</td>
 <td>Random images cog, This is where i'll add image commands. This is powered by martine.com API.</td>
@@ -60,4 +54,4 @@ PR is always welcome, but do mind that this uses style/black format so you may n
 
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For helping in utility parts and ping.
 
-- [Preda](https://github.com/PredaaA/predacogs) For allowing me to use his code in count cog. Also some shard code in ping cog.
+- [Preda](https://github.com/PredaaA/predacogs) some shard code in ping cog.
