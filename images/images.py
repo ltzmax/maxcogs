@@ -4,7 +4,8 @@ from redbot.core import commands
 
 # Here goes all the api's in this cog.
 MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
-NEKO = "https://nekos.best/"
+MART_API = "https://api.martinebot.com/v1/"
+NEKOS_API = "https://nekos.best/"
 
 
 class Images(commands.Cog):
@@ -198,7 +199,7 @@ class Images(commands.Cog):
         
         - All images are coming from [nekos.best.](https://nekos.best)"""
         async with aiohttp.ClientSession() as session:
-            async with session.get(NEKO + "nekos") as response:
+            async with session.get(NEKOS_API + "nekos") as response:
                 if response.status != 200:
                     await ctx.send(
                         "Unable to get images for following reason: The api is unable at this moment. Check back later."
@@ -210,6 +211,66 @@ class Images(commands.Cog):
             )
             embed.set_footer(text="From nekos.best")
             embed.set_image(url=url["url"])
+        try:
+            await ctx.send(embed=embed)
+        except discord.HTTPException:
+            await ctx.send("Bad reponse, please retry the command again.")
+
+    @commands.command(aliases=["meme"])
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True)
+    async def memes(self, ctx):
+        """Send a random meme photo."""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(MART_API + "images/memes") as resp:
+                if resp.status != 200:
+                    await ctx.send(
+                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
+                    )
+                    return
+                response = await resp.json()
+            embed = discord.Embed(
+                title=response["data"].get("title", "[No Title]"),
+                url=response["data"]["post_url"],
+                description=f"Posted by: {response['data']['author']['name']}",
+            )
+            embed.set_footer(
+                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
+                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+            )
+            embed.colour = await ctx.embed_color()
+            embed.set_image(url=response["data"]["image_url"])
+        try:
+            await ctx.send(embed=embed)
+        except discord.HTTPException:
+            await ctx.send("Bad reponse, please retry the command again.")
+
+    @commands.command(aliases=["wallp"])
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True)
+    async def wallpaper(self, ctx):
+        """Send a random wallpaper photo."""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(MART_API + "images/wallpaper") as resp:
+                if resp.status != 200:
+                    await ctx.send(
+                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
+                    )
+                    return
+                response = await resp.json()
+            embed = discord.Embed(
+                title=response["data"].get("title", "[No Title]"),
+                url=response["data"]["post_url"],
+                description=f"Posted by: {response['data']['author']['name']}",
+            )
+            embed.set_footer(
+                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
+                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+            )
+            embed.colour = await ctx.embed_color()
+            embed.set_image(url=response["data"]["image_url"])
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
