@@ -38,7 +38,7 @@ class EmbedUptime(commands.Cog):
 
         name = ctx.bot.user.name # this make it show botname.
         
-        since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
+        since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %d-%m-%Y")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         emb = discord.Embed(colour = await ctx.embed_color())
