@@ -43,7 +43,7 @@ class EmbedUptime(commands.Cog):
     async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
         name = ctx.bot.user.name # this make it show botname.
-        since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %d-%m-%Y") # Using EU's datetime. Day Month Year.
+        since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         if ctx.channel.permissions_for(ctx.me).embed_links:
@@ -51,8 +51,8 @@ class EmbedUptime(commands.Cog):
             emb.add_field(name=f"{name} has been up for:", value=uptime_str)
             emb.set_footer(text=f"Since: {since}")
             await ctx.reply(embed=emb, mention_author=False)
-        else: # non embed verison below.
-            since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %d-%m-%Y")
+        else: # non embeds here.
+            since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
             delta = datetime.datetime.utcnow() - self.bot.uptime
             uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second")
             await ctx.send(
