@@ -3,7 +3,7 @@ import discord
 from redbot.core import commands
 
 #API's and icons.
-from .constants import MARTINE_API, MARTINE_ICON, MEWTWO_API, MEWTWO_ICON, NEKOS_API
+from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API
 
 class Images(commands.Cog):
     """Image cog that generate random images from different subreddits. [p]neko is generated from nekos.best."""
