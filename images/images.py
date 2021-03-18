@@ -2,9 +2,10 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-# Here goes all the api's in this cog.
+# Here goes all the urls in this cog.
 MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
 NEKOS_API = "https://nekos.best/"
+MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
 
 class Images(commands.Cog):
     """Image cog that generate random images from different subreddits. [p]neko is generated from nekos.best."""
@@ -16,7 +17,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "2.1.0"
+    __version__ = "2.2.0"
     __author__ = ["MAX"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -51,7 +52,7 @@ class Images(commands.Cog):
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+                icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
@@ -83,7 +84,7 @@ class Images(commands.Cog):
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+                icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
@@ -113,7 +114,7 @@ class Images(commands.Cog):
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+                icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
@@ -147,7 +148,7 @@ class Images(commands.Cog):
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+                icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
@@ -179,7 +180,7 @@ class Images(commands.Cog):
             )
             embed.set_footer(
                 text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url="https://cdn.martinebot.com/current/website-assets/avatar.png",
+                icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
