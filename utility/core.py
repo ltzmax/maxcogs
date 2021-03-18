@@ -51,9 +51,7 @@ class Utility(commands.Cog):
 
         text = 0
         voice = 0
-        guilds = 0
-        for guild in self.bot.guilds:
-            guilds += 1
+        for guilds, guild in enumerate(self.bot.guilds):
             total_members += guild.member_count
             for channel in guild.channels:
                 if isinstance(channel, discord.TextChannel):
@@ -109,10 +107,7 @@ class Utility(commands.Cog):
             await ctx.send(chat.info("No nodes found. This require audio loaded and wait for lavalink to connect for this to work."))
             return
         stats = [stat for stat in dir(nodes[0]) if not stat.startswith("_")]
-        tabs = []
-        for i, n in enumerate(nodes, start=1):
-            tabs.append(
-                f"Node {i}/{len(nodes)}\n"
+        tabs = [f"Node {i}/{len(nodes)}\n"
                 + chat.box(
                     tabulate(
                         [
@@ -124,8 +119,7 @@ class Utility(commands.Cog):
                         ],
                     ),
                     "ml",
-                )
-            )
+                ) for i, n in enumerate(nodes, start=1)]
         await menu(ctx, tabs, DEFAULT_CONTROLS)
 
     @commands.command()
