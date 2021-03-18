@@ -2,10 +2,8 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-# Here goes all the urls in this cog.
-MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
-NEKOS_API = "https://nekos.best/"
-MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
+#API's and icons.
+from .constants import MARTINE_API, MARTINE_ICON, MEWTWO_API, MEWTWO_ICON, NEKOS_API
 
 class Images(commands.Cog):
     """Image cog that generate random images from different subreddits. [p]neko is generated from nekos.best."""
@@ -28,6 +26,7 @@ class Images(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
+
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -132,7 +131,7 @@ class Images(commands.Cog):
     async def critique(self, ctx):
         """Send a random Critique photo.
 
-        - This is a community of passionate photographers to work together to improve one another's work. Their goal might be described as making this a place geared toward helping aspiring and even professional photographers with honest feedback."""
+        - This is a community of passionate photographers to work together to improve one another's work. """
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "photocritique") as resp:
                 if resp.status != 200:
@@ -196,7 +195,7 @@ class Images(commands.Cog):
     async def neko(self, ctx):
         """Send a random neko photo.
         
-        - All images are coming from [nekos.best.](https://nekos.best)"""
+        Powered by [nekos.best.](https://nekos.best)"""
         async with aiohttp.ClientSession() as session:
             async with session.get(NEKOS_API + "nekos") as response:
                 if response.status != 200:

@@ -107,7 +107,10 @@ class Utility(commands.Cog):
             await ctx.send(chat.info("No nodes found. This require audio loaded and wait for lavalink to connect for this to work."))
             return
         stats = [stat for stat in dir(nodes[0]) if not stat.startswith("_")]
-        tabs = [f"Node {i}/{len(nodes)}\n"
+        tabs = []
+        for i, n in enumerate(nodes, start=1):
+            tabs.append(
+                f"Node {i}/{len(nodes)}\n"
                 + chat.box(
                     tabulate(
                         [
@@ -119,7 +122,8 @@ class Utility(commands.Cog):
                         ],
                     ),
                     "ml",
-                ) for i, n in enumerate(nodes, start=1)]
+                )
+            )
         await menu(ctx, tabs, DEFAULT_CONTROLS)
 
     @commands.command()
