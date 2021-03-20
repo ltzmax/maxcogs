@@ -11,8 +11,6 @@ from redbot.core.utils import chat_formatting as chat
 from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
 from redbot.core.utils.chat_formatting import box
 
-
-
 async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
     stat = getattr(stats, stat_name)
     if isinstance(stat, int) and stat_name.startswith("memory_"):
@@ -23,11 +21,10 @@ async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
         stat = f"{round(stat*100, 2)} %"
     return stat
 
-
 class Utility(commands.Cog):
     """Utility commands to use."""
 
-    __version__ = "2.1.0"
+    __version__ = "2.2.0"
     __author__ = ["MAX", "Fixator10", "AlexFlipnote"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
