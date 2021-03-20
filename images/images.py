@@ -2,11 +2,11 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-#API's and icons.
+# API's and icons.
 from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API
 
 class Images(commands.Cog):
-    """Image cog that generate random images from different subreddits. [p]neko is generated from nekos.best."""
+    """Image cog that shows images from different services."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -15,7 +15,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "2.2.0"
+    __version__ = "2.2.1"
     __author__ = ["MAX"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -26,7 +26,6 @@ class Images(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
-
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)

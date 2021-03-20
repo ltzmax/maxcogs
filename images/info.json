@@ -1,7 +1,7 @@
 {
   "author": ["max"],
   "install_msg" : "Thanks for installing. Enjoy the nice look of the images.",
-  "description": "Image cog that generate random images from different subreddits.",
+  "description": "Image cog that generate random images from different services.",
   "short": "Random images.",
   "hidden" : false,
   "min_bot_version": "3.4.0",
