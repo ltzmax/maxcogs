@@ -1,9 +1,12 @@
 import aiohttp
 import discord
+import asyncio
+
+from io import BytesIO
 from redbot.core import commands
 
 # API's and icons.
-from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API
+from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API, MEWTWO_API, MEWTWO_ICON
 
 class Images(commands.Cog):
     """Image cog that shows images from different services."""
@@ -15,7 +18,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "2.2.1"
+    __version__ = "2.2.2"
     __author__ = ["MAX"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -26,6 +29,29 @@ class Images(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
+
+    @commands.command(aliases=["pokewallp"])
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True)
+    async def pokewallpaper(self, ctx):
+        """Send a random pokemon images."""
+        async with ctx.typing():
+            await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(MEWTWO_API + "/images/pokemon") as resp:
+                if resp.status != 200:
+                    return await ctx.send("Something went wrong while trying to contact API.")
+                f = discord.File(fp=BytesIO(await resp.read()), filename=f"poke.jpg")
+                emb = discord.Embed(title=f"Here's a random pokémon image.")
+                emb.set_image(url="attachment://poke.jpg")
+                emb.set_footer(
+                    text="Powered by mewtwothebot.com API",
+                    icon_url=MEWTWO_ICON,
+                )
+                emb.colour = await ctx.embed_color()
+                await ctx.send(file=f, embed=emb)
+
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -38,10 +64,7 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "earthporn") as resp:
                 if resp.status != 200:
-                    await ctx.send(
-                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
-                    )
-                    return
+                    return await ctx.send("Something went wrong while trying to contact API.")
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -70,10 +93,7 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "spaceporn") as resp:
                 if resp.status != 200:
-                    await ctx.send(
-                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
-                    )
-                    return
+                    return await ctx.send("Something went wrong while trying to contact API.")
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -100,10 +120,7 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "astrophotography") as resp:
                 if resp.status != 200:
-                    await ctx.send(
-                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
-                    )
-                    return
+                    return await ctx.send("Something went wrong while trying to contact API.")
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -134,10 +151,7 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "photocritique") as resp:
                 if resp.status != 200:
-                    await ctx.send(
-                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
-                    )
-                    return
+                    return await ctx.send("Something went wrong while trying to contact API.")
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -166,10 +180,7 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "food") as resp:
                 if resp.status != 200:
-                    await ctx.send(
-                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
-                    )
-                    return
+                    return await ctx.send("Something went wrong while trying to contact API.")
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -198,10 +209,7 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(NEKOS_API + "nekos") as response:
                 if response.status != 200:
-                    await ctx.send(
-                        "Unable to get images for following reason: The api is unable at this moment. Check back later."
-                    )
-                    return
+                    return await ctx.send("Something went wrong while trying to contact API.")
                 url = await response.json()
             embed = discord.Embed(
                 title="Here's an image from nekos.", colour=await ctx.embed_color()
