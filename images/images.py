@@ -1,12 +1,10 @@
 import aiohttp
 import discord
-import asyncio
 
-from io import BytesIO
 from redbot.core import commands
 
 # API's and icons.
-from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API, MEWTWO_API, MEWTWO_ICON
+from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API
 
 
 class Images(commands.Cog):
@@ -19,7 +17,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "2.2.2"
+    __version__ = "2.2.3"
     __author__ = ["MAX"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -31,30 +29,6 @@ class Images(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command(aliases=["pokewallp"])
-    @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True)
-    async def pokewallpaper(self, ctx):
-        """Send a random pokemon images."""
-        async with ctx.typing():
-            await asyncio.sleep(1)
-        async with aiohttp.ClientSession() as session:
-            async with session.get(MEWTWO_API + "/images/pokemon") as resp:
-                if resp.status != 200:
-                    return await ctx.send(
-                        "Something went wrong while trying to contact API."
-                    )
-                f = discord.File(fp=BytesIO(await resp.read()), filename=f"poke.jpg")
-                emb = discord.Embed(title=f"Here's a random pokémon image.")
-                emb.set_image(url="attachment://poke.jpg")
-                emb.set_footer(
-                    text="Powered by mewtwothebot.com API",
-                    icon_url=MEWTWO_ICON,
-                )
-                emb.colour = await ctx.embed_color()
-                await ctx.send(file=f, embed=emb)
-
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
@@ -65,6 +39,10 @@ class Images(commands.Cog):
         - EarthPorn is your community of landscape photographers and those who appreciate the natural beauty of our home planet."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "earthporn") as resp:
+                if resp.status == 404:
+                    return await ctx.send("Subreddit not found. Error code: 404.")
+                if resp.status == 410:
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
                     return await ctx.send(
                         "Something went wrong while trying to contact API."
@@ -81,10 +59,7 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
             await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -96,6 +71,10 @@ class Images(commands.Cog):
         - SpacePorn is a subreddit devoted to beautiful space images."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "spaceporn") as resp:
+                if resp.status == 404:
+                    return await ctx.send("Subreddit not found. Error code: 404.")
+                if resp.status == 410:
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
                     return await ctx.send(
                         "Something went wrong while trying to contact API."
@@ -112,10 +91,7 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
             await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -125,6 +101,10 @@ class Images(commands.Cog):
         """Send a random astrophotography photo."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "astrophotography") as resp:
+                if resp.status == 404:
+                    return await ctx.send("Subreddit not found. Error code: 404.")
+                if resp.status == 410:
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
                     return await ctx.send(
                         "Something went wrong while trying to contact API."
@@ -141,10 +121,7 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
             await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
 
     # Images thats not about space and earth is below from this line.
 
@@ -158,6 +135,10 @@ class Images(commands.Cog):
         - This is a community of passionate photographers to work together to improve one another's work."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "photocritique") as resp:
+                if resp.status == 404:
+                    return await ctx.send("Subreddit not found. Error code: 404.")
+                if resp.status == 410:
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
                     return await ctx.send(
                         "Something went wrong while trying to contact API."
@@ -174,10 +155,7 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
             await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -189,6 +167,10 @@ class Images(commands.Cog):
         - Images of Food taken by people that have made homemade food or just bought food to take photo and upload on reddit."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "food") as resp:
+                if resp.status == 404:
+                    return await ctx.send("Subreddit not found. Error code: 404.")
+                if resp.status == 410:
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
                     return await ctx.send(
                         "Something went wrong while trying to contact API."
@@ -205,10 +187,7 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
             await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
