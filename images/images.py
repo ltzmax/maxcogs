@@ -8,6 +8,7 @@ from redbot.core import commands
 # API's and icons.
 from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API, MEWTWO_API, MEWTWO_ICON
 
+
 class Images(commands.Cog):
     """Image cog that shows images from different services."""
 
@@ -41,7 +42,9 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MEWTWO_API + "/images/pokemon") as resp:
                 if resp.status != 200:
-                    return await ctx.send("Something went wrong while trying to contact API.")
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 f = discord.File(fp=BytesIO(await resp.read()), filename=f"poke.jpg")
                 emb = discord.Embed(title=f"Here's a random pokémon image.")
                 emb.set_image(url="attachment://poke.jpg")
@@ -51,7 +54,6 @@ class Images(commands.Cog):
                 )
                 emb.colour = await ctx.embed_color()
                 await ctx.send(file=f, embed=emb)
-
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -64,7 +66,9 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "earthporn") as resp:
                 if resp.status != 200:
-                    return await ctx.send("Something went wrong while trying to contact API.")
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -93,7 +97,9 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "spaceporn") as resp:
                 if resp.status != 200:
-                    return await ctx.send("Something went wrong while trying to contact API.")
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -120,7 +126,9 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "astrophotography") as resp:
                 if resp.status != 200:
-                    return await ctx.send("Something went wrong while trying to contact API.")
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -138,7 +146,7 @@ class Images(commands.Cog):
         except discord.HTTPException:
             await ctx.send("Bad reponse, please retry the command again.")
 
-# Images thats not about space and earth is below from this line.
+    # Images thats not about space and earth is below from this line.
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -147,11 +155,13 @@ class Images(commands.Cog):
     async def critique(self, ctx):
         """Send a random Critique photo.
 
-        - This is a community of passionate photographers to work together to improve one another's work. """
+        - This is a community of passionate photographers to work together to improve one another's work."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "photocritique") as resp:
                 if resp.status != 200:
-                    return await ctx.send("Something went wrong while trying to contact API.")
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -175,12 +185,14 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def food(self, ctx):
         """Send a random food photo.
-        
+
         - Images of Food taken by people that have made homemade food or just bought food to take photo and upload on reddit."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "food") as resp:
                 if resp.status != 200:
-                    return await ctx.send("Something went wrong while trying to contact API.")
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -204,12 +216,14 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def neko(self, ctx):
         """Send a random neko photo.
-        
+
         Powered by [nekos.best.](https://nekos.best)"""
         async with aiohttp.ClientSession() as session:
             async with session.get(NEKOS_API + "nekos") as response:
                 if response.status != 200:
-                    return await ctx.send("Something went wrong while trying to contact API.")
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 url = await response.json()
             embed = discord.Embed(
                 title="Here's an image from nekos.", colour=await ctx.embed_color()
