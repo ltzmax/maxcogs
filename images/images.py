@@ -1,8 +1,6 @@
 import aiohttp
 import discord
-import asyncio
 
-from io import BytesIO
 from redbot.core import commands
 
 # API's and icons.
