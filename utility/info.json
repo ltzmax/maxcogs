@@ -1,5 +1,5 @@
 {
-  "author" : ["max", "fixator10", "AlexFlipnote"],
+  "author" : ["max", "fixator10"],
   "install_msg" : "Thanks for installing.",
   "description": "Utility for your bot and your guilds.",
   "short": "Bot and guild utility.",

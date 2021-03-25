@@ -24,8 +24,8 @@ async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
 class Utility(commands.Cog):
     """Utility commands to use."""
 
-    __version__ = "2.2.0"
-    __author__ = ["MAX", "Fixator10", "AlexFlipnote"]
+    __version__ = "2.1.0"
+    __author__ = ["MAX", "Fixator10"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -122,90 +122,6 @@ class Utility(commands.Cog):
                 )
             )
         await menu(ctx, tabs, DEFAULT_CONTROLS)
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.cooldown(1, 100, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True)
-    async def mods(self, ctx):
-        """Check which mods are online in current guild.
-        
-        When users needs a mod for something they can check whos online currently."""
-        # All credits to AlexFlipnote.
-        guild = ctx.message.guild
-        message = ""
-        all_status = {
-            "online": {"users": [], "emoji": "\N{LARGE GREEN CIRCLE}Online:"},
-            "idle": {"users": [], "emoji": "\N{LARGE YELLOW CIRCLE}Idle:"},
-            "dnd": {"users": [], "emoji": "\N{LARGE RED CIRCLE}Dnd:"},
-            "offline": {"users": [], "emoji": "\N{MEDIUM WHITE CIRCLE}Offline:"},
-        }
-
-        for user in ctx.guild.members:
-            user_perm = ctx.channel.permissions_for(user)
-            if user_perm.kick_members or user_perm.ban_members:
-                if not user.bot:
-                    all_status[str(user.status)]["users"].append(f"\n**{user}**")
-
-        for g in all_status:
-            if all_status[g]["users"]:
-                message += (
-                    f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n\n"
-                )
-
-        embed = discord.Embed(
-            description=(f"Mods in guild **{ctx.guild.name}**\n\n{message}"),
-        )
-        embed.colour = await ctx.embed_color()
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send(
-                "Error: Seems like you have alot of mods. This has reached it's max length so this won't display your mods in this guild." # yee this could've been better messaged.
-            ) # TODO: Add menus. when there is time for it.
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.cooldown(1, 100, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True)
-    async def admins(self, ctx):
-        """Check which admins are online in current guild.
-        
-        This is same as mods but this only checks for admins."""
-        # All credits to AlexFlipnote.
-        guild = ctx.message.guild
-        message = ""
-        all_status = {
-            "online": {"users": [], "emoji": "\N{LARGE GREEN CIRCLE}Online:"},
-            "idle": {"users": [], "emoji": "\N{LARGE YELLOW CIRCLE}Idle:"},
-            "dnd": {"users": [], "emoji": "\N{LARGE RED CIRCLE}Dnd:"},
-            "offline": {"users": [], "emoji": "\N{MEDIUM WHITE CIRCLE}Offline:"},
-        }
-
-        for user in ctx.guild.members:
-            user_perm = ctx.channel.permissions_for(user)
-            if user_perm.administrator:
-                if not user.bot:
-                    all_status[str(user.status)]["users"].append(f"\n**{user}**")
-
-        for g in all_status:
-            if all_status[g]["users"]:
-                message += (
-                    f"{all_status[g]['emoji']} {', '.join(all_status[g]['users'])}\n\n"
-                )
-
-        embed = discord.Embed(
-            description=(f"Admins in guild **{ctx.guild.name}**\n\n{message}"),
-        )
-        embed.colour = await ctx.embed_color()
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send(
-                "Error: Seems like you have alot of admins. This has reached it's max length so this won't display your admins in this guild." # yee this could've been better messaged.
-            ) # TODO: Add menus. when there is time for it.
 
     @commands.command(hidden=True) # hidden to avoide being used for spam which it's not made for.
     @commands.guild_only()
