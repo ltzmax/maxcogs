@@ -51,7 +51,10 @@ class Images(commands.Cog):
                     icon_url=MEWTWO_ICON,
                 )
                 emb.colour = await ctx.embed_color()
-                await ctx.send(file=f, embed=emb)
+        try:
+            await ctx.send(file=f, embed=emb)
+        except discord.HTTPException: # handle an HTTPException 413 too large (error code: 40005) so this should handle it.
+            await ctx.send("An error while trying to get image. Please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
