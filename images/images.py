@@ -28,16 +28,6 @@ class Images(commands.Cog):
         """Nothing to delete."""
         return
 
-    # Credits to Predä for this snippet. but i snipped it from owo-cogs.
-    async def _nsfw_check(self, ctx: commands.Context):
-        """Message for Safe For Work (SFW) channels."""
-        if not ctx.message.channel.is_nsfw():
-            em = discord.Embed(
-                title="\N{LOCK} NSFW commands cannot be used in non NSFW channel.",
-                color=0xaa0000,
-            )
-        return em
-
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
