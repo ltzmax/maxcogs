@@ -265,37 +265,6 @@ class Images(commands.Cog):
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
-    async def art(self, ctx):
-        """Send a random art images."""
-        async with aiohttp.ClientSession() as session:
-            async with session.get(MARTINE_API + "Art") as resp:
-                if resp.status == 410:
-                    return await ctx.send("Failed to fetch API. Unknown error.")
-                if resp.status != 200:
-                    return await ctx.send(
-                        "Something went wrong while trying to contact API."
-                    )
-                response = await resp.json()
-            embed = discord.Embed(
-                title=response["data"].get("title", "[No Title]"),
-                url=response["data"]["post_url"],
-                description=f"Posted by: {response['data']['author']['name']}",
-            )
-            embed.set_footer(
-                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url=MARTINE_ICON,
-            )
-            embed.colour = await ctx.embed_color()
-            embed.set_image(url=response["data"]["image_url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
-
-    @commands.command()
-    @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True)
     async def fanart(self, ctx):
         """Send a random League of legends fan arts images.
 
