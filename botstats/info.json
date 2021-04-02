@@ -1,0 +1,9 @@
+{
+    "author": ["max"],
+    "install_msg": "Thanks for installing.",
+    "description": "Botstats that shows some info on how many guilds your bot is in.",
+    "short": "Some botstatics.",
+    "hidden": false,
+    "min_bot_version": "3.4.6",
+    "end_user_data_statement": "This cog does not store any End User Data."
+  }
