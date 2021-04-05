@@ -38,9 +38,6 @@ To install any cog you want:
 <td>llnodestats</td>
 <td>This checks some nodestats with audio that basically shows how many in voice, your ll server.</td>
 </tr>
-<td>Botstats</td>
-<td>This shows some botstats of your bot, such as how many guilds your bot is in.</td>
-</tr>
 </tbody>
 </table>
 
