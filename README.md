@@ -35,9 +35,6 @@ To install any cog you want:
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed and shows with the new replies from dpy 1.6.0.</td>
 </tr>
-<td>llnodestats</td>
-<td>This checks some nodestats with audio that basically shows how many in voice, your ll server.</td>
-</tr>
 </tbody>
 </table>
 
