@@ -49,6 +49,6 @@ PR is always welcome, but do mind that this uses style/black format so you may n
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding. 
 
-- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For helping in utility parts and ping.
+- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For doing most parts in ping.
 
 - [Preda](https://github.com/PredaaA/predacogs) some shard code in ping cog.
