@@ -1,9 +1,0 @@
-{
-    "author": ["max", "fixator10"],
-    "install_msg": "Thanks for installing.",
-    "description": "nodestats that shows some audio statics.",
-    "short": "nodestats, audio statics.",
-    "hidden": false,
-    "min_bot_version": "3.4.0",
-    "end_user_data_statement": "This cog does not store any End User Data."
-  }
