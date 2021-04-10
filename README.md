@@ -1,6 +1,6 @@
 <h1 align="center">MAXCOGS</h1>
 
-<img src="https://i.imgur.com/9WesmVE.png" alt="Banner" style="max-width:100%;">
+<h3>Small warning: This repo is unapproved.</h3>
 
 [p] is your prefix.
 
