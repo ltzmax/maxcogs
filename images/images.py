@@ -4,10 +4,13 @@ import discord
 from redbot.core import commands
 
 # API's and icons.
-from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API
+MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
+MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
+NEKOS_API = "https://nekos.best/"
+
 
 class Images(commands.Cog):
-    """Image cog that shows images from different services."""
+    """Image cog that shows images."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -16,7 +19,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "2.2.3"
+    __version__ = "2.2.4"
     __author__ = ["MAX"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
