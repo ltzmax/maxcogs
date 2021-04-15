@@ -39,11 +39,8 @@ To install any cog you want:
 </table>
 
 ## Contributing
-PR is always welcome, but do mind that this uses style/black format so you may need to use that if you'd pr something.
+PR is always welcome at anytime, so feel free to make changes. i'll probably merge if it works. :)
 
-  <a href="https://github.com/ambv/black">
-    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
-  </a>
 
 
 ## credits:
