@@ -1,4 +1,4 @@
-name: autoblack
+name: style
 
 on: [push, pull_request]
 
