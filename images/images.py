@@ -1,6 +1,5 @@
 import aiohttp
 import discord
-
 from redbot.core import commands
 
 # API's and icons.
@@ -227,7 +226,7 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def cityview(self, ctx):
         """Send a random City images.
-        
+
         - High quality images of cities."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "CityPorn") as resp:
