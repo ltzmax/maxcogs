@@ -2,15 +2,14 @@
 # Difference with this: is that it shows embed and uses the new replies.
 # This also uses the new random colours on embeds.
 # Thanks Red-DiscordBot for their hard work. <3
-import discord
 import datetime
 
+import discord
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import (
-    humanize_timedelta
-)
+from redbot.core.utils.chat_formatting import humanize_timedelta
 
 old_uptime = None
+
 
 class EmbedUptime(commands.Cog):
     """Shows [botname]'s uptime."""
@@ -34,24 +33,27 @@ class EmbedUptime(commands.Cog):
     @commands.command()
     async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
-        name = ctx.bot.user.name # this make it show botname.
+        name = ctx.bot.user.name  # this make it show botname.
         since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         if ctx.channel.permissions_for(ctx.me).embed_links:
-            emb = discord.Embed(colour = await ctx.embed_color())
+            emb = discord.Embed(colour=await ctx.embed_color())
             emb.add_field(name=f"{name} has been up for:", value=uptime_str)
             emb.set_footer(text=f"Since: {since}")
             await ctx.reply(embed=emb, mention_author=False)
-        else: # non embeds here.
+        else:  # non embeds here.
             since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
             delta = datetime.datetime.utcnow() - self.bot.uptime
             uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second")
             await ctx.send(
-                ("**{name}** has been up for: `{time_quantity}` (since: {timestamp})").format(
+                (
+                    "**{name}** has been up for: `{time_quantity}` (since: {timestamp})"
+                ).format(
                     name=ctx.bot.user.name, time_quantity=uptime_str, timestamp=since
                 )
             )
+
 
 def setup(bot):
     uptime = EmbedUptime(bot)

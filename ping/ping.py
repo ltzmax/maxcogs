@@ -1,15 +1,14 @@
 # Thanks preda for shard code and fixator10 for message code and probably more stuff. :P
 # Thanks Senroht#5179 for permissions to use his code.
 import time
-import discord
 
+import discord
 from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
-from redbot.core.utils.chat_formatting import (
-    box
-)
+from redbot.core.utils.chat_formatting import box
 
 old_ping = None
+
 
 class Ping(commands.Cog):
     """Reply with latency of [botname].
@@ -81,12 +80,13 @@ class Ping(commands.Cog):
                 2, name="Typing:", value=box(str(round(ping)) + " ms", "yaml")
             )
             await message.edit(embed=emb)
-        else:   # This ping below will work when bot does not have `embed_links` permissions.
+        else:  # This ping below will work when bot does not have `embed_links` permissions.
             before = time.monotonic()
             latency = int(round(self.bot.latency * 1000, 1))
             message = await ctx.send("🏓 Pong")
             ping = (time.monotonic() - before) * 1000
             await message.edit(content=f"🏓 Discord WS: {latency}ms")
+
 
 def setup(bot):
     ping = Ping(bot)
