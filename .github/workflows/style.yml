@@ -1,15 +1,29 @@
-name: Black
+name: Checks
 
-on:
-  push:
-    branches:
-      - master
+on: [push, pull_request]
 
 jobs:
-  lint:
-    name: Style
+  style:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+    name: Style
     steps:
-      - uses: actions/checkout@v1
-      - name: Black
-        uses: lgeiger/black-action@v1.0.1
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install black isort
+      - name: Run black
+        run: |
+          python -m black --check --line-length 99 .
+      - name: Run isort
+        run: |
+          python -m isort --check --line-length 99 --trailing-comma .
+# Thanks vexed. :aha:
