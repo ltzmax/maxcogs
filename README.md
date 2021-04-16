@@ -35,6 +35,9 @@ To install any cog you want:
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed and shows with the new replies from dpy 1.6.0.</td>
 </tr>
+<td>Statsinfo</td>
+<td>This shows some statics about your bot. this uses the new replies from dpy 1.6.0.</td>
+</tr>
 </tbody>
 </table>
 

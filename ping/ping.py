@@ -40,7 +40,7 @@ class Ping(commands.Cog):
         - Discord WS: Websocket latency.
         - Message: Difference between your command and message.
         - Time: Time it takes for the bot to send message."""
-        if ctx.channel.permissions_for(ctx.me).embed_links:
+        if await ctx.embed_requested():
             latency = self.bot.latency * 1000
             emb = discord.Embed(title="Pong !", color=discord.Color.red())
             emb.add_field(
@@ -80,7 +80,7 @@ class Ping(commands.Cog):
                 2, name="Typing:", value=box(str(round(ping)) + " ms", "yaml")
             )
             await message.edit(embed=emb)
-        else:  # This ping below will work when bot does not have `embed_links` permissions.
+        else:
             before = time.monotonic()
             latency = int(round(self.bot.latency * 1000, 1))
             message = await ctx.send("🏓 Pong")

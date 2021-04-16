@@ -1,0 +1,9 @@
+{
+    "author": ["max"],
+    "install_msg": "Thanks for installing.",
+    "description": "Some statsinfo about your bot.",
+    "short": "Shows stats",
+    "hidden": false,
+    "min_bot_version": "3.4.6",
+    "end_user_data_statement": "This cog does not store any End User Data."
+  }

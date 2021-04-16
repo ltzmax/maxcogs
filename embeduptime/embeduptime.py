@@ -37,7 +37,7 @@ class EmbedUptime(commands.Cog):
         since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
-        if ctx.channel.permissions_for(ctx.me).embed_links:
+        if await ctx.embed_requested():
             emb = discord.Embed(colour=await ctx.embed_color())
             emb.add_field(name=f"{name} has been up for:", value=uptime_str)
             emb.set_footer(text=f"Since: {since}")
