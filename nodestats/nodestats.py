@@ -1,14 +1,11 @@
 import humanize
 import lavalink
-
-from tabulate import tabulate
 from redbot.core import commands
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS, menu
 from redbot.core.utils import chat_formatting as chat
-from lavalink import all_players, node
-from redbot.core.utils.chat_formatting import (
-    box
-)
+from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
+from tabulate import tabulate
+
 
 async def parse_llnode_stat(stats: node.NodeStats, stat_name: str):
     stat = getattr(stats, stat_name)
@@ -30,6 +27,7 @@ class NodeStats(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
     @commands.command()
     @commands.is_owner()
     async def llnodestats(self, ctx):
