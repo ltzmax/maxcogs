@@ -38,6 +38,9 @@ To install any cog you want:
 <td>Statsinfo</td>
 <td>This shows some statics about your bot. this uses the new replies from dpy 1.6.0.</td>
 </tr>
+<td>nodestats</td>
+<td>Lavalink nodestats for any audio bots out there for red.</td>
+</tr>
 </tbody>
 </table>
 
