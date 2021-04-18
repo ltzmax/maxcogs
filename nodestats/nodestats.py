@@ -1,6 +1,7 @@
 import humanize
-import lavalink, node
+import lavalink
 from redbot.core import commands
+from lavalink import node
 from redbot.core.utils import chat_formatting as chat
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
