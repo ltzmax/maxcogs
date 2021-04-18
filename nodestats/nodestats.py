@@ -1,5 +1,5 @@
 import humanize
-import lavalink
+import lavalink, node
 from redbot.core import commands
 from redbot.core.utils import chat_formatting as chat
 from redbot.core.utils.chat_formatting import box
