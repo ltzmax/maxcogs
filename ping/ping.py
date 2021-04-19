@@ -31,7 +31,7 @@ class Ping(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def ping(self, ctx):
         """Reply with latency of [botname].
 
@@ -86,6 +86,50 @@ class Ping(commands.Cog):
             message = await ctx.send("🏓 Pong")
             ping = (time.monotonic() - before) * 1000
             await message.edit(content=f"🏓 Discord WS: {latency}ms")
+
+    @ping.command(hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def t(self, ctx):
+        """Reply with latency of [botname].
+
+        This shows with shards as well."""
+        latency = self.bot.latency * 1000
+        emb = discord.Embed(title="Please wait..", color=discord.Color.red())
+        emb.add_field(
+            name="Discord WS:", value=box(str(round(latency)) + " ms", "yaml")
+        )
+        emb.add_field(name="Typing", value=box("calculating" + " ms", "yaml"))
+        emb.add_field(name="Message", value=chat.box("…"))
+
+        before = time.monotonic()
+        message = await ctx.send(embed=emb)
+        ping = (time.monotonic() - before) * 1000
+
+        shards = [
+            f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n"
+            for shard, pingt in self.bot.latencies
+        ]
+        emb.add_field(name="Shards:", value=box("".join(shards)))
+        emb.title = "Pong !"
+        emb.colour = await ctx.embed_color()
+        emb.set_field_at(
+            1,
+            name="Message:",
+            value=chat.box(
+                str(
+                    int(
+                        (message.created_at - ctx.message.created_at).total_seconds()
+                        * 1000
+                    )
+                )
+                + " ms",
+                "yaml",
+            ),
+        )
+        emb.set_field_at(
+            2, name="Typing:", value=chat.box(str(round(ping)) + " ms", "yaml")
+        )
+        await message.edit(embed=emb)
 
 
 def setup(bot):
