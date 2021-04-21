@@ -9,7 +9,7 @@ class HumbleBundle(commands.Cog):
     """Responds with the currently available Humble Bundles, if any."""
 
     __author__ = "<@306810730055729152>, MAX"
-    __version__ = "0.1.0"
+    __version__ = "0.2.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -22,6 +22,10 @@ class HumbleBundle(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.session = aiohttp.ClientSession()
+
+    def cog_unload(self):
+        self.bot.loop.create_task(self.session.close())
 
     @commands.command(aliases=["humble"])
     @commands.cooldown(1, 90, commands.BucketType.guild)  # 1m 30 seconds.
