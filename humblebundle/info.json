@@ -1,0 +1,9 @@
+{
+    "author": ["max", "<@306810730055729152>"],
+    "install_msg": "Thanks for installing.",
+    "description": "Responds with the currently available Humble Bundles, if any.",
+    "short": "Gives humblebundle available, if any.",
+    "hidden": false,
+    "min_bot_version": "3.4.0",
+    "end_user_data_statement": "This cog does not store any End User Data."
+  }

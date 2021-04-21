@@ -41,6 +41,9 @@ To install any cog you want:
 <td>nodestats</td>
 <td>Lavalink nodestats for any audio bots out there for red.</td>
 </tr>
+<td>humblebundle</td>
+<td>Responds with the currently available Humble Bundles, if there is any available.</td>
+</tr>
 </tbody>
 </table>
 
@@ -55,3 +58,5 @@ PR is always welcome at anytime, so feel free to make changes. i'll probably mer
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For doing most parts in ping and nodestats.
 
 - [Preda](https://github.com/PredaaA/predacogs) for doing some shardings in ping.
+
+- [cowogs](https://github.com/jenkins420/cowogs) for doing the humblebundle.
