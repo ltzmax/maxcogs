@@ -5,9 +5,16 @@ import discord
 import pkg_resources
 from redbot.core import commands
 
-
 class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
+
+    __author__ = "MAX"
+    __version__ = "2.1.0"
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -19,12 +26,13 @@ class StatsInfo(commands.Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def statsinfo(self, ctx):
-        """Shows some stats for [botname]."""
+        """Statistics for [botname]."""
         total_members = 0
         total_unique = len(self.bot.users)
         text = 0
         voice = 0
         stage_channels = 0
+        category_channel = 0
         guilds = 0
         for guild in self.bot.guilds:
             guilds += 1
@@ -36,12 +44,14 @@ class StatsInfo(commands.Cog):
                     voice += 1
                 elif isinstance(channel, discord.StageChannel):
                     stage_channels += 1
+                elif isinstance(channel, discord.CategoryChannel):
+                    category_channel += 1
 
         version = pkg_resources.get_distribution("discord.py").version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
         emb = discord.Embed(
-            title=f"Botstats for {self.bot.user.name}:", color=await ctx.embed_color()
+            title=f"Statistics for {self.bot.user.name}:", color=await ctx.embed_color()
         )
         emb.add_field(
             name="Users:",
@@ -55,7 +65,7 @@ class StatsInfo(commands.Cog):
         emb.add_field(
             name="Channels:",
             value=(
-                f"{text + voice} total\n{text} text\n{voice} voice\n{stage_channels} Stage channels"
+                f"{text + voice} total\n{text} text\n{voice} voice\n{stage_channels} Stage channels\n{category_channel} Category Channels"
             ),
         )
 
