@@ -5,11 +5,12 @@ import discord
 import pkg_resources
 from redbot.core import commands
 
+
 class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.1.0"
+    __version__ = "2.2.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
