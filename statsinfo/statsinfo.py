@@ -10,7 +10,7 @@ class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.3.1"
+    __version__ = "2.3.2"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -66,12 +66,12 @@ class StatsInfo(commands.Cog):
         emb.add_field(
             name="Channels:",
             value=(
-                f"{text} Text Channels\n{voice} Voice Channels\n{stage_channels} Stage Channels\n{category_channel} Category Channels"
+                f"{text} Text Channels\n{voice} Voice Channels\n{stage_channels} Stage Channels"
             ),
         )
         emb.add_field(
             name="Total channels:",
-            value=(f"{text + voice + stage_channels} total channels"),
+            value=(f"{text + voice + stage_channels} total channels\n{category_channel} Total Categories"),
         )
 
         emb.set_footer(text=f"Discord.py v{version}")
