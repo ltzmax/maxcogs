@@ -4,13 +4,14 @@ import datetime
 import discord
 import pkg_resources
 from redbot.core import commands
+from redbot.core.utils.chat_formatting import box
 
 
 class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.3.4"
+    __version__ = "2.3.5"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -34,6 +35,7 @@ class StatsInfo(commands.Cog):
         voice = 0
         stage_channels = 0
         category_channel = 0
+        store_channel = 0
         guilds = 0
         for guild in self.bot.guilds:
             guilds += 1
@@ -47,6 +49,8 @@ class StatsInfo(commands.Cog):
                     stage_channels += 1
                 elif isinstance(channel, discord.CategoryChannel):
                     category_channel += 1
+                elif isinstance(channel, discord.discord.StoreChannel):
+                    store_channel += 1
 
         version = pkg_resources.get_distribution("discord.py").version
         servers = str(len(self.bot.guilds))
@@ -56,23 +60,26 @@ class StatsInfo(commands.Cog):
         )
         emb.add_field(
             name="Users:",
-            value=(
-                f"{servers} servers\n{total_members} total members\n{total_unique} unique members"
+            value=box(
+                f"{servers} servers\n{total_members} total members\n{total_unique} unique members",
+                "css",
+            ),
+        )
+        emb.add_field(
+            name="Channels:",
+            value=box(
+                f"{text} Text Channels\n{voice} Voice Channels\n{stage_channels} Stage Channels",
+                "css",
             ),
         )
         emb.add_field(
             name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False
         )
         emb.add_field(
-            name="Channels:",
-            value=(
-                f"{text} Text Channels\n{voice} Voice Channels\n{stage_channels} Stage Channels"
-            ),
-        )
-        emb.add_field(
             name="Total channels:",
-            value=(
-                f"{text + voice + stage_channels} Total Channels\n{category_channel} Total Categories"
+            value=box(
+                f"{text + voice + stage_channels} Total Channels\n{category_channel} Total Categories\n{store_channel} Total Store Channels",
+                "css",
             ),
         )
 
