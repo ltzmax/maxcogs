@@ -11,7 +11,7 @@ class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.3.5"
+    __version__ = "2.3.6"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -49,7 +49,7 @@ class StatsInfo(commands.Cog):
                     stage_channels += 1
                 elif isinstance(channel, discord.CategoryChannel):
                     category_channel += 1
-                elif isinstance(channel, discord.discord.StoreChannel):
+                elif isinstance(channel, discord.StoreChannel):
                     store_channel += 1
 
         version = pkg_resources.get_distribution("discord.py").version
