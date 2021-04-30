@@ -11,7 +11,7 @@ class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.3.6"
+    __version__ = "2.3.7"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -85,7 +85,4 @@ class StatsInfo(commands.Cog):
 
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
-        try:
-            await ctx.reply(embed=emb, mention_author=False)
-        except discord.HTTPException:
-            await ctx.send(embed=emb)
+        await ctx.send(embed=emb)
