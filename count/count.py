@@ -2,16 +2,14 @@ import discord
 
 from datetime import datetime
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import (
-    humanize_timedelta
-)
+from redbot.core.utils.chat_formatting import humanize_timedelta
 
 
 class Count(commands.Cog):
     """A countdown cog."""
 
     __author__ = "MAX, Predä"
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -21,7 +19,7 @@ class Count(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
-        
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -84,9 +82,7 @@ class Count(commands.Cog):
         now = datetime.utcnow()
         hallo = datetime(now.year, 10, 31)
         if now.date() == hallo.date():
-            await ctx.send(
-                "Happy Holloween.🎃"
-            )
+            await ctx.send("Happy Holloween.🎃")
             return
         if hallo < now:
             hallo = hallo.replace(year=now.year + 1)
