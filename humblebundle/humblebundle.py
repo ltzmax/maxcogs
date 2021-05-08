@@ -1,5 +1,6 @@
 import asyncio
 import json
+import discord
 
 import aiohttp
 from redbot.core import commands
@@ -9,7 +10,7 @@ class HumbleBundle(commands.Cog):
     """Responds with the currently available Humble Bundles, if any."""
 
     __author__ = "<@306810730055729152>, MAX"
-    __version__ = "0.2.0"
+    __version__ = "0.3.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -51,5 +52,7 @@ class HumbleBundle(commands.Cog):
             items += "**{}. {}:** <{}>\n".format(
                 count + 1, bundles.get("bundle_name"), bundles.get("url")
             )
-
-        await ctx.send(items)
+        try:
+            await ctx.send(items)
+        except discord.HTTPException:
+            await ctx.send("There is currently no available humblebundle.")
