@@ -44,6 +44,9 @@ To install any cog you want:
 <td>humblebundle</td>
 <td>Responds with the currently available Humble Bundles, if there is any available.</td>
 </tr>
+<td>count</td>
+<td>Responds with countdowns from christmas, countdown (discord birthdays) and more. Note this fit best with GMT+2. since timezones is not a thing.</td>
+</tr>
 </tbody>
 </table>
 
