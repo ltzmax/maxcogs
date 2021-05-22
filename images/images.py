@@ -1,3 +1,6 @@
+import asyncio
+from random import choice
+
 import aiohttp
 import discord
 from redbot.core import commands
@@ -7,10 +10,10 @@ MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
 MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
 NEKOS_API = "https://nekos.best/"
 
-# API error
-RESP410 = "Failed to fetch API. Unknown error."
-RESP200 = "Something went wrong while trying to contact API."
-BADRESP = "Bad reponse, please retry the command again."
+SPACE = [
+    "spaceporn",
+    "astrophotography",
+]
 
 
 class Images(commands.Cog):
@@ -23,7 +26,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.0.0"
+    __version__ = "3.0.1"
     __author__ = ["MAX"]
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -35,51 +38,22 @@ class Images(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command()
-    @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True)
-    async def earth(self, ctx):
-        """Send a random earth images.
-
-        - EarthPorn is your community of landscape photographers and those who appreciate the natural beauty of our home planet."""
-        async with aiohttp.ClientSession() as session:
-            async with session.get(MARTINE_API + "earthporn") as resp:
-                if resp.status == 410:
-                    return await ctx.send(RESP410)
-                if resp.status != 200:
-                    return await ctx.send(RESP200)
-                response = await resp.json()
-            embed = discord.Embed(
-                title=response["data"].get("title", "[No Title]"),
-                url=response["data"]["post_url"],
-                description=f"Posted by: {response['data']['author']['name']}",
-            )
-            embed.set_footer(
-                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url=MARTINE_ICON,
-            )
-            embed.colour = await ctx.embed_color()
-            embed.set_image(url=response["data"]["image_url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send(BADRESP)
-
-    @commands.command()
+    @commands.command(aliases=["astro"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def space(self, ctx):
-        """Send a random space images.
-
-        - SpacePorn is a subreddit devoted to beautiful space images."""
+        """Send a random space images."""
+        async with ctx.typing():
+            await asyncio.sleep(0.1)
         async with aiohttp.ClientSession() as session:
-            async with session.get(MARTINE_API + "spaceporn") as resp:
+            async with session.get(MARTINE_API + choice(SPACE)) as resp:
                 if resp.status == 410:
-                    return await ctx.send(RESP410)
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
-                    return await ctx.send(RESP200)
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -95,51 +69,22 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send(BADRESP)
-
-    @commands.command()
-    @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True)
-    async def astro(self, ctx):
-        """Send a random astrophotography images."""
-        async with aiohttp.ClientSession() as session:
-            async with session.get(MARTINE_API + "astrophotography") as resp:
-                if resp.status == 410:
-                    return await ctx.send(RESP410)
-                if resp.status != 200:
-                    return await ctx.send(RESP200)
-                response = await resp.json()
-            embed = discord.Embed(
-                title=response["data"].get("title", "[No Title]"),
-                url=response["data"]["post_url"],
-                description=f"Posted by: {response['data']['author']['name']}",
-            )
-            embed.set_footer(
-                text=f"Powered by martinebot.com API | Upvotes {response['data']['upvotes']}",
-                icon_url=MARTINE_ICON,
-            )
-            embed.colour = await ctx.embed_color()
-            embed.set_image(url=response["data"]["image_url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send(BADRESP)
+            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def critique(self, ctx):
-        """Send a random Critique images.
-
-        - This is a community of passionate photographers to work together to improve one another's work."""
+        """Send a random Critique images."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "photocritique") as resp:
                 if resp.status == 410:
-                    return await ctx.send(RESP410)
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
-                    return await ctx.send(RESP200)
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -155,22 +100,22 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send(BADRESP)
+            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def food(self, ctx):
-        """Send a random food images.
-
-        - Images of Food taken by people that have made homemade food or just bought food to take photo and upload on reddit."""
+        """Send a random food images."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "food") as resp:
                 if resp.status == 410:
-                    return await ctx.send(RESP410)
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
-                    return await ctx.send(RESP200)
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -186,7 +131,7 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send(BADRESP)
+            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -199,7 +144,9 @@ class Images(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(NEKOS_API + "nekos") as response:
                 if response.status != 200:
-                    return await ctx.send(RESP200)
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 url = await response.json()
             embed = discord.Embed(
                 title="Here's an image from nekos.", colour=await ctx.embed_color()
@@ -209,22 +156,22 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send(BADRESP)
+            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command(aliases=["city"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def cityview(self, ctx):
-        """Send a random City images.
-
-        - High quality images of cities."""
+        """Send a random City images."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "CityPorn") as resp:
                 if resp.status == 410:
-                    return await ctx.send(RESP410)
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
-                    return await ctx.send(RESP200)
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -240,22 +187,22 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send(BADRESP)
+            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def fanart(self, ctx):
-        """Send a random League of legends fan arts images.
-
-        - Fan-creations of all types for League of Legends!"""
+        """Send a random League of legends fan arts images."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "LoLFanArt") as resp:
                 if resp.status == 410:
-                    return await ctx.send(RESP410)
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
-                    return await ctx.send(RESP200)
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -271,22 +218,22 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send(BADRESP)
+            await ctx.send("Bad reponse, please retry the command again.")
 
     @commands.command(aliases=["pics", "pic"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def picture(self, ctx):
-        """Send a random images.
-
-        - A place for pictures and photographs."""
+        """Send a random images."""
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + "pics") as resp:
                 if resp.status == 410:
-                    return await ctx.send(RESP410)
+                    return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
-                    return await ctx.send(RESP200)
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
                 response = await resp.json()
             embed = discord.Embed(
                 title=response["data"].get("title", "[No Title]"),
@@ -302,4 +249,4 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send(BADRESP)
+            await ctx.send("Bad reponse, please retry the command again.")
