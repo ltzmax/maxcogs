@@ -11,7 +11,7 @@ class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.5.9"
+    __version__ = "2.5.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -64,7 +64,8 @@ class StatsInfo(commands.Cog):
             value=box(
                 f"{shards} shards",
                 "css",
-            ),inline=False
+            ),
+            inline=False,
         )
         emb.add_field(
             name="Users:",
