@@ -4,14 +4,14 @@ import datetime
 import discord
 import pkg_resources
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import box, humanize_number
 
 
 class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.5.8"
+    __version__ = "2.5.9"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -52,11 +52,19 @@ class StatsInfo(commands.Cog):
                 elif isinstance(channel, discord.StoreChannel):
                     store_channel += 1
 
+        shards = humanize_number(self.bot.shard_count)
         version = pkg_resources.get_distribution("discord.py").version
         servers = str(len(self.bot.guilds))
         users = str(len(self.bot.users))
         emb = discord.Embed(
-            title=f"Statistics for {self.bot.user.name}:", color=await ctx.embed_color()
+            title=f"botstats for {self.bot.user.name}:", color=await ctx.embed_color()
+        )
+        emb.add_field(
+            name="Shards:",
+            value=box(
+                f"{shards} shards",
+                "css",
+            ),inline=False
         )
         emb.add_field(
             name="Users:",
@@ -85,7 +93,4 @@ class StatsInfo(commands.Cog):
 
         emb.set_footer(text=f"Discord.py v{version}")
         emb.timestamp = datetime.datetime.utcnow()
-        try:
-            await ctx.reply(embed=emb, mention_author=False)
-        except discord.HTTPException:
-            await ctx.send(embed=emb)
+        await ctx.send(embed=emb)
