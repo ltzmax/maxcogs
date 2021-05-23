@@ -11,9 +11,9 @@ old_ping = None
 
 
 class Ping(commands.Cog):
-    """Reply with latency of [botname].
+    """Reply with [botname]'s latency.
 
-    This does not matter anything as long as your ping is not above 300ms."""
+    This does not matter if your ping is not above 300ms."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -33,13 +33,13 @@ class Ping(commands.Cog):
 
     @commands.group(invoke_without_command=True)
     async def ping(self, ctx):
-        """Reply with latency of [botname].
+        """Reply with [botname]'s latency.
 
-        This does not matter anything as long as your ping is not above 300ms.
+        This does not matter if your ping is not above 300ms.
 
         - Discord WS: Websocket latency.
-        - Message: Difference between your command and message.
-        - Time: Time it takes for the bot to send message."""
+        - Message: Difference between your command's timestamp and the bot's reply's timestamp.
+        - Time: Time it takes for the bot to send a message."""
         if await ctx.embed_requested():
             latency = self.bot.latency * 1000
             emb = discord.Embed(title="Pong !", color=discord.Color.red())
@@ -90,7 +90,7 @@ class Ping(commands.Cog):
     @ping.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
     async def t(self, ctx):
-        """Reply with latency of [botname].
+        """Reply with [botname]'s latency.
 
         This shows with shards as well."""
         latency = self.bot.latency * 1000
