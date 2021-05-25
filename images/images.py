@@ -5,7 +5,7 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API, SPACE, PICTURES
+from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API, SPACE, NATURE
 
 
 class Images(commands.Cog):
@@ -18,7 +18,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.0.3"
+    __version__ = "3.0.4"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -68,9 +68,9 @@ class Images(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def nature(self, ctx):
-        """Send a random images."""
+        """Send a random nature images."""
         async with aiohttp.ClientSession() as session:
-            async with session.get(MARTINE_API + choice(PICTURES)) as resp:
+            async with session.get(MARTINE_API + choice(NATURE)) as resp:
                 if resp.status == 410:
                     return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:

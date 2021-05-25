@@ -9,7 +9,7 @@ SPACE = [
     "LandscapeAstro",
     "spaceengine",
 ]
-PICTURES = [
+NATURE = [
     "SkyPorn",
     "natureporn",
     "earthporn",
