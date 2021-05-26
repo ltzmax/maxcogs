@@ -5,7 +5,7 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API, SPACE, NATURE
+from .constants import MARTINE_API, MARTINE_ICON, NEKOS_API, SPACE, NATURE, PICVIEW
 
 
 class Images(commands.Cog):
@@ -18,7 +18,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.0.4"
+    __version__ = "3.0.5"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -36,8 +36,6 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def space(self, ctx):
         """Send a random space images."""
-        async with ctx.typing():
-            await asyncio.sleep(0.1)
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(SPACE)) as resp:
                 if resp.status == 410:
@@ -94,14 +92,14 @@ class Images(commands.Cog):
         except discord.HTTPException:
             await ctx.send("Bad reponse, please retry the command again.")
 
-    @commands.command(aliases=["city", "cityviews"])
+    @commands.command(aliases=["picviews", "pics", "pic"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
-    async def cityview(self, ctx):
-        """Send a random city images."""
+    async def picview(self, ctx):
+        """Send a random synthetic images."""
         async with aiohttp.ClientSession() as session:
-            async with session.get(MARTINE_API + "CityPorn") as resp:
+            async with session.get(MARTINE_API + choice(PICVIEW)) as resp:
                 if resp.status == 410:
                     return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
