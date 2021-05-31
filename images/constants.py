@@ -36,3 +36,13 @@ PICVIEW = [
     "CabinPorn",
     "churchporn",
 ]
+CARS = [
+    "carporn",
+    "MotorcyclePorn",
+    "TeslaPorn",
+    "Audi",
+    "AudiA4B6",
+    "BMW",
+    "E30",
+    "e46",
+]
