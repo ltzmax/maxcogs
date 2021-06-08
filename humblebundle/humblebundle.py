@@ -10,7 +10,7 @@ class HumbleBundle(commands.Cog):
     """Responds with the currently available Humble Bundles, if any."""
 
     __author__ = "<@306810730055729152>, MAX"
-    __version__ = "1.4.0"
+    __version__ = "1.5.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -29,7 +29,7 @@ class HumbleBundle(commands.Cog):
         self.bot.loop.create_task(self.session.close())
 
     @commands.command(aliases=["humble"])
-    @commands.cooldown(1, 90, commands.BucketType.guild)  # 1m 30 seconds.
+    @commands.cooldown(1, 700, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     async def humblebundle(self, ctx):
         """Responds with the currently available Humble Bundles."""
@@ -53,7 +53,7 @@ class HumbleBundle(commands.Cog):
             )
             for count, bundles in enumerate(data)
         )
-        try:
-            await ctx.send(items)
-        except discord.HTTPException:
+        if not items:
             await ctx.send("There is currently no available humblebundle.")
+            return
+        await ctx.send(items)
