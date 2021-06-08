@@ -10,7 +10,7 @@ class HumbleBundle(commands.Cog):
     """Responds with the currently available Humble Bundles, if any."""
 
     __author__ = "<@306810730055729152>, MAX"
-    __version__ = "1.3.0"
+    __version__ = "1.4.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -47,9 +47,12 @@ class HumbleBundle(commands.Cog):
         except asyncio.TimeoutError:
             return await ctx.send("Connection to Humble Bundle API timed out.")
 
-        items = "".join("**{}. {}:** <{}>\n".format(
+        items = "".join(
+            "**{}. {}:** <{}>\n".format(
                 count + 1, bundles.get("bundle_name"), bundles.get("url")
-            ) for count, bundles in enumerate(data))
+            )
+            for count, bundles in enumerate(data)
+        )
         try:
             await ctx.send(items)
         except discord.HTTPException:
