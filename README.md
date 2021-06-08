@@ -1,3 +1,4 @@
+
 <h1 align="center">MAXCOGS</h1>
 
 <h3>Small warning: This repo is unapproved.</h3>
@@ -57,3 +58,7 @@ PR is always welcome at anytime, so feel free to make changes. i'll probably mer
 - [Preda](https://github.com/PredaaA/predacogs) for doing some shardings in ping.
 
 - [cowogs](https://github.com/jenkins420/cowogs) for doing the humblebundle.
+_______________________________________________________________________
+
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/maxbooiii/maxcogs/master.svg)](https://results.pre-commit.ci/latest/github/maxbooiii/maxcogs/master)
+
