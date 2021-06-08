@@ -26,7 +26,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.0.8"
+    __version__ = "3.0.9"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -38,7 +38,7 @@ class Images(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command(aliases=["astro"])
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
@@ -66,7 +66,7 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
+            await ctx.send("Something went wrong while attempting to post an image.")
 
     @commands.command(aliases=["natures"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -96,7 +96,7 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
+            await ctx.send("Something went wrong while attempting to post an image.")
 
     @commands.command(aliases=["pictures", "pics", "pic"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -126,7 +126,7 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
+            await ctx.send("Something went wrong while attempting to post an image.")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -156,7 +156,7 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
+            await ctx.send("Something went wrong while attempting to post an image..")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -181,4 +181,4 @@ class Images(commands.Cog):
         try:
             await ctx.send(embed=embed)
         except discord.HTTPException:
-            await ctx.send("Bad reponse, please retry the command again.")
+            await ctx.send("Something went wrong while attempting to post an image.")
