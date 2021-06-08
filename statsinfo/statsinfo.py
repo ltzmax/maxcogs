@@ -11,7 +11,7 @@ class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.6.0"
+    __version__ = "2.6.1"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -36,9 +36,7 @@ class StatsInfo(commands.Cog):
         stage_channels = 0
         category_channel = 0
         store_channel = 0
-        guilds = 0
-        for guild in self.bot.guilds:
-            guilds += 1
+        for guilds, guild in enumerate(self.bot.guilds):
             total_members += guild.member_count
             for channel in guild.channels:
                 if isinstance(channel, discord.TextChannel):
