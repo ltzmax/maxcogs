@@ -15,6 +15,14 @@ class Ping(commands.Cog):
 
     This does not matter if your ping is not above 300ms."""
 
+    __author__ = "MAX, Senroht#5179, Fixator10, Preda"
+    __version__ = "0.6.0"
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
@@ -31,7 +39,7 @@ class Ping(commands.Cog):
                 pass
             self.bot.add_command(old_ping)
 
-    @commands.group(invoke_without_command=True)
+    @commands.command()
     async def ping(self, ctx):
         """Reply with [botname]'s latency.
 
@@ -81,55 +89,13 @@ class Ping(commands.Cog):
             )
             await message.edit(embed=emb)
         else:
-            before = time.monotonic()
-            latency = int(round(self.bot.latency * 1000, 1))
-            message = await ctx.send("🏓 Pong")
-            ping = (time.monotonic() - before) * 1000
-            await message.edit(content=f"🏓 Discord WS: {latency}ms")
+            start_time = time.time()
+            message = await ctx.send("Please wait...")
+            end_time = time.time()
 
-    @ping.command(hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def t(self, ctx):
-        """Reply with [botname]'s latency.
-
-        This shows with shards as well."""
-        latency = self.bot.latency * 1000
-        emb = discord.Embed(title="Please wait..", color=discord.Color.red())
-        emb.add_field(
-            name="Discord WS:", value=box(str(round(latency)) + " ms", "yaml")
-        )
-        emb.add_field(name="Typing", value=box("calculating" + " ms", "yaml"))
-        emb.add_field(name="Message", value=chat.box("…"))
-
-        before = time.monotonic()
-        message = await ctx.send(embed=emb)
-        ping = (time.monotonic() - before) * 1000
-
-        shards = [
-            f"Shard {shard + 1}/{self.bot.shard_count}: {round(pingt * 1000)}ms\n"
-            for shard, pingt in self.bot.latencies
-        ]
-        emb.add_field(name="Shards:", value=box("".join(shards)))
-        emb.title = "Pong !"
-        emb.colour = await ctx.embed_color()
-        emb.set_field_at(
-            1,
-            name="Message:",
-            value=chat.box(
-                str(
-                    int(
-                        (message.created_at - ctx.message.created_at).total_seconds()
-                        * 1000
-                    )
-                )
-                + " ms",
-                "yaml",
-            ),
-        )
-        emb.set_field_at(
-            2, name="Typing:", value=chat.box(str(round(ping)) + " ms", "yaml")
-        )
-        await message.edit(embed=emb)
+            await message.edit(
+                content=f"Discord WS: {round(self.bot.latency * 1000)}ms\nAPI: {round((end_time - start_time) * 1000)}ms"
+            )
 
 
 def setup(bot):
