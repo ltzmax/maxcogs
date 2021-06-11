@@ -5,15 +5,8 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-from .constants import (
-    CARS,
-    MARTINE_API,
-    MARTINE_ICON,
-    NATURE,
-    NEKOS_API,
-    PICVIEW,
-    SPACE,
-)
+from .constants import (CARS, MARTINE_API, MARTINE_ICON, NATURE, NEKOS_API,
+                        PICVIEW, SPACE)
 
 
 class Images(commands.Cog):

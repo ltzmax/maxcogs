@@ -1,8 +1,8 @@
 import asyncio
 import json
-import discord
 
 import aiohttp
+import discord
 from redbot.core import commands
 
 
