@@ -26,7 +26,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.1.9"
+    __version__ = "3.2.9"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -63,10 +63,11 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while attempting to post an image.")
+        if not response:
+            return await ctx.send(
+                "Something went wrong while attempting to post an image."
+            )
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["natures"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -93,10 +94,11 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while attempting to post an image.")
+        if not response:
+            return await ctx.send(
+                "Something went wrong while attempting to post an image."
+            )
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["pictures", "pics", "pic"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -123,10 +125,11 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while attempting to post an image.")
+        if not response:
+            return await ctx.send(
+                "Something went wrong while attempting to post an image."
+            )
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -153,10 +156,11 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while attempting to post an image..")
+        if not response:
+            return await ctx.send(
+                "Something went wrong while attempting to post an image."
+            )
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
