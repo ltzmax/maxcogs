@@ -10,7 +10,7 @@ class HumbleBundle(commands.Cog):
     """Responds with the currently available Humble Bundles, if any."""
 
     __author__ = "<@306810730055729152>, MAX"
-    __version__ = "1.5.0"
+    __version__ = "1.6.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
