@@ -71,18 +71,9 @@ class StatsInfo(commands.Cog):
             value=box(
                 tabulate(
                     [
-                        [
-                            "Servers",
-                            servers,
-                        ],
-                        [
-                            "Total Users",
-                            total_members,
-                        ],
-                        [
-                            "Unique Users",
-                            total_unique,
-                        ],
+                        ["Servers", servers],
+                        ["Total Users", total_members],
+                        ["Unique Users", total_unique],
                     ],
                     tablefmt="plain",
                 ),
@@ -94,18 +85,9 @@ class StatsInfo(commands.Cog):
             value=box(
                 tabulate(
                     [
-                        [
-                            "Text Channels",
-                            text,
-                        ],
-                        [
-                            "Voice Channels",
-                            voice,
-                        ],
-                        [
-                            "Stage Channels",
-                            stage_channels,
-                        ],
+                        ["Text Channels", text],
+                        ["Voice Channels", voice],
+                        ["Stage Channels", stage_channels],
                     ],
                     tablefmt="plain",
                 ),
@@ -118,18 +100,9 @@ class StatsInfo(commands.Cog):
             value=box(
                 tabulate(
                     [
-                        [
-                            "Total Channels",
-                            text + voice + stage_channels,
-                        ],
-                        [
-                            "Total Categories",
-                            category_channel,
-                        ],
-                        [
-                            "Total Store Channels",
-                            store_channel,
-                        ],
+                        ["Total Channels", text + voice + stage_channels],
+                        ["Total Categories", category_channel],
+                        ["Total Store Channels", store_channel],
                     ],
                     tablefmt="plain",
                 ),
