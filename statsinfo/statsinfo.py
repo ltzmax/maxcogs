@@ -12,7 +12,7 @@ class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.6.1"
+    __version__ = "2.6.2"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
