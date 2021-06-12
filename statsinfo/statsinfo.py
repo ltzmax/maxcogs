@@ -94,7 +94,9 @@ class StatsInfo(commands.Cog):
                 "css",
             ),
         )
-        emb.add_field(name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False)
+        emb.add_field(
+            name="\N{ZERO WIDTH SPACE}", value="\N{ZERO WIDTH SPACE}", inline=False
+        )
         emb.add_field(
             name="Total channels:",
             value=box(
