@@ -11,7 +11,7 @@ class ButtonInvite(commands.Cog):
     To set permission level use `[p]inviteset perms`."""
 
     __author__ = "MAX"
-    __version__ = "0.1.0"
+    __version__ = "0.2.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -48,7 +48,7 @@ class ButtonInvite(commands.Cog):
             title=f"{name}",
             colour=discord.Colour(0x5865F2),
             url=(ctx.bot.user.avatar_url_as(static_format="png")),
-            description=f"Thank you for choosing to invite {name}\n\n**Click on the button!**",
+            description=f"Thank you for inviting {name}\n\n**Click on the button!**",
         )
         embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
         embed.set_footer(text=f"Server count: {servers}")
