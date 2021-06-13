@@ -5,13 +5,14 @@ import discord
 import pkg_resources
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, humanize_number
+from tabulate import tabulate
 
 
 class StatsInfo(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"
-    __version__ = "2.6.1"
+    __version__ = "2.6.2"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -68,14 +69,28 @@ class StatsInfo(commands.Cog):
         emb.add_field(
             name="Users:",
             value=box(
-                f"{servers} Servers\n{total_members} Total Users\n{total_unique} Unique Users",
+                tabulate(
+                    [
+                        ["Servers", servers],
+                        ["Total Users", total_members],
+                        ["Unique Users", total_unique],
+                    ],
+                    tablefmt="plain",
+                ),
                 "css",
             ),
         )
         emb.add_field(
             name="Channels:",
             value=box(
-                f"{text} Text Channels\n{voice} Voice Channels\n{stage_channels} Stage Channels",
+                tabulate(
+                    [
+                        ["Text Channels", text],
+                        ["Voice Channels", voice],
+                        ["Stage Channels", stage_channels],
+                    ],
+                    tablefmt="plain",
+                ),
                 "css",
             ),
         )
@@ -85,7 +100,14 @@ class StatsInfo(commands.Cog):
         emb.add_field(
             name="Total channels:",
             value=box(
-                f"{text + voice + stage_channels} Total Channels\n{category_channel} Total Categories\n{store_channel} Total Store Channels",
+                tabulate(
+                    [
+                        ["Total Channels", text + voice + stage_channels],
+                        ["Total Categories", category_channel],
+                        ["Total Store Channels", store_channel],
+                    ],
+                    tablefmt="plain",
+                ),
                 "css",
             ),
         )
