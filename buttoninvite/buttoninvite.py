@@ -24,15 +24,7 @@ class ButtonInvite(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
-    def cog_unload(self):
-        global old_invite
-        if old_invite:
-            try:
-                self.bot.remove_command("invite")
-            except:
-                pass
-            self.bot.add_command(old_invite)
+        self.bot.remove_command("invite") # cause of corelogic.
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -64,12 +56,3 @@ class ButtonInvite(commands.Cog):
                 )
             ],
         )
-
-
-def setup(bot):
-    invite = ButtonInvite(bot)
-    global old_invite
-    old_invite = bot.get_command("invite")
-    if old_invite:
-        bot.remove_command(old_invite.name)
-    bot.add_cog(invite)
