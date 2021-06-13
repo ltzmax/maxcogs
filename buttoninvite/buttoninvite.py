@@ -7,11 +7,11 @@ old_invite = None
 
 class ButtonInvite(commands.Cog):
     """Sends the invite for [botname] with button.
-    
+
     To set permission level use `[p]inviteset perms`."""
 
     __author__ = "MAX"
-    __version__ = "0.4.0"
+    __version__ = "0.5.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -38,7 +38,7 @@ class ButtonInvite(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def invite(self, ctx):
         """Shows [botname]'s invite link.
-        
+
         To set permission level use `[p]inviteset perms`."""
 
         servers = str(len(self.bot.guilds))
