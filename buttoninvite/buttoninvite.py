@@ -11,7 +11,7 @@ class ButtonInvite(commands.Cog):
     To set permission level use `[p]inviteset perms`."""
 
     __author__ = "MAX"
-    __version__ = "0.3.0"
+    __version__ = "0.4.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
