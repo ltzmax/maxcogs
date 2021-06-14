@@ -5,5 +5,8 @@
     "description": "A cog with your invite link that has the new buttons.",
     "short": "Button invite for your bot.",
     "min_bot_version": "3.4.0",
-    "end_user_data_statement": "This cog does not store any data."
+    "end_user_data_statement": "This cog does not store any data.",
+    "requirements": [
+        "dislash.py==1.0.16"
+    ]
 }
