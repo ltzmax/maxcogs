@@ -26,7 +26,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.2.9"
+    __version__ = "3.3.9"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -44,6 +44,8 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def space(self, ctx):
         """Send a random space images."""
+        async with ctx.typing():
+            await asyncio.sleep(1)
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(SPACE)) as resp:
                 if resp.status == 410:
@@ -75,6 +77,8 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def nature(self, ctx):
         """Send a random nature images."""
+        async with ctx.typing():
+            await asyncio.sleep(1)
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(NATURE)) as resp:
                 if resp.status == 410:
@@ -106,6 +110,8 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def picture(self, ctx):
         """Send a random synthetic images."""
+        async with ctx.typing():
+            await asyncio.sleep(1)
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(PICVIEW)) as resp:
                 if resp.status == 410:
@@ -137,6 +143,8 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def cars(self, ctx):
         """Send a random car images."""
+        async with ctx.typing():
+            await asyncio.sleep(1)
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(CARS)) as resp:
                 if resp.status == 410:
