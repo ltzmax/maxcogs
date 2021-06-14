@@ -11,7 +11,7 @@ class ButtonInvite(commands.Cog):
     To set permission level use `[p]inviteset perms`."""
 
     __author__ = "MAX"
-    __version__ = "0.6.0a"
+    __version__ = "0.0.7a"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -24,7 +24,7 @@ class ButtonInvite(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.bot.remove_command("invite") # cause of corelogic.
+        self.bot.remove_command("invite")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
