@@ -9,7 +9,7 @@ class ButtonInvite(commands.Cog):
     To set permission level use `[p]inviteset perms`, and you can change description by using `[p]invmsg`."""
 
     __author__ = "MAX"
-    __version__ = "0.2.0a"
+    __version__ = "0.3.0a"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -37,13 +37,27 @@ class ButtonInvite(commands.Cog):
         """Change the invite message shown in the embed."""
         if message:
             await self.config.msg.set(message)
-            await ctx.send(f"Sucessfully set the invite message")
+            if await ctx.embed_requested():
+                emb = discord.Embed(
+                    description=("Sucessfully set the invite message"),
+                    color=0x76EE00,
+                )
+                await ctx.reply(embed=emb, mention_author=False)
+            else:
+                await ctx.send("Sucessfully set the invite message")
 
     @invmsg.command()
     async def reset(self, ctx, *, message=None):
         """Reset the invite message back to default."""
         await self.config.msg.set(self.def_msg)
-        await ctx.send(f"Reset the invite message back to default")
+        if await ctx.embed_requested():
+            emb = discord.Embed(
+                description=("Reset the invite message back to default"),
+                color=0x76EE00,
+            )
+            await ctx.reply(embed=emb, mention_author=False)
+        else:
+            await ctx.send("Reset the invite message back to default")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
