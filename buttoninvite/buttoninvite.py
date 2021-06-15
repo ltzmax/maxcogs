@@ -1,6 +1,6 @@
 import discord
 from dislash.interactions import ActionRow, Button, ButtonStyle
-from redbot.core import commands,Config
+from redbot.core import commands, Config
 
 old_invite = None
 
@@ -25,12 +25,14 @@ class ButtonInvite(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=12435434124)
-        self.config.register_global(msg="Thank you for inviting {}\n\n**Click on the button!**")
+        self.config.register_global(
+            msg="Thank you for inviting {}\n\n**Click on the button!**"
+        )
         self.bot.remove_command("invite")
-    
+
     @commands.is_owner()
     @commands.command()
-    async def invmsg(self,ctx,*,message):
+    async def invmsg(self, ctx, *, message):
         """Change the invite message shown in the embed"""
         await self.config.msg.set(message)
         await ctx.send(f"Sucessfully set the invite message")
