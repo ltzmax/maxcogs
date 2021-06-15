@@ -4,7 +4,7 @@ import time
 from typing import Optional
 
 import discord
-from redbot.core import commands
+from redbot.core import Config, commands
 from redbot.core.utils import chat_formatting as chat
 from redbot.core.utils.chat_formatting import box
 
@@ -17,7 +17,7 @@ class Ping(commands.Cog):
     This does not matter if your ping is not above 300ms."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.8.0"
+    __version__ = "0.9.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -30,6 +30,9 @@ class Ping(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config.get_conf(self, identifier=12435434124)
+        self.def_msg = "Pong !"
+        self.config.register_global(msg=self.def_msg)
 
     def cog_unload(self):
         global old_ping
@@ -39,6 +42,38 @@ class Ping(commands.Cog):
             except:
                 pass
             self.bot.add_command(old_ping)
+
+    @commands.is_owner()
+    @commands.group(aliases=["setping"])
+    async def pingset(self, ctx):
+        """Settings to change ping title shown in the embed."""
+
+    @pingset.command()
+    async def add(self, ctx, *, message):
+        """Change the ping message shown in the embed."""
+        if message:
+            await self.config.msg.set(message)
+            if await ctx.embed_requested():
+                emb = discord.Embed(
+                    description=("Sucessfully set the ping message."),
+                    color=0x76EE00,
+                )
+                await ctx.reply(embed=emb, mention_author=False)
+            else:
+                await ctx.send("Sucessfully set the ping message.")
+
+    @pingset.command()
+    async def reset(self, ctx, *, message=None):
+        """Reset the ping message back to default."""
+        await self.config.msg.set(self.def_msg)
+        if await ctx.embed_requested():
+            emb = discord.Embed(
+                description=("Sucessfully reset the ping message to default."),
+                color=0x76EE00,
+            )
+            await ctx.reply(embed=emb, mention_author=False)
+        else:
+            await ctx.send("Sucessfully reset the ping message to default.")
 
     @commands.command(name="ping", hidden=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -64,18 +99,18 @@ class Ping(commands.Cog):
                 for shard, pingt in self.bot.latencies
             ]
         emb = discord.Embed(
-            title="Pong!",
+            title=(await self.config.msg()).format(),
             color=discord.Color.red(),
         )
         emb.add_field(
-            name="Discord WS",
+            name="Discord WS:",
             value=chat.box(str(round(latency)) + "ms", "yaml"),
         )
-        emb.add_field(name=("Message"), value=chat.box("…", "yaml"))
-        emb.add_field(name=("Typing"), value=chat.box("…", "yaml"))
+        emb.add_field(name=("Message:"), value=chat.box("…", "yaml"))
+        emb.add_field(name=("Typing:"), value=chat.box("…", "yaml"))
 
         if show_shards:
-            emb.add_field(name=("Shards"), value=chat.box("\n".join(shards), "yaml"))
+            emb.add_field(name=("Shards:"), value=chat.box("\n".join(shards), "yaml"))
 
         before = time.monotonic()
         message = await ctx.send(embed=emb)
@@ -84,7 +119,7 @@ class Ping(commands.Cog):
         emb.colour = await ctx.embed_color()
         emb.set_field_at(
             1,
-            name=("Message"),
+            name=("Message:"),
             value=chat.box(
                 str(
                     int(
@@ -100,7 +135,7 @@ class Ping(commands.Cog):
             ),
         )
         emb.set_field_at(
-            2, name=("Typing"), value=chat.box(str(round(ping)) + "ms", "yaml")
+            2, name=("Typing:"), value=chat.box(str(round(ping)) + "ms", "yaml")
         )
 
         await message.edit(embed=emb)
