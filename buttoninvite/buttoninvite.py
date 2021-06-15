@@ -25,17 +25,20 @@ class ButtonInvite(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=12435434124)
-        self.config.register_global(
-            msg="Thank you for inviting {}\n\n**Click on the button!**"
-        )
+        self.def_msg = "Thank you for inviting {}\n\n**Click on the button!**"
+        self.config.register_global(msg=self.def_msg)
         self.bot.remove_command("invite")
 
     @commands.is_owner()
     @commands.command()
-    async def invmsg(self, ctx, *, message):
+    async def invmsg(self, ctx, *, message=None):
         """Change the invite message shown in the embed"""
-        await self.config.msg.set(message)
-        await ctx.send(f"Sucessfully set the invite message")
+        if message:
+            await self.config.msg.set(message)
+            await ctx.send(f"Sucessfully set the invite message")
+        else:
+            await self.config.msg.set(self.def_msg)
+            await ctx.send(f"Reset the invite message back to default")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
