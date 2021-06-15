@@ -1,6 +1,6 @@
 import discord
 from dislash.interactions import ActionRow, Button, ButtonStyle
-from redbot.core import commands, Config
+from redbot.core import Config, commands
 
 
 class ButtonInvite(commands.Cog):
@@ -9,7 +9,7 @@ class ButtonInvite(commands.Cog):
     To set permission level use `[p]inviteset perms`, and you can change description by using `[p]invmsg`."""
 
     __author__ = "MAX"
-    __version__ = "0.1.0a"
+    __version__ = "0.2.0a"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
