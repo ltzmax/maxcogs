@@ -1,6 +1,7 @@
-# Thanks preda for shard code and fixator10 for message code and probably more stuff. :P
-# Thanks Senroht#5179 for permissions to use his code.
+# Thanks preda for shards and fixator10 for editing most things.
+# Thanks Senroht#5179 for permissions to use his code public.
 import time
+from typing import Optional
 
 import discord
 from redbot.core import commands
@@ -16,7 +17,7 @@ class Ping(commands.Cog):
     This does not matter if your ping is not above 300ms."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.7.0"
+    __version__ = "0.8.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -41,7 +42,7 @@ class Ping(commands.Cog):
 
     @commands.command(name="ping", hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def _ping(self, ctx):
+    async def _ping(self, ctx, show_shards: Optional[bool] = None):
         """Reply with [botname]'s latency.
 
         This does not matter if your ping is not above 300ms.
@@ -50,168 +51,58 @@ class Ping(commands.Cog):
         - Message: Difference between your command's timestamp and the bot's reply's timestamp.
         - Time: Time it takes for the bot to send a message.
         """
+        show_shards = (
+            len(self.bot.latencies) > 1 if show_shards is None else show_shards
+        )
         latency = self.bot.latency * 1000
+        if show_shards:
+            # The chances of this in near future is almost 0, but who knows, what future will bring to us?
+            shards = [
+                ("Shard {}/{}: {}ms").format(
+                    shard + 1, self.bot.shard_count, round(pingt * 1000)
+                )
+                for shard, pingt in self.bot.latencies
+            ]
+        emb = discord.Embed(
+            title="Pong!",
+            color=discord.Color.red(),
+        )
+        emb.add_field(
+            name="Discord WS",
+            value=chat.box(str(round(latency)) + "ms", "yaml"),
+        )
+        emb.add_field(name=("Message"), value=chat.box("…", "yaml"))
+        emb.add_field(name=("Typing"), value=chat.box("…", "yaml"))
 
-        if round(self.bot.latency * 1000) <= 50:
-            emb = discord.Embed(title="pong", color=0x00FF00)
-            emb.add_field(
-                name="Discord WS:", value=box(str(round(latency)) + " ms", "yaml")
-            )
-            emb.add_field(name="Typing", value=box("calculating" + " ms", "yaml"))
-            emb.add_field(name="Message", value=chat.box("…"))
+        if show_shards:
+            emb.add_field(name=("Shards"), value=chat.box("\n".join(shards), "yaml"))
 
-            before = time.monotonic()
-            message = await ctx.send(embed=emb)
-            ping = (time.monotonic() - before) * 1000
-            # Green
-            emb.title = "Pong !"
-            emb.set_field_at(
-                1,
-                name="Message:",
-                value=chat.box(
-                    str(
-                        int(
-                            (
-                                message.created_at - ctx.message.created_at
-                            ).total_seconds()
-                            * 1000
-                        )
+        before = time.monotonic()
+        message = await ctx.send(embed=emb)
+        ping = (time.monotonic() - before) * 1000
+
+        emb.colour = await ctx.embed_color()
+        emb.set_field_at(
+            1,
+            name=("Message"),
+            value=chat.box(
+                str(
+                    int(
+                        (
+                            message.created_at
+                            - (ctx.message.edited_at or ctx.message.created_at)
+                        ).total_seconds()
+                        * 1000
                     )
-                    + " ms",
-                    "yaml",
-                ),
-            )
-            emb.set_field_at(
-                2, name="Typing:", value=chat.box(str(round(ping)) + " ms", "yaml")
-            )
-        elif round(self.bot.latency * 1000) <= 150:
-            emb = discord.Embed(title="pong", color=0x00FF00)
-            emb.add_field(
-                name="Discord WS:", value=box(str(round(latency)) + " ms", "yaml")
-            )
-            emb.add_field(name="Typing", value=box("calculating" + " ms", "yaml"))
-            emb.add_field(name="Message", value=chat.box("…"))
+                )
+                + "ms",
+                "yaml",
+            ),
+        )
+        emb.set_field_at(
+            2, name=("Typing"), value=chat.box(str(round(ping)) + "ms", "yaml")
+        )
 
-            before = time.monotonic()
-            message = await ctx.send(embed=emb)
-            ping = (time.monotonic() - before) * 1000
-            # green.
-            emb.title = "Pong !"
-            emb.set_field_at(
-                1,
-                name="Message:",
-                value=chat.box(
-                    str(
-                        int(
-                            (
-                                message.created_at - ctx.message.created_at
-                            ).total_seconds()
-                            * 1000
-                        )
-                    )
-                    + " ms",
-                    "yaml",
-                ),
-            )
-            emb.set_field_at(
-                2, name="Typing:", value=chat.box(str(round(ping)) + " ms", "yaml")
-            )
-        elif round(self.bot.latency * 1000) <= 250:
-            emb = discord.Embed(title="pong", color=0xFF8C00)
-            emb.add_field(
-                name="Discord WS:", value=box(str(round(latency)) + " ms", "yaml")
-            )
-            emb.add_field(name="Typing", value=box("calculating" + " ms", "yaml"))
-            emb.add_field(name="Message", value=chat.box("…"))
-
-            before = time.monotonic()
-            message = await ctx.send(embed=emb)
-            ping = (time.monotonic() - before) * 1000
-            # orange
-            emb.title = "Pong !"
-            emb.set_field_at(
-                1,
-                name="Message:",
-                value=chat.box(
-                    str(
-                        int(
-                            (
-                                message.created_at - ctx.message.created_at
-                            ).total_seconds()
-                            * 1000
-                        )
-                    )
-                    + " ms",
-                    "yaml",
-                ),
-            )
-            emb.set_field_at(
-                2, name="Typing:", value=chat.box(str(round(ping)) + " ms", "yaml")
-            )
-        elif round(self.bot.latency * 1000) <= 300:
-            emb = discord.Embed(title="pong", color=0xFF0C0C)
-            emb.add_field(
-                name="Discord WS:", value=box(str(round(latency)) + " ms", "yaml")
-            )
-            emb.add_field(name="Typing", value=box("calculating" + " ms", "yaml"))
-            emb.add_field(name="Message", value=chat.box("…"))
-
-            before = time.monotonic()
-            message = await ctx.send(embed=emb)
-            ping = (time.monotonic() - before) * 1000
-            # red
-            emb.title = "Pong !"
-            emb.set_field_at(
-                1,
-                name="Message:",
-                value=chat.box(
-                    str(
-                        int(
-                            (
-                                message.created_at - ctx.message.created_at
-                            ).total_seconds()
-                            * 1000
-                        )
-                    )
-                    + " ms",
-                    "yaml",
-                ),
-            )
-            emb.set_field_at(
-                2, name="Typing:", value=chat.box(str(round(ping)) + " ms", "yaml")
-            )
-        elif round(self.bot.latency * 1000) <= 350:
-            emb = discord.Embed(title="pong", color=0xFF0C0C)
-            emb.add_field(
-                name="Discord WS:", value=box(str(round(latency)) + " ms", "yaml")
-            )
-            emb.add_field(name="Typing", value=box("calculating" + " ms", "yaml"))
-            emb.add_field(name="Message", value=chat.box("…"))
-
-            before = time.monotonic()
-            message = await ctx.send(embed=emb)
-            ping = (time.monotonic() - before) * 1000
-            # red
-            emb.title = "Pong !"
-            emb.set_field_at(
-                1,
-                name="Message:",
-                value=chat.box(
-                    str(
-                        int(
-                            (
-                                message.created_at - ctx.message.created_at
-                            ).total_seconds()
-                            * 1000
-                        )
-                    )
-                    + " ms",
-                    "yaml",
-                ),
-            )
-            emb.set_field_at(
-                2, name="Typing:", value=chat.box(str(round(ping)) + " ms", "yaml")
-            )
         await message.edit(embed=emb)
 
 
