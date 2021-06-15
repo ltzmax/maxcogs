@@ -6,10 +6,10 @@ from redbot.core import commands, Config
 class ButtonInvite(commands.Cog):
     """Sends the invite for [botname] with button.
 
-    To set permission level use `[p]inviteset perms`."""
+    To set permission level use `[p]inviteset perms`, and you can change description by using `[p]invmsg`."""
 
     __author__ = "MAX"
-    __version__ = "0.0.8a"
+    __version__ = "0.0.9a"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -43,7 +43,9 @@ class ButtonInvite(commands.Cog):
     async def invite(self, ctx):
         """Shows [botname]'s invite link.
 
-        To set permission level use `[p]inviteset perms`."""
+        To set permission level use `[p]inviteset perms`.
+
+        You can change description by using `[p]invmsg`."""
 
         servers = str(len(self.bot.guilds))
         name = ctx.bot.user.name
