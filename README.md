@@ -33,7 +33,7 @@ To install any cog you want:
 <td>ping</td>
 <td>This will reply with the latency of your bot.</td>
 </tr>
-<td>image</td>
+<td>images</td>
 <td>Random images cog, This is where i'll add image commands.</td>
 </tr>
 <td>embeduptime</td>
