@@ -39,7 +39,7 @@ To install any cog you want:
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed and shows with the new replies from dpy 1.6.0.</td>
 </tr>
-<td>Statsinfo</td>
+<td>statsinfo</td>
 <td>This shows some statics about your bot on how many channels, server and users there are total.</td>
 </tr>
 <td>humblebundle</td>
