@@ -17,7 +17,7 @@ class Ping(commands.Cog):
     This does not matter if your ping is not above 300ms."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.10.0"
+    __version__ = "0.11.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -75,7 +75,7 @@ class Ping(commands.Cog):
         else:
             await ctx.send("Sucessfully reset the ping message to default.")
 
-    @commands.command(name="ping", hidden=True)
+    @commands.command(name="ping")
     @commands.bot_has_permissions(embed_links=True)
     async def _ping(self, ctx, show_shards: Optional[bool] = None):
         """Reply with [botname]'s latency.
