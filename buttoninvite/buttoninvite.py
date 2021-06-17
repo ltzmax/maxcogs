@@ -9,7 +9,7 @@ class ButtonInvite(commands.Cog):
     To set permission level use `[p]inviteset perms`, and you can change description by using `[p]invmsg`."""
 
     __author__ = "MAX"
-    __version__ = "0.4.0a"
+    __version__ = "0.4.1 alpha"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -39,7 +39,7 @@ class ButtonInvite(commands.Cog):
         if await ctx.embed_requested():
             emb = discord.Embed(
                 description=("Sucessfully set the invite message"),
-                color=0x76EE00,
+                color=await ctx.embed_color(),
             )
             await ctx.reply(embed=emb, mention_author=False)
         else:
@@ -52,7 +52,7 @@ class ButtonInvite(commands.Cog):
         if await ctx.embed_requested():
             emb = discord.Embed(
                 description=("Reset the invite message back to default"),
-                color=0x76EE00,
+                color=await ctx.embed_color(),
             )
             await ctx.reply(embed=emb, mention_author=False)
         else:
@@ -70,7 +70,7 @@ class ButtonInvite(commands.Cog):
         if await ctx.embed_requested():
             emb = discord.Embed(
                 description=(f"Sucessfully set the emoji to {emoji}"),
-                color=0x76EE00,
+                color=await ctx.embed_color(),
             )
             await ctx.reply(embed=emb, mention_author=False)
         else:
@@ -83,7 +83,7 @@ class ButtonInvite(commands.Cog):
         if await ctx.embed_requested():
             emb = discord.Embed(
                 description=("Removed the emoji"),
-                color=0x76EE00,
+                color=await ctx.embed_color(),
             )
             await ctx.reply(embed=emb, mention_author=False)
         else:
@@ -102,7 +102,7 @@ class ButtonInvite(commands.Cog):
         settings = await self.config.all()
         embed = discord.Embed(
             title=f"{name}",
-            colour=discord.Colour(0x5865F2),
+            color=await ctx.embed_color(),
             url=(ctx.bot.user.avatar_url_as(static_format="png")),
             description=(settings["msg"]).format(name),
         )
