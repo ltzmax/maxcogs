@@ -1,7 +1,5 @@
-# This is an edited verison from the current uptime in core.
-# Difference with this: is that it shows embed and uses the new replies.
-# This also uses the new random colours on embeds.
-# Thanks Red-DiscordBot for their hard work. <3
+# Thanks Red-DiscordBot for their hard work.
+# This uptimer is a fork of red, which uses embed.
 import datetime
 
 import discord
@@ -31,28 +29,17 @@ class EmbedUptime(commands.Cog):
             self.bot.add_command(old_uptime)
 
     @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
-        name = ctx.bot.user.name  # this make it show botname.
+        name = ctx.bot.user.name
         since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
-        if await ctx.embed_requested():
             emb = discord.Embed(colour=await ctx.embed_color())
             emb.add_field(name=f"{name} has been up for:", value=uptime_str)
             emb.set_footer(text=f"Since: {since}")
-            await ctx.reply(embed=emb, mention_author=False)
-        else:  # non embeds here.
-            since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
-            delta = datetime.datetime.utcnow() - self.bot.uptime
-            uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second")
-            await ctx.send(
-                (
-                    "**{name}** has been up for: `{time_quantity}` (since: {timestamp})"
-                ).format(
-                    name=ctx.bot.user.name, time_quantity=uptime_str, timestamp=since
-                )
-            )
+            await ctx.send(embed=emb)
 
 
 def setup(bot):
