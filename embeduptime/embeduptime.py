@@ -36,10 +36,10 @@ class EmbedUptime(commands.Cog):
         since = ctx.bot.uptime.strftime("%H:%M:%S UTC | %Y-%m-%d")
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
-            emb = discord.Embed(colour=await ctx.embed_color())
-            emb.add_field(name=f"{name} has been up for:", value=uptime_str)
-            emb.set_footer(text=f"Since: {since}")
-            await ctx.send(embed=emb)
+        emb = discord.Embed(colour=await ctx.embed_color())
+        emb.add_field(name=f"{name} has been up for:", value=uptime_str)
+        emb.set_footer(text=f"Since: {since}")
+        await ctx.send(embed=emb)
 
 
 def setup(bot):
