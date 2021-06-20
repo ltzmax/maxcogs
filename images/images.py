@@ -20,7 +20,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.3.10"
+    __version__ = "3.3.11"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -180,7 +180,7 @@ class Images(commands.Cog):
                     )
                 url = await response.json()
             embed = discord.Embed(
-                title="Here's an image from nekos.", colour=await ctx.embed_color()
+                title="Here's a pic of neko", colour=await ctx.embed_color()
             )
             embed.set_footer(text="From nekos.best")
             embed.set_image(url=url["url"])
