@@ -1,7 +1,7 @@
 {
     "author": ["MAX"],
     "install_msg": "Thanks for installing.\n⚠️This cog require that you have dislash installed to work.⚠️\nif you have any question, you can find me in #testing in <https://discord.gg/red>.\nOnce you load this cog, it will replace the invite in core with this one. on unload you will need to restart your bot to get the old way back, i will fix this in the future, **This cog is in alpha**.\n\nThis cog uses core's `inviteset` to add permission level. To set permission level use `[p]inviteset perms` and you can change description by using `[p]invmsg`.",
-    "hidden": false,
+    "hidden": true,
     "description": "A cog with your invite link that has the new buttons.",
     "short": "Button invite for your bot.",
     "min_bot_version": "3.4.6",
