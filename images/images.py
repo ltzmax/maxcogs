@@ -20,7 +20,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.3.11"
+    __version__ = "3.4.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -59,10 +59,6 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        if not response:
-            return await ctx.send(
-                "Something went wrong while attempting to post an image."
-            )
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["natures"])
@@ -92,10 +88,6 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        if not response:
-            return await ctx.send(
-                "Something went wrong while attempting to post an image."
-            )
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["pictures", "pics", "pic"])
@@ -125,10 +117,6 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        if not response:
-            return await ctx.send(
-                "Something went wrong while attempting to post an image."
-            )
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -158,10 +146,6 @@ class Images(commands.Cog):
             )
             embed.colour = await ctx.embed_color()
             embed.set_image(url=response["data"]["image_url"])
-        if not response:
-            return await ctx.send(
-                "Something went wrong while attempting to post an image."
-            )
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -184,7 +168,4 @@ class Images(commands.Cog):
             )
             embed.set_footer(text="From nekos.best")
             embed.set_image(url=url["url"])
-        try:
-            await ctx.send(embed=embed)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while attempting to post an image.")
+        await ctx.send(embed=embed)
