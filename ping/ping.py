@@ -17,7 +17,7 @@ class Ping(commands.Cog):
     This does not matter if your ping is not above 300ms."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.12.0"
+    __version__ = "0.12.1"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -44,13 +44,15 @@ class Ping(commands.Cog):
             self.bot.add_command(old_ping)
 
     @commands.is_owner()
-    @commands.group(aliases=["setping"])
+    @commands.group()
     async def pingset(self, ctx):
-        """Settings to change ping title shown in the embed."""
+        """Settings to change ping title."""
 
-    @pingset.command()
-    async def add(self, ctx, *, message):
-        """Change the ping message shown in the embed."""
+    @pingset.command(name="add", aliases=["set"])
+    async def pingset_add(self, ctx, *, message):
+        """Change the ping message shown.
+
+        This only change the message where it say `Pong!`"""
         if message:
             await self.config.msg.set(message)
             if await ctx.embed_requested():
@@ -62,9 +64,9 @@ class Ping(commands.Cog):
             else:
                 await ctx.send("Sucessfully set the ping message.")
 
-    @pingset.command()
-    async def reset(self, ctx):
-        """Reset the ping message back to default."""
+    @pingset.command(name="reset")
+    async def pingset_reset(self, ctx):
+        """Reset the title message back to default."""
         await self.config.msg.set(self.def_msg)
         if await ctx.embed_requested():
             emb = discord.Embed(
@@ -75,9 +77,9 @@ class Ping(commands.Cog):
         else:
             await ctx.send("Sucessfully reset the ping message to default.")
 
-    @commands.command(name="ping")
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def _ping(self, ctx, show_shards: Optional[bool] = None):
+    async def ping(self, ctx, show_shards: Optional[bool] = None):
         """Reply with [botname]'s latency.
 
         This does not matter if your ping is not above 300ms.
