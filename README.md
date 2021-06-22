@@ -46,7 +46,7 @@ To install any cog you want:
 <td>Responds with the currently available Humble Bundles, if there is any available.</td>
 </tr>
 <td>buttoninvite</td>
-<td>This is a cog that has the new buttons and uses core's `inviteset` to set permission level. it uses the new buttons from discord and require that you have dislash installed.</td>
+<td>This is a cog that has the new buttons and uses core's `inviteset` to set permission level. it uses the new buttons from discord and require that you have dislash installed. [This cog is hidden].</td>
 </tr>
 </tbody>
 </table>
