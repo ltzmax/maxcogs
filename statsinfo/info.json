@@ -6,5 +6,6 @@
     "hidden": false,
     "min_bot_version": "3.4.0",
     "requirements": ["tabulate"],
+    "tags": ["utility", "stats"],
     "end_user_data_statement": "This cog does not store any End User Data."
   }
