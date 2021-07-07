@@ -7,5 +7,7 @@
     "min_bot_version": "3.4.0",
     "requirements": ["tabulate"],
     "tags": ["utility", "stats"],
+    "permissions": ["embed_links"],
+    "min_python_version": [3, 8, 1],
     "end_user_data_statement": "This cog does not store any End User Data."
   }
