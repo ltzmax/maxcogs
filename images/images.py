@@ -90,12 +90,12 @@ class Images(commands.Cog):
             embed.set_image(url=response["data"]["image_url"])
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["pictures", "pics", "pic"])
+    @commands.command(aliases=["pics", "pic", "cityviews"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
-    async def picture(self, ctx):
-        """Send a random synthetic images."""
+    async def cityview(self, ctx):
+        """Send a random city / village images."""
         async with ctx.typing():
             await asyncio.sleep(1)
         async with aiohttp.ClientSession() as session:
