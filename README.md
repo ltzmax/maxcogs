@@ -36,6 +36,9 @@ To install any cog you want:
 <td>images</td>
 <td>Random images cog, This is where i'll add image commands.</td>
 </tr>
+<td>nekos</td>
+<td>Sending random nekos images. This is for you weebs. :P</td>
+</tr>
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed and shows with the new replies from dpy 1.6.0.</td>
 </tr>
