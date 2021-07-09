@@ -6,7 +6,7 @@ NEKOS_API = "https://nekos.best/"
 
 
 class Nekos(commands.Cog):
-    """Image cog that shows images."""
+    """Sending nekos images from nekos.best."""
 
     def __init__(self, bot):
         self.bot = bot
