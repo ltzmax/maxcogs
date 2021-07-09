@@ -37,7 +37,6 @@ PICVIEW = [
 ]
 CARS = [
     "carporn",
-    "MotorcyclePorn",
     "TeslaPorn",
     "Audi",
     "AudiA4B6",
