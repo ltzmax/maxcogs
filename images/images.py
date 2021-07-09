@@ -5,7 +5,10 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-from .constants import CARS, MARTINE_API, MARTINE_ICON, NATURE, PICVIEW, SPACE, UNIX
+from .constants import CARS, NATURE, PICVIEW, SPACE, UNIX
+
+MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
+MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
 
 
 class Images(commands.Cog):
