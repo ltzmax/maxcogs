@@ -5,7 +5,7 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-from .constants import CARS, MARTINE_API, MARTINE_ICON, NATURE, PICVIEW, SPACE
+from .constants import CARS, MARTINE_API, MARTINE_ICON, NATURE, PICVIEW, SPACE, UNIX
 
 
 class Images(commands.Cog):
@@ -127,6 +127,35 @@ class Images(commands.Cog):
             await asyncio.sleep(1)
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(CARS)) as resp:
+                if resp.status == 410:
+                    return await ctx.send("Failed to fetch API. Unknown error.")
+                if resp.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                response = await resp.json()
+            embed = discord.Embed(
+                title=response["data"].get("title", "[No Title]"),
+                url=response["data"]["post_url"],
+            )
+            embed.set_footer(
+                text=f"Powered by martinebot.com API | From r/{response['data']['subreddit']['name']}",
+                icon_url=MARTINE_ICON,
+            )
+            embed.colour = await ctx.embed_color()
+            embed.set_image(url=response["data"]["image_url"])
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True)
+    async def unix(self, ctx):
+        """Send a random unix images."""
+        async with ctx.typing():
+            await asyncio.sleep(1)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(MARTINE_API + choice(UNIX)) as resp:
                 if resp.status == 410:
                     return await ctx.send("Failed to fetch API. Unknown error.")
                 if resp.status != 200:
