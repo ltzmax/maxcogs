@@ -1,4 +1,3 @@
-import asyncio
 from random import choice
 
 import aiohttp
@@ -21,7 +20,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.4.2"
+    __version__ = "3.4.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -39,8 +38,7 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def space(self, ctx):
         """Send a random space images."""
-        async with ctx.typing():
-            await asyncio.sleep(1)
+        await ctx.trigger_typing()
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(SPACE)) as resp:
                 if resp.status == 410:
@@ -68,8 +66,7 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def nature(self, ctx):
         """Send a random nature images."""
-        async with ctx.typing():
-            await asyncio.sleep(1)
+        await ctx.trigger_typing()
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(NATURE)) as resp:
                 if resp.status == 410:
@@ -97,8 +94,7 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def cityview(self, ctx):
         """Send a random city / village images."""
-        async with ctx.typing():
-            await asyncio.sleep(1)
+        await ctx.trigger_typing()
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(PICVIEW)) as resp:
                 if resp.status == 410:
@@ -126,8 +122,7 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def cars(self, ctx):
         """Send a random car images."""
-        async with ctx.typing():
-            await asyncio.sleep(1)
+        await ctx.trigger_typing()
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(CARS)) as resp:
                 if resp.status == 410:
@@ -155,8 +150,7 @@ class Images(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def unix(self, ctx):
         """Send a random unix images."""
-        async with ctx.typing():
-            await asyncio.sleep(1)
+        await ctx.trigger_typing()
         async with aiohttp.ClientSession() as session:
             async with session.get(MARTINE_API + choice(UNIX)) as resp:
                 if resp.status == 410:
