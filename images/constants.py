@@ -32,15 +32,3 @@ PICVIEW = [
     "CabinPorn",
     "churchporn",
 ]
-CARS = [
-    "carporn",
-    "TeslaPorn",
-    "Audi",
-    "AudiA4B6",
-    "BMW",
-    "E30",
-    "e46",
-]
-UNIX = [
-    "unixporn",
-]
