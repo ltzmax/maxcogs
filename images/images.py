@@ -4,7 +4,7 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-from .constants import NATURE, PICVIEW, SPACE, UNIX
+from .constants import NATURE, PICVIEW, SPACE
 
 MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
 MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
