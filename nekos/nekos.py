@@ -47,4 +47,7 @@ class Nekos(commands.Cog):
             )
             embed.set_footer(text="From nekos.best")
             embed.set_image(url=url["url"])
-        await ctx.send(embed=embed)
+        try:
+            await ctx.send(embed=embed)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting an image.")
