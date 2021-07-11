@@ -54,7 +54,7 @@ class Images(commands.Cog):
                 url=response["data"]["post_url"],
             )
             embed.set_footer(
-                text=f"Powered by martinebot.com API | {response['data']['upvotes']}",
+                text=f"Powered by martinebot.com API",
                 icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
