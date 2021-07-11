@@ -20,7 +20,7 @@ class Images(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "3.4.5"
+    __version__ = "3.4.6"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -54,7 +54,7 @@ class Images(commands.Cog):
                 url=response["data"]["post_url"],
             )
             embed.set_footer(
-                text=f"Powered by martinebot.com API | {response['data']['upvotes']} 👍 | {response['data']['comments']} 💬",
+                text=f"Powered by martinebot.com API | {response['data']['upvotes']}",
                 icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
@@ -86,7 +86,7 @@ class Images(commands.Cog):
                 url=response["data"]["post_url"],
             )
             embed.set_footer(
-                text=f"Powered by martinebot.com API | {response['data']['upvotes']} 👍 | {response['data']['comments']} 💬",
+                text=f"Powered by martinebot.com API",
                 icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
@@ -118,7 +118,7 @@ class Images(commands.Cog):
                 url=response["data"]["post_url"],
             )
             embed.set_footer(
-                text=f"Powered by martinebot.com API | {response['data']['upvotes']} 👍 | {response['data']['comments']} 💬",
+                text=f"Powered by martinebot.com API",
                 icon_url=MARTINE_ICON,
             )
             embed.colour = await ctx.embed_color()
