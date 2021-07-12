@@ -15,7 +15,7 @@ class Nekos(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.4.0"
+    __version__ = "0.5.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -32,9 +32,7 @@ class Nekos(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def neko(self, ctx):
-        """Send a random neko images.
-
-        Powered by [nekos.best.](https://nekos.best)"""
+        """Send a random neko image."""
         async with aiohttp.ClientSession() as session:
             async with session.get(NEKOS_API + "nekos") as response:
                 if response.status != 200:
