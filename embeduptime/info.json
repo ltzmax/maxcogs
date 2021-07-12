@@ -1,8 +1,8 @@
 {
     "author": ["max"],
     "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.",
-    "description": "Uptime command that will show your current uptime.",
-    "short": "Uptime, which shows bot uptime.",
+    "description": "Bot uptime cog that will shows the current uptime of the bot.",
+    "short": "Bot uptime cog showing current uptime.",
     "hidden": false,
     "min_bot_version": "3.4.0",
     "tags": ["uptime"],
