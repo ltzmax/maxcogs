@@ -4,9 +4,11 @@ import aiohttp
 import discord
 from redbot.core import commands
 
+# API and icon
 MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
 MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
 
+# subreddits
 SPACE = [
     "spaceporn",
     "astrophotography",
@@ -25,7 +27,7 @@ class SpaceImages(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.2.0"
+    __version__ = "0.3.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
