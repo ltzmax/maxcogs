@@ -12,12 +12,10 @@ old_ping = None
 
 
 class Ping(commands.Cog):
-    """Reply with [botname]'s latency.
-
-    This does not matter if your ping is not above 300ms."""
+    """Reply with [botname]'s latency."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.12.2"
+    __version__ = "0.12.3"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -93,7 +91,6 @@ class Ping(commands.Cog):
         )
         latency = self.bot.latency * 1000
         if show_shards:
-            # The chances of this in near future is almost 0, but who knows, what future will bring to us?
             shards = [
                 ("Shard {}/{}: {}ms").format(
                     shard + 1, self.bot.shard_count, round(pingt * 1000)
