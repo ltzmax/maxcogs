@@ -45,7 +45,7 @@ class Nekos(commands.Cog):
             embed = discord.Embed(
                 title="Here's a pic of neko", colour=await ctx.embed_color()
             )
-            embed.set_footer(text="From nekos.best")
+            embed.set_footer(text="Powered by nekos.best")
             embed.set_image(url=url["url"])
         try:
             await ctx.send(embed=embed)
