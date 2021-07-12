@@ -4,7 +4,7 @@
   "description": "Ping command which shows bot latency in response.",
   "short": "Ping, which shows bot latency.",
   "hidden": false,
-  "min_bot_version": "3.4.6",
+  "min_bot_version": "3.4.0",
   "tags": ["ping", "latency"],
   "permissions": ["embed_links"],
   "min_python_version": [3, 8, 1],

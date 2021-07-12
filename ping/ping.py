@@ -17,7 +17,7 @@ class Ping(commands.Cog):
     This does not matter if your ping is not above 300ms."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.12.1"
+    __version__ = "0.12.2"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -60,7 +60,7 @@ class Ping(commands.Cog):
                     description=("Sucessfully set the ping message."),
                     color=await ctx.embed_color(),
                 )
-                await ctx.reply(embed=emb, mention_author=False)
+                await ctx.send(embed=emb)
             else:
                 await ctx.send("Sucessfully set the ping message.")
 
@@ -73,7 +73,7 @@ class Ping(commands.Cog):
                 description=("Sucessfully reset the ping message to default."),
                 color=await ctx.embed_color(),
             )
-            await ctx.reply(embed=emb, mention_author=False)
+            await ctx.send(embed=emb)
         else:
             await ctx.send("Sucessfully reset the ping message to default.")
 
