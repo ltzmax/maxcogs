@@ -15,7 +15,7 @@ class Nekos(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.5.0"
+    __version__ = "0.6.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -27,7 +27,7 @@ class Nekos(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command()
+    @commands.command(aliases=["nekos"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
@@ -40,12 +40,11 @@ class Nekos(commands.Cog):
                         "Something went wrong while trying to contact API."
                     )
                 url = await response.json()
-            embed = discord.Embed(
-                title="Here's a pic of neko", colour=await ctx.embed_color()
-            )
-            embed.set_footer(text="Powered by nekos.best")
-            embed.set_image(url=url["url"])
+            emb = discord.Embed(title="Here's a pic of neko")
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(text="Powered by nekos.best")
+            emb.set_image(url=url["url"])
         try:
-            await ctx.send(embed=embed)
+            await ctx.send(embed=emb)
         except discord.HTTPException:
             await ctx.send("Something went wrong while posting an image.")
