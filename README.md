@@ -42,15 +42,6 @@ To install any cog you want:
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed and shows with the new replies from dpy 1.6.0.</td>
 </tr>
-<td>statsinfo</td>
-<td>This shows some statics about your bot on how many channels, server and users there are total.</td>
-</tr>
-<td>humblebundle</td>
-<td>Responds with the currently available Humble Bundles, if there is any available.</td>
-</tr>
-<td>buttoninvite</td>
-<td>This is a cog that has the new buttons and uses core's `inviteset` to set permission level. it uses the new buttons from discord and require that you have dislash installed. [This cog is hidden].</td>
-</tr>
 </tbody>
 </table>
 
