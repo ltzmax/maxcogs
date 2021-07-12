@@ -55,7 +55,7 @@ class SpaceImages(commands.Cog):
                         "Something went wrong while trying to contact API."
                     )
                 data = await resp.json()
-                title = data["data"].get("title")
+                title = data["data"].get("title", "[No Title]")
                 subreddit = data["data"]["subreddit"]["name"]
                 images = data["data"]["image_url"]
 
