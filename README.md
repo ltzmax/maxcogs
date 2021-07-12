@@ -30,8 +30,8 @@ To install any cog you want:
 </thead>
 <tbody>
 <tr>
-<td>images</td>
-<td>Random images cog, This is where i'll add image commands.</td>
+<td>spaceimages</td>
+<td>Random space images cog, This will show nice space images</td>
 </tr>
 <td>nekos</td>
 <td>Sending random nekos images. This is for you weebs. :P</td>
