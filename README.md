@@ -40,7 +40,7 @@ To install any cog you want:
 <td>Sending random nekos images. This is for you weebs. :P</td>
 </tr>
 <td>embeduptime</td>
-<td>This will reply with your uptime of your bot, this is in embed and shows with the new replies from dpy 1.6.0.</td>
+<td>This will reply with your uptime of your bot, this is in embed instead.</td>
 </tr>
 </tbody>
 </table>
