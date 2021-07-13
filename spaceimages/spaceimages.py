@@ -27,7 +27,7 @@ class SpaceImages(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.4.0"
+    __version__ = "0.5.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -50,6 +50,10 @@ class SpaceImages(commands.Cog):
             async with session.get(MARTINE_API + choice(SPACE)) as resp:
                 if resp.status == 410:
                     return await ctx.send("Failed to fetch API. Unknown error.")
+                if resp.status == 429:
+                    return await ctx.send(
+                        "You've been ratelimted please slow down and try again later."
+                    )
                 if resp.status != 200:
                     return await ctx.send(
                         "Something went wrong while trying to contact API."
