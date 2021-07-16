@@ -27,7 +27,7 @@ class Banners(commands.Cog):
     async def banner(self, ctx: commands.Context):
         """Shows guilds banner image.
 
-        - It's called `splach` but for most it's known as `server banner`."""
+        - It's called `splash` but for most it's known as `server banner`."""
         guild = ctx.guild
         if not guild.splash:
             return await ctx.send("No banner image found in this guild.")
