@@ -8,7 +8,7 @@ class Banners(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.2.0"
+    __version__ = "0.3.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -30,7 +30,10 @@ class Banners(commands.Cog):
         guild = ctx.guild
         if not guild.splash:
             return await ctx.send("No banner image found in this guild.")
-        em = discord.Embed(title=f"{ctx.guild.name}'s banner image:")
+        em = discord.Embed(
+            title=f"{ctx.guild.name}'s banner image:",
+            url=guild.splash_url_as(format="png"),
+        )
         em.colour = await ctx.embed_color()
         if guild.splash:
             em.set_image(url=guild.splash_url_as(format="png"))
