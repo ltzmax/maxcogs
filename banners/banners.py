@@ -8,7 +8,7 @@ class Banners(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.3.0"
+    __version__ = "0.4.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -35,6 +35,5 @@ class Banners(commands.Cog):
             url=guild.splash_url_as(format="png"),
         )
         em.colour = await ctx.embed_color()
-        if guild.splash:
-            em.set_image(url=guild.splash_url_as(format="png"))
+        em.set_image(url=guild.splash_url_as(format="png"))
         await ctx.send(embed=em)
