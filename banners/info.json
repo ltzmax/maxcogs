@@ -1,6 +1,6 @@
 {
     "author": ["max"],
-    "install_msg" : "Thanks for installing.\nBanner image also known as splach will only show if there is an exist one. You can have banner on your server if you have level 2 server boost or are partered on discord.",
+    "install_msg" : "Thanks for installing.\nServer banner also known as splach will only show if there is an exist one. You can have server banner on your server if you have level 2 server boost or are partered with discord.",
     "description": "Banner image cog that shows server banner.",
     "short": "Server banner.",
     "hidden" : false,

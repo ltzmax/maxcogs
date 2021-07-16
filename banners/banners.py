@@ -9,7 +9,7 @@ class Banners(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.1.0"
+    __version__ = "0.2.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
