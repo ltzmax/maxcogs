@@ -8,7 +8,7 @@ class Banners(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.4.0"
+    __version__ = "0.5.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -29,7 +29,7 @@ class Banners(commands.Cog):
         - It's called `splash` but for most it's known as `server banner`."""
         guild = ctx.guild
         if not guild.splash:
-            return await ctx.send("No banner image found in this guild.")
+            return await ctx.send("No server banner image found in this guild.")
         em = discord.Embed(
             title=f"{ctx.guild.name}'s banner image:",
             url=guild.splash_url_as(format="png"),
