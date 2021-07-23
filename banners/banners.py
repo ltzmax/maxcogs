@@ -23,7 +23,7 @@ class Banners(commands.Cog):
     @commands.guild_only()
     @commands.command(aliases=["banners"])
     @commands.bot_has_permissions(embed_links=True)
-    async def banner(self, ctx: commands.Context):
+    async def banner(self, ctx):
         """Shows guilds banner image.
 
         - It's called `splash` but for most it's known as `server banner`."""
