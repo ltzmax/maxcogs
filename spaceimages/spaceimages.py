@@ -43,7 +43,6 @@ class SpaceImages(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 2, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True)
     async def space(self, ctx):
         """Send a random space image."""
