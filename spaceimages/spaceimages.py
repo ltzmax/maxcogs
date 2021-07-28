@@ -9,11 +9,13 @@ MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
 MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
 
 # subreddits
+# all subreddits are sfw. "porn" does not mean "nsfw" here.
 SPACE = [
     "spaceporn",
     "astrophotography",
     "LandscapeAstro",
     "spaceengine",
+    "SkyPorn",
 ]
 
 
@@ -27,7 +29,7 @@ class SpaceImages(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.5.0"
+    __version__ = "0.0.6"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
