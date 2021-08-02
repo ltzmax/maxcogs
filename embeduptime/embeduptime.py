@@ -1,9 +1,10 @@
 # Thanks Red-DiscordBot for their hard work.
 # This uptimer is a fork of red, which uses embed.
-from datetime import timezone
+from datetime import datetime, timezone
 
 import discord
 from redbot.core import commands
+from redbot.core.utils.chat_formatting import humanize_timedelta
 
 old_uptime = None
 
@@ -32,12 +33,13 @@ class EmbedUptime(commands.Cog):
     async def uptime(self, ctx):
         """Shows [botname]'s uptime."""
         name = ctx.bot.user.name
+        delta = datetime.utcnow() - self.bot.uptime
         uptime = self.bot.uptime.replace(tzinfo=timezone.utc)
-        emb = discord.Embed(
-            title=f"{name} has been up since: <t:{int(uptime.timestamp())}:R>",
-            description=f"Since: <t:{int(uptime.timestamp())}>",
-            colour=await ctx.embed_color(),
-        )
+        uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
+        since = f"<t:{int(uptime.timestamp())}>"  # because "name", needed value, so i made it valuable. (bad way iknow but works tm.)
+        emb = discord.Embed(colour=await ctx.embed_color())
+        emb.add_field(name=f"{name} has been up for:", value=uptime_str, inline=False)
+        emb.add_field(name=f"Since:", value=since)
         await ctx.send(embed=emb)
 
 
