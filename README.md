@@ -28,6 +28,9 @@ To install any cog you want:
 </thead>
 <tbody>
 <tr>
+<td>advanced</td>
+<td>This will attempt to restart and shutdown your bot, this make you need to confirm if you want to restart or shutdown.</td>
+</tr>
 <td>spaceimages</td>
 <td>Random space images cog, This will show nice space images</td>
 </tr>
