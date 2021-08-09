@@ -40,9 +40,6 @@ To install any cog you want:
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed instead.</td>
 </tr>
-<td>banners</td>
-<td>This shows the server banner on the top corner. this can only be seen and used if you have a server banner on level 2 server boost or are partnered with discord.</td>
-</tr>
 </tbody>
 </table>
 

@@ -61,7 +61,7 @@ class Advanced(commands.Cog):
     @restart.command(name="add", usage="<message>")
     async def restart_add(self, ctx, *, message=None):
         """Change the restart description message.
-        
+
         Leave it blank will reset it back to default message."""
         if message:
             await self.config.rest_default.set(message)
@@ -77,7 +77,7 @@ class Advanced(commands.Cog):
     @restart.command(name="confirm", aliases=["conf"], usage="<message>")
     async def restart_confirm(self, ctx, *, message=None):
         """Change the restart confirm message.
-        
+
         Leave it blank will reset it back to default message."""
         if message:
             await self.config.rest_confirm.set(message)
@@ -93,7 +93,7 @@ class Advanced(commands.Cog):
     @restart.command(name="deny", usage="<message>")
     async def restart_deny(self, ctx, *, message=None):
         """Change the restart deny message.
-        
+
         Leave it blank will reset it back to default message."""
         if message:
             await self.config.rest_deny.set(message)
@@ -113,7 +113,7 @@ class Advanced(commands.Cog):
     @shutdown.command(name="add", usage="<message>")
     async def shutdown_add(self, ctx, *, message=None):
         """Change the shutdown description message.
-        
+
         Leave it blank will reset it back to default message."""
         if message:
             await self.config.shutdown_default.set(message)
@@ -129,7 +129,7 @@ class Advanced(commands.Cog):
     @shutdown.command(name="confirm", aliases=["conf"], usage="<message>")
     async def shutdown_confirm(self, ctx, *, message=None):
         """Change the shutdown confirm message.
-        
+
         Leave it blank will reset it back to default message."""
         if message:
             await self.config.shutdown_confirm.set(message)
@@ -145,7 +145,7 @@ class Advanced(commands.Cog):
     @shutdown.command(name="deny", usage="<message>")
     async def shutdown_deny(self, ctx, *, message=None):
         """Change the shutdown deny message.
-        
+
         Leave it blank will reset it back to default message."""
         if message:
             await self.config.shutdown_deny.set(message)
