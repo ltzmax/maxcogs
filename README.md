@@ -35,10 +35,13 @@ To install any cog you want:
 <td>Random space images cog, This will show nice space images</td>
 </tr>
 <td>nekos</td>
-<td>Sending random nekos images. This is for you weebs. :P</td>
+<td>Sending random nekos images. This is for you weebs.</td>
 </tr>
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed instead.</td>
+</tr>
+<td>ping</td>
+<td>This will show your bot latency of your bot when you do `[p]ping`.</td>
 </tr>
 </tbody>
 </table>
@@ -51,6 +54,6 @@ PR is always welcome at anytime, so feel free to do bug fixes. Please don't do g
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding. 
 
-- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with image code parts.
+- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with image code parts and most parts with ping.
 
-- [Preda](https://github.com/PredaaA/predacogs) for help and his api from martine.
+- [Preda](https://github.com/PredaaA/predacogs) for help and his api from martine and ping.
