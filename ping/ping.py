@@ -15,7 +15,7 @@ class Ping(commands.Cog):
     """Reply with [botname]'s latency."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -51,7 +51,7 @@ class Ping(commands.Cog):
     async def pingset_add(self, ctx, *, message):
         """Change the ping message shown in the embed."""
         if message:
-            await self.config.msg.set(message)
+            await self.config.def_msg.set(message)
             await ctx.send(
                 f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the ping message to `{message}`."
             )
@@ -59,7 +59,7 @@ class Ping(commands.Cog):
     @pingset.command(name="reset")
     async def pingset_reset(self, ctx):
         """Reset the ping message back to default."""
-        await self.config.msg.clear()
+        await self.config.def_msg.clear()
         await ctx.send(
             "\N{WHITE HEAVY CHECK MARK} Sucessfully reset the ping message to default."
         )
