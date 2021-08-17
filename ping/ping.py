@@ -15,7 +15,7 @@ class Ping(commands.Cog):
     """Reply with [botname]'s latency."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -47,36 +47,22 @@ class Ping(commands.Cog):
     async def pingset(self, ctx):
         """Settings to change ping title shown in the embed."""
 
-    @pingset.command()
-    async def add(self, ctx, *, message):
+    @pingset.command(name="add", aliases=["set"], usage="<message>")
+    async def pingset_add(self, ctx, *, message):
         """Change the ping message shown in the embed."""
         if message:
             await self.config.msg.set(message)
-            if await ctx.embed_requested():
-                emb = discord.Embed(
-                    description=(
-                        f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the ping message to `{message}`."
-                    ),
-                    color=await ctx.embed_color(),
-                )
-                await ctx.send(embed=emb, mention_author=False)
-            else:
-                await ctx.send(
-                    f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the ping message to `{message}`."
-                )
+            await ctx.send(
+                f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the ping message to `{message}`."
+            )
 
-    @pingset.command()
-    async def reset(self, ctx):
+    @pingset.command(name="reset")
+    async def pingset_reset(self, ctx):
         """Reset the ping message back to default."""
         await self.config.msg.clear()
-        if await ctx.embed_requested():
-            emb = discord.Embed(
-                description=("Sucessfully reset the ping message to default."),
-                color=await ctx.embed_color(),
-            )
-            await ctx.send(embed=emb, mention_author=False)
-        else:
-            await ctx.send("Sucessfully reset the ping message to default.")
+        await ctx.send(
+            "\N{WHITE HEAVY CHECK MARK} Sucessfully reset the ping message to default."
+        )
 
     @commands.command(name="ping")
     @commands.bot_has_permissions(embed_links=True)
@@ -102,7 +88,7 @@ class Ping(commands.Cog):
                 for shard, pingt in self.bot.latencies
             ]
         emb = discord.Embed(
-            title=(await self.config.msg()).format(),
+            title=(await self.config.def_msg()),
             color=discord.Color.red(),
         )
         emb.add_field(
