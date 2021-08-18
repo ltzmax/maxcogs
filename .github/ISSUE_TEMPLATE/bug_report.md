@@ -7,11 +7,11 @@ assignees: maxbooiii
 
 ---
 
-**Describe the bug**
+**Describe the bug:**
 A clear and concise description of what the bug is.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Please post full traceback here:**
+If applicable, add traceback here to help explain your problem.
 
-**Additional context**
+**Additional context:**
 Add any other context about the problem here.
