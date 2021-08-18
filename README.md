@@ -47,7 +47,7 @@ To install any cog you want:
 </table>
 
 ## Contributing
-PR is always welcome at anytime, so feel free to do bug fixes. Please don't do grammar fixes, if you find something that is wrong or typed wrong, please contact me on discord: MAX#1000 :)
+PR is always welcome at anytime, so feel free to do bug fixes. Please don't do grammar fixes, if you wanna do more than just fixes, please contact me on discord first: MAX#1000 :)
 
 
 
