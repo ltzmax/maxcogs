@@ -4,12 +4,12 @@ from asyncio.exceptions import TimeoutError as Te
 from typing import Literal, Optional
 
 import discord
-
 # noinspection PyUnresolvedReferences
 import ksoftapi
 import lavalink
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import bold, humanize_list, inline, pagify
+from redbot.core.utils.chat_formatting import (bold, humanize_list, inline,
+                                               pagify)
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 from redbot.core.utils.predicates import MessagePredicate
 
