@@ -43,6 +43,9 @@ To install any cog you want:
 <td>ping</td>
 <td>This will show your bot latency of your bot when you do `[p]ping`.</td>
 </tr>
+<td>lyrics</td>
+<td>Get lyrics of a music through KSoft.Si. Orginally by Predeactor.</td>
+</tr>
 </tbody>
 </table>
 
@@ -57,3 +60,5 @@ PR is always welcome at anytime, so feel free to do bug fixes. if you wanna do m
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with image code parts and most parts with ping.
 
 - [Preda](https://github.com/PredaaA/predacogs) for help and his api from martine and ping.
+
+- [Predeactor](https://github.com/Predeactor) For his lyrics cog.
