@@ -49,10 +49,6 @@ To install any cog you want:
 </tbody>
 </table>
 
-## Contributing
-PR is always welcome at anytime, so feel free to do bug fixes. if you wanna do more than just fixes, please contact me on discord first: MAX#1000 :)
-
-
 
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding. 
