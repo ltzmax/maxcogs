@@ -13,7 +13,7 @@ I will explain it simple and not a wall of text on how to install and use to mak
 
 it's simple first you need to install black:
 - `pip install black`
-- 
+
 When that is done you run:
 
 - `black {source_file_or_directory}`
@@ -22,7 +22,7 @@ When that is done you run:
 
 it's as simple as black but this is with isort and you need to install this too:
 - `pip install isort`
-- 
+
 when that is done you run:
 
 - `isort {source_file_or_directory}`
