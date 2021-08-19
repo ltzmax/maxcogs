@@ -12,10 +12,6 @@ repos:
     hooks:
     -   id: black
 
--   repo: https://github.com/pycqa/isort
-    rev: 5.9.3
-    hooks:
-      - id: isort
 ci:
     autofix_commit_msg: |
         [pre-commit.ci] auto fixes from pre-commit.com hooks.
