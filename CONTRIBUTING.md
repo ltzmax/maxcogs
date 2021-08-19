@@ -9,7 +9,7 @@ always use following:
 
 I will explain it simple and not a wall of text on how to install and use to make it easy, for question please ask me on discord MAX#1000.
 
-## How to use blakc?
+## How to use black?
 
 it's simple first you need to install black:
 - `pip install black`
