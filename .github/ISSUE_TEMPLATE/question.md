@@ -7,4 +7,4 @@ assignees: maxbooiii
 
 ---
 
-** You can also find me in cog support and official red server **
+**You can also find me in cog support and official red server if you have questions**

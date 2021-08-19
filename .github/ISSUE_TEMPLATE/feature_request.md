@@ -7,11 +7,9 @@ assignees: maxbooiii
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**Is your feature request related to a cog? Please describe.**
+A clear and concise description of what the cog is. Ex. advanced [...]
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Describe the cog you'd like to see changes on**
+A clear and concise description of what you want.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
