@@ -2,7 +2,7 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-NEKOS_API = "https://nekos.best/"
+NEKOS_API = "https://nekos.best/api/v1/"
 
 
 class Nekos(commands.Cog):
@@ -15,7 +15,7 @@ class Nekos(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.6"
+    __version__ = "0.0.7"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
