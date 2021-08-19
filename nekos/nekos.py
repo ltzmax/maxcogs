@@ -15,7 +15,7 @@ class Nekos(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.7"
+    __version__ = "0.0.8"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -40,7 +40,10 @@ class Nekos(commands.Cog):
                         "Something went wrong while trying to contact API."
                     )
                 url = await response.json()
-            emb = discord.Embed(title="Here's a pic of neko")
+            emb = discord.Embed(
+                title="Here's a pic of neko",
+                description=f"Artist: [{url['artist_name']}]({url['artist_href']})\nSource: {url['source_url']}",
+            )
             emb.colour = await ctx.embed_color()
             emb.set_footer(text="Powered by nekos.best")
             emb.set_image(url=url["url"])
