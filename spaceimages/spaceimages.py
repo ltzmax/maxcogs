@@ -29,7 +29,7 @@ class SpaceImages(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.7"
+    __version__ = "0.0.8"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -70,7 +70,10 @@ class SpaceImages(commands.Cog):
                 icon_url=MARTINE_ICON,
             )
             emb.colour = await ctx.embed_color()
+        try:
             emb.set_image(url=images)
+        except KeyError:
+            return await ctx.send("I ran into an issue. Try again later.")
         try:
             await ctx.send(embed=emb)
         except discord.HTTPException:
