@@ -1,0 +1,12 @@
+{
+    "author": ["max"],
+    "install_msg": "Thanks for installing. See `[p]help VeryFun` for the commands.",
+    "description": "Just anyother roleplay cog with alot of fun.",
+    "short": "Roleplay cog.",
+    "hidden": false,
+    "min_bot_version": "3.4.0",
+    "tags": ["roleplay"],
+    "permissions": ["embed_links"],
+    "min_python_version": [3, 8, 1],
+    "end_user_data_statement": "This cog does not store any End User Data."
+  }

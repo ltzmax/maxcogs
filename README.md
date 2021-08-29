@@ -31,10 +31,10 @@ To install any cog you want:
 <td>This will attempt to restart and shutdown your bot, this make you need to confirm if you want to restart or shutdown.</td>
 </tr>
 <td>spaceimages</td>
-<td>Random space images cog, This will show nice space images</td>
+<td>Random space images cog, This will show nice space images. Powered with help of martinebot.com api.</td>
 </tr>
 <td>nekos</td>
-<td>Sending random nekos images. This is for you weebs.</td>
+<td>Sending random nekos images. This is for you weebs. Powered with help of nekos.best api.</td>
 </tr>
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed instead.</td>
@@ -43,7 +43,10 @@ To install any cog you want:
 <td>This will show your bot latency of your bot when you do `[p]ping`.</td>
 </tr>
 <td>lyrics</td>
-<td>Get lyrics of a music through KSoft.Si. Orginally by Predeactor.</td>
+<td>Get lyrics of a music through KSoft.Si. Created by Predeactor. i'll continue maintain this cog.</td>
+</tr>
+<td>veryfun</td>
+<td>Just anyother fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
 </tr>
 </tbody>
 </table>
