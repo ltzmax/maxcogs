@@ -493,3 +493,406 @@ class VeryFun(commands.Cog):
             await ctx.send(f"{str(user.mention)}", embed=emb)
         except discord.HTTPException:
             await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def bite(self, ctx, user: discord.Member):
+        """Bite a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "bite") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** bites {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def blush(self, ctx, user: discord.Member):
+        """blushs!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "blush") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** blushes {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def bored(self, ctx, user: discord.Member):
+        """You're bored!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "bored") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** very bored {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def facepalm(self, ctx, user: discord.Member):
+        """Facepalm a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "facepalm") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** facepalm {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def happy(self, ctx, user: discord.Member):
+        """happiness with a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "happy") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** is happy for {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def highfive(self, ctx, user: discord.Member):
+        """highfive a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "highfive") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** highfives {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def pout(self, ctx, user: discord.Member):
+        """Pout a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "pout") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** pout {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def shrug(self, ctx, user: discord.Member):
+        """Shrugs a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "shrug") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** shrugs {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def sleep(self, ctx, user: discord.Member):
+        """Sleep zzzz!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "sleep") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** sleep {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def stare(self, ctx, user: discord.Member):
+        """Stares at a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "stare") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** stares at {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def think(self, ctx, user: discord.Member):
+        """Thinking!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "think") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** think {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def thumbsup(self, ctx, user: discord.Member):
+        """thumbsup!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "thumbsup") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** thumbsup {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def wink(self, ctx, user: discord.Member):
+        """Winks at a user!"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(NEKOS + "wink") as response:
+                if response.status != 200:
+                    return await ctx.send(
+                        "Something went wrong while trying to contact API."
+                    )
+                if response.status == 502:
+                    return await ctx.send("Api is currently down, try again later.")
+                url = await response.json()
+                emb = discord.Embed(
+                    colour=await ctx.embed_color(),
+                    description=f"**{ctx.author.mention}** winks {f'**{str(user.mention)}**' if user else 'themselves'}!",
+                )
+            emb.colour = await ctx.embed_color()
+            emb.set_footer(
+                text="Powered by nekos.best",
+                icon_url=ICON,
+            )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while posting.")
