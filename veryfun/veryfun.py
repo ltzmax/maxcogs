@@ -185,7 +185,7 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def hug(self, ctx, user: discord.Member):
+    async def hugs(self, ctx, user: discord.Member):
         """Hugs a user!"""
         async with aiohttp.ClientSession() as session:
             async with session.get(NEKOS + "hug") as response:
