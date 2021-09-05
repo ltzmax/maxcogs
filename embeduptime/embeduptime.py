@@ -36,10 +36,11 @@ class EmbedUptime(commands.Cog):
         delta = datetime.utcnow() - self.bot.uptime
         uptime = self.bot.uptime.replace(tzinfo=timezone.utc)
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
-        since = f"<t:{int(uptime.timestamp())}>"  # because "name", needed value, so i made it valuable. (bad way iknow but works tm.)
-        emb = discord.Embed(colour=await ctx.embed_color())
-        emb.add_field(name=f"{name} has been up for:", value=uptime_str, inline=False)
-        emb.add_field(name=f"Since:", value=since)
+        emb = discord.Embed(
+            title=f"{name} has been up for: {uptime_str}",
+            description=f"Since: <t:{int(uptime.timestamp())}>",
+            colour=await ctx.embed_color(),
+        )
         await ctx.send(embed=emb)
 
 
