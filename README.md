@@ -58,5 +58,3 @@ To install any cog you want:
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with image code parts and most parts with ping.
 
 - [Preda](https://github.com/PredaaA/predacogs) for help and his api from martine and ping.
-
-- [Predeactor](https://github.com/Predeactor) For his lyrics cog.
