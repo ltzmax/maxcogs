@@ -37,8 +37,8 @@ class EmbedUptime(commands.Cog):
         uptime = self.bot.uptime.replace(tzinfo=timezone.utc)
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         emb = discord.Embed(
-            title=f"{name} has been up for: {uptime_str}",
-            description=f"Since: <t:{int(uptime.timestamp())}:F>",
+            title=f"{name} has been up for:",
+            description=f"{uptime_str}\nSince: <t:{int(uptime.timestamp())}:F>",
             colour=await ctx.embed_color(),
         )
         await ctx.send(embed=emb)
