@@ -15,7 +15,7 @@ class Ping(commands.Cog):
     """Reply with [botname]'s latency."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.0.3"
+    __version__ = "0.0.4"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -47,7 +47,7 @@ class Ping(commands.Cog):
     async def pingset(self, ctx):
         """Settings to change ping title shown in the embed."""
 
-    @pingset.command(name="add", aliases=["set"], usage="<message>")
+    @pingset.command(name="set", aliases=["add"], usage="<message>")
     async def pingset_add(self, ctx, *, message):
         """Change the ping message shown in the embed."""
         if message:
