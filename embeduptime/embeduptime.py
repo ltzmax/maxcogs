@@ -1,6 +1,6 @@
 # Thanks Red-DiscordBot for their hard work.
 # This uptimer is a fork of red, which uses embed.
-from datetime import datetime, timezone
+import datetime
 
 import discord
 from redbot.core import commands
@@ -33,8 +33,8 @@ class EmbedUptime(commands.Cog):
     async def uptime(self, ctx):
         """Shows [botname]'s uptime."""
         name = ctx.bot.user.name
-        delta = datetime.utcnow() - self.bot.uptime
-        uptime = self.bot.uptime.replace(tzinfo=timezone.utc)
+        delta = datetime.datetime.utcnow() - self.bot.uptime
+        uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         emb = discord.Embed(
             title=f"{name} has been up for:",
