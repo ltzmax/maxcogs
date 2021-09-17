@@ -1,8 +1,8 @@
 {
     "author": ["max"],
     "install_msg": "Thanks for installing. See `[p]help VeryFun` for the commands.",
-    "description": "Just anyother roleplay cog with alot of fun.",
-    "short": "Roleplay cog.",
+    "description": "Roleplay cog with alot of fun for your server.",
+    "short": "Roleplay cog to play with your members.",
     "hidden": false,
     "min_bot_version": "3.4.0",
     "tags": ["roleplay"],
