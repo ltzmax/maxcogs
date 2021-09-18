@@ -4,7 +4,7 @@
 
 ## PR is always welcome at anytime.
 
-feel free to do bug fixes or things you wanna improve, i am always up to more than just fixes.
+- feel free to do bug fixes when you see something that aren't working or are missing.
 
 ## When you do PR's you need to remember two things:
 always use following:
@@ -22,4 +22,4 @@ When that is done you run:
 - `black {source_file_or_directory}`
 
 
-Version `21.7b0`of black is what this repo is using.
+Version `21.7b0` of black is what this repo is using.
