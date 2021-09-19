@@ -10,7 +10,7 @@ from redbot.core.utils.predicates import ReactionPredicate
 class Advanced(commands.Cog):
     """Attempt to restart or shutdown [botname]."""
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -158,8 +158,10 @@ class Advanced(commands.Cog):
                 "\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default."
             )
 
-    # When dpy 2.0 is released, this will be changed to buttons.
-    # The way it's done now is the easist way, it is safe to use and works.
+    # drop downs / buttons with dislash.py 1.2.6 would've might been cool to have in this cog with a settings.
+    # So bot owners can choose to use: buttons, drop downs or just normal reactions.
+    # This would require using 1.2.6 version of dislash.py. unsure if that would work on newer version.
+    # Plan was with dpy2.0 but while this is unsure in future so might as well just go with dislash.
 
     @commands.is_owner()
     @commands.command(name="shutdown")
