@@ -7,7 +7,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -23,7 +23,6 @@ class AdvancedInvite(commands.Cog):
         self.config = Config.get_conf(self, identifier=12435434124)
         self.config.register_global(
             invite_default="Thank you for inviting {}.",
-            invite_footer="This bot is made possible with support of Red-DiscordBot.",
         )
 
     def cog_unload(self):
@@ -38,42 +37,30 @@ class AdvancedInvite(commands.Cog):
     @commands.is_owner()
     @commands.group()
     async def settings(self, ctx):
-        """Settings to change invite description and footer message.
+        """Settings to change invite description message.
 
         To set invite permission, use `[p]inviteset perms <level>`.
         You can generate permission level here: https://discordapi.com/permissions.html."""
 
     @settings.command(name="add", aliases=["set", "description"], usage="<message>")
-    async def settings_add(self, ctx, *, message=None):
+    async def settings_add(self, ctx, *, message: str):
         """Change the invite description message.
 
         Leave it blank will reset the message back to default."""
+        if len(message) > 2000:
+            return await ctx.send("Your message must be 2000 or fewer in length.")
         if message:
             await self.config.invite_default.set(message)
             await ctx.send(
                 f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the description message to `{message}`."
             )
-        else:
-            await self.config.invite_default.clear()
-            await ctx.send(
-                "\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default."
-            )
 
-    @settings.command(name="footer", usage="<message>")
-    async def settings_footer(self, ctx, *, message=None):
-        """Change the footer message.
+    @settings.command(name="reset", aliases=["remove"])
+    async def settings_reset(self, ctx):
+        """Reset description message to default"""
 
-        Leave it blank will reset the message back to default."""
-        if message:
-            await self.config.invite_footer.set(message)
-            await ctx.send(
-                f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the footer message to `{message}`."
-            )
-        else:
-            await self.config.invite_footer.clear()
-            await ctx.send(
-                "\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default."
-            )
+        await self.config.invite_default.clear()
+        await ctx.send("\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default.")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -89,20 +76,25 @@ class AdvancedInvite(commands.Cog):
             url=ctx.bot.user.avatar_url_as(static_format="png"),
             description=(await self.config.invite_default()).format(name),
         )
-        embed.set_footer(text=await self.config.invite_footer())
-        embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
-        await ctx.send(
-            embed=embed,
-            components=[
-                ActionRow(
-                    Button(
-                        style=ButtonStyle.link,
-                        label="Invite me",
-                        url=invite,
-                    )
-                )
-            ],
+        embed.set_footer(
+            text="This bot is made possible with support of Red-DiscordBot."
         )
+        embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
+        try:
+            await ctx.send(
+                embed=embed,
+                components=[
+                    ActionRow(
+                        Button(
+                            style=ButtonStyle.link,
+                            label="Invite me",
+                            url=invite,
+                        )
+                    )
+                ],
+            )
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while trying to post invite.")
 
 
 def setup(bot):
