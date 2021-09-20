@@ -7,7 +7,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -23,6 +23,7 @@ class AdvancedInvite(commands.Cog):
         self.config = Config.get_conf(self, identifier=12435434124)
         self.config.register_global(
             invite_default="Thank you for inviting {}.",
+            emoji="\N{SMILING FACE WITH OPEN MOUTH}",
         )
 
     def cog_unload(self):
@@ -53,6 +54,28 @@ class AdvancedInvite(commands.Cog):
             await self.config.invite_default.set(message)
             await ctx.send(
                 f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the description message to `{message}`."
+            )
+
+    @settings.command(name="emoji", usage="<emoji>")
+    async def settings_emoji(self, ctx, *, emoji=None):
+        """Change emoji from smiley to something else.
+
+        Leave it blank will reset the emoji back to default.
+
+        You MUST set an vaild emoji, either way your `[p]invite` will not work.
+
+        Your bot must share the same server as the emoji you're choosing.
+        You cannot use a emoji that are not with the bot, it will fail.
+        """
+        if emoji:
+            await self.config.emoji.set(emoji)
+            await ctx.send(
+                f"\N{WHITE HEAVY CHECK MARK} Sucessfully set your emoji to {emoji}."
+            )
+        else:
+            await self.config.emoji.clear()
+            await ctx.send(
+                "\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default emoji."
             )
 
     @settings.command(name="reset", aliases=["remove"])
@@ -87,6 +110,7 @@ class AdvancedInvite(commands.Cog):
                     ActionRow(
                         Button(
                             style=ButtonStyle.link,
+                            emoji=(await self.config.emoji()),
                             label="Invite me",
                             url=invite,
                         )
@@ -94,7 +118,9 @@ class AdvancedInvite(commands.Cog):
                 ],
             )
         except discord.HTTPException:
-            await ctx.send("Something went wrong while trying to post invite.")
+            await ctx.send(
+                "Something went wrong while trying to post invite.\nCheck if you actually set an vaild emoji. [p]help settings emoji."
+            )
 
 
 def setup(bot):
