@@ -27,8 +27,8 @@ To install any cog you want:
 </thead>
 <tbody>
 <tr>
-<td>advanced</td>
-<td>This will attempt to restart and shutdown your bot, this make you need to confirm if you want to restart or shutdown.</td>
+<td>advancedinvite</td>
+<td>This will show you the bots invite on a button. this uses a lib `dislash.py` to work.</td>
 </tr>
 <td>spaceimages</td>
 <td>Random space images cog, This will show nice space images. Powered with help of martinebot.com api.</td>
@@ -41,9 +41,6 @@ To install any cog you want:
 </tr>
 <td>ping</td>
 <td>This will show your bot latency of your bot when you do `[p]ping`.</td>
-</tr>
-<td>lyrics</td>
-<td>Get lyrics of a music through KSoft.Si. Created by Predeactor. i'll continue maintain this cog.</td>
 </tr>
 <td>veryfun</td>
 <td>Just anyother fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
