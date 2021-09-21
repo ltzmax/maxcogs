@@ -121,9 +121,7 @@ class AdvancedInvite(commands.Cog):
                 ],
             )
         except discord.HTTPException:
-            await ctx.send(
-                f"Something went wrong while trying to post invite.\nLooks like you might have set an invaild emoji see: `{ctx.clean_prefix}help settings emoji`\nIf you didn't set any emoji, please report this to MAX#1000."
-            )
+            await ctx.send("Something went wrong while trying to post invite.")
 
 
 def setup(bot):
