@@ -43,7 +43,7 @@ class AdvancedInvite(commands.Cog):
         To set invite permission, use `[p]inviteset perms <level>`.
         You can generate permission level here: https://discordapi.com/permissions.html."""
 
-    @settings.command(name="add", aliases=["set", "description"], usage="<message>")
+    @settings.command(name="set", aliases=["add", "message"], usage="<message>")
     async def settings_add(self, ctx, *, message: str):
         """Change the invite description message.
 
