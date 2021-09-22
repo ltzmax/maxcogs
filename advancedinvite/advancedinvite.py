@@ -7,7 +7,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.6"
+    __version__ = "0.0.7"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -58,16 +58,17 @@ class AdvancedInvite(commands.Cog):
 
     @settings.command(name="emoji", usage="<emoji>")
     async def settings_emoji(self, ctx, *, emoji: str = None):
-        """Change emoji from smiley to something else.
+        """Set a emoji on the button beside "Invite me".
 
         Leave it blank will reset the emoji back to default.
 
         You need to set an vaild emoji, either way your `[p]invite` will not work.
 
-        Example:
-        - `[p]invite emoji <emoji>`.
+        **Example:**
+        - `[p]invite emoji :smiley:`.
 
-        `<emoji>` is the emoji you want to set as an emoji on the button.
+        **Arguments:**
+        - `<emoji>` is the emoji you want to set as an emoji.
         """
 
         if not emoji:
