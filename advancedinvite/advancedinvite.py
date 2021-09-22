@@ -51,7 +51,7 @@ class AdvancedInvite(commands.Cog):
         You cannot have longer than 2000 on `<message>`.
 
         **Example:**
-        - [p]settings set Hello invite me pls`.
+        - `[p]settings set Hello invite me pls`.
 
         **Arguments:**
         - `<message>` is where you set your message.
