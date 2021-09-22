@@ -15,7 +15,7 @@ class Ping(commands.Cog):
     """Reply with [botname]'s latency."""
 
     __author__ = "MAX, Senroht#5179, Fixator10, Preda"
-    __version__ = "0.0.5"
+    __version__ = "0.0.6"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -48,8 +48,17 @@ class Ping(commands.Cog):
         """Settings to change ping title shown in the embed."""
 
     @pingset.command(name="set", aliases=["add"], usage="<message>")
-    async def pingset_add(self, ctx, *, message: str):
-        """Change the ping message shown in the embed."""
+    async def pingset_set(self, ctx, *, message: str):
+        """Change the message for your ping title.
+
+        You cannot have longer than 2000 on `<message>`.
+
+        **Example:**
+        - `[p]pingset set ping pong!`
+
+        **Arguments:**
+        - `<message>` is where you set your message.
+        """
         if len(message) > 2000:
             return await ctx.send("Your message must be 2000 or fewer in length.")
         if message:

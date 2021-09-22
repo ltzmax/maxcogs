@@ -7,7 +7,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.7"
+    __version__ = "0.0.8"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -45,9 +45,17 @@ class AdvancedInvite(commands.Cog):
 
     @settings.command(name="set", aliases=["add", "message"], usage="<message>")
     async def settings_add(self, ctx, *, message: str):
-        """Change the invite description message.
+        """Change the description message for your invite.
 
-        Leave it blank will reset the message back to default."""
+        Leave it blank will reset the message back to default.
+        You cannot have longer than 2000 on `<message>`.
+
+        **Example:**
+        - [p]settings set Hello invite me pls`.
+
+        **Arguments:**
+        - `<message>` is where you set your message.
+        """
         if len(message) > 2000:
             return await ctx.send("Your message must be 2000 or fewer in length.")
         if message:
@@ -61,7 +69,6 @@ class AdvancedInvite(commands.Cog):
         """Set a emoji on the button beside "Invite me".
 
         Leave it blank will reset the emoji back to default.
-
         You need to set an vaild emoji, either way your `[p]invite` will not work.
 
         **Example:**
@@ -84,7 +91,7 @@ class AdvancedInvite(commands.Cog):
 
     @settings.command(name="reset", aliases=["remove"])
     async def settings_reset(self, ctx):
-        """Reset description message to default"""
+        """Reset description message back to default."""
 
         await self.config.invite_default.clear()
         await ctx.send("\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default.")
