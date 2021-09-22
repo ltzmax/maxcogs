@@ -111,6 +111,8 @@ class AdvancedInvite(commands.Cog):
             description=(await self.config.invite_default()).format(name),
         )
         embed.set_footer(
+            # Removing or editing this footer will not be given any support for this cog.
+            # it is here to show that your bot was made with help of Red.
             text="This bot is made possible with support of Red-DiscordBot."
         )
         embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
@@ -130,6 +132,9 @@ class AdvancedInvite(commands.Cog):
             )
         except discord.HTTPException:
             await ctx.send("Something went wrong while trying to post invite.")
+
+        # todo: Add [p]support.
+        # seperate / not seperate?
 
 
 def setup(bot):
