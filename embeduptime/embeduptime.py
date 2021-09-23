@@ -42,9 +42,15 @@ class EmbedUptime(commands.Cog):
                 colour=await ctx.embed_color(),
             )
             await ctx.send(embed=emb)
-        else:
+        else:  # this part is from core, but with more.
             await ctx.send(
-                f"{name} been up for: **{uptime_str}** (since <t:{int(uptime.timestamp())}:F>)"
+                (
+                    "{name} has been up for: **{time_quantity}** (since {timestamp})"
+                ).format(
+                    name=ctx.bot.user.name,
+                    time_quantity=uptime_str,
+                    timestamp=f"<t:{int(uptime.timestamp())}:F>",
+                )
             )
 
 
