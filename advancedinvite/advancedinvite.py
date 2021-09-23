@@ -7,7 +7,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.8"
+    __version__ = "0.0.9"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -22,8 +22,9 @@ class AdvancedInvite(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=12435434124)
         self.config.register_global(
-            invite_default="Thank you for inviting {}.",
+            invite_default="Thank you for inviting {}\n\n{}",
             emoji=None,
+            support=None,
         )
 
     def cog_unload(self):
@@ -89,6 +90,33 @@ class AdvancedInvite(commands.Cog):
                 f"\N{WHITE HEAVY CHECK MARK} Sucessfully set your emoji to {emoji}."
             )
 
+    @settings.command(name="support", usage="<support url>")
+    async def settings_support(self, ctx, *, support: str = None):
+        """Set support server to make buttons appear.
+
+        Leave it blank will reset the emoji back to default.
+        You need to set an vaild support url, either way your `[p]invite` buttons will not appear.
+
+        You need to add `https://discord.gg/YOUR_INVITE_CODE`.
+
+        **Example:**
+        - `[p]invite support https://discord.gg/red`.
+
+        **Arguments:**
+        - `<support url>` is the support server you want to set.
+        """
+
+        if not support:
+            await self.config.support.set(support)
+            await ctx.send(
+                "\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default."
+            )
+        else:
+            await self.config.support.set(support)
+            await ctx.send(
+                f"\N{WHITE HEAVY CHECK MARK} Sucessfully set your support to {support}."
+            )
+
     @settings.command(name="reset", aliases=["remove"])
     async def settings_reset(self, ctx):
         """Reset description message back to default."""
@@ -108,7 +136,7 @@ class AdvancedInvite(commands.Cog):
             title=f"{name}",
             colour=await ctx.embed_color(),
             url=ctx.bot.user.avatar_url_as(static_format="png"),
-            description=(await self.config.invite_default()).format(name),
+            description=(await self.config.invite_default()).format(name, invite),
         )
         embed.set_footer(
             # Removing or editing this footer will not be given any support for this cog.
@@ -116,25 +144,24 @@ class AdvancedInvite(commands.Cog):
             text="This bot is made possible with support of Red-DiscordBot."
         )
         embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
-        try:
-            await ctx.send(
-                embed=embed,
-                components=[
-                    ActionRow(
-                        Button(
-                            style=ButtonStyle.link,
-                            emoji=(await self.config.emoji()),
-                            label="Invite me",
-                            url=invite,
-                        )
-                    )
-                ],
-            )
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while trying to post invite.")
+        row = ActionRow(
+            Button(
+                style=ButtonStyle.link,
+                emoji=(await self.config.emoji()),
+                label="Invite me",
+                url=invite,
+            ),
+            Button(
+                style=ButtonStyle.link,
+                label="Support server",
+                url=(await self.config.support()),
+            ),
+        )
+        if await self.config.support():
+            return await ctx.send(embed=embed, components=[row])
+        await ctx.send(embed=embed)
 
-        # todo: Add [p]support.
-        # seperate / not seperate?
+    # discord.HTTPException need to be handled here...
 
 
 def setup(bot):
