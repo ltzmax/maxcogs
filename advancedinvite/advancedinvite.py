@@ -7,7 +7,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.9"
+    __version__ = "0.0.10"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -22,9 +22,8 @@ class AdvancedInvite(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=12435434124)
         self.config.register_global(
-            invite_default="Thank you for inviting {}\n\n{}",
+            invite_default="Thank you for inviting {}\n\n**Invite:**\n[Click here]({})",
             emoji=None,
-            support=None,
         )
 
     def cog_unload(self):
@@ -90,33 +89,6 @@ class AdvancedInvite(commands.Cog):
                 f"\N{WHITE HEAVY CHECK MARK} Sucessfully set your emoji to {emoji}."
             )
 
-    @settings.command(name="support", usage="<support url>")
-    async def settings_support(self, ctx, *, support: str = None):
-        """Set support server to make buttons appear.
-
-        Leave it blank will reset the emoji back to default.
-        You need to set an vaild support url, either way your `[p]invite` buttons will not appear.
-
-        You need to add `https://discord.gg/YOUR_INVITE_CODE`.
-
-        **Example:**
-        - `[p]invite support https://discord.gg/red`.
-
-        **Arguments:**
-        - `<support url>` is the support server you want to set.
-        """
-
-        if not support:
-            await self.config.support.set(support)
-            await ctx.send(
-                "\N{WHITE HEAVY CHECK MARK} Sucessfully reset back to default."
-            )
-        else:
-            await self.config.support.set(support)
-            await ctx.send(
-                f"\N{WHITE HEAVY CHECK MARK} Sucessfully set your support to {support}."
-            )
-
     @settings.command(name="reset", aliases=["remove"])
     async def settings_reset(self, ctx):
         """Reset description message back to default."""
@@ -129,9 +101,15 @@ class AdvancedInvite(commands.Cog):
     async def invite(self, ctx):
         """Shows [botname]'s invite link."""
 
-        name = ctx.bot.user.name
+        author = ctx.author
 
         invite = await self.bot.get_cog("Core")._invite_url()
+
+        if author.is_on_mobile():
+            return await ctx.send(invite)
+
+        name = ctx.bot.user.name
+
         embed = discord.Embed(
             title=f"{name}",
             colour=await ctx.embed_color(),
@@ -151,17 +129,13 @@ class AdvancedInvite(commands.Cog):
                 label="Invite me",
                 url=invite,
             ),
-            Button(
-                style=ButtonStyle.link,
-                label="Support server",
-                url=(await self.config.support()),
-            ),
         )
-        if await self.config.support():
-            return await ctx.send(embed=embed, components=[row])
-        await ctx.send(embed=embed)
+        try:
+            await ctx.send(embed=embed, components=[row])
+        except discord.HTTPException:
+            await ctx.send("Something went wrong while trying to post invite.")
 
-    # discord.HTTPException need to be handled here...
+        # Add support at a later time...
 
 
 def setup(bot):
