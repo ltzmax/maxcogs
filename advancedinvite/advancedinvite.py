@@ -7,7 +7,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.10"
+    __version__ = "0.0.11 beta"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -106,7 +106,10 @@ class AdvancedInvite(commands.Cog):
         invite = await self.bot.get_cog("Core")._invite_url()
 
         if author.is_on_mobile():
-            return await ctx.send(invite)
+            # This will only send if user is on mobile.
+            return await ctx.send(
+                f"Here's the invite for {self.bot.user.name}\n{invite}"
+            )
 
         name = ctx.bot.user.name
 
