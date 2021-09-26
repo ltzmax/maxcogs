@@ -109,7 +109,7 @@ class AdvancedInvite(commands.Cog):
         if author.is_on_mobile():
             # This will only send if user is on mobile.
             return await ctx.send(
-                f"Here's the invite for {self.bot.user.name}\n{invite}"
+                f"Here's the bot invite for {self.bot.user.name}:\n{invite}"
             )
 
         name = ctx.bot.user.name
