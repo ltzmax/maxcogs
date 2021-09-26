@@ -8,7 +8,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.11 beta"
+    __version__ = "0.0.12 beta"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -122,7 +122,6 @@ class AdvancedInvite(commands.Cog):
         )
         embed.set_footer(
             # Removing or editing this footer will not be given any support for this cog.
-            # it is here to show that your bot was made with help of Red.
             text="This bot is made possible with support of Red-DiscordBot."
         )
         embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
@@ -138,8 +137,6 @@ class AdvancedInvite(commands.Cog):
             await ctx.send(embed=embed, components=[row])
         except discord.HTTPException:
             await ctx.send("Something went wrong while trying to post invite.")
-
-        # Add support at a later time...
 
 
 def setup(bot):
