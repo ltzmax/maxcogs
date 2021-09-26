@@ -23,7 +23,7 @@ class AdvancedInvite(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=12435434124)
         self.config.register_global(
-            invite_default="Thank you for inviting {}\n\n**Invite:**\n[Click here]({})",
+            invite_default="Thank you for inviting {}\n**Invite:**\n[Click here]({})",
             emoji=None,
         )
 
