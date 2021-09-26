@@ -1,5 +1,6 @@
 import discord
 from redbot.core import Config, commands
+from dislash.slash_commands import SlashClient
 from dislash.interactions import ActionRow, Button, ButtonStyle
 
 
@@ -146,3 +147,4 @@ def setup(bot):
     global invite
     invite = bot.remove_command("invite")
     bot.add_cog(advi)
+    bot.slash = SlashClient(bot)
