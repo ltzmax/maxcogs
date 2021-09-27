@@ -1,7 +1,11 @@
+import logging
+
 import discord
-from redbot.core import Config, commands
-from dislash.slash_commands import SlashClient
 from dislash.interactions import ActionRow, Button, ButtonStyle
+from dislash.slash_commands import SlashClient
+from redbot.core import Config, commands
+
+log = logging.getLogger("red.maxcogs.advancedinvite")
 
 
 class AdvancedInvite(commands.Cog):
