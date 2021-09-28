@@ -12,7 +12,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.12 beta"
+    __version__ = "0.0.13 beta"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -140,7 +140,12 @@ class AdvancedInvite(commands.Cog):
         try:
             await ctx.send(embed=embed, components=[row])
         except discord.HTTPException:
-            await ctx.send("Something went wrong while trying to post invite.")
+            await ctx.send(
+                "Something went wrong while trying to post invite. Check your console for details."
+            )
+            log.error(
+                f"Error in command 'invite'. I suggest checking if you set vaild emoji before reporting this '{ctx.clean_prefix}help settings emoji'."
+            )
 
 
 def setup(bot):
