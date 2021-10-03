@@ -188,11 +188,11 @@ class VeryFun(commands.Cog):
         except discord.HTTPException:
             await ctx.send("Something went wrong while posting.")
 
-    @commands.command(aliases=["hugs"])
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
-    async def hug(self, ctx, user: discord.Member):
+    async def hugs(self, ctx, user: discord.Member):
         """Hugs a user!"""
         async with self.session.get(NEKOS + "hug") as response:
             if response.status != 200:
