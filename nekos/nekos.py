@@ -16,7 +16,7 @@ class Nekos(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.9"
+    __version__ = "0.1.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -34,15 +34,14 @@ class Nekos(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def neko(self, ctx):
         """Send a random neko image."""
-        async with aiohttp.ClientSession() as session:
-            async with session.get(NEKOS_API + "nekos") as response:
-                if response.status != 200:
-                    return await ctx.send(
-                        "Something went wrong while trying to contact API."
-                    )
-                if response.status == 502:
-                    return await ctx.send("Api is currently down, try again later.")
-                url = await response.json()
+        async with self.session.get(NEKOS_API + "nekos") as response:
+            if response.status != 200:
+                return await ctx.send(
+                    "Something went wrong while trying to contact API."
+                )
+            if response.status == 502:
+                return await ctx.send("Api is currently down, try again later.")
+            url = await response.json()
             emb = discord.Embed(
                 title="Here's a pic of neko",
                 description=f"Artist: [{url['artist_name']}]({url['artist_href']})\nSource: {url['source_url']}",
