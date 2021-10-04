@@ -32,7 +32,7 @@ class Nekos(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def neko(self, ctx):
         """Send a random neko image."""
-        neko = await self.session.get_image('nekos')
+        neko = await self.session.get_image("nekos")
         emb = discord.Embed(
             title="Here's a pic of neko",
             description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
