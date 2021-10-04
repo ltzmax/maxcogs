@@ -1,6 +1,7 @@
 import aiohttp
 import discord
 from redbot.core import commands
+import nekosbest
 
 NEKOS_API = "https://nekos.best/api/v1/"
 ICON = "https://cdn.discordapp.com/emojis/851544845956415488.png?v=1"
@@ -11,10 +12,7 @@ class Nekos(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.session = aiohttp.ClientSession()
-
-    def cog_unload(self):
-        self.bot.loop.create_task(self.session.close())
+        self.session = nekosbest.Client()
 
     __version__ = "0.1.0"
     __author__ = "MAX"
@@ -34,27 +32,20 @@ class Nekos(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def neko(self, ctx):
         """Send a random neko image."""
-        async with self.session.get(NEKOS_API + "nekos") as response:
-            if response.status != 200:
-                return await ctx.send(
-                    "Something went wrong while trying to contact API."
-                )
-            if response.status == 502:
-                return await ctx.send("Api is currently down, try again later.")
-            url = await response.json()
-            emb = discord.Embed(
-                title="Here's a pic of neko",
-                description=f"Artist: [{url['artist_name']}]({url['artist_href']})\nSource: {url['source_url']}",
-            )
-            emb.colour = await ctx.embed_color()
-            emb.set_footer(
-                text="Powered by nekos.best",
-                icon_url=ICON,
-            )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. try again later.")
+        neko = await self.session.get_image('nekos')
+        emb = discord.Embed(
+            title="Here's a pic of neko",
+            description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
+        )
+        emb.colour = await ctx.embed_color()
+        emb.set_footer(
+            text="Powered by nekos.best",
+            icon_url=ICON,
+        )
+        if neko.url:
+            emb.set_image(url=neko.url)
+        else:
+            emb.description = "I was unable to get image, can you try again?"
         try:
             await ctx.send(embed=emb)
         except discord.HTTPException:
