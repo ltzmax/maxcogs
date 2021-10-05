@@ -1,0 +1,12 @@
+{
+    "author": ["max"],
+    "install_msg": "Thanks for installing. Remember this cog constain hard, sad and dep quotes, Do me a favor and uninstall this directly if you cannot handle sad, dep and hard quotes that can quote alot of yourself.. Do remember you're not alone, no matter what. Sending you a big hug.<3",
+    "description": "inspirational cog to get random quotes.",
+    "short": "Get random quotes.",
+    "hidden": false,
+    "min_bot_version": "3.4.5",
+    "tags": ["quotes", "quote"],
+    "permissions": ["embed_links"],
+    "min_python_version": [3, 8, 1],
+    "end_user_data_statement": "This cog does not store any End User Data."
+  }
