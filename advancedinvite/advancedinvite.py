@@ -114,11 +114,6 @@ class AdvancedInvite(commands.Cog):
         invite = await self.bot.get_cog("Core")._invite_url()
 
         if author.is_on_mobile():
-            return await ctx.send(
-                f"Here's the bot invite for {self.bot.user.name}:\n{invite}"
-            )
-
-        if author.is_on_mobile():
             # This will only send if user is on mobile.
             return await ctx.send(
                 f"Here's the bot invite for {self.bot.user.name}:\n{invite}"
@@ -138,12 +133,6 @@ class AdvancedInvite(commands.Cog):
         )
         embed.set_thumbnail(url=ctx.bot.user.avatar_url_as(static_format="png"))
         row = ActionRow(
-            Button(
-                style=ButtonStyle.link,
-                emoji=discord.PartialEmoji(name="charl", id=706854846464000091),
-                label="Invite me",
-                url=invite,
-            ),
             Button(
                 style=ButtonStyle.link,
                 emoji=(await self.config.emoji()),
