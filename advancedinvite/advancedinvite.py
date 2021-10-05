@@ -1,8 +1,8 @@
 import logging
 
 import discord
+from dislash.application_commands._modifications.old import send_with_components
 from dislash.interactions import ActionRow, Button, ButtonStyle
-from dislash.slash_commands import SlashClient
 from redbot.core import Config, commands
 
 log = logging.getLogger("red.maxcogs.advancedinvite")
@@ -12,7 +12,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.13 beta"
+    __version__ = "0.0.14 beta"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -25,6 +25,9 @@ class AdvancedInvite(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        # monkeypatch dislash.py
+        if not hasattr(commands.Context, "sendi"):
+            commands.Context.sendi = send_with_components
         self.config = Config.get_conf(self, identifier=12435434124)
         self.config.register_global(
             invite_default="Thank you for inviting {}\n**Invite:**\n[Click here]({})",
@@ -138,7 +141,7 @@ class AdvancedInvite(commands.Cog):
             ),
         )
         try:
-            await ctx.send(embed=embed, components=[row])
+            await ctx.sendi(embed=embed, components=[row])
         except discord.HTTPException:
             await ctx.send(
                 "Something went wrong while trying to post invite. Check your console for details."
@@ -153,4 +156,3 @@ def setup(bot):
     global invite
     invite = bot.remove_command("invite")
     bot.add_cog(advi)
-    bot.slash = SlashClient(bot)
