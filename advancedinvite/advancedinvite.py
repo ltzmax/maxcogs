@@ -135,6 +135,12 @@ class AdvancedInvite(commands.Cog):
         row = ActionRow(
             Button(
                 style=ButtonStyle.link,
+                emoji=discord.PartialEmoji(name="charl", id=706854846464000091),
+                label="Invite me",
+                url=invite,
+            ),
+            Button(
+                style=ButtonStyle.link,
                 emoji=(await self.config.emoji()),
                 label="Invite me",
                 url=invite,
