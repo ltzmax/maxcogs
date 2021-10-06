@@ -28,7 +28,7 @@ To install any cog you want:
 <tbody>
 <tr>
 <td>advancedinvite</td>
-<td>This will show you the bots invite on a button. this uses a lib `dislash.py` to work.</td>
+<td>This will show you the bots invite on a button. This uses a lib `dislash.py` to work.</td>
 </tr>
 <td>spaceimages</td>
 <td>Random space images cog, This will show nice space images. Powered with help of martinebot.com api.</td>
