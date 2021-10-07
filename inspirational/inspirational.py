@@ -40,6 +40,8 @@ class Inspirational(commands.Cog):
     async def qset_set(self, ctx: commands.Context, mentions: bool):
         """Change the mention to true or false.
 
+        Default is true.
+
         **Example:**
         - `[p]qset set false` this will disable the mentions on replies.
 
