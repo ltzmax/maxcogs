@@ -1,4 +1,4 @@
-from redbot.core import commands
+from redbot.core import commands, Config
 import aiohttp
 import json
 import discord
@@ -13,7 +13,7 @@ class Inspirational(commands.Cog):
     Powered by zenquotes API."""
 
     __author__ = "MAX"
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
 
     def format_help_for_context(self, ctx):
         helpcmd = super().format_help_for_context(ctx)
@@ -21,10 +21,33 @@ class Inspirational(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config.get_conf(self, identifier=12435434124)
+        self.config.register_global(
+            mentions=True,
+        )
         self.session = aiohttp.ClientSession()
 
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
+
+    @commands.is_owner()
+    @commands.group()
+    async def qset(self, ctx):
+        """Settings to change mentions to true or false."""
+
+    @qset.command(name="set", usage="<true_or_false>")
+    async def qset_set(self, ctx: commands.Context, mentions: bool):
+        """Change the mention to true or false.
+        
+        **Example:**
+        - `[p]qset set false` this will disable the mentions on replies.
+        
+        **Arguments:**
+        - `<true_or_false>` is where you add false or true."""
+
+        await self.config.mentions.set(mentions)
+        mentions = "true" if mentions else "false"
+        await ctx.send("Mentions is now {}.".format(mentions))
 
     @commands.command(aliases=["quote"])
     @commands.bot_has_permissions(embed_links=True)
@@ -46,8 +69,8 @@ class Inspirational(commands.Cog):
             emb.set_footer(text="Powered by Zenquotes API.")
             try:
                 await ctx.reply(
-                    embed=emb, mention_author=True
-                )  # Change True to False, if you want to disable ping.
+                    embed=emb, mention_author=await self.config.mentions()
+                )
             except discord.HTTPException:
                 await ctx.send(embed=emb)
                 log.info(
