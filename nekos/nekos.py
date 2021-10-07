@@ -4,7 +4,7 @@ from redbot.core import commands
 import nekosbest
 
 NEKOS_API = "https://nekos.best/api/v1/"
-ICON = "https://cdn.discordapp.com/emojis/851544845956415488.png?v=1"
+ICON = "https://cdn.discordapp.com/emojis/851544845322551347.png?size=96"
 
 
 class Nekos(commands.Cog):
