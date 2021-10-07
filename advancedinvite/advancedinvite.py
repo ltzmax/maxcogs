@@ -52,7 +52,7 @@ class AdvancedInvite(commands.Cog):
         You can generate permission level here: https://discordapi.com/permissions.html."""
 
     @settings.command(name="set", aliases=["add", "message"], usage="<message>")
-    async def settings_add(self, ctx, *, message: str):
+    async def settings_set(self, ctx, *, message: str):
         """Change the description message for your invite.
 
         Leave it blank will reset the message back to default.
