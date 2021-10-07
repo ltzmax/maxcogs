@@ -38,10 +38,10 @@ class Inspirational(commands.Cog):
     @qset.command(name="set", usage="<true_or_false>")
     async def qset_set(self, ctx: commands.Context, mentions: bool):
         """Change the mention to true or false.
-        
+
         **Example:**
         - `[p]qset set false` this will disable the mentions on replies.
-        
+
         **Arguments:**
         - `<true_or_false>` is where you add false or true."""
 
@@ -68,9 +68,7 @@ class Inspirational(commands.Cog):
             )
             emb.set_footer(text="Powered by Zenquotes API.")
             try:
-                await ctx.reply(
-                    embed=emb, mention_author=await self.config.mentions()
-                )
+                await ctx.reply(embed=emb, mention_author=await self.config.mentions())
             except discord.HTTPException:
                 await ctx.send(embed=emb)
                 log.info(
