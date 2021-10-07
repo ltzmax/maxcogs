@@ -15,9 +15,10 @@ class Inspirational(commands.Cog):
     __author__ = "MAX"
     __version__ = "0.0.2"
 
-    def format_help_for_context(self, ctx):
-        helpcmd = super().format_help_for_context(ctx)
-        return f"{helpcmd}\nCog Version: {self.__version__}\nAuthor: {self.__author__}"
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
     def __init__(self, bot):
         self.bot = bot
