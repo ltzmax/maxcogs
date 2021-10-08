@@ -1,6 +1,5 @@
 from redbot.core import commands, Config
 import aiohttp
-import json
 import discord
 import logging
 
@@ -13,7 +12,7 @@ class Inspirational(commands.Cog):
     Powered by zenquotes API."""
 
     __author__ = "MAX"
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -46,7 +45,7 @@ class Inspirational(commands.Cog):
         - `[p]qset set false` this will disable the mentions on replies.
 
         **Arguments:**
-        - `<true_or_false>` is where you add false or true."""
+        - `<true_or_false>` is where you set `true` or `false`."""
 
         await self.config.mentions.set(mentions)
         mentions = "true" if mentions else "false"
