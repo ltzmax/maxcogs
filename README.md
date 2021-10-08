@@ -45,6 +45,12 @@ To install any cog you want:
 <td>veryfun</td>
 <td>Just anyother fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
 </tr>
+<td>inspirational</td>
+<td>This is a cog that gives you random quotes from Zenquotes API.</td>
+</tr>
+<td>pokenamegen</td>
+<td>This generate a random pokémon name from gen 1 to gen 8.</td>
+</tr>
 </tbody>
 </table>
 
