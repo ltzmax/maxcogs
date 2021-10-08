@@ -25,7 +25,7 @@ class AdvancedInvite(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        # monkeypatch dislash.py
+        # monkeypatch dislash.py to not break slashtags by phen.
         if not hasattr(commands.Context, "sendi"):
             commands.Context.sendi = send_with_components
         self.config = Config.get_conf(self, identifier=12435434124)
@@ -115,7 +115,7 @@ class AdvancedInvite(commands.Cog):
 
         if author.is_on_mobile():
             # This will only send if user is on mobile.
-            return await ctx.send(
+            return await ctx.reply(
                 f"Here's the bot invite for {self.bot.user.name}:\n{invite}"
             )
 
