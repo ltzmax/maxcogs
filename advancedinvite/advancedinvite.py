@@ -1,9 +1,23 @@
 import logging
 
 import discord
-from dislash.application_commands._modifications.old import send_with_components
-from dislash.interactions import ActionRow, Button, ButtonStyle
 from redbot.core import Config, commands
+from redbot.core.errors import CogLoadError
+
+try:
+    from dislash.application_commands._modifications.old import send_with_components
+    from dislash.interactions import ActionRow, Button, ButtonStyle
+except Exception as e:
+    raise CogLoadError(
+        f"Can't load because: {e}\n"
+        "Please install dislash by using "
+        "`pip install dislash.py==1.4.9` "
+        "in your console. "
+        "Restart your bot if you still get this error."
+    )
+
+# CogLoadError handler from
+# https://github.com/fixator10/Fixator10-Cogs/blob/9972aa58dea3a5a1a0758bca62cb8a08a7a51cc6/leveler/def_imgen_utils.py#L11-L30
 
 log = logging.getLogger("red.maxcogs.advancedinvite")
 
@@ -12,7 +26,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.14 beta"
+    __version__ = "0.0.15 beta"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
