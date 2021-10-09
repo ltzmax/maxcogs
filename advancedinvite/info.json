@@ -3,7 +3,7 @@
     "install_msg": "Thank you for installing this cog. Once you load this cog it will replace your invite from core to this one. on unload you will have the core on back.\nYou can change description message in `[p]settings` and set emoji on the button with `[p]settings emoji <emoji>`, Check `[p]help settings emoji` for a guide. if you don't set an vaild emoji, your `[p]invite` command will not work.\nNOTE: You will need to `pip install dislash.py` in your console as this cog require `dislash`. Please note this cog uses core's `[p]inviteset perms <level>` to set permission level for your bot invite. You can generate permission level here: <https://discordapi.com/permissions.html>.",
     "description": "Shows the invite link to your bot with uses buttons.",
     "short": "Shows the invite link with buttons",
-    "hidden": false,
+    "hidden": true,
     "min_bot_version": "3.4.5",
     "tags": ["invite"],
     "requirements": [
