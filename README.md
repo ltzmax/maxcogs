@@ -48,9 +48,6 @@ To install any cog you want:
 <td>inspirational</td>
 <td>This is a cog that gives you random quotes from Zenquotes API.</td>
 </tr>
-<td>pokenamegen</td>
-<td>This generate a random pokémon name from gen 1 to gen 8.</td>
-</tr>
 </tbody>
 </table>
 
