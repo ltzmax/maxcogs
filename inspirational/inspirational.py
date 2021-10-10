@@ -71,9 +71,8 @@ class Inspirational(commands.Cog):
             emb.set_footer(text="Powered by Zenquotes API.")
             try:
                 await ctx.reply(embed=emb, mention_author=await self.config.mentions())
-            except discord.HTTPException:
+            except discord.HTTPException as e:
                 await ctx.send(embed=emb)
-                log.info(
-                    "Command 'quote' failed to use reply due to message was unknown."
+                log.error(
+                    f"Command 'quote' failed to use reply, This is because: {e}"
                 )
-                # use info because this is not really error. :P
