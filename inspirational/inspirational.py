@@ -73,6 +73,4 @@ class Inspirational(commands.Cog):
                 await ctx.reply(embed=emb, mention_author=await self.config.mentions())
             except discord.HTTPException as e:
                 await ctx.send(embed=emb)
-                log.error(
-                    f"Command 'quote' failed to use reply, This is because: {e}"
-                )
+                log.error(f"Command 'quote' failed to use reply, This is because: {e}")

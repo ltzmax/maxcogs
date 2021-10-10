@@ -104,7 +104,8 @@ class AdvancedInvite(commands.Cog):
         if author.is_on_mobile():
             # This will only send if user is on mobile.
             return await ctx.reply(
-                f"Here's the bot invite for {self.bot.user.name}:\n{invite}"
+                f"Here's the bot invite for {self.bot.user.name}:\n{invite}",
+                mention_author=False,
             )
 
         name = ctx.bot.user.name
@@ -134,9 +135,7 @@ class AdvancedInvite(commands.Cog):
             await ctx.reply(
                 "Something went wrong while trying to post invite. Check your console for details."
             )
-            log.error(
-                f"Command 'invite' failed, This is because: {e}"
-            )
+            log.error(f"Command 'invite' failed, This is because: {e}")
 
 
 def setup(bot):
