@@ -1,6 +1,6 @@
 {
   "author": ["max"],
-  "install_msg" : "Thanks for installing. Enjoy the nice look of the space images.",
+  "install_msg" : "Thanks for installing. **WARNING**: The api is offline at this moment so while you're using this cog, it is not going to give you any images.",
   "description": "Image cog that generate random space images from different subreddit.",
   "short": "Random space images.",
   "hidden" : true,
