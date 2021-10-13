@@ -1,6 +1,10 @@
 import aiohttp
 import discord
+import logging
+
 from redbot.core import commands
+
+log = logging.getLogger("red.maxcogs.veryfun")
 
 NEKOS = "https://nekos.best/api/v1/"
 ICON = "https://cdn.discordapp.com/emojis/851544845956415488.png?v=1"
@@ -20,7 +24,7 @@ class VeryFun(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.6"
+    __version__ = "0.0.7"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -57,8 +61,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'baka' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -89,8 +96,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'cry' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -121,8 +131,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'cuddle' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -153,8 +166,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'dance' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -185,8 +201,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'feed' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -217,8 +236,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'hugs' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -249,8 +271,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'kiss' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -281,8 +306,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'laugh' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -313,8 +341,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'pat' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -345,8 +376,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'poke' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -377,8 +411,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'slap' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -409,8 +446,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'smile' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -441,8 +481,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'smug' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -473,8 +516,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'tickle' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -505,10 +551,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
-
-    ## New enpoints.
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'wave' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -539,8 +586,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'bite' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -571,8 +621,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'blush' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -603,8 +656,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'bored' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -635,8 +691,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'facepalm' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -667,8 +726,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'happy' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -699,8 +761,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'highfive' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -731,8 +796,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'pout' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -763,8 +831,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'shrug' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -795,8 +866,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'sleep' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -827,8 +901,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'stare' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -859,8 +936,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'think' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -891,8 +971,11 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'thumbsup' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -923,5 +1006,8 @@ class VeryFun(commands.Cog):
             return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command 'wink' failed to post: {e}")
