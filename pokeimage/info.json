@@ -1,0 +1,13 @@
+{
+    "author": ["max"],
+    "install_msg" : "Thanks for installing.",
+    "description": "Random pokemon images for the pokemon fans out there.",
+    "short": "Random pokemon images",
+    "hidden" : true,
+    "min_bot_version": "3.4.0",
+    "tags": ["images", "pictures", "space"],
+    "permissions": ["embed_links"],
+    "min_python_version": [3, 8, 1],
+    "end_user_data_statement": "This cog does not store any End User Data."
+  }
+  
