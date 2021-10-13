@@ -48,6 +48,9 @@ To install any cog you want:
 <td>inspirational</td>
 <td>This is a cog that gives you random quotes from Zenquotes API.</td>
 </tr>
+<td>pokeimgage</td>
+<td>This is a cog that gives you random pokemon images from api.itzmax.me.</td>
+</tr>
 </tbody>
 </table>
 
