@@ -1,7 +1,10 @@
 import discord
 import aiohttp
+import logging
 from io import BytesIO
 from redbot.core import commands
+
+log = logging.getLogger("red.maxcogs.pokeimage")
 
 URL = "https://api.itzmax.me/api/pokemon"
 ICON = "https://cdn.discordapp.com/emojis/725574447029026887.png?size=96"
@@ -19,7 +22,7 @@ class PokeImage(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -57,5 +60,8 @@ class PokeImage(commands.Cog):
         embed.colour = await ctx.embed_color()
         try:
             await ctx.send(embed=embed, file=discord.File(file))
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while trying to post.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while trying to post. Check console for more info."
+            )
+            log.error(f"Command 'pokeimg' failed: {e}")
