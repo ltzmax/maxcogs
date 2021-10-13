@@ -3,6 +3,9 @@ import aiohttp
 from io import BytesIO
 from redbot.core import commands
 
+URL = "https://api.itzmax.me/api/pokemon"
+ICON = "https://cdn.discordapp.com/emojis/725574447029026887.png?size=96"
+
 
 class PokeImage(commands.Cog):
     """Get random pokémon images.
@@ -16,7 +19,7 @@ class PokeImage(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -35,7 +38,7 @@ class PokeImage(commands.Cog):
     async def pokeimg(self, ctx):
         """Get random pokémon image."""
         await ctx.trigger_typing()
-        url = "https://api.itzmax.me/api/pokemon"
+        url = URL
         async with aiohttp.ClientSession() as sess:
             async with sess.get(url) as resp:
                 data = await resp.read()
@@ -50,7 +53,7 @@ class PokeImage(commands.Cog):
             embed.set_image(url="attachment://thumbnail.png")
         else:
             embed.description = "I was unable to get image."
-        embed.set_footer(text="Powered by api.itzmax.me")
+        embed.set_footer(text="Powered by api.itzmax.me", icon_url=ICON)
         embed.colour = await ctx.embed_color()
         try:
             await ctx.send(embed=embed, file=discord.File(file))
