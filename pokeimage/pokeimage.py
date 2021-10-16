@@ -6,7 +6,6 @@ from redbot.core import commands
 
 log = logging.getLogger("red.maxcogs.pokeimage")
 
-URL = "https://api.itzmax.me/api/pokemon"
 ICON = "https://cdn.discordapp.com/emojis/725574447029026887.png?size=96"
 
 
@@ -41,10 +40,8 @@ class PokeImage(commands.Cog):
     async def pokeimg(self, ctx):
         """Get random pokémon image."""
         await ctx.trigger_typing()
-        url = URL
-        async with aiohttp.ClientSession() as sess:
-            async with sess.get(url) as resp:
-                data = await resp.read()
+        async with self.session.get("https://api.itzmax.me/api/pokemon") as resp:
+            data = await resp.read()
             if resp.status != 200:
                 return await ctx.send(
                     "Something went wrong while trying to contact API."
@@ -52,7 +49,7 @@ class PokeImage(commands.Cog):
         file = BytesIO(data)
         file.name = "thumbnail.png"
         embed = discord.Embed(title="Here's a random pokémon image:")
-        if url:
+        if file:
             embed.set_image(url="attachment://thumbnail.png")
         else:
             embed.description = "I was unable to get image."
