@@ -1,8 +1,11 @@
 from random import choice
 
+import logging
 import aiohttp
 import discord
 from redbot.core import commands
+
+log = logging.getLogger("red.maxcogs.spaceimages")
 
 # API and icon
 MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
@@ -69,11 +72,12 @@ class SpaceImages(commands.Cog):
                 icon_url=MARTINE_ICON,
             )
             emb.colour = await ctx.embed_color()
-        try:
+        if images:
             emb.set_image(url=images)
-        except KeyError:
-            return await ctx.send("I ran into an issue. Try again later.")
+        else:
+            emb.description = "Unable to get image, try again later."
         try:
             await ctx.send(embed=emb)
-        except discord.HTTPException:
+        except discord.HTTPException as e:
             await ctx.send("Something went wrong while posting an image.")
+            log.error(f"Command 'space' failed: {e}")
