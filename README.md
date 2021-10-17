@@ -39,17 +39,11 @@ To install any cog you want:
 <td>embeduptime</td>
 <td>This will reply with your uptime of your bot, this is in embed instead.</td>
 </tr>
-<td>ping</td>
-<td>This will show your bot latency of your bot when you do `[p]ping`.</td>
-</tr>
 <td>veryfun</td>
 <td>Just anyother fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
 </tr>
 <td>inspirational</td>
 <td>This is a cog that gives you random quotes from Zenquotes API.</td>
-</tr>
-<td>pokeimgage</td>
-<td>This is a cog that gives you random pokemon images from api.itzmax.me.</td>
 </tr>
 </tbody>
 </table>
