@@ -26,7 +26,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.16 beta"
+    __version__ = "0.0.17 beta"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -131,7 +131,7 @@ class AdvancedInvite(commands.Cog):
         try:
             await ctx.sendi(embed=embed, components=[row])
         except discord.HTTPException as e:
-            await ctx.reply(
+            await ctx.send(
                 "Something went wrong while trying to post invite. Check your console for details."
             )
             log.error(f"Command 'invite' failed, This is because: {e}")
