@@ -2,6 +2,9 @@ import aiohttp
 import discord
 from redbot.core import commands
 import nekosbest
+import logging
+
+log = logging.getLogger("red.maxcogs.nekos")
 
 NEKOS_API = "https://nekos.best/api/v1/"
 ICON = "https://cdn.discordapp.com/emojis/851544845322551347.png?size=96"
@@ -14,7 +17,7 @@ class Nekos(commands.Cog):
         self.bot = bot
         self.session = nekosbest.Client()
 
-    __version__ = "0.1.1"
+    __version__ = "0.1.2"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -48,5 +51,8 @@ class Nekos(commands.Cog):
             emb.description = "I was unable to get image, can you try again?"
         try:
             await ctx.send(embed=emb)
-        except discord.HTTPException:
-            await ctx.send("Something went wrong while posting an image.")
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting an image. Check console for info."
+            )
+            log.error(f"Command 'neko' failed: {e}")
