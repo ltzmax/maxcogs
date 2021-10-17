@@ -64,7 +64,7 @@ class AdvancedInvite(commands.Cog):
         To set invite permission, use `[p]inviteset perms <level>`.
         You can generate permission level here: https://discordapi.com/permissions.html."""
 
-    @settings.command(name="set", aliases=["add", "message"], usage="<message>")
+    @settings.command(name="set", aliases=["add"], usage="<message>")
     async def settings_set(self, ctx, *, message: str):
         """Change the description message for your invite.
 
@@ -124,7 +124,6 @@ class AdvancedInvite(commands.Cog):
         row = ActionRow(
             Button(
                 style=ButtonStyle.link,
-                emoji=(await self.config.emoji()),
                 label="Invite me",
                 url=invite,
             ),
