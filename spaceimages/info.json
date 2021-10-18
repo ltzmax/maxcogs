@@ -1,11 +1,11 @@
 {
   "author": ["max"],
-  "install_msg" : "Thanks for installing. **WARNING**: The api is offline at this moment so while you're using this cog, it is not going to give you any images.",
+  "install_msg" : "Thanks for installing.",
   "description": "Image cog that generate random space images from different subreddit.",
   "short": "Random space images.",
-  "hidden" : true,
+  "hidden" : false,
   "min_bot_version": "3.4.0",
-  "tags": ["images", "pictures", "space"],
+  "tags": ["images", "space", "nasa"],
   "permissions": ["embed_links"],
   "min_python_version": [3, 8, 1],
   "end_user_data_statement": "This cog does not store any End User Data."

@@ -12,7 +12,7 @@ MARTINE_API = "https://api.martinebot.com/v1/images/subreddit?name="
 MARTINE_ICON = "https://cdn.martinebot.com/current/website-assets/avatar.png"
 
 # subreddits
-# all subreddits are sfw. "porn" does not mean "nsfw" here.
+# all these are SFW.
 SPACE = [
     "spaceporn",
     "astrophotography",
@@ -32,7 +32,7 @@ class SpaceImages(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.9"
+    __version__ = "0.1.1"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -68,7 +68,7 @@ class SpaceImages(commands.Cog):
 
             emb = discord.Embed(title=f"{title}", url=f"{images}")
             emb.set_footer(
-                text=f"Powered by martinebot.com API | From r/{subreddit}",
+                text=f"Powered by martinebot.com API | From {subreddit}",
                 icon_url=MARTINE_ICON,
             )
             emb.colour = await ctx.embed_color()
