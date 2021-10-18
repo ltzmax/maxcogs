@@ -17,6 +17,17 @@ BEG_WORDS = [
     "You beg for coins to your mom and got:",
     "A man felt so sad for you so he gave you:",
     "Today is your day and you got so lucky and got:",
+    "Streamer Admiralbharoo gave you:",
+    "You went though old clothes and found:",
+    "You wanted to buy a new tv and your mom gave you:",
+    "You lost 300$ but you were lucky and found:",
+    "Martine the bot was so friendly and gave you:",
+    "A friend you have never seen, sent some coins to your paypal:",
+    "Look how lucky you are today:",
+    "It's monday so your friend gave you some coins to buy food for today:",
+    "You didn't find your coins so one of your family member gave you:",
+    "You've worked for a week and got:",
+    "Someone wanted to show how much they care about you so you got:",
 ]
 
 # I need more words... honestly.

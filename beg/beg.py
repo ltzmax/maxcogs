@@ -17,7 +17,7 @@ class Beg(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -38,17 +38,17 @@ class Beg(commands.Cog):
         All your coins is going to your `[p]bank balance`."""
         amount_to_deposit = random.randrange(3000)
         words = random.choice(BEG_WORDS)
-        try:
-            await bank.deposit_credits(ctx.author, amount_to_deposit)
-        except BalanceTooHigh as b:
-            await bank.set_balance(ctx.author, b.max_balance)
-            return await ctx.send("Your bank balance is at max amount.")
 
         emb = discord.Embed(
             title=f"{words}",
             description=f"{amount_to_deposit} \N{COIN}",
             colour=await ctx.embed_color(),
         )
+        try:
+            await bank.deposit_credits(ctx.author, amount_to_deposit)
+        except BalanceTooHigh as b:
+            await bank.set_balance(ctx.author, b.max_balance)
+            return await ctx.send("Your bank balance is at max amount.")
         try:
             await ctx.send(embed=emb)
         except discord.HTTPException as e:
