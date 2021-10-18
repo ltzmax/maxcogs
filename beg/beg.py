@@ -42,6 +42,7 @@ class Beg(commands.Cog):
             await bank.deposit_credits(ctx.author, amount_to_deposit)
         except BalanceTooHigh as b:
             await bank.set_balance(ctx.author, b.max_balance)
+            return await ctx.send("Your bank balance is at max amount.")
 
         emb = discord.Embed(
             title=f"{words}",
