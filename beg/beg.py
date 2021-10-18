@@ -10,7 +10,7 @@ log = logging.getLogger("red.maxcogs.beg")
 
 
 class Beg(commands.Cog):
-    """Begging for coins every 3h.
+    """Begging or get random coins, every 3h.
 
     All your coins is going directly to `[p]bank balance`."""
 
