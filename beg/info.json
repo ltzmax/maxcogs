@@ -1,8 +1,8 @@
 {
     "author": ["max"],
-    "install_msg": "Thanks for installing. The coins you're getting is going to your `[p]bank balance`.",
-    "description": "Begging or get random coins that goes to your bank balance.",
-    "short": "Begging or get coins from everytime you do [p]beg.",
+    "install_msg": "Thanks for installing. The coins you're getting is going to your `[p]bank balance`\nYou will only be able to `[p]beg` every 3 hours.",
+    "description": "Begging or get random coins that goes to your bank balance, only work every 3 hours.",
+    "short": "Begging or get random coins, only work every 3 hours.",
     "hidden": false,
     "min_bot_version": "3.4.0",
     "tags": ["beg", "coins"],
