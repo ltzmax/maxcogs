@@ -5,7 +5,7 @@
     "short": "Begging or get coins.",
     "hidden": false,
     "min_bot_version": "3.4.0",
-    "tags": ["uptime"],
+    "tags": ["beg", "coins"],
     "permissions": ["embed_links"],
     "min_python_version": [3, 8, 1],
     "end_user_data_statement": "This cog does not store any End User Data."
