@@ -79,5 +79,5 @@ class SpaceImages(commands.Cog):
         try:
             await ctx.send(embed=emb)
         except discord.HTTPException as e:
-            await ctx.send("Something went wrong while posting an image.")
+            await ctx.send("Something went wrong. Check your console for details")
             log.error(f"Command 'space' failed: {e}")

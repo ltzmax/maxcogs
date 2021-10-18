@@ -131,10 +131,8 @@ class AdvancedInvite(commands.Cog):
         try:
             await ctx.sendi(embed=embed, components=[row])
         except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while trying to post invite. Check your console for details."
-            )
-            log.error(f"Command 'invite' failed, This is because: {e}")
+            await ctx.send("Something went wrong. Check your console for details.")
+            log.error(f"Command 'invite' failed: {e}")
 
 
 def setup(bot):
