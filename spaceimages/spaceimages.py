@@ -49,7 +49,7 @@ class SpaceImages(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def space(self, ctx):
         """Send a random space image."""
-        await ctx.trigger_typing()
+        async with ctx.typing():
         async with self.session.get(MARTINE_API + choice(SPACE)) as resp:
             if resp.status == 410:
                 return await ctx.send("Failed to fetch API. Unknown error.")

@@ -58,21 +58,21 @@ class AdvancedInvite(commands.Cog):
 
     @commands.is_owner()
     @commands.group()
-    async def settings(self, ctx):
+    async def advancedinvite(self, ctx):
         """Settings to change invite description message.
 
         To set invite permission, use `[p]inviteset perms <level>`.
         You can generate permission level here: https://discordapi.com/permissions.html."""
 
-    @settings.command(name="set", aliases=["add"], usage="<message>")
-    async def settings_set(self, ctx, *, message: str):
+    @advancedinvite.command(name="set", aliases=["add"], usage="<message>")
+    async def advancedinvite_set(self, ctx, *, message: str):
         """Change the description message for your invite.
 
         Leave it blank will reset the message back to default.
         You cannot have longer than 2000 on `<message>`.
 
         **Example:**
-        - `[p]settings set Hello invite me pls`.
+        - `[p]advancedinvite set Hello invite me pls`.
 
         **Arguments:**
         - `<message>` is where you set your message.
@@ -85,8 +85,8 @@ class AdvancedInvite(commands.Cog):
                 f"\N{WHITE HEAVY CHECK MARK} Sucessfully set the description message to `{message}`."
             )
 
-    @settings.command(name="reset", aliases=["remove"])
-    async def settings_reset(self, ctx):
+    @advancedinvite.command(name="reset", aliases=["remove"])
+    async def advancedinvite_reset(self, ctx):
         """Reset description message back to default."""
 
         await self.config.invite_default.clear()
