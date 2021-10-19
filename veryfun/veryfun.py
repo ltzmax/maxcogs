@@ -9,16 +9,16 @@ log = logging.getLogger("red.maxcogs.veryfun")
 NEKOS = "https://nekos.best/api/v1/"
 ICON = "https://cdn.discordapp.com/emojis/851544845956415488.png?v=1"
 
-async def api_call(self, ctx, action: str):    
+
+async def api_call(self, ctx, action: str):
     async with self.session.get(NEKOS + action) as response:
         if response.status != 200:
-            return await ctx.send(
-                "Something went wrong while trying to contact API."
-            )
+            return await ctx.send("Something went wrong while trying to contact API.")
         if response.status == 502:
             return await ctx.send("Api is currently down, try again later.")
         url = await response.json()
         return url
+
 
 class VeryFun(commands.Cog):
     """Roleplay commands."""
