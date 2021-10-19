@@ -69,7 +69,7 @@ class AdvancedInvite(commands.Cog):
         """Change the description message for your invite.
 
         Leave it blank will reset the message back to default.
-        You cannot have longer than 2000 on `<message>`.
+        You cannot have longer than 1000 on `<message>`.
 
         **Example:**
         - `[p]advancedinvite set Hello invite me pls`.
@@ -77,8 +77,8 @@ class AdvancedInvite(commands.Cog):
         **Arguments:**
         - `<message>` is where you set your message.
         """
-        if len(message) > 2000:
-            return await ctx.send("Your message must be 2000 or fewer in length.")
+        if len(message) > 1000:
+            return await ctx.send("Your message must be 1000 or fewer in length.")
         if message:
             await self.config.invite_default.set(message)
             await ctx.send(
