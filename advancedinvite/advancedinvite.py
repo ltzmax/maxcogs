@@ -26,7 +26,7 @@ class AdvancedInvite(commands.Cog):
     """Shows [botname]'s invite link."""
 
     __author__ = "MAX"
-    __version__ = "0.0.17 beta"
+    __version__ = "0.0.19 beta"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -78,7 +78,9 @@ class AdvancedInvite(commands.Cog):
         - `<message>` is where you set your message.
         """
         if len(message) > 1000:
-            return await ctx.send("Your message must be 1000 or fewer in length.")
+            return await ctx.reply(
+                "Your message must be 1000 or fewer in length.", mention_author=False
+            )
         if message:
             await self.config.invite_default.set(message)
             await ctx.send(
