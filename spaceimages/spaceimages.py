@@ -49,7 +49,6 @@ class SpaceImages(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def space(self, ctx):
         """Send a random space image."""
-        async with ctx.typing():
         async with self.session.get(MARTINE_API + choice(SPACE)) as resp:
             if resp.status == 410:
                 return await ctx.send("Failed to fetch API. Unknown error.")
@@ -66,6 +65,8 @@ class SpaceImages(commands.Cog):
             subreddit = data["data"]["subreddit"]["name"]
             images = data["data"]["image_url"]
 
+        async with ctx.typing():
+        
             emb = discord.Embed(title=f"{title}", url=f"{images}")
             emb.set_footer(
                 text=f"Powered by martinebot.com API | From {subreddit}",
