@@ -29,29 +29,20 @@ class EmbedUptime(commands.Cog):
             self.bot.add_command(old_uptime)
 
     @commands.command()
-    async def uptime(self, ctx):
+    @commands.bot_has_permissions(embed_links=True)
+    async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
         name = ctx.bot.user.name
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
-        if await ctx.embed_requested():
-            emb = discord.Embed(
-                title=f"{name} has been up for:",
-                description=f"{uptime_str}\nSince: <t:{int(uptime.timestamp())}:F>",
-                colour=await ctx.embed_color(),
-            )
-            await ctx.send(embed=emb)
-        else:  # this part is from core, but with more.
-            await ctx.send(
-                (
-                    "{name} has been up for: **{time_quantity}** (since {timestamp})"
-                ).format(
-                    name=ctx.bot.user.name,
-                    time_quantity=uptime_str,
-                    timestamp=f"<t:{int(uptime.timestamp())}:F>",
-                )
-            )
+        emb = discord.Embed(
+            title=f"{name} has been up for:",
+            description=f"{uptime_str}\nSince: <t:{int(uptime.timestamp())}:F>",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=emb)
+
 
 
 def setup(bot):
