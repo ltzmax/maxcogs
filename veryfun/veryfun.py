@@ -183,7 +183,7 @@ class VeryFun(commands.Cog):
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def hugs(self, ctx, user: discord.Member):
         """Hugs a user!"""
-        url = await api_call(self, ctx, "baka")
+        url = await api_call(self, ctx, "hug")
         emb = discord.Embed(
             colour=await ctx.embed_color(),
             description=f"**{ctx.author.mention}** hugs {f'**{str(user.mention)}**' if user else 'themselves'}!",
