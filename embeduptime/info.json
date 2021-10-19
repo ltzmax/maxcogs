@@ -8,5 +8,6 @@
     "tags": ["uptime"],
     "permissions": ["embed_links"],
     "min_python_version": [3, 8, 1],
-    "end_user_data_statement": "This cog does not store any End User Data."
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
   }
