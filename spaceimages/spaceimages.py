@@ -66,7 +66,7 @@ class SpaceImages(commands.Cog):
             images = data["data"]["image_url"]
 
         async with ctx.typing():
-        
+
             emb = discord.Embed(title=f"{title}", url=f"{images}")
             emb.set_footer(
                 text=f"Powered by martinebot.com API | From {subreddit}",

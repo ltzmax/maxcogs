@@ -44,7 +44,6 @@ class EmbedUptime(commands.Cog):
         await ctx.send(embed=emb)
 
 
-
 def setup(bot):
     uptime = EmbedUptime(bot)
     global old_uptime
