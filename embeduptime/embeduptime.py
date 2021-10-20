@@ -3,11 +3,11 @@
 import datetime
 
 import discord
+import logging
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_timedelta
 
-old_uptime = None
-
+log = logging.getLogger("red.maxcogs.embeduptime")
 
 class EmbedUptime(commands.Cog):
     """Shows [botname]'s uptime."""
@@ -20,13 +20,13 @@ class EmbedUptime(commands.Cog):
         self.bot = bot
 
     def cog_unload(self):
-        global old_uptime
-        if old_uptime:
+        global uptime
+        if uptime:
             try:
                 self.bot.remove_command("uptime")
-            except:
-                pass
-            self.bot.add_command(old_uptime)
+            except Exception as e:
+                log.info(e)
+            self.bot.add_command(uptime)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -45,9 +45,7 @@ class EmbedUptime(commands.Cog):
 
 
 def setup(bot):
-    uptime = EmbedUptime(bot)
-    global old_uptime
-    old_uptime = bot.get_command("uptime")
-    if old_uptime:
-        bot.remove_command(old_uptime.name)
-    bot.add_cog(uptime)
+    eu = EmbedUptime(bot)
+    global uptime
+    uptime = bot.remove_command("uptime")
+    bot.add_cog(eu)

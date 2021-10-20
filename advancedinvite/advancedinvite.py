@@ -52,8 +52,8 @@ class AdvancedInvite(commands.Cog):
         if invite:
             try:
                 self.bot.remove_command("invite")
-            except:
-                pass
+            except Exception as e:
+                log.info(e)
             self.bot.add_command(invite)
 
     @commands.is_owner()
