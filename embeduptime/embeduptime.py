@@ -9,6 +9,7 @@ from redbot.core.utils.chat_formatting import humanize_timedelta
 
 log = logging.getLogger("red.maxcogs.embeduptime")
 
+
 class EmbedUptime(commands.Cog):
     """Shows [botname]'s uptime."""
 
