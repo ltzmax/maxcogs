@@ -18,7 +18,6 @@ SPACE = [
     "astrophotography",
     "LandscapeAstro",
     "spaceengine",
-    "SkyPorn",
 ]
 
 
