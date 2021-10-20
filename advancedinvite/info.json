@@ -1,5 +1,6 @@
 {
     "author": ["max"],
+    "name": "AdvancedInvite",
     "install_msg": "Thank you for installing this cog. Once you load this cog it will replace your invite from core to this one. on unload you will have the core's invite back.\nYou can change description message in `[p]advancedinvite`.\nPlease note this cog also uses core's `[p]inviteset perms <level>` to set permission level for your bot invite. You can generate permission level here: <https://discordapi.com/permissions.html>.",
     "description": "Shows the invite link to your bot with uses buttons.",
     "short": "Shows the invite link with buttons",

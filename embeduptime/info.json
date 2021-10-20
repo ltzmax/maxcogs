@@ -1,5 +1,6 @@
 {
     "author": ["max"],
+    "name": "EmbedUptime",
     "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.",
     "description": "Bot uptime cog that will shows the current uptime of the bot.",
     "short": "Bot uptime cog showing current uptime.",
