@@ -9,16 +9,37 @@ log = logging.getLogger("red.maxcogs.veryfun")
 NEKOS = "https://nekos.best/api/v1/"
 ICON = "https://cdn.discordapp.com/emojis/851544845956415488.png?v=1"
 
-
-async def api_call(self, ctx, action: str):
+async def api_call(self, ctx, action: str):    
     async with self.session.get(NEKOS + action) as response:
         if response.status != 200:
-            return await ctx.send("Something went wrong while trying to contact API.")
+            return await ctx.send(
+                "Something went wrong while trying to contact API."
+            )
         if response.status == 502:
             return await ctx.send("Api is currently down, try again later.")
         url = await response.json()
         return url
 
+async def embedgen(self, ctx, user, url, action: str):
+        emb = discord.Embed(
+            colour=await ctx.embed_color(),
+            description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user else 'themselves'}!",
+        )
+        emb.set_footer(
+            text="Powered by nekos.best",
+            icon_url=ICON,
+        )
+        try:
+            emb.set_image(url=url["url"])
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
+        try:
+            await ctx.send(f"{str(user.mention)}", embed=emb)
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check console for more."
+            )
+            log.error(f"Command '{ctx.command.name}' failed to post: {e}")
 
 class VeryFun(commands.Cog):
     """Roleplay commands."""
@@ -49,25 +70,7 @@ class VeryFun(commands.Cog):
     async def baka(self, ctx, user: discord.Member):
         """Baka baka baka!"""
         url = await api_call(self, ctx, "baka")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** baka {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'baka' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "baka")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -76,25 +79,7 @@ class VeryFun(commands.Cog):
     async def cry(self, ctx, user: discord.Member):
         """Cry!"""
         url = await api_call(self, ctx, "cry")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** cried {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'cry' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "cried")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -103,25 +88,7 @@ class VeryFun(commands.Cog):
     async def cuddle(self, ctx, user: discord.Member):
         """Cuddle a user!"""
         url = await api_call(self, ctx, "cuddle")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** cuddles {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'cuddle' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "cuddles")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -130,25 +97,7 @@ class VeryFun(commands.Cog):
     async def dance(self, ctx, user: discord.Member):
         """Dance!"""
         url = await api_call(self, ctx, "dance")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** dance {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'dance' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "dance")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -157,25 +106,7 @@ class VeryFun(commands.Cog):
     async def feed(self, ctx, user: discord.Member):
         """Feeds a user!"""
         url = await api_call(self, ctx, "feed")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** feeds {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'feed' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "feeds")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -184,25 +115,7 @@ class VeryFun(commands.Cog):
     async def hugs(self, ctx, user: discord.Member):
         """Hugs a user!"""
         url = await api_call(self, ctx, "hug")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** hugs {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'hugs' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "hugs")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -211,25 +124,7 @@ class VeryFun(commands.Cog):
     async def kiss(self, ctx, user: discord.Member):
         """Kiss a user!"""
         url = await api_call(self, ctx, "kiss")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** just kissed {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'kiss' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "just kissed")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -238,25 +133,7 @@ class VeryFun(commands.Cog):
     async def laugh(self, ctx, user: discord.Member):
         """laugh!"""
         url = await api_call(self, ctx, "laugh")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** laughs {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'laugh' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "laughs")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -265,25 +142,7 @@ class VeryFun(commands.Cog):
     async def pat(self, ctx, user: discord.Member):
         """Pats a user!"""
         url = await api_call(self, ctx, "pat")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** pats {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'pat' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "pats")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -292,25 +151,7 @@ class VeryFun(commands.Cog):
     async def poke(self, ctx, user: discord.Member):
         """Poke a user!"""
         url = await api_call(self, ctx, "poke")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** pokes {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'poke' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "pokes")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -319,25 +160,7 @@ class VeryFun(commands.Cog):
     async def slap(self, ctx, user: discord.Member):
         """Slap a user!"""
         url = await api_call(self, ctx, "slap")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** just slapped {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'slap' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "just slapped")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -346,25 +169,7 @@ class VeryFun(commands.Cog):
     async def smile(self, ctx, user: discord.Member):
         """Smile!"""
         url = await api_call(self, ctx, "smile")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** smiles at {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'smile' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "smiles at")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -373,25 +178,7 @@ class VeryFun(commands.Cog):
     async def smug(self, ctx, user: discord.Member):
         """Smugs at someone!"""
         url = await api_call(self, ctx, "smug")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** smugs {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'smug' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "smugs")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -400,25 +187,7 @@ class VeryFun(commands.Cog):
     async def tickle(self, ctx, user: discord.Member):
         """Tickle a user!"""
         url = await api_call(self, ctx, "tickle")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** tickles {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'tickle' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "tickles")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -427,25 +196,7 @@ class VeryFun(commands.Cog):
     async def wave(self, ctx, user: discord.Member):
         """Waves!"""
         url = await api_call(self, ctx, "wave")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** waves at {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'wave' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "waves at")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -454,25 +205,7 @@ class VeryFun(commands.Cog):
     async def bite(self, ctx, user: discord.Member):
         """Bite a user!"""
         url = await api_call(self, ctx, "bite")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** bites {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'bite' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "bites")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -481,25 +214,7 @@ class VeryFun(commands.Cog):
     async def blush(self, ctx, user: discord.Member):
         """blushs!"""
         url = await api_call(self, ctx, "blush")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** blushes {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'blush' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "blushes")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -508,25 +223,7 @@ class VeryFun(commands.Cog):
     async def bored(self, ctx, user: discord.Member):
         """You're bored!"""
         url = await api_call(self, ctx, "bored")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** very bored {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'bored' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "very bored")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -535,25 +232,7 @@ class VeryFun(commands.Cog):
     async def facepalm(self, ctx, user: discord.Member):
         """Facepalm a user!"""
         url = await api_call(self, ctx, "facepalm")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** facepalm {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'facepalm' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "facepalm")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -562,25 +241,7 @@ class VeryFun(commands.Cog):
     async def happy(self, ctx, user: discord.Member):
         """happiness with a user!"""
         url = await api_call(self, ctx, "happy")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** is happy for {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'happy' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "is happy for")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -589,25 +250,7 @@ class VeryFun(commands.Cog):
     async def highfive(self, ctx, user: discord.Member):
         """highfive a user!"""
         url = await api_call(self, ctx, "highfive")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** highfives {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'highfive' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "highfives")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -616,25 +259,7 @@ class VeryFun(commands.Cog):
     async def pout(self, ctx, user: discord.Member):
         """Pout a user!"""
         url = await api_call(self, ctx, "pout")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** pout {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'pout' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "pout")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -643,25 +268,7 @@ class VeryFun(commands.Cog):
     async def shrug(self, ctx, user: discord.Member):
         """Shrugs a user!"""
         url = await api_call(self, ctx, "shrug")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** shrugs {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'shrug' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "shrugs")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -670,25 +277,7 @@ class VeryFun(commands.Cog):
     async def sleep(self, ctx, user: discord.Member):
         """Sleep zzzz!"""
         url = await api_call(self, ctx, "sleep")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** sleep {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'sleep' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "sleep")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -697,25 +286,7 @@ class VeryFun(commands.Cog):
     async def stare(self, ctx, user: discord.Member):
         """Stares at a user!"""
         url = await api_call(self, ctx, "stare")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** stares at {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'stare' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "stares at")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -724,25 +295,7 @@ class VeryFun(commands.Cog):
     async def think(self, ctx, user: discord.Member):
         """Thinking!"""
         url = await api_call(self, ctx, "think")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** think {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'think' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "think")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -750,26 +303,8 @@ class VeryFun(commands.Cog):
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def thumbsup(self, ctx, user: discord.Member):
         """thumbsup!"""
-        url = await api_call(self, ctx, "thimbsup")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** thumbsup {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'thumbsup' failed to post: {e}")
+        url = await api_call(self, ctx, "thumbsup")
+        await embedgen(self, ctx, user, url, "thumbsup")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -778,22 +313,4 @@ class VeryFun(commands.Cog):
     async def wink(self, ctx, user: discord.Member):
         """Winks at a user!"""
         url = await api_call(self, ctx, "wink")
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=f"**{ctx.author.mention}** winks {f'**{str(user.mention)}**' if user else 'themselves'}!",
-        )
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        try:
-            emb.set_image(url=url["url"])
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
-        try:
-            await ctx.send(f"{str(user.mention)}", embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check console for more."
-            )
-            log.error(f"Command 'wink' failed to post: {e}")
+        await embedgen(self, ctx, user, url, "winks")
