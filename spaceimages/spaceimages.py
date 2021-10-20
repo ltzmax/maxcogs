@@ -31,7 +31,7 @@ class SpaceImages(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.1.1"
+    __version__ = "0.1.2"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -62,20 +62,24 @@ class SpaceImages(commands.Cog):
             data = await resp.json()
             title = data["data"].get("title", "[No Title]")
             subreddit = data["data"]["subreddit"]["name"]
+            created_at = data["data"]["created_at"]
             images = data["data"]["image_url"]
 
         async with ctx.typing():
 
-            emb = discord.Embed(title=f"{title}", url=f"{images}")
+            emb = discord.Embed(
+                title=f"{title}", url=f"{images}",
+                description=f"Posted on: <t:{created_at}:F>"
+            )
             emb.set_footer(
                 text=f"Powered by martinebot.com API | From {subreddit}",
                 icon_url=MARTINE_ICON,
             )
             emb.colour = await ctx.embed_color()
-        if images:
+        try:
             emb.set_image(url=images)
-        else:
-            emb.description = "Unable to get image, try again later."
+        except KeyError:
+            return await ctx.send("I ran into an issue. please try again later.")
         try:
             await ctx.send(embed=emb)
         except discord.HTTPException as e:
