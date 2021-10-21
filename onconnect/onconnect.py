@@ -49,7 +49,17 @@ class OnConnect(commands.Cog):
             description=f"\N{LARGE GREEN CIRCLE} {self.bot.user.name} (Shard ID {shard_id}) ready!",
         )
         channel = self.bot.get_channel(config)
-        await channel.send(embed=embed)
+        try:
+            await channel.send(embed=embed)
+        except AttributeError as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.Forbidden as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.HTTPException as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
 
     @commands.Cog.listener()
     async def on_shard_disconnect(self, shard_id: int):
@@ -61,7 +71,17 @@ class OnConnect(commands.Cog):
             description=f"\N{LARGE RED CIRCLE} {self.bot.user.name} (Shard ID {shard_id}) disconnected!",
         )
         channel = self.bot.get_channel(config)
-        await channel.send(embed=embed)
+        try:
+            await channel.send(embed=embed)
+        except AttributeError as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.Forbidden as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.HTTPException as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
 
     @commands.Cog.listener()
     async def on_shard_resumed(self, shard_id: int):
@@ -73,7 +93,17 @@ class OnConnect(commands.Cog):
             description=f"\N{LARGE YELLOW CIRCLE} {self.bot.user.name} (Shard ID {shard_id}) resumed!",
         )
         channel = self.bot.get_channel(config)
-        await channel.send(embed=embed)
+        try:
+            await channel.send(embed=embed)
+        except AttributeError as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.Forbidden as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.HTTPException as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -88,7 +118,17 @@ class OnConnect(commands.Cog):
         embed.description = f"> Launch time: {chat.humanize_timedelta(timedelta=datetime.now(tz=timezone.utc) - process_start)}\n\n{self.bot.user.name} is ready to use!"
         embed.timestamp = datetime.utcnow()
         channel = self.bot.get_channel(config)
-        await channel.send(embed=embed)
+        try:
+            await channel.send(embed=embed)
+        except AttributeError as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.Forbidden as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
+        except discord.HTTPException as e:
+            await channel.send("I ran into an issue, check console for details.")
+            log.error(e)
 
     @commands.is_owner()
     @commands.group(name="connectset")
