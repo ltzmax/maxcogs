@@ -78,7 +78,7 @@ class VeryFun(commands.Cog):
     async def cry(self, ctx, user: discord.Member):
         """Cry!"""
         url = await api_call(self, ctx, "cry")
-        await embedgen(self, ctx, user, url, "cried")
+        await embedgen(self, ctx, user, url, "cries at")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
