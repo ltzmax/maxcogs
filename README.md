@@ -47,8 +47,8 @@ To install any cog you want:
 
 
 ## credits:
-- [Red Discord server community](https://discord.gg/red) For all the help with coding. 
+- [Red Discord server community](https://discord.gg/red) For all the help with coding.
 
-- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with image code parts and most parts with ping.
+- [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with coding at most.
 
-- [Preda](https://github.com/PredaaA/predacogs) for help and his api from martine and ping.
+- [Preda](https://github.com/PredaaA/predacogs) for help and his api from martine.
