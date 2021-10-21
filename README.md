@@ -42,6 +42,9 @@ To install any cog you want:
 <td>veryfun</td>
 <td>Just anyother fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
 </tr>
+<td>onconnect</td>
+<td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
+</tr>
 </tbody>
 </table>
 
