@@ -3,7 +3,7 @@
     "name": "OnConnect",
     "install_msg" : "Thanks for installing. Use `[p]connectset` to set event channel.",
     "description": "On connect is a shard event cog that shows on ready, disconnect and resummed.",
-    "short": "This sends shard events.",
+    "short": "This cog is used to send shard events.",
     "hidden" : false,
     "min_bot_version": "3.4.0",
     "tags": ["shard", "reconnect", "disconnect", "on_ready"],

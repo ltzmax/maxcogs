@@ -13,6 +13,8 @@ log = logging.getLogger("red.maxcogs.onconnect")
 
 
 class OnConnect(commands.Cog):
+    """This cog is used to send shard events."""
+
     def __init__(self, bot: Red):
         self.bot = bot
         self.config = Config.get_conf(
