@@ -7,7 +7,6 @@ import psutil
 from redbot.core import commands, Config
 from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as chat
-from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.onconnect")
 
