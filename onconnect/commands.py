@@ -96,8 +96,8 @@ class Commands(MixinMeta):
             color=await ctx.embed_colour(),
         )
         em.add_field(name="Channel set:", value=config, inline=False)
-        em.add_field(name="Green emoji:", value=green, inline=False)
-        em.add_field(name="Yellow emoji:", value=yellow, inline=False)
+        em.add_field(name="Green emoji:", value=green)
+        em.add_field(name="Yellow emoji:", value=yellow)
         em.add_field(name="Red emoji:", value=red)
         try:
             await ctx.reply(embed=em, mention_author=False)
