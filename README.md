@@ -27,9 +27,6 @@ To install any cog you want:
 </thead>
 <tbody>
 <tr>
-<td>advancedinvite</td>
-<td>This will show you the bots invite on a button. This uses a lib `dislash.py` to work.</td>
-</tr>
 <td>spaceimages</td>
 <td>Random space images cog, This will show nice space images. Powered with help of martinebot.com api.</td>
 </tr>
@@ -37,7 +34,7 @@ To install any cog you want:
 <td>Sending random nekos images. This is for you weebs. Powered with help of nekos.best api.</td>
 </tr>
 <td>embeduptime</td>
-<td>This will reply with your uptime of your bot, this is in embed instead.</td>
+<td>This will reply with your uptime of your bot, this is an embed version.</td>
 </tr>
 <td>veryfun</td>
 <td>Just anyother fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
