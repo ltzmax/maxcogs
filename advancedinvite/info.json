@@ -5,7 +5,7 @@
     "description": "Shows the invite link to your bot with uses buttons.",
     "short": "Shows the invite link with buttons",
     "hidden": true,
-    "min_bot_version": "3.4.5",
+    "min_bot_version": "3.4.6",
     "tags": ["invite"],
     "requirements": [
       "dislash.py==1.4.9"
