@@ -79,8 +79,11 @@ class SpaceImages(commands.Cog):
             emb.colour = await ctx.embed_color()
         try:
             emb.set_image(url=images)
-        except KeyError:
-            return await ctx.send("I ran into an issue. please try again later.")
+        except KeyError as e:
+            return await ctx.send(
+                "Something went wrong while posting. Check your console for details."
+            )
+            log.error(e)
         try:
             await ctx.send(embed=emb)
         except discord.HTTPException as e:
