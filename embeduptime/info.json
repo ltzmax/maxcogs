@@ -5,7 +5,7 @@
     "description": "Bot uptime cog that will shows the current uptime of the bot.",
     "short": "Bot uptime cog showing current uptime.",
     "hidden": false,
-    "min_bot_version": "3.4.0",
+    "min_bot_version": "3.4.6",
     "tags": ["uptime"],
     "permissions": ["embed_links"],
     "min_python_version": [3, 8, 1],

@@ -17,7 +17,7 @@ class Nekos(commands.Cog):
         self.bot = bot
         self.session = nekosbest.Client()
 
-    __version__ = "0.1.2"
+    __version__ = "0.1.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -56,3 +56,14 @@ class Nekos(commands.Cog):
                 "Something went wrong while posting an image. Check your console for details."
             )
             log.error(f"Command 'neko' failed: {e}")
+
+    @commands.command(hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def nekosversion(self, ctx):
+        """Shows the cog version."""
+        em = discord.Embed(
+            title="Cog Version:",
+            description=f"The current version is: {self.__version__}",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=em)

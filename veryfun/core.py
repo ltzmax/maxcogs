@@ -28,8 +28,11 @@ async def embedgen(self, ctx, user, url, action: str):
     )
     try:
         emb.set_image(url=url["url"])
-    except KeyError:
-        return await ctx.send("I ran into an issue. please try again later.")
+    except KeyError as e:
+        return await ctx.send(
+            "Something went wrong while posting. Check your console for details"
+        )
+        log.error(e)
     try:
         await ctx.send(f"{str(user.mention)}", embed=emb)
     except discord.HTTPException as e:

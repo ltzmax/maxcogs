@@ -13,6 +13,14 @@ log = logging.getLogger("red.maxcogs.embeduptime")
 class EmbedUptime(commands.Cog):
     """Shows [botname]'s uptime."""
 
+    __version__ = "0.0.7"
+    __author__ = "MAX"
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
@@ -42,7 +50,22 @@ class EmbedUptime(commands.Cog):
             description=f"{uptime_str}\nSince: <t:{int(uptime.timestamp())}:F>",
             colour=await ctx.embed_color(),
         )
-        await ctx.send(embed=emb)
+        try:
+            await ctx.reply(embed=emb, mention_author=False)
+        except discord.HTTPException as e:
+            await ctx.send(embed=emb)
+            log.info(e)
+
+    @commands.command(hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def uptimeversion(self, ctx):
+        """Shows the cog version."""
+        em = discord.Embed(
+            title="Cog Version:",
+            description=f"The current version is: {self.__version__}",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=em)
 
 
 def setup(bot):
