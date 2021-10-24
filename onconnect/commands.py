@@ -19,10 +19,9 @@ class Commands(MixinMeta):
         """Settings for shard event logging."""
 
     @_connectset.command(name="channel", usage="[channel]")
+    @commands.bot_has_permissions(manage_webhooks=True)
     async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None):
         """Set the channel you want to send events.
-
-        The bot must have manage webhooks permissions in the channel.
 
         **Example:**
         - `[p]connectset channel #general`
@@ -54,7 +53,7 @@ class Commands(MixinMeta):
         """
 
     @_emoji.command(name="green", usage="[emoji]")
-    async def _emoji_green(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_green(self, ctx: commands.Context, *, emoji: Optional[str] = None):
         """Change the green emoji to your own.
 
         Leave it blank to reset back to default.
@@ -68,9 +67,7 @@ class Commands(MixinMeta):
             await ctx.tick()
 
     @_emoji.command(name="orange", usage="[emoji]")
-    async def _emoji_orange(
-        self, ctx: commands.Context, *, emoji: Optional[str] = None
-    ):
+    async def emoji_orange(self, ctx: commands.Context, *, emoji: Optional[str] = None):
         """Change the orange emoji to your own.
 
         Leave it blank to reset back to default.
@@ -84,7 +81,7 @@ class Commands(MixinMeta):
             await ctx.tick()
 
     @_emoji.command(name="red", usage="[emoji]")
-    async def _emoji_red(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_red(self, ctx: commands.Context, *, emoji: Optional[str] = None):
         """Change the red emoji to your own.
 
         Leave it blank to reset back to default.
@@ -98,7 +95,7 @@ class Commands(MixinMeta):
             await ctx.tick()
 
     @_connectset.command(name="showsettings", aliases=["settings"])
-    async def _show_settings(self, ctx: commands.Context):
+    async def show_settings(self, ctx: commands.Context):
         """Shows the current settings for OnConnect."""
         config = await self.config.all()
         chan_config = config["statuschannel"]
@@ -122,7 +119,7 @@ class Commands(MixinMeta):
             log.info(e)
 
     @_connectset.command(name="version", hidden=True)
-    async def _version(self, ctx: commands.Context):
+    async def connectset_version(self, ctx: commands.Context):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
