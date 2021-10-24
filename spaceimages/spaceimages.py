@@ -98,7 +98,7 @@ class SpaceImages(commands.Cog):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
-            description=f"The current version is: {self.__version__}",
+            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
             colour=await ctx.embed_color(),
         )
         await ctx.send(embed=em)
