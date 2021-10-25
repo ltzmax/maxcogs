@@ -52,5 +52,3 @@ To install any cog you want:
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with coding at most.
 
 - [Preda](https://github.com/PredaaA/predacogs) For help and his api from martine.
-
-- [epic](https://github.com/npc203/npc-cogs) For allowing me to use todo to turn into watchlist cog.
