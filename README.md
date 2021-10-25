@@ -42,6 +42,9 @@ To install any cog you want:
 <td>onconnect</td>
 <td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
 </tr>
+<td>botinfostats</td>
+<td>This shows some stats on your bot.</td>
+</tr>
 </tbody>
 </table>
 
