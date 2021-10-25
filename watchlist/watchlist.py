@@ -361,7 +361,7 @@ class WatchList(commands.Cog):
             else:
                 await ctx.send(f"Invalid IDs: {', '.join(map(str,indices))}")
 
-# ---- anime -----
+    # ---- anime -----
 
     @watchlist.group(name="anime", invoke_without_command=True)
     async def watchlist_anime(self, ctx, id_: int):
@@ -519,7 +519,6 @@ class WatchList(commands.Cog):
             else:
                 await ctx.send(f"Invalid IDs: {', '.join(map(str,indices))}")
 
-
     @watchlist.command(aliases=["clear"])
     async def removeall(self, ctx, *indices: int):
         """Removes all your watchlists from all lists."""
@@ -552,6 +551,7 @@ class WatchList(commands.Cog):
     ) -> None:
         # should I add anything more here?
         await self.config.user_from_id(user_id).clear()
+
 
 # ---- MENUS ------
 
