@@ -7,7 +7,7 @@ from redbot.core.utils.chat_formatting import box, humanize_number
 from tabulate import tabulate
 
 
-class BotInfoStats(commands.Cog):
+class BotStats(commands.Cog):
     """Shows some stats for [botname]."""
 
     __author__ = "MAX"

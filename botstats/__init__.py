@@ -1,4 +1,4 @@
-from .botinfostats import BotInfoStats
+from .botstats import BotStats
 
 __red_end_user_data_statement__ = (
     "This cog does not persistently store data or metadata about users."
@@ -6,4 +6,4 @@ __red_end_user_data_statement__ = (
 
 
 def setup(bot):
-    bot.add_cog(BotInfoStats(bot))
+    bot.add_cog(BotStats(bot))
