@@ -115,12 +115,12 @@ class Commands(MixinMeta):
             await ctx.send(embed=em)
             log.info(e)
 
-    @_connectset.command(name="version")
+    @_connectset.command(name="version", hidden=True)
     async def connectset_version(self, ctx: commands.Context):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
             description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
+            colour=await ctx.embed_colour(),
         )
         await ctx.send(embed=em)

@@ -84,9 +84,16 @@ class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
         event_embed = discord.Embed(description=message, colour=colour)
         channel = await self.get_or_fetch_channel(channel_id=channel_config)
         webhooks = await channel.webhooks()
-        webhook = discord.utils.get(webhooks, name=f"{self.bot.user.name}")
-        if webhook is None:
-            webhook = await channel.create_webhook(name=f"{self.bot.user.name}")
+        if not webhooks:
+            webhook = await channel.create_webhook(name="OnConnect")
+        else:
+            usable_webhooks = [
+                w for w in webhooks if w.token
+            ]  # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/main/on_connect/cog.py#L45
+            if not usable_webhooks:
+                webhook = await channel.create_webhook(name="OnConnect")
+            else:
+                webhook = usable_webhooks[0]
 
         await webhook.send(
             username=self.bot.user.name,
