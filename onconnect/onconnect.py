@@ -9,6 +9,7 @@ from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as chat
 
 from .commands import Commands
+from .log import log
 
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
@@ -21,7 +22,7 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
 class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
-    __version__ = "0.0.5"
+    __version__ = "0.0.6"
     __author__ = "MAX"
 
     def __init__(self, bot: Red) -> None:
@@ -81,12 +82,27 @@ class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
         if channel_config is None:
             return
 
+        try:
+            channel = await self.get_or_fetch_channel(channel_id=channel_config)
+        except discord.NotFound as e:
+            if await self.config.statuschannel() is not None:
+                log.error(f"Statuschannel not found, deleting ID from config. {e}")
+                await self.config.statuschannel.clear()
+
+            return
+
         event_embed = discord.Embed(description=message, colour=colour)
-        channel = await self.get_or_fetch_channel(channel_id=channel_config)
         webhooks = await channel.webhooks()
-        webhook = discord.utils.get(webhooks, name=f"{self.bot.user.name}")
-        if webhook is None:
-            webhook = await channel.create_webhook(name=f"{self.bot.user.name}")
+        if not webhooks:
+            webhook = await channel.create_webhook(name="OnConnect")
+        else:
+            usable_webhooks = [
+                w for w in webhooks if w.token
+            ]  # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/main/on_connect/cog.py#L45
+            if not usable_webhooks:
+                webhook = await channel.create_webhook(name="OnConnect")
+            else:
+                webhook = usable_webhooks[0]
 
         await webhook.send(
             username=self.bot.user.name,
