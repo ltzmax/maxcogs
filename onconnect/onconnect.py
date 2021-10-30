@@ -1,4 +1,3 @@
-import logging
 from abc import ABC
 from datetime import datetime, timezone
 from typing import Union
@@ -10,8 +9,6 @@ from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as chat
 
 from .commands import Commands
-
-from .log import log
 
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):

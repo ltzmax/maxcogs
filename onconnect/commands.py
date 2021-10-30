@@ -35,12 +35,10 @@ class Commands(MixinMeta):
             else:
                 await self.config.statuschannel.set(channel.id)
                 await ctx.send(f"Event is now set to {channel.mention}")
-                log.info("Events is successfully set.")
 
         elif await self.config.statuschannel() is not None:
             await self.config.statuschannel.set(None)
             await ctx.send("Event is now disabled")
-            log.info("Events is successfully disabled.")
         else:
             await ctx.send("Events are already disabled.")
 
