@@ -85,8 +85,10 @@ class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
         try:
             channel = await self.get_or_fetch_channel(channel_id=channel_config)
         except discord.NotFound as e:
-            log.error(f"Statuschannel not found, deleting ID from config. {e}")
-            await self.config.statuschannel.clear()
+            if await self.config.statuschannel() is not None:
+                log.error(f"Statuschannel not found, deleting ID from config. {e}")
+                await self.config.statuschannel.clear()
+
             return
 
         event_embed = discord.Embed(description=message, colour=colour)
