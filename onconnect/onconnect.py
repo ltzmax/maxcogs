@@ -9,6 +9,7 @@ from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as chat
 
 from .commands import Commands
+from .log import log
 
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
@@ -21,7 +22,7 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
 class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
-    __version__ = "0.0.5"
+    __version__ = "0.0.6"
     __author__ = "MAX"
 
     def __init__(self, bot: Red) -> None:
@@ -81,8 +82,14 @@ class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
         if channel_config is None:
             return
 
+        try:
+            channel = await self.get_or_fetch_channel(channel_id=channel_config)
+        except discord.NotFound as e:
+            log.error(f"Statuschannel not found, deleting ID from config. {e}")
+            await self.config.statuschannel.clear()
+            return
+
         event_embed = discord.Embed(description=message, colour=colour)
-        channel = await self.get_or_fetch_channel(channel_id=channel_config)
         webhooks = await channel.webhooks()
         if not webhooks:
             webhook = await channel.create_webhook(name="OnConnect")
