@@ -6,8 +6,7 @@ from redbot.core import commands
 
 from .abc import MixinMeta
 
-
-log = logging.getLogger("red.maxcogs.onconnect")
+from .log import log
 
 
 class Commands(MixinMeta):
@@ -118,12 +117,12 @@ class Commands(MixinMeta):
             await ctx.send(embed=em)
             log.info(e)
 
-    @_connectset.command(name="version", hidden=True)
+    @_connectset.command(name="version")
     async def connectset_version(self, ctx: commands.Context):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
-            description=f"The current version is: {self.__version__}",
-            colour=await ctx.embed_colour(),
+            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+            colour=await ctx.embed_color(),
         )
         await ctx.send(embed=em)

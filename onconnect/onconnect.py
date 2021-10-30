@@ -11,8 +11,7 @@ from redbot.core.utils import chat_formatting as chat
 
 from .commands import Commands
 
-
-log = logging.getLogger("red.maxcogs.onconnect")
+from .log import log
 
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
@@ -25,7 +24,7 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
 class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
-    __version__ = "0.0.4"
+    __version__ = "0.0.5"
     __author__ = "MAX"
 
     def __init__(self, bot: Red) -> None:
@@ -88,9 +87,9 @@ class OnConnect(Commands, commands.Cog, metaclass=CompositeMetaClass):
         event_embed = discord.Embed(description=message, colour=colour)
         channel = await self.get_or_fetch_channel(channel_id=channel_config)
         webhooks = await channel.webhooks()
-        webhook = discord.utils.get(webhooks, name="OnConnect")
+        webhook = discord.utils.get(webhooks, name=f"{self.bot.user.name}")
         if webhook is None:
-            webhook = await channel.create_webhook(name="OnConnect")
+            webhook = await channel.create_webhook(name=f"{self.bot.user.name}")
 
         await webhook.send(
             username=self.bot.user.name,
