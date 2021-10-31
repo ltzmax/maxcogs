@@ -1,12 +1,10 @@
 import logging
-from typing import Optional
-
 import discord
-from redbot.core import commands
-
-from .abc import MixinMeta
 
 from .log import log
+from .abc import MixinMeta
+from typing import Optional
+from redbot.core import commands
 
 
 class Commands(MixinMeta):
@@ -31,10 +29,11 @@ class Commands(MixinMeta):
         """
         if channel:
             if not ctx.guild.me.permissions_in(channel).manage_webhooks:
-                await ctx.reply(f"I cannot manage webhooks in {channel.mention}!")
+                await ctx.send(f"I cannot manage webhooks in {channel.mention}!")
             else:
                 await self.config.statuschannel.set(channel.id)
                 await ctx.send(f"Event is now set to {channel.mention}")
+                await ctx.tick()
 
         elif await self.config.statuschannel() is not None:
             await self.config.statuschannel.set(None)
@@ -115,7 +114,7 @@ class Commands(MixinMeta):
             await ctx.send(embed=em)
             log.info(e)
 
-    @_connectset.command(name="version", hidden=True)
+    @_connectset.command(name="version")
     async def connectset_version(self, ctx: commands.Context):
         """Shows the cog version."""
         em = discord.Embed(
