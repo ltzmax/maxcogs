@@ -42,12 +42,13 @@ To install any cog you want:
 <td>onconnect</td>
 <td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
 </tr>
-<td>botstats</td>
-<td>This shows some stats on your bot.</td>
+<td>advanced</td>
+<td>Attempt to restart and shutdown your bot, this asks for confirmations with reactions.</td>
 </tr>
 </tbody>
 </table>
 
+- Advancedinvite is hidden until the invite method is public method. no support until then on that one.
 
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
