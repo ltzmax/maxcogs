@@ -9,6 +9,7 @@ from redbot.core.utils.predicates import ReactionPredicate
 
 log = logging.getLogger("red.maxcogs.advanced")
 
+
 class Advanced(commands.Cog):
     """Attempt to restart or shutdown [botname]."""
 

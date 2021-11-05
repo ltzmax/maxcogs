@@ -115,13 +115,13 @@ class AdvancedInvite(commands.Cog):
         invite = await self.bot.get_cog("Core")._invite_url()
         message = (await self.config.invite_default()).format(name)
 
-        if author.is_on_mobile():            
+        if author.is_on_mobile():
             # This will only send if user is on mobile.
             return await ctx.reply(
                 f"Here's the bot invite for {self.bot.user.name}:\n{invite}",
                 mention_author=False,
             )
-        
+
         # This will only send if user is on desktop.
 
         embed = discord.Embed(
