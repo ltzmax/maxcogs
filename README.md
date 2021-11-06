@@ -27,9 +27,6 @@ To install any cog you want:
 </thead>
 <tbody>
 <tr>
-<td>spaceimages</td>
-<td>Random space images cog, This will show nice space images. Powered with help of martinebot.com api.</td>
-</tr>
 <td>nekos</td>
 <td>Sending random nekos images. This is for you weebs. Powered with help of nekos.best api.</td>
 </tr>
