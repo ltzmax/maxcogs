@@ -45,6 +45,7 @@ To install any cog you want:
 </tbody>
 </table>
 
+## Hidden cogs:
 - Advancedinvite is hidden until the invite method is public method.
 - Advanced is hidden because i'll never continue it. it works and will stay as is, if you wanna continue it, feel free to contact me on discord first: MAX#1000.
 
