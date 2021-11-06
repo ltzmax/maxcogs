@@ -4,6 +4,21 @@ from redbot.core import commands
 import nekosbest
 import logging
 
+try:
+    from dislash.application_commands._modifications.old import send_with_components
+    from dislash.interactions import ActionRow, Button, ButtonStyle
+except Exception as e:
+    raise CogLoadError(
+        f"Can't load because: {e}\n"
+        "Please install dislash by using "
+        "`pip install dislash.py==1.4.9` "
+        "in your console. "
+        "Restart your bot if you still get this error."
+    )
+
+# CogLoadError handler from
+# https://github.com/fixator10/Fixator10-Cogs/blob/9972aa58dea3a5a1a0758bca62cb8a08a7a51cc6/leveler/def_imgen_utils.py#L11-L30
+
 log = logging.getLogger("red.maxcogs.nekos")
 
 NEKOS_API = "https://nekos.best/api/v1/"
@@ -16,8 +31,11 @@ class Nekos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = nekosbest.Client()
+        # monkeypatch dislash.py to not break slashtags by phen.
+        if not hasattr(commands.Context, "sendi"):
+            commands.Context.sendi = send_with_components
 
-    __version__ = "0.1.3"
+    __version__ = "0.1.4"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -49,13 +67,21 @@ class Nekos(commands.Cog):
             emb.set_image(url=neko.url)
         else:
             emb.description = "I was unable to get image, can you try again?"
+        row = ActionRow(
+            Button(
+                style=ButtonStyle.link,
+                label="Full image",
+                emoji="<:8196blurpleimage:901804586711523379>",  # Emojis can be used from any servers without your bot being in it. thats cool with the buttons.
+                url=neko.url,
+            ),
+        )
         try:
-            await ctx.send(embed=emb)
+            await ctx.sendi(embed=emb, components=[row])
         except discord.HTTPException as e:
             await ctx.send(
-                "Something went wrong while posting an image. Check your console for details."
+                "Something went wrong while trying to post. Check console for details."
             )
-            log.error(f"Command 'neko' failed: {e}")
+            log.error(e)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)

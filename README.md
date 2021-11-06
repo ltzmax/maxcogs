@@ -42,12 +42,11 @@ To install any cog you want:
 <td>onconnect</td>
 <td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
 </tr>
-<td>botstats</td>
-<td>This shows some stats on your bot.</td>
-</tr>
 </tbody>
 </table>
 
+## Hidden cogs:
+- Advanced is hidden because i'll never continue it. it works and will stay as is, if you wanna continue it, feel free to contact me on discord first: MAX#1000.
 
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
