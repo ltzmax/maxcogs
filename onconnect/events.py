@@ -56,6 +56,7 @@ class Events(MixinMeta):
                 name=f"{self.bot.user.name}'s OnConnect"
             )
         else:
+            # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/main/on_connect/cog.py#L45
             usable_webhooks = [webhook for webhook in webhooks if webhook.token]
         if not usable_webhooks:
             webhook = await channel.create_webhook(
