@@ -52,15 +52,17 @@ class Events(MixinMeta):
         event_embed = discord.Embed(description=message, colour=colour)
         webhooks = await channel.webhooks()
         if not webhooks:
-            webhook = await channel.create_webhook(name="OnConnect")
+            webhook = await channel.create_webhook(
+                name=f"{self.bot.user.name}'s OnConnect"
+            )
         else:
-            usable_webhooks = [
-                w for w in webhooks if w.token
-            ]  # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/main/on_connect/cog.py#L45
-            if not usable_webhooks:
-                webhook = await channel.create_webhook(name="OnConnect")
-            else:
-                webhook = usable_webhooks[0]
+            usable_webhooks = [webhook for webhook in webhooks if webhook.token]
+        if not usable_webhooks:
+            webhook = await channel.create_webhook(
+                name=f"{self.bot.user.name}'s OnConnect"
+            )
+        else:
+            webhook = usable_webhooks[0]
 
         await webhook.send(
             username=self.bot.user.name,
