@@ -1,2 +1,3 @@
 Red-DiscordBot
 nekosbest==1.1.2
+dislash.py==1.4.9
