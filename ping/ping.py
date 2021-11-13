@@ -19,7 +19,7 @@ class Ping(commands.Cog):
         )
 
     __version__ = "0.0.1"
-    __author__ = "MAX"
+    __author__ = "MAX, fixator10, preda, @Senroht#5179"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
