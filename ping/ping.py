@@ -18,7 +18,7 @@ class Ping(commands.Cog):
             title="Ping!",
         )
 
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
     __author__ = "MAX, fixator10, preda, @Senroht#5179"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -45,7 +45,7 @@ class Ping(commands.Cog):
         """Settings to change title."""
 
     @pingset.command(name="set", aliases=["add"], usage="[message]")
-    async def pingset_add(self, ctx, *, message: str = None):
+    async def pingset_set(self, ctx, *, message: str = None):
         """Change the title message.
 
         Leave it blank will reset it back to default message."""
