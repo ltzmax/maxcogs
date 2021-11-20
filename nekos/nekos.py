@@ -35,7 +35,7 @@ class Nekos(commands.Cog):
         if not hasattr(commands.Context, "sendi"):
             commands.Context.sendi = send_with_components
 
-    __version__ = "0.1.4"
+    __version__ = "0.1.5"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -56,7 +56,6 @@ class Nekos(commands.Cog):
         neko = await self.session.get_image("nekos")
         emb = discord.Embed(
             title="Here's a pic of neko",
-            description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
         )
         emb.colour = await ctx.embed_color()
         emb.set_footer(
@@ -70,9 +69,13 @@ class Nekos(commands.Cog):
         row = ActionRow(
             Button(
                 style=ButtonStyle.link,
-                label="Full image",
-                emoji="<:8196blurpleimage:901804586711523379>",  # Emojis can be used from any servers without your bot being in it. thats cool with the buttons.
-                url=neko.url,
+                label="Author",
+                url=neko.artist_href,
+            ),
+            Button(
+                style=ButtonStyle.link,
+                label="Source",
+                url=neko.source_url,
             ),
         )
         try:
