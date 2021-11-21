@@ -29,7 +29,7 @@ class Statsinfo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -60,6 +60,9 @@ class Statsinfo(commands.Cog):
         total_boosters = sum(len(s.premium_subscribers) for s in ctx.bot.guilds)
         total_shards = ctx.bot.shard_count
 
+        shards = ("Shards") if self.bot.shard_count > 1 else ("Shard")
+        # based on https://github.com/PredaaA/predacogs/blob/b02363b9123e3c55b9577c2192b550a8489ebca8/martools/marttools.py#L499
+
         latency = round(self.bot.latency * 1000)
 
         version = pkg_resources.get_distribution("discord.py").version
@@ -82,7 +85,7 @@ class Statsinfo(commands.Cog):
                 tabulate(
                     [
                         ["Ping:", latency],
-                        ["Shards:", total_shards],
+                        [f"{shards}", total_shards],
                         ["Servers:", total_guilds],
                         ["Users:", total_users],
                         ["Bots:", total_bots],
@@ -97,7 +100,7 @@ class Statsinfo(commands.Cog):
                         ["Boosters:", total_boosters],
                     ]
                 ),
-                lang="yaml",
+                lang="yml",
             ),
         )
         em.set_footer(text=f"Discord.py v{version}")
