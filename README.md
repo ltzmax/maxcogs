@@ -42,6 +42,9 @@ To install any cog you want:
 <td>statsinfo</td>
 <td>This will show all current stats total from all guilds your bot is in.</td>
 </tr>
+<td>ping</td>
+<td>This will show the latency of your bot.</td>
+</tr>
 </tbody>
 </table>
 
