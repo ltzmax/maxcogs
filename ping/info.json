@@ -4,7 +4,7 @@
     "install_msg": "Thanks for installing. Once you load this cog, it will replace the ping from core with this one, on unload you will have the core one back. `[p]pingset` to set your own title message.",
     "description": "Shows latency of your bot.",
     "short": "Shows latency of your bot.",
-    "hidden": false,
+    "hidden": true,
     "min_bot_version": "3.4.6",
     "tags": ["ping", "latency"],
     "permissions": ["embed_links"],

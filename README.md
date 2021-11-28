@@ -42,14 +42,13 @@ To install any cog you want:
 <td>statsinfo</td>
 <td>This will show all current stats total from all guilds your bot is in.</td>
 </tr>
-<td>ping</td>
-<td>This will show the latency of your bot.</td>
-</tr>
 </tbody>
 </table>
 
 ## Hidden cogs:
 - Advanced is hidden because i'll never continue it. it works and will stay as is, if you wanna continue it, feel free to contact me on discord first: MAX#1000.
+
+- Ping is hidden because i just want people to use the existed ones but since some still uses this one and does not want to move then i just leave it here and i dont wanna support it or continue working on it.
 
 ## credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
