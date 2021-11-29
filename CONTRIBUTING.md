@@ -18,4 +18,4 @@ When that is done you run:
 - `black {source_file_or_directory}`
 
 
-Version `21.9b0` of black is what this repo is using.
+Version `21.11b1` of black is what this repo is using.
