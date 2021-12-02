@@ -29,7 +29,7 @@ class Statsinfo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -67,14 +67,6 @@ class Statsinfo(commands.Cog):
 
         version = pkg_resources.get_distribution("discord.py").version
 
-        # So had to do it in this way for store channels since the above was not possible.
-        # and thanks to copilot for helping of this part below xD
-        store_channel = 0
-        for guilds, guild in enumerate(self.bot.guilds):
-            for channel in guild.channels:
-                if isinstance(channel, discord.StoreChannel):
-                    store_channel += 1
-
         em = discord.Embed(
             title="Bot Stats",
             colour=await ctx.embed_color(),
@@ -93,7 +85,6 @@ class Statsinfo(commands.Cog):
                         ["Voice Channels:", total_voice_channels],
                         ["Stage Channels:", total_stage_channels],
                         ["Text Channels:", total_text_channels],
-                        ["Store Channels:", store_channel],
                         ["Categories:", total_categories],
                         ["Emojis:", total_emojis],
                         ["Roles:", total_roles],
