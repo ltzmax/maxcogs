@@ -50,12 +50,12 @@ To install any cog you want:
 
 - Ping is hidden because i just want people to use the existed ones but since some still uses this one and does not want to move then i just leave it here and i dont wanna support it or continue working on it.
 
-## credits:
+## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
 
 - [fixator10](https://github.com/fixator10/Fixator10-Cogs) For help with coding at most.
 
 - [Preda](https://github.com/PredaaA/predacogs) For help and his api from martine.
 
-## support
+## Support
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions.
