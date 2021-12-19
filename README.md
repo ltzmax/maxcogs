@@ -58,4 +58,4 @@ To install any cog you want:
 - [Preda](https://github.com/PredaaA/predacogs) For help and his api from martine.
 
 ## Support
-- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions.
+- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping @MAX#1000 (345628097929936898)
