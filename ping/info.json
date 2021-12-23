@@ -1,7 +1,7 @@
 {
     "author": ["max"],
     "name": "Ping",
-    "install_msg": "Thanks for installing. I do not support this cog. its an hidden cog, you're at your own risk for using it if you really wanna use it.",
+    "install_msg": "Thanks for installing. This cog is an hidden cog, therefore no support given.\ni'll recommend you 3 public ping cogs that still is supported to use: <https://github.com/Kreusada/Kreusada-Cogs>, <https://github.com/phenom4n4n/phen-cogs> or <https://github.com/Vexed01/Vex-Cogs>.\n\nLoading this cog will remove the core's ping command and replaced with this one. On unload you will have the core one back.",
     "short": "Shows latency of your bot.",
     "hidden": true,
     "min_bot_version": "3.4.6",
