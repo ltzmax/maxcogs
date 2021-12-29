@@ -1,9 +1,9 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
-labels: suggestion
-assignees: maxbooiii
+title: "[Suggestion]"
+labels: Status Pending
+assignees: ltzmax
 
 ---
 
