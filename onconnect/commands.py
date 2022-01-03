@@ -1,10 +1,11 @@
 import logging
-import discord
-
-from .log import log
-from .abc import MixinMeta
 from typing import Optional
+
+import discord
 from redbot.core import commands
+
+from .abc import MixinMeta
+from .log import log
 
 
 class Commands(MixinMeta):

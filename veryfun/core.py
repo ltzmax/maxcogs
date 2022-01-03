@@ -1,5 +1,6 @@
-import discord
 import logging
+
+import discord
 
 log = logging.getLogger("red.maxcogs.veryfun")
 

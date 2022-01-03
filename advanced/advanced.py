@@ -1,8 +1,8 @@
 import asyncio
 import contextlib
+import logging
 
 import discord
-import logging
 from redbot.core import Config, commands
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate

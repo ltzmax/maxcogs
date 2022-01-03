@@ -1,7 +1,6 @@
 # This cog was orginially made by @Senroht#5179.
 # I was given permission to use his cog while he no longer mainstain it.
 import time
-
 from typing import Optional
 
 import discord

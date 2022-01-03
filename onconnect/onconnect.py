@@ -1,15 +1,15 @@
-import psutil
-import discord
-
-from redbot.core.bot import Red
-from datetime import datetime, timezone
-from redbot.core import Config, commands
-from redbot.core.utils import chat_formatting as chat
-
 # ABC
 from abc import ABC
-from .events import Events
+from datetime import datetime, timezone
+
+import discord
+import psutil
+from redbot.core import Config, commands
+from redbot.core.bot import Red
+from redbot.core.utils import chat_formatting as chat
+
 from .commands import Commands
+from .events import Events
 
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):

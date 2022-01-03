@@ -1,9 +1,9 @@
 # Thanks Red-DiscordBot for their hard work.
 # This uptimer is a fork of red, which uses embed.
 import datetime
+import logging
 
 import discord
-import logging
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_timedelta
 

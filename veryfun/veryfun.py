@@ -1,9 +1,8 @@
 import aiohttp
 import discord
-
 from redbot.core import commands
 
-from .core import embedgen, api_call
+from .core import api_call, embedgen
 
 
 class VeryFun(commands.Cog):

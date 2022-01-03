@@ -1,23 +1,9 @@
-import aiohttp
-import discord
-from redbot.core import commands
-import nekosbest
 import logging
 
-try:
-    from dislash.application_commands._modifications.old import send_with_components
-    from dislash.interactions import ActionRow, Button, ButtonStyle
-except Exception as e:
-    raise CogLoadError(
-        f"Can't load because: {e}\n"
-        "Please install dislash by using "
-        "`pip install dislash.py==1.4.9` "
-        "in your console. "
-        "Restart your bot if you still get this error."
-    )
-
-# CogLoadError handler from
-# https://github.com/fixator10/Fixator10-Cogs/blob/9972aa58dea3a5a1a0758bca62cb8a08a7a51cc6/leveler/def_imgen_utils.py#L11-L30
+import aiohttp
+import discord
+import nekosbest
+from redbot.core import commands
 
 log = logging.getLogger("red.maxcogs.nekos")
 
@@ -31,11 +17,8 @@ class Nekos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = nekosbest.Client()
-        # monkeypatch dislash.py to not break slashtags by phen.
-        if not hasattr(commands.Context, "sendi"):
-            commands.Context.sendi = send_with_components
 
-    __version__ = "0.1.5"
+    __version__ = "0.1.6"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -56,6 +39,7 @@ class Nekos(commands.Cog):
         neko = await self.session.get_image("nekos")
         emb = discord.Embed(
             title="Here's a pic of neko",
+            description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
         )
         emb.colour = await ctx.embed_color()
         emb.set_footer(
@@ -66,20 +50,8 @@ class Nekos(commands.Cog):
             emb.set_image(url=neko.url)
         else:
             emb.description = "I was unable to get image, can you try again?"
-        row = ActionRow(
-            Button(
-                style=ButtonStyle.link,
-                label="Author",
-                url=neko.artist_href,
-            ),
-            Button(
-                style=ButtonStyle.link,
-                label="Source",
-                url=neko.source_url,
-            ),
-        )
         try:
-            await ctx.sendi(embed=emb, components=[row])
+            await ctx.send(embed=emb)
         except discord.HTTPException as e:
             await ctx.send(
                 "Something went wrong while trying to post. Check console for details."

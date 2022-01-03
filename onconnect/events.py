@@ -1,9 +1,10 @@
-import discord
-
-from .log import log
 from typing import Union
-from .abc import MixinMeta
+
+import discord
 from redbot.core import Config
+
+from .abc import MixinMeta
+from .log import log
 
 
 class Events(MixinMeta):
