@@ -45,9 +45,6 @@ To install any cog you want:
 </tbody>
 </table>
 
-## Unsupported cogs
-I have a repo with ping and advanced in, which i do not want to support for a few reasons i dont want to explain. You can find it [here](https://github.com/ltzmax/max-unsupported-cogs/) if you want to continue using them.
-
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
 
