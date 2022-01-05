@@ -45,10 +45,8 @@ To install any cog you want:
 </tbody>
 </table>
 
-## Hidden cogs:
-- Advanced is hidden because i'll never continue it. it works and will stay as is, if you wanna continue it, feel free to contact me on discord first: MAX#1000.
-
-- Ping is hidden because i just want people to use the existed ones but since some still uses this one and does not want to move then i just leave it here and i dont wanna support it or continue working on it.
+## Unsupported cogs
+I have a repo with ping and advanced in, which i do not want to support for a few reasons i dont want to explain. You can find it [here](https://github.com/ltzmax/max-unsupported-cogs/) if you want to continue using them.
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
