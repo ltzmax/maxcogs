@@ -57,11 +57,11 @@ class Nekos(commands.Cog):
                 label="Artist",
                 url=neko.artist_name,
             ),
-        )
         item = discord.ui.Button(
             style=style,
             label="Source",
             url=neko.source_url,
+            ),
         )
         view.add_item(item=item)
         view.add_item(item=item)
