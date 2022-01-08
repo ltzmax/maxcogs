@@ -18,7 +18,7 @@ class Nekos(commands.Cog):
         self.bot = bot
         self.session = nekosbest.Client()
 
-    __version__ = "0.1.6"
+    __version__ = "0.1.7"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
