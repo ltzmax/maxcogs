@@ -39,7 +39,6 @@ class Nekos(commands.Cog):
         neko = await self.session.get_image("nekos")
         emb = discord.Embed(
             title="Here's a pic of neko",
-            description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
         )
         emb.colour = await ctx.embed_color()
         emb.set_footer(
@@ -50,13 +49,22 @@ class Nekos(commands.Cog):
             emb.set_image(url=neko.url)
         else:
             emb.description = "I was unable to get image, can you try again?"
-        try:
-            await ctx.send(embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while trying to post. Check console for details."
-            )
-            log.error(e)
+        view = discord.ui.View()
+        style = discord.ButtonStyle.gray
+        item = discord.ui.Button(
+            style=style,
+            label="Artist",
+            url=neko.artist_name,
+        )
+        item = discord.ui.Button(
+            style=style,
+            label="Source",
+            url=neko.source_url,
+        )
+        view.add_item(item=item)
+        view.add_item(item=item)
+        # Badest way to do i guess (?) lets improve that later.
+        await ctx.send(embed=emb, view=view)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)

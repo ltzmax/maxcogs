@@ -47,9 +47,10 @@ class EmbedUptime(commands.Cog):
         uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
         emb = discord.Embed(
             title=f"{name} has been up for:",
-            description=f"{uptime_str}\nSince: <t:{int(uptime.timestamp())}:F>",
+            description=f"{uptime_str}",
             colour=await ctx.embed_color(),
         )
+        emb.add_field(name="Since", value=f"<t:{int(uptime.timestamp())}:F>")
         try:
             await ctx.reply(embed=emb, mention_author=False)
         except discord.HTTPException as e:

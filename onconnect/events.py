@@ -68,6 +68,6 @@ class Events(MixinMeta):
 
         await webhook.send(
             username=self.bot.user.name,
-            avatar_url=self.bot.user.avatar_url,
+            avatar_url=self.bot.user.avatar.url,  # Dpy 2.0.
             embed=event_embed,
         )
