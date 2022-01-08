@@ -55,7 +55,7 @@ class Nekos(commands.Cog):
             style=style,
             label="Artist",
             url=neko.artist_name,
-        )
+        ),
         item = discord.ui.Button(
             style=style,
             label="Source",
