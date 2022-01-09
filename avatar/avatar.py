@@ -7,7 +7,6 @@ class Avatar(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.session = nekosbest.Client()
 
     __version__ = "0.0.1"
     __author__ = "MAX"
@@ -24,26 +23,26 @@ class Avatar(commands.Cog):
     @commands.command(aliases=["av"])
     @commands.bot_has_permissions(embed_links=True)
     async def avatar(self, ctx: commands.Context, *, user: discord.Member = None):
-        """Get a user's avatar."""
+        """Get a user's avatar.
+        
+        This does not show server based avatar."""
         if user is None:
             user = ctx.author
 
-        if user.is_avatar_animated():
-            avatar.url = avatar.with_static_format("gif", size=4096)
-        else:
-            avatar.url = avatar.with_static_format("png", size=4096)
+        avatar = user.avatar.with_static_format("png")
 
-        embed = discord.Embed(
-            title=f"{user.name}'s Avatar",
+        e = discord.Embed(
+            title=f"{user}'s avatar",
             color=await ctx.embed_color(),
+            url=avatar,
         )
-        embed.set_image(url=avatar.url)
+        e.set_image(url=avatar)
         view = discord.ui.View()
         style = discord.ButtonStyle.gray
         item = discord.ui.Button(
             style=style,
-            label="Avatar",
-            url=str(user.avatar.with_static_format("png", size=4096)),
+            label="Full image",
+            url=str(user.avatar.with_static_format("png")),
         )
         view.add_item(item=item)
-        await ctx.send(embed=emb, view=view)
+        await ctx.send(embed=e, view=view)
