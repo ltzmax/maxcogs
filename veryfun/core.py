@@ -35,7 +35,7 @@ async def embedgen(self, ctx, user, url, action: str):
         )
         log.error(e)
     try:
-        await ctx.send(f"{str(user.mention)}", embed=emb, mention_author=False)
+        await ctx.send(f"{str(user.mention)}", embed=emb)
     except discord.HTTPException as e:
         await ctx.send(
             "Something went wrong while posting. Check your console for details."
