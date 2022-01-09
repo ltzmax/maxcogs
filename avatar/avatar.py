@@ -24,7 +24,7 @@ class Avatar(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def avatar(self, ctx: commands.Context, *, user: discord.Member = None):
         """Get a user's avatar.
-        
+
         This does not show server based avatar."""
         if user is None:
             user = ctx.author
