@@ -1,2 +1,2 @@
 Red-DiscordBot
-nekosbest==1.1.2
+nekosbest==1.1.3
