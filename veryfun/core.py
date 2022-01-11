@@ -24,7 +24,7 @@ async def embedgen(self, ctx, user, url, action: str):
         description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user else 'themselves'}!",
     )
     emb.set_footer(
-        text="Powered by nekos.best",
+        text="Powered by nekos.best | Anime: %s" % (url["anime_name"]),
         icon_url=ICON,
     )
     try:
