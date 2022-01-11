@@ -51,12 +51,10 @@ class Nekos(commands.Cog):
             emb.description = "I was unable to get image, can you try again?"
         view = discord.ui.View()
         style = discord.ButtonStyle.gray
-        item = (
-            discord.ui.Button(
-                style=style,
-                label="Artist",
-                url=neko.artist_href,
-            )
+        item = discord.ui.Button(
+            style=style,
+            label="Artist",
+            url=neko.artist_href,
         )
         item1 = discord.ui.Button(
             style=style,
