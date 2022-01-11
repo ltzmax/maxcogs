@@ -8,7 +8,7 @@ from redbot.core import commands
 log = logging.getLogger("red.maxcogs.nekos")
 
 NEKOS_API = "https://nekos.best/api/v1/"
-ICON = "https://cdn.discordapp.com/emojis/851544845322551347.png?size=96"
+ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
 
 
 class Nekos(commands.Cog):
@@ -18,7 +18,7 @@ class Nekos(commands.Cog):
         self.bot = bot
         self.session = nekosbest.Client()
 
-    __version__ = "0.1.6"
+    __version__ = "0.1.7"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
