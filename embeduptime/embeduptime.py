@@ -50,7 +50,7 @@ class EmbedUptime(commands.Cog):
             description=f"{uptime_str}",
             colour=await ctx.embed_color(),
         )
-        emb.add_field(name="Since", value=f"<t:{int(uptime.timestamp())}:F>")
+        emb.add_field(name="Since:", value=f"<t:{int(uptime.timestamp())}:F>")
         try:
             await ctx.reply(embed=emb, mention_author=False)
         except discord.HTTPException as e:
