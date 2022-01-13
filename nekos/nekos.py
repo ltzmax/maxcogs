@@ -63,7 +63,13 @@ class Nekos(commands.Cog):
         )
         view.add_item(item=item)
         view.add_item(item=item1)
-        await ctx.send(embed=emb, view=view)
+        try:
+            await ctx.send(embed=emb, view=view)
+        except discord.HTTPException as e:
+            await ctx.send(
+                "Something went wrong while posting. Check your console for details."
+            )
+            log.error(e)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
