@@ -12,8 +12,6 @@ async def api_call(self, ctx, action: str):
     async with self.session.get(NEKOS + action) as response:
         if response.status != 200:
             return await ctx.send("Something went wrong while trying to contact API.")
-        if response.status == 502:
-            return await ctx.send("Api is currently down, try again later.")
         url = await response.json()
         return url
 
