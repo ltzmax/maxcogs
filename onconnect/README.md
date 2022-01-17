@@ -25,7 +25,7 @@ Just anyother note:
 [p]connectset
 ```
 ## Required.
-- Before you set event channel make sure your bot has `manage_webhooks` in the channel you select to use as event. 
+- ⚠ **Before you set event channel make sure your bot has `manage_webhooks` in the channel you select to use as event.** ⚠
 
 This cog require you to use webhooks due to how events is made in this cog. Missing this permission will result the cog to fail sending events and your logs will be entered with errors.
 

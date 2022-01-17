@@ -14,11 +14,12 @@ class Commands(MixinMeta):
     @commands.is_owner()
     @commands.guild_only()
     @commands.group(name="connectset")
+    @commands.bot_has_permissions(manage_webhooks=True)
     async def _connectset(self, ctx: commands.Context):
         """Settings for shard event logging."""
 
-    @_connectset.command(name="channel", usage="[channel]")
     @commands.bot_has_permissions(manage_webhooks=True)
+    @_connectset.command(name="channel", usage="[channel]")
     async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None):
         """Set the channel you want to send events.
 
