@@ -32,7 +32,11 @@ class Commands(MixinMeta):
         guild = ctx.guild
         if channel:
             if not channel.permissions_for(guild.me).manage_webhooks:
-                await ctx.send("I do not have the `manage_webhooks` permission in {}.".format(channel.mention))
+                await ctx.send(
+                    "I do not have the `manage_webhooks` permission in {}.".format(
+                        channel.mention
+                    )
+                )
             else:
                 await self.config.statuschannel.set(channel.id)
                 await ctx.send(f"Event is now set to {channel.mention}")
