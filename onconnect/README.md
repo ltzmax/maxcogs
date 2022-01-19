@@ -7,7 +7,7 @@ Just anyother note:
 - When you set event channel to any channel you want it to send to, you have agreed that you want the spam to happen.
 
 ## READ BEFORE YOU SET CHANNEL
-- ⚠ **Before you set event channel make sure your bot has `manage_webhooks` in the channel you select to use as event.** ⚠
+- ⚠ **Before you set event channel make sure your bot has `manage_webhooks`, `send_message` and `embed_links` in the channel you select to use as event.** ⚠
 
 Simple guide:
 1) You can adjust permissions of specific channels, both text and voice, through the channel settings menu by hovering over a channel and clicking on the cog icon.
