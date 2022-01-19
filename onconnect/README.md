@@ -18,7 +18,7 @@ Simple guide:
 
 4) Once you have added a Role or member/bot(s) you can begin assigning channel permissions to this group or person or bot(s).
 
-The required permissions is `manage_webhooks` and `send_messages`.
+The required permissions is `manage_webhooks`, `send_messages` and `embed_links`.
 
 ## Install and quick setup.
 `[p]` is your prefix.
