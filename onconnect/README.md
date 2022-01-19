@@ -14,7 +14,7 @@ Simple guide:
 
 2) Select the Permissions tab on the left-hand side.
 
-3) You can add roles or specific people/bot whom you want to manage channel permissions for by clicking the plus sign. 
+3) You can add roles or specific people/bot(s) whom you want to manage channel permissions for by clicking the plus sign. 
 
 4) Once you have added a Role or member/bot(s) you can begin assigning channel permissions to this group or person or bot(s).
 
