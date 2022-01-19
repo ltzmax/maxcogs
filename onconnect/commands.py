@@ -34,7 +34,8 @@ class Commands(MixinMeta):
             if not channel.permissions_for(guild.me).manage_webhooks:
                 await ctx.send(
                     "{} I do not have the `manage_webhooks` permission in {}.".format(
-                       ctx.author.mention, channel.mention,
+                        ctx.author.mention,
+                        channel.mention,
                     )
                 )
             else:
