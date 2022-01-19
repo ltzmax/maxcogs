@@ -13,7 +13,7 @@ class Commands(MixinMeta):
 
     @commands.is_owner()
     @commands.guild_only()
-    @commands.group(name="connectset") 
+    @commands.group(name="connectset")
     async def _connectset(self, ctx: commands.Context):
         """Settings for shard event logging."""
 
