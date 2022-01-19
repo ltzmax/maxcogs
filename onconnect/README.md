@@ -9,7 +9,15 @@ Just anyother note:
 ## READ BEFORE YOU SET CHANNEL
 - ⚠ **Before you set event channel make sure your bot has `manage_webhooks` in the channel you select to use as event.** ⚠
 
-me as owner of this cog is not responsible for your log being spammed with errors of missing permission.
+Simple guide:
+
+- 1. You can adjust permissions of specific channels, both text and voice, through the channel settings menu by hovering over a channel and clicking on the cog icon.
+
+- 2. Select the Permissions tab on the left-hand side.
+
+- 3. You can add roles or specific people/bot whom you want to manage channel permissions for by clicking the plus sign. 
+
+- 4. Once you have added a Role or member/bot(s) you can begin assigning channel permissions to this group or person or bot(s).
 
 ## Install and quick setup.
 `[p]` is your prefix.
