@@ -22,8 +22,6 @@ class Commands(MixinMeta):
     async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None):
         """Set the channel you want to send events.
 
-        **NOTE:** Make sure the channel you choose has the webhook permissions enabled. Events will ignore if you do not have webhook permissions enabled. If you're unsure how to set permissions, [please read this.](https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ)
-
         **Example:**
         - `[p]connectset channel #general`
         This will set the event channel to general.
@@ -31,9 +29,13 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
+        guild = ctx.guild
         if channel:
-            await self.config.statuschannel.set(channel.id)
-            await ctx.send(f"Event is now set to {channel.mention}")
+            if not channel.permissions_for(guild.me).manage_webhooks:
+                await ctx.send("I do not have the `manage_webhooks` permission in {}.".format(channel.mention))
+            else:
+                await self.config.statuschannel.set(channel.id)
+                await ctx.send(f"Event is now set to {channel.mention}")
         elif await self.config.statuschannel() is not None:
             await self.config.statuschannel.set(None)
             await ctx.send("Event is now disabled")
