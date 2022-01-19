@@ -6,6 +6,11 @@ This cog sends shard events and and can be extremely spammy sometimes, depending
 Just anyother note:
 - When you set event channel to any channel you want it to send to, you have agreed that you want the spam to happen.
 
+## READ BEFORE YOU SET CHANNEL
+- ⚠ **Before you set event channel make sure your bot has `manage_webhooks` in the channel you select to use as event.** ⚠
+
+me as owner of this cog is not responsible for your log being spammed with errors of missing permission.
+
 ## Install and quick setup.
 `[p]` is your prefix.
 
@@ -24,11 +29,6 @@ Just anyother note:
 ```
 [p]connectset
 ```
-## Required.
-- ⚠ **Before you set event channel make sure your bot has `manage_webhooks` in the channel you select to use as event.** ⚠
-
-This cog require you to use webhooks due to how events is made in this cog. Missing this permission will result the cog to fail sending events and your logs will be entered with errors.
-
 4. Set event channel
 ```
 [p]connectset channel #general
@@ -39,3 +39,11 @@ This cog require you to use webhooks due to how events is made in this cog. Miss
 [p]connectset emoji 
 # group commands, set any emojis you want on each colors.
 ```
+6. See settings
+```
+[p]connectset settings
+```
+On every commands, leave them blank to reset settings back to default.
+
+## Support
+You can find me in the [Cog Support server](https://discord.gg/GET4DVk) (#support_othercogts) or in [Red main server](https://discord.gg/red) (#testing) for questions. Just ping MAX#1000 (345628097929936898)
