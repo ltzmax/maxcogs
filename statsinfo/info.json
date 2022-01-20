@@ -4,7 +4,7 @@
     "install_msg": "Thanks for installing.",
     "description": "This will show all current stats total from all guilds your bot is in.",
     "short": "Stats cog to show total stats.",
-    "hidden": false,
+    "hidden": true,
     "min_bot_version": "3.4.0",
     "tags": ["stats"],
     "permissions": ["embed_links"],
