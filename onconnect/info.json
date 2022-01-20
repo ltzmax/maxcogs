@@ -1,7 +1,7 @@
 {
     "author": ["max"],
     "name": "OnConnect",
-    "install_msg" : "Thanks for installing. Use `[p]connectset channel` to set event channel.\nSimple guide and installation setup can be found here: <https://github.com/ltzmax/maxcogs/tree/master/onconnect#readme>",
+    "install_msg" : "Thanks for installing. Use `[p]connectset channel` to set event channel.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/onconnect>",
     "description": "On connect is a shard event cog that shows on ready, disconnect and resummed.",
     "short": "This cog is used to send shard events.",
     "hidden" : false,
