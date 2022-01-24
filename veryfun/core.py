@@ -25,15 +25,15 @@ async def embedgen(self, ctx, user, url, action: str):
         text="Powered by nekos.best | Anime: %s" % (url["anime_name"]),
         icon_url=ICON,
     )
+    emb.set_image(url=url["url"])
     try:
-        emb.set_image(url=url["url"])
-    except KeyError as e:
-        return await ctx.send(
-            "Something went wrong while posting. Check your console for details"
+        await ctx.send(
+            "{}".format(user.mention),
+            allowed_mentions=discord.AllowedMentions(
+                users=await self.config.guild(ctx.guild).mention()
+            ),
+            embed=emb,
         )
-        log.error(e)
-    try:
-        await ctx.send(f"{str(user.mention)}", embed=emb)
     except discord.HTTPException as e:
         await ctx.send(
             "Something went wrong while posting. Check your console for details."

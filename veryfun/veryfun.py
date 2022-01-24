@@ -1,6 +1,6 @@
 import aiohttp
 import discord
-from redbot.core import commands
+from redbot.core import Config, commands
 
 from .core import api_call, embedgen
 
@@ -14,18 +14,43 @@ class VeryFun(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config.get_conf(
+            self, identifier=0x345628097, force_registration=True
+        )
+        default_guild = {
+            "mention": True,
+        }
+        self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
 
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.0.15"
+    __version__ = "0.1.1"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+
+    @commands.group()
+    @commands.admin_or_permissions(manage_messages=True)
+    async def funset(self, ctx):
+        """Settings to enable or diable mentions."""
+
+    @funset.command(aliases=["ping"])
+    async def toggle(self, ctx):
+        """Disable or enable mentions.
+
+        Note: This is only per server. any mod or admin can change this."""
+        config = await self.config.guild(ctx.guild).mention()
+        if config:
+            await self.config.guild(ctx.guild).mention.set(False)
+            await ctx.send("Mentions are now disabled.")
+        else:
+            await self.config.guild(ctx.guild).mention.set(True)
+            await ctx.send("Mentions are now enabled.")
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
