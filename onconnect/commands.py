@@ -35,7 +35,6 @@ class Commands(MixinMeta):
             else:
                 await self.config.statuschannel.set(channel.id)
                 await ctx.send(f"Event is now set to {channel.mention}")
-                await ctx.tick()
 
         elif await self.config.statuschannel() is not None:
             await self.config.statuschannel.set(None)
@@ -62,7 +61,6 @@ class Commands(MixinMeta):
         else:
             await self.config.green.set(emoji)
             await ctx.send(f"Successfully set your emoji to {emoji}.")
-            await ctx.tick()
 
     @_emoji.command(name="orange", usage="[emoji]")
     async def emoji_orange(self, ctx: commands.Context, *, emoji: Optional[str] = None):
@@ -76,7 +74,6 @@ class Commands(MixinMeta):
         else:
             await self.config.orange.set(emoji)
             await ctx.send(f"Successfully set your emoji to {emoji}.")
-            await ctx.tick()
 
     @_emoji.command(name="red", usage="[emoji]")
     async def emoji_red(self, ctx: commands.Context, *, emoji: Optional[str] = None):
@@ -90,7 +87,6 @@ class Commands(MixinMeta):
         else:
             await self.config.red.set(emoji)
             await ctx.send(f"Successfully set your emoji to {emoji}.")
-            await ctx.tick()
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def show_settings(self, ctx: commands.Context):
