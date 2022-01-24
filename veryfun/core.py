@@ -30,7 +30,9 @@ async def embedgen(self, ctx, user, url, action: str):
         await ctx.send(
             "{}".format(user.mention),
             allowed_mentions=discord.AllowedMentions(
-                users=await self.config.guild(ctx.guild).mention()
+                users=await self.config.guild(
+                    ctx.guild
+                ).mention()  # based on https://github.com/fixator10/Fixator10-Cogs/blob/e950123e2a4839a0637c495d2ef5213055d422db/leveler/commands/profiles.py#L38
             ),
             embed=emb,
         )
