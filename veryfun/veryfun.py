@@ -24,7 +24,7 @@ class VeryFun(commands.Cog):
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
 
-    __version__ = "0.1.2"
+    __version__ = "0.1.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -37,11 +37,16 @@ class VeryFun(commands.Cog):
     async def funset(self, ctx):
         """Settings to enable or diable mentions."""
 
-    @funset.command(aliases=["ping"])
-    async def toggle(self, ctx):
+    @funset.command(usage="<True/False>", aliases=["mention", "mentions"])
+    async def toggle(self, ctx: commands.Context, toggle: bool):
         """Disable or enable mentions.
 
-        Note: This is only per server. any mod or admin can change this."""
+        Note: This is only per server. any mod or admin can change this.
+
+        **Example:**
+        `[p]funset toggle True` - Enabled mentions
+        `[p]funset toggle False` - Disabled mentions
+        """
         config = await self.config.guild(ctx.guild).mention()
         if config:
             await self.config.guild(ctx.guild).mention.set(False)
