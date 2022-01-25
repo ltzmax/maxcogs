@@ -61,7 +61,7 @@ class Commands(MixinMeta):
             await self.config.green.clear()
             await ctx.send("Successfully reset back to default.")
         else:
-            await self.config.green.set(emoji)
+            await self.config.green.set(str(emoji))
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="orange", usage="[emoji]")
@@ -76,7 +76,7 @@ class Commands(MixinMeta):
             await self.config.orange.clear()
             await ctx.send("Successfully reset back to default.")
         else:
-            await self.config.orange.set(emoji)
+            await self.config.orange.set(str(emoji))
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="red", usage="[emoji]")
@@ -91,7 +91,7 @@ class Commands(MixinMeta):
             await self.config.red.clear()
             await ctx.send("Successfully reset back to default.")
         else:
-            await self.config.red.set(emoji)
+            await self.config.red.set(str(emoji))
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
