@@ -1,10 +1,10 @@
-import logging
 from typing import Optional
 
 import discord
 from redbot.core import commands
 
 from .abc import MixinMeta
+from .converters import RealEmojiConverter
 from .log import log
 
 
@@ -50,7 +50,9 @@ class Commands(MixinMeta):
         """
 
     @_emoji.command(name="green", usage="[emoji]")
-    async def emoji_green(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_green(
+        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+    ):
         """Change the green emoji to your own.
 
         Leave it blank to reset back to default.
@@ -59,11 +61,13 @@ class Commands(MixinMeta):
             await self.config.green.clear()
             await ctx.send("Successfully reset back to default.")
         else:
-            await self.config.green.set(emoji)
+            await self.config.green.set(str(emoji))
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="orange", usage="[emoji]")
-    async def emoji_orange(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_orange(
+        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+    ):
         """Change the orange emoji to your own.
 
         Leave it blank to reset back to default.
@@ -72,11 +76,13 @@ class Commands(MixinMeta):
             await self.config.orange.clear()
             await ctx.send("Successfully reset back to default.")
         else:
-            await self.config.orange.set(emoji)
+            await self.config.orange.set(str(emoji))
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="red", usage="[emoji]")
-    async def emoji_red(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_red(
+        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+    ):
         """Change the red emoji to your own.
 
         Leave it blank to reset back to default.
@@ -85,7 +91,7 @@ class Commands(MixinMeta):
             await self.config.red.clear()
             await ctx.send("Successfully reset back to default.")
         else:
-            await self.config.red.set(emoji)
+            await self.config.red.set(str(emoji))
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
