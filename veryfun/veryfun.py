@@ -1,6 +1,29 @@
+"""
+MIT License
+
+Copyright (c) 2022-present ltzmax
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
 import aiohttp
 import discord
-from redbot.core import commands
+from redbot.core import Config, commands
 
 from .core import api_call, embedgen
 
@@ -14,6 +37,11 @@ class VeryFun(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config.get_conf(self, identifier=0x345628097)
+        default_guild = {
+            "mention": True,
+        }
+        self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
 
     def cog_unload(self):
@@ -26,6 +54,29 @@ class VeryFun(commands.Cog):
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+
+    @commands.group()
+    @commands.admin_or_permissions(manage_messages=True)
+    async def funset(self, ctx):
+        """Settings to enable or diable mentions."""
+
+    @funset.command(usage="<True/False>", aliases=["mention", "mentions"])
+    async def toggle(self, ctx: commands.Context, toggle: bool):
+        """Disable or enable mentions.
+
+        Mentions are enabled by default.
+
+        **Example:**
+        `[p]funset toggle True` - Enabled mentions
+        `[p]funset toggle False` - Disabled mentions
+        """
+        config = await self.config.guild(ctx.guild).mention()
+        if config:
+            await self.config.guild(ctx.guild).mention.set(False)
+            await ctx.send("Mentions are now disabled.")
+        else:
+            await self.config.guild(ctx.guild).mention.set(True)
+            await ctx.send("Mentions are now enabled.")
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)

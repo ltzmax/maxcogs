@@ -25,15 +25,17 @@ async def embedgen(self, ctx, user, url, action: str):
         text="Powered by nekos.best | Anime: %s" % (url["anime_name"]),
         icon_url=ICON,
     )
+    emb.set_image(url=url["url"])
     try:
-        emb.set_image(url=url["url"])
-    except KeyError as e:
-        return await ctx.send(
-            "Something went wrong while posting. Check your console for details"
+        await ctx.send(
+            "{}".format(user.mention),
+            allowed_mentions=discord.AllowedMentions(
+                users=await self.config.guild(
+                    ctx.guild
+                ).mention()  # based on https://github.com/fixator10/Fixator10-Cogs/blob/e950123e2a4839a0637c495d2ef5213055d422db/leveler/commands/profiles.py#L38
+            ),
+            embed=emb,
         )
-        log.error(e)
-    try:
-        await ctx.send(f"{str(user.mention)}", embed=emb)
     except discord.HTTPException as e:
         await ctx.send(
             "Something went wrong while posting. Check your console for details."
