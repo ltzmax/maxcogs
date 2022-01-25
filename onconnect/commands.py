@@ -1,10 +1,10 @@
-import logging
 from typing import Optional
 
 import discord
 from redbot.core import commands
 
 from .abc import MixinMeta
+from .converters import RealEmojiConverter
 from .log import log
 
 
@@ -50,7 +50,9 @@ class Commands(MixinMeta):
         """
 
     @_emoji.command(name="green", usage="[emoji]")
-    async def emoji_green(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_green(
+        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+    ):
         """Change the green emoji to your own.
 
         Leave it blank to reset back to default.
@@ -63,7 +65,9 @@ class Commands(MixinMeta):
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="orange", usage="[emoji]")
-    async def emoji_orange(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_orange(
+        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+    ):
         """Change the orange emoji to your own.
 
         Leave it blank to reset back to default.
@@ -76,7 +80,9 @@ class Commands(MixinMeta):
             await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="red", usage="[emoji]")
-    async def emoji_red(self, ctx: commands.Context, *, emoji: Optional[str] = None):
+    async def emoji_red(
+        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+    ):
         """Change the red emoji to your own.
 
         Leave it blank to reset back to default.
