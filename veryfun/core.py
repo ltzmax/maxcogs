@@ -42,7 +42,7 @@ async def api_call(self, ctx, action: str):
 async def embedgen(self, ctx, user, url, action: str):
     emb = discord.Embed(
         colour=await ctx.embed_color(),
-        description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user else 'themselves'}!",
+        description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user.id != ctx.author.id else 'themselves'}!",
     )
     emb.set_footer(
         text="Powered by nekos.best | Anime: %s" % (url["anime_name"]),
