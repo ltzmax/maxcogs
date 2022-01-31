@@ -25,10 +25,17 @@ from abc import ABC
 from datetime import datetime, timezone
 
 import discord
-import psutil
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as chat
+
+try:
+    import psutil
+except Exception as e:
+    "Failed to load the psutil module.\n"
+    "{e}".format(e=e)
+    # This bascially dont need to be handled since red has this as module now.
+    # But some users are still outdated on their red bots so i handle it for them.
 
 from .commands import Commands
 from .events import Events
@@ -44,7 +51,7 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
 class OnConnect(Commands, Events, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
-    __version__ = "0.0.10"
+    __version__ = "0.1.1"
     __author__ = "MAX"
 
     def __init__(self, bot: Red) -> None:
