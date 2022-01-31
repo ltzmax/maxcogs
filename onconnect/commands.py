@@ -63,7 +63,9 @@ class Commands(MixinMeta):
             await self.config.statuschannel.set(None)
             await ctx.send("Event is now disabled")
         else:
-            await ctx.send("Events are already disabled.")
+            await ctx.send(
+                f"Events are already disabled.\nUse `{ctx.clean_prefix}connectset channel #channel` to enable."
+            )
 
     @_connectset.group(name="emoji")
     async def _emoji(self, ctx: commands.Context):
