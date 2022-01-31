@@ -37,11 +37,6 @@ class VeryFun(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=0x345628097)
-        default_guild = {
-            "mention": True,
-        }
-        self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
 
     def cog_unload(self):
@@ -55,32 +50,9 @@ class VeryFun(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
-    @commands.group()
-    @commands.admin_or_permissions(manage_messages=True)
-    async def funset(self, ctx):
-        """Settings to enable or diable mentions."""
-
-    @funset.command(usage="<True/False>", aliases=["mention", "mentions"])
-    async def toggle(self, ctx: commands.Context, toggle: bool):
-        """Disable or enable mentions.
-
-        Mentions are enabled by default.
-
-        **Example:**
-        `[p]funset toggle True` - Enabled mentions
-        `[p]funset toggle False` - Disabled mentions
-        """
-        config = await self.config.guild(ctx.guild).mention()
-        if config:
-            await self.config.guild(ctx.guild).mention.set(False)
-            await ctx.send("Mentions are now disabled.")
-        else:
-            await self.config.guild(ctx.guild).mention.set(True)
-            await ctx.send("Mentions are now enabled.")
-
-    @commands.command(hidden=True)
+    @commands.command(name="funversion", hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def veryfunversion(self, ctx):
+    async def veryfun_version(self, ctx):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
