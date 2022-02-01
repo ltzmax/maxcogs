@@ -67,7 +67,7 @@ class Commands(MixinMeta):
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
-                await self.bot.wait_for("reaction_add", check=pred, timeout=15)
+                await self.bot.wait_for("reaction_add", check=pred, timeout=30)
             except asyncio.TimeoutError:
                 await ctx.send("You took too long to response, cancelling.")
                 await msg.clear_reactions()
