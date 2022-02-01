@@ -44,7 +44,7 @@ class Commands(MixinMeta):
         """Settings for shard event logging."""
 
     @_connectset.command(name="channel", usage="[channel]")
-    @commands.bot_has_permissions(manage_webhooks=True)
+    @commands.bot_has_permissions(manage_webhooks=True, add_reactions=True)
     async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None):
         """Set the channel you want to send events.
 
