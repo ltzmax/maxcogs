@@ -21,10 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import asyncio
 from typing import Optional
 
 import discord
 from redbot.core import commands
+from redbot.core.utils.menus import start_adding_reactions
+from redbot.core.utils.predicates import ReactionPredicate
 
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
@@ -41,7 +44,7 @@ class Commands(MixinMeta):
         """Settings for shard event logging."""
 
     @_connectset.command(name="channel", usage="[channel]")
-    @commands.bot_has_permissions(manage_webhooks=True, send_messages=True)
+    @commands.bot_has_permissions(manage_webhooks=True, add_reactions=True)
     async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None):
         """Set the channel you want to send events.
 
@@ -66,8 +69,20 @@ class Commands(MixinMeta):
                 await ctx.send(f"Event is now set to {channel.mention}")
 
         elif await self.config.statuschannel() is not None:
-            await self.config.statuschannel.set(None)
-            await ctx.send("Event is now disabled")
+            msg = await ctx.send("Are you sure you want to disable events?")
+            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
+            try:
+                await self.bot.wait_for("reaction_add", check=pred, timeout=30)
+            except asyncio.TimeoutError:
+                await ctx.send("You took too long to response, cancelling.")
+                await msg.clear_reactions()
+            else:
+                if pred.result is True:
+                    await self.config.statuschannel.set(None)
+                    await ctx.send("Events is now disabled.")
+                else:
+                    await ctx.send("Cancelled.")
         else:
             await ctx.send(
                 f"Events are already disabled.\nUse `{ctx.clean_prefix}connectset channel #channel` to enable."
