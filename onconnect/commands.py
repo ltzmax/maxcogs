@@ -90,10 +90,26 @@ class Commands(MixinMeta):
         """
         if not emoji:
             await self.config.green.clear()
-            await ctx.send("Successfully reset back to default.")
+            if await ctx.embed_requested():
+                em = discord.Embed(
+                    title="Emoji Reset",
+                    description=f"Successfully reset back to default.",
+                    color=await ctx.embed_color(),
+                )
+                await ctx.reply(embed=em, mention_author=False)
+            else:
+                await ctx.send("Successfully reset back to default.")
         else:
             await self.config.green.set(str(emoji))
-            await ctx.send(f"Successfully set your emoji to {emoji}.")
+            if await ctx.embed_requested():
+                em = discord.Embed(
+                    title="Emoji Changed",
+                    description=f"Successfully set your emoji to {emoji}.",
+                    color=await ctx.embed_color(),
+                )
+                await ctx.reply(embed=em, mention_author=False)
+            else:
+                await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="orange", usage="[emoji]")
     async def emoji_orange(
@@ -105,10 +121,26 @@ class Commands(MixinMeta):
         """
         if not emoji:
             await self.config.orange.clear()
-            await ctx.send("Successfully reset back to default.")
+            if await ctx.embed_requested():
+                em = discord.Embed(
+                    title="Emoji Reset",
+                    description=f"Successfully reset back to default.",
+                    color=await ctx.embed_color(),
+                )
+                await ctx.reply(embed=em, mention_author=False)
+            else:
+                await ctx.send("Successfully reset back to default.")
         else:
             await self.config.orange.set(str(emoji))
-            await ctx.send(f"Successfully set your emoji to {emoji}.")
+            if await ctx.embed_requested():
+                em = discord.Embed(
+                    title="Emoji Changed",
+                    description=f"Successfully set your emoji to {emoji}.",
+                    color=await ctx.embed_color(),
+                )
+                await ctx.reply(embed=em, mention_author=False)
+            else:
+                await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_emoji.command(name="red", usage="[emoji]")
     async def emoji_red(
@@ -120,10 +152,26 @@ class Commands(MixinMeta):
         """
         if not emoji:
             await self.config.red.clear()
-            await ctx.send("Successfully reset back to default.")
+            if await ctx.embed_requested():
+                em = discord.Embed(
+                    title="Emoji Reset",
+                    description=f"Successfully reset back to default.",
+                    color=await ctx.embed_color(),
+                )
+                await ctx.reply(embed=em, mention_author=False)
+            else:
+                await ctx.send("Successfully reset back to default.")
         else:
             await self.config.red.set(str(emoji))
-            await ctx.send(f"Successfully set your emoji to {emoji}.")
+            if await ctx.embed_requested():
+                em = discord.Embed(
+                    title="Emoji Changed",
+                    description=f"Successfully set your emoji to {emoji}.",
+                    color=await ctx.embed_color(),
+                )
+                await ctx.reply(embed=em, mention_author=False)
+            else:
+                await ctx.send(f"Successfully set your emoji to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def show_settings(self, ctx: commands.Context):
