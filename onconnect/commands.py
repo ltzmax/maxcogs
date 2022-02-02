@@ -100,7 +100,7 @@ class Commands(MixinMeta):
         This will change the green emoji to :green_heart:.
 
         **Arguments:**
-        - `[emoji]` - Is where you set the emoji. Leave it blank to disable.
+        - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
         if not emoji:
             await self.config.green.clear()
@@ -136,7 +136,7 @@ class Commands(MixinMeta):
         This will change the orange emoji to :orange_heart:.
 
         **Arguments:**
-        - `[emoji]` - Is where you set the emoji. Leave it blank to disable.
+        - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
         if not emoji:
             await self.config.orange.clear()
@@ -172,7 +172,7 @@ class Commands(MixinMeta):
         This will change the red emoji to :red_heart:.
 
         **Arguments:**
-        - `[emoji]` - Is where you set the emoji. Leave it blank to disable.
+        - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
         if not emoji:
             await self.config.red.clear()
