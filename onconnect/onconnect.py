@@ -32,10 +32,17 @@ from redbot.core.utils import chat_formatting as chat
 try:
     import psutil
 except Exception as e:
-    "Failed to load the psutil module.\n"
-    "{e}".format(e=e)
+    raise CogLoadError(
+        # CogLoadError handler from
+        # https://github.com/fixator10/Fixator10-Cogs/blob/9972aa58dea3a5a1a0758bca62cb8a08a7a51cc6/leveler/def_imgen_utils.py#L11-L30
+        f"Can't load because: {e}\n"
+        "Please install dislash by using "
+        "`pip install psutil` "
+        "in your console. "
+        "Restart your bot if you still get this error."
+    )
     # This bascially dont need to be handled since red has this as module now.
-    # But some users are still outdated on their red bots so i handle it for them.
+    # But i'm handling this for users who are outdated on red.
 
 from .commands import Commands
 from .events import Events
