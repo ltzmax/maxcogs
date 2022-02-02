@@ -86,7 +86,7 @@ class Commands(MixinMeta):
     async def _emoji(self, ctx: commands.Context):
         """Settings to change default emoji.
 
-        Your bot need to share the same server as the emoji you want to set.
+        NOTE: If you want to set custom emojis, your bot needs to share the same server as the custom emoji.
         """
 
     @_emoji.command(name="green", usage="[emoji]")
@@ -95,7 +95,12 @@ class Commands(MixinMeta):
     ):
         """Change the green emoji to your own.
 
-        Leave it blank to reset back to default.
+        **Example:**
+        - `[p]connectset emoji green :green_heart:`
+        This will change the green emoji to :green_heart:.
+
+        **Arguments:**
+        - `[emoji]` - Is where you set the emoji. Leave it blank to disable.
         """
         if not emoji:
             await self.config.green.clear()
@@ -126,7 +131,12 @@ class Commands(MixinMeta):
     ):
         """Change the orange emoji to your own.
 
-        Leave it blank to reset back to default.
+        **Example:**
+        - `[p]connectset emoji orange :orange_heart:`
+        This will change the orange emoji to :orange_heart:.
+
+        **Arguments:**
+        - `[emoji]` - Is where you set the emoji. Leave it blank to disable.
         """
         if not emoji:
             await self.config.orange.clear()
@@ -157,7 +167,12 @@ class Commands(MixinMeta):
     ):
         """Change the red emoji to your own.
 
-        Leave it blank to reset back to default.
+        **Example:**
+        - `[p]connectset emoji red :red_heart:`
+        This will change the red emoji to :red_heart:.
+
+        **Arguments:**
+        - `[emoji]` - Is where you set the emoji. Leave it blank to disable.
         """
         if not emoji:
             await self.config.red.clear()
