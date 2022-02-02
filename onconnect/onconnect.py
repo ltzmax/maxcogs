@@ -25,24 +25,10 @@ from abc import ABC
 from datetime import datetime, timezone
 
 import discord
+import psutil
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as chat
-
-try:
-    import psutil
-except Exception as e:
-    raise CogLoadError(
-        # CogLoadError handler from
-        # https://github.com/fixator10/Fixator10-Cogs/blob/9972aa58dea3a5a1a0758bca62cb8a08a7a51cc6/leveler/def_imgen_utils.py#L11-L30
-        f"Can't load because: {e}\n"
-        "Please install dislash by using "
-        "`pip install psutil` "
-        "in your console. "
-        "Restart your bot if you still get this error."
-    )
-    # This bascially dont need to be handled since red has this as module now.
-    # But i'm handling this for users who are outdated on red.
 
 from .commands import Commands
 from .events import Events
