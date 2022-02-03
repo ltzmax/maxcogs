@@ -8,7 +8,7 @@
 To add this repo: 
 
 ```
-[p]repo add maxcogs https://github.com/maxbooiii/maxcogs
+[p]repo add maxcogs https://github.com/ltzmax/maxcogs
 ```
 
 To install any cog you want:
