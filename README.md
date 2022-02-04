@@ -42,6 +42,9 @@ To install any cog you want:
 <td>colorconverter</td>
 <td>Convert a color to RGB and hex. [Hidden cog]</td>
 </tr>
+<td>stats</td>
+<td>Shows some stats total of the bot.</td>
+</tr>
 </tbody>
 </table>
 
