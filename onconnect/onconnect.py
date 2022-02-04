@@ -25,17 +25,10 @@ from abc import ABC
 from datetime import datetime, timezone
 
 import discord
+import psutil
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as chat
-
-try:
-    import psutil
-except Exception as e:
-    "Failed to load the psutil module.\n"
-    "{e}".format(e=e)
-    # This bascially dont need to be handled since red has this as module now.
-    # But some users are still outdated on their red bots so i handle it for them.
 
 from .commands import Commands
 from .events import Events
