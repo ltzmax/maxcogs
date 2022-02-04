@@ -55,13 +55,11 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
-        guild = ctx.guild
         if channel:
-            if not channel.permissions_for(guild.me).manage_webhooks:
+            if not channel.permissions_for(ctx.guild).manage_webhooks:
                 await ctx.send(
-                    "{} I do not have the `manage_webhooks` permission in {}.".format(
-                        ctx.author.mention,
-                        channel.mention,
+                    "I do not have the `manage_webhooks` permission in {}.".format(
+                        channel.mention
                     )
                 )
             else:
