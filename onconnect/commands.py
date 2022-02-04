@@ -56,8 +56,12 @@ class Commands(MixinMeta):
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
         if channel:
-            if not ctx.guild.me.permissions_in(channel).manage_webhooks:
-                await ctx.send(f"I cannot manage webhooks in {channel.mention}!")
+            if not channel.permissions_for(ctx.guild).manage_webhooks:
+                await ctx.send(
+                    "I do not have the `manage_webhooks` permission in {}.".format(
+                        channel.mention
+                    )
+                )
             else:
                 await self.config.statuschannel.set(channel.id)
                 await ctx.send(f"Event is now set to {channel.mention}")
