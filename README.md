@@ -40,7 +40,7 @@ To install any cog you want:
 <td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
 </tr>
 <td>colorconverter</td>
-<td>Convert a color to RGB and hex.</td>
+<td>Convert a color to RGB and hex. [Hidden cog]</td>
 </tr>
 </tbody>
 </table>
