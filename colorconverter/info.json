@@ -1,7 +1,7 @@
 {
     "author": ["max"],
     "name": "ColorConverter",
-    "install_msg": "Thanks for installing.",
+    "install_msg": "Thanks for installing.\nfeel free to check the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/colorconverter>",
     "description": "Convert a color to RGB and hex.",
     "short": "Convert a color to RGB and hex.",
     "hidden": false,
