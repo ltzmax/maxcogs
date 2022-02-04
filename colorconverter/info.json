@@ -1,0 +1,14 @@
+{
+    "author": ["max"],
+    "name": "ColorConverter",
+    "install_msg": "Thanks for installing.",
+    "description": "Convert a color to RGB and hex.",
+    "short": "Convert a color to RGB and hex.",
+    "hidden": false,
+    "min_bot_version": "3.4.0",
+    "tags": ["color", "hex", "rgb"],
+    "permissions": ["embed_links"],
+    "min_python_version": [3, 8, 1],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+  }
