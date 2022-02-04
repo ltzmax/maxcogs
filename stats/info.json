@@ -1,7 +1,7 @@
 {
     "author": ["max"],
     "name": "Stats",
-    "install_msg" : "Thanks for installing.",
+    "install_msg" : "Thanks for installing.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/stats>"",
     "description": "Shows stats about the bot.",
     "short": "Shows stats about the bot.",
     "hidden" : false,
