@@ -21,6 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import asyncio
+
 import aiohttp
 import discord
 from redbot.core import Config, commands
@@ -40,9 +42,9 @@ class VeryFun(commands.Cog):
         self.session = aiohttp.ClientSession()
 
     def cog_unload(self):
-        self.bot.loop.create_task(self.session.close())
+        asyncio.create_task(self.session.close())
 
-    __version__ = "0.1.6"
+    __version__ = "0.1.7"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
