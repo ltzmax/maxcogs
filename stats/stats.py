@@ -38,6 +38,8 @@ class Stats(commands.Cog):
         stage_channels = 0
         users = 0
         bots = 0
+        # based on https://github.com/Rapptz/RoboDanny/blob/1fb95d76d1b7685e2e2ff950e11cddfc96efbfec/cogs/stats.py#L243
+        # For the part above and the `for guild in self.bot.guilds`.
         for guild in self.bot.guilds:
             users += len(guild.members)
             bots += len([m for m in guild.members if m.bot])
