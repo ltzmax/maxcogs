@@ -36,7 +36,7 @@ class Stats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -104,3 +104,14 @@ class Stats(commands.Cog):
             name="Been online since:", value=f"<t:{int(uptime.timestamp())}:f>"
         )
         await ctx.send(embed=embed)
+
+    @commands.command(hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def statsversion(self, ctx):
+        """Shows the cog version."""
+        em = discord.Embed(
+            title="Cog Version:",
+            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=em)
