@@ -44,7 +44,7 @@ class VeryFun(commands.Cog):
     def cog_unload(self):
         asyncio.create_task(self.session.close())
 
-    __version__ = "0.1.7"
+    __version__ = "0.1.8"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -52,9 +52,23 @@ class VeryFun(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
-    @commands.command(name="funversion", hidden=True)
+    @commands.group(name="vf", hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def veryfun_version(self, ctx):
+    async def _vf(self, ctx: commands.Context):
+        """Commands to see cmdcount and version"""
+
+    @_vf.command()
+    async def cmdcount(self, ctx: commands.Context):
+        """Shows the number of commands in this cog used"""
+        emb = discord.Embed(
+            title="Command Count",
+            description=f"There is currently `{len(self.bot.get_cog('VeryFun').get_commands())}` commands in this cog",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=emb)
+
+    @_vf.command(name="version")
+    async def vf_version(self, ctx):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
