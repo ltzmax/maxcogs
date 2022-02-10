@@ -62,6 +62,7 @@ class Nekos(commands.Cog):
         neko = await self.session.get_image("nekos")
         emb = discord.Embed(
             title="Here's a pic of neko",
+            description=f"Artist: [{neko.artist_name}]({neko.artist_href})",
         )
         emb.colour = await ctx.embed_color()
         emb.set_footer(
