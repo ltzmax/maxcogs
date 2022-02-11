@@ -105,15 +105,13 @@ class Commands(MixinMeta):
                             ctx=ctx, message="Events have been disabled."
                         )
                 else:
-                    await self.maybe_reply(
-                        ctx=ctx, message="Cancelled.", mention_author=True
-                    )
+                    await self.maybe_reply(ctx=ctx, message="Cancelled.")
         else:
             await self.maybe_reply(
                 ctx=ctx,
                 message=(
                     f"Events are already disabled. Use `{ctx.clean_prefix}connectset "
-                    f"channel #channel` to enable."
+                    "channel #channel` to enable."
                 ),
                 mention_author=True,
             )
