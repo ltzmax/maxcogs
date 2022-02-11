@@ -21,13 +21,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from abc import ABC
+from abc import ABC, abstractmethod
+from typing import Optional, Union
 
-from redbot.core import Config
+import discord
+from redbot.core import Config, commands
 from redbot.core.bot import Red
 
 
 class MixinMeta(ABC):
-    def __init__(self, *_args):
+    __author__: str
+    __version__: str
+
+    def __init__(self, *_args) -> None:
         self.bot: Red
         self.config: Config
+
+    @staticmethod
+    @abstractmethod
+    async def maybe_reply(
+        ctx: commands.Context,
+        message: Optional[str] = None,
+        embed: Optional[discord.Embed] = None,
+        mention_author: Optional[bool] = False,
+    ) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_or_fetch_channel(self, channel_id: int):
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def send_event_message(
+        self, message: str, colour: Union[discord.Colour, int]
+    ) -> None:
+        raise NotImplementedError()
