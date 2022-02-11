@@ -21,76 +21,56 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Union
+from datetime import datetime, timezone
 
 import discord
-from redbot.core import Config
+import psutil
+from redbot.core import commands
+from redbot.core.utils.chat_formatting import humanize_timedelta
 
 from .abc import MixinMeta
-from .log import log
 
 
 class Events(MixinMeta):
-    """Events."""
+    """The listeners for shard events are found here."""
 
-    async def get_or_fetch_channel(self, channel_id: int):
-        # This is based on https://github.com/Cog-Creators/Red-DiscordBot/blob/V3/develop/redbot/core/bot.py#L957
-        """Retrieves a channel based on its ID.
+    @commands.Cog.listener()
+    async def on_shard_connect(self, shard_id: int) -> None:
+        emoji = await self.config.orange()
+        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) connected!"
+        await self.bot.wait_until_red_ready()
+        await self.send_event_message(message=message, colour=discord.Colour.orange())
 
-        Parameters
-        -----------
-        channel_id: int
-            The id of the channel to retrieve.
-        """
-        if (channel := self.bot.get_channel(channel_id)) is not None:
-            return channel
+    @commands.Cog.listener()
+    async def on_shard_ready(self, shard_id: int) -> None:
+        emoji = await self.config.green()
+        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) ready!"
+        await self.bot.wait_until_red_ready()
+        await self.send_event_message(message=message, colour=discord.Colour.green())
 
-        return await self.bot.fetch_channel(channel_id)
+    @commands.Cog.listener()
+    async def on_shard_disconnect(self, shard_id: int) -> None:
+        emoji = await self.config.red()
+        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) disconnected!"
+        await self.send_event_message(message=message, colour=discord.Colour.red())
 
-    async def _send_event_message(
-        self, message: str, colour: Union[discord.Colour, int]
-    ) -> None:
-        """Send an embed message to the set statuschannel.
+    @commands.Cog.listener()
+    async def on_shard_resumed(self, shard_id: int) -> None:
+        emoji = await self.config.orange()
+        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) resumed!"
+        await self.bot.wait_until_red_ready()
+        await self.send_event_message(message=message, colour=discord.Colour.orange())
 
-        Parameters
-        -----------
-        message: str
-            The message to send to the statuschannel.
-
-        colour: Union[discord.Colour, int]
-            The colour to set in the embed message.
-        """
-        channel_config = await self.config.statuschannel()
-        if channel_config is None:
-            return
-
-        try:
-            channel = await self.get_or_fetch_channel(channel_id=channel_config)
-        except discord.NotFound as e:
-            if await self.config.statuschannel() is not None:
-                await self.config.statuschannel.clear()
-                log.error(f"Statuschannel not found, deleting ID from config. {e}")
-
-            return
-
-        event_embed = discord.Embed(description=message, colour=colour)
-        webhooks = await channel.webhooks()
-        if not webhooks:
-            webhook = await channel.create_webhook(
-                name=f"{self.bot.user.name}'s OnConnect"
-            )
-        else:
-            # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/main/on_connect/cog.py#L45
-            usable_webhooks = [webhook for webhook in webhooks if webhook.token]
-        if not usable_webhooks:
-            webhook = await channel.create_webhook(
-                name=f"{self.bot.user.name}'s OnConnect"
-            )
-        else:
-            webhook = usable_webhooks[0]
-
-        await webhook.send(
-            username=self.bot.user.name,
-            avatar_url=self.bot.user.avatar.url,
-            embed=event_embed,
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        await self.bot.wait_until_red_ready()
+        process_start = datetime.fromtimestamp(
+            psutil.Process().create_time(), tz=timezone.utc
         )
+        launch_time = humanize_timedelta(
+            timedelta=datetime.now(tz=timezone.utc) - process_start
+        )
+        message = (
+            f"> Launch time: {launch_time}\n\n{self.bot.user.name} is ready to use!"
+        )
+        await self.send_event_message(message=message, colour=discord.Colour.green())
