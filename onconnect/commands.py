@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
+import logging
 from typing import Optional
 
 import discord
@@ -31,22 +32,25 @@ from redbot.core.utils.predicates import ReactionPredicate
 
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
-from .log import log
+
+log = logging.getLogger("red.maxcogs.onconnect")
 
 
 class Commands(MixinMeta):
-    """The commands are stored here."""
+    """Commands for managing the cog's settings are found here."""
 
     @commands.is_owner()
     @commands.guild_only()
     @commands.group(name="connectset")
-    async def _connectset(self, ctx: commands.Context):
+    async def _connectset(self, ctx: commands.Context) -> None:
         """Settings for shard event logging."""
 
     @_connectset.command(name="channel", usage="[channel]")
     @commands.bot_has_permissions(manage_webhooks=True, add_reactions=True)
-    async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None):
-        """Set the channel you want to send events.
+    async def _channel(
+        self, ctx, *, channel: Optional[discord.TextChannel] = None
+    ) -> None:
+        """Set the channel to log shard events to.
 
         **Example:**
         - `[p]connectset channel #general`
@@ -55,48 +59,75 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
+        embed_requested = await ctx.embed_requested()
         if channel:
-            if not channel.permissions_for(ctx.guild).manage_webhooks:
-                await ctx.send(
-                    "I do not have the `manage_webhooks` permission in {}.".format(
-                        channel.mention
-                    )
+            await self.config.statuschannel.set(channel.id)
+            log.info(f"Status Channel set to {channel} ({channel.id})")
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"Events will now be sent to {channel.mention}.",
+                    colour=await ctx.embed_colour(),
                 )
+                await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.config.statuschannel.set(channel.id)
-                await ctx.send(f"Event is now set to {channel.mention}")
+                await self.maybe_reply(
+                    ctx=ctx, message=f"Events will now be sent to {channel.mention}."
+                )
 
         elif await self.config.statuschannel() is not None:
-            msg = await ctx.send("Are you sure you want to disable events?")
+            msg = await ctx.maybe_send_embed("Are you sure you want to disable events?")
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
                 await self.bot.wait_for("reaction_add", check=pred, timeout=30)
             except asyncio.TimeoutError:
-                await ctx.send("You took too long to response, cancelling.")
+                await self.maybe_reply(
+                    ctx=ctx,
+                    message="You took too long to respond, cancelling.",
+                    mention_author=True,
+                )
                 await msg.clear_reactions()
             else:
                 if pred.result is True:
                     await self.config.statuschannel.set(None)
-                    await ctx.send("Events is now disabled.")
+                    log.info("Status Channel has been disabled.")
+                    if embed_requested:
+                        embed = discord.Embed(
+                            title="Setting Changed",
+                            description="Events have been disabled.",
+                            colour=await ctx.embed_colour(),
+                        )
+                        await self.maybe_reply(ctx=ctx, embed=embed)
+                    else:
+                        await self.maybe_reply(
+                            ctx=ctx, message="Events have been disabled."
+                        )
                 else:
-                    await ctx.send("Cancelled.")
+                    await self.maybe_reply(ctx=ctx, message="Cancelled.")
         else:
-            await ctx.send(
-                f"Events are already disabled.\nUse `{ctx.clean_prefix}connectset channel #channel` to enable."
+            await self.maybe_reply(
+                ctx=ctx,
+                message=(
+                    f"Events are already disabled. Use `{ctx.clean_prefix}connectset "
+                    "channel #channel` to enable."
+                ),
+                mention_author=True,
             )
 
     @_connectset.group(name="emoji")
     async def _emoji(self, ctx: commands.Context):
         """Settings to change default emoji.
 
-        NOTE: If you want to set custom emojis, your bot needs to share the same server as the custom emoji.
+        NOTE: If you want to set custom emojis, your bot needs to share the same server
+        as the custom emoji.
         """
 
     @_emoji.command(name="green", usage="[emoji]")
-    async def emoji_green(
+    async def _emoji_green(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
-    ):
+    ) -> None:
         """Change the green emoji to your own.
 
         **Example:**
@@ -106,33 +137,38 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
+        embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.green.clear()
-            if await ctx.embed_requested():
-                em = discord.Embed(
-                    title="Emoji Reset",
-                    description=f"Successfully reset back to default.",
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"The green emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
-                await ctx.reply(embed=em, mention_author=False)
+                await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await ctx.send("Successfully reset back to default.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The green emoji has been reset."
+                )
         else:
             await self.config.green.set(str(emoji))
-            if await ctx.embed_requested():
-                em = discord.Embed(
-                    title="Emoji Changed",
-                    description=f"Successfully set your emoji to {emoji}.",
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"The green emoji has been set to {emoji}.",
                     color=await ctx.embed_color(),
                 )
-                await ctx.reply(embed=em, mention_author=False)
+                await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await ctx.send(f"Successfully set your emoji to {emoji}.")
+                await self.maybe_reply(
+                    ctx=ctx, message=f"The green emoji has been set to {emoji}."
+                )
 
     @_emoji.command(name="orange", usage="[emoji]")
-    async def emoji_orange(
+    async def _emoji_orange(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
-    ):
+    ) -> None:
         """Change the orange emoji to your own.
 
         **Example:**
@@ -142,95 +178,112 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
+        embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.orange.clear()
-            if await ctx.embed_requested():
-                em = discord.Embed(
-                    title="Emoji Reset",
-                    description=f"Successfully reset back to default.",
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"The orange emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
-                await ctx.reply(embed=em, mention_author=False)
+                await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await ctx.send("Successfully reset back to default.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The orange emoji has been reset."
+                )
         else:
             await self.config.orange.set(str(emoji))
-            if await ctx.embed_requested():
-                em = discord.Embed(
-                    title="Emoji Changed",
-                    description=f"Successfully set your emoji to {emoji}.",
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"The orange emoji has been set to {emoji}.",
                     color=await ctx.embed_color(),
                 )
-                await ctx.reply(embed=em, mention_author=False)
+                await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await ctx.send(f"Successfully set your emoji to {emoji}.")
+                await self.maybe_reply(
+                    ctx=ctx, message=f"The orange emoji has been set to {emoji}."
+                )
 
     @_emoji.command(name="red", usage="[emoji]")
-    async def emoji_red(
+    async def _emoji_red(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
-    ):
+    ) -> None:
         """Change the red emoji to your own.
 
         **Example:**
-        - `[p]connectset emoji red :red_heart:`
-        This will change the red emoji to :red_heart:.
+        - `[p]connectset emoji red :heart:`
+        This will change the red emoji to :heart:.
 
         **Arguments:**
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
+        embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.red.clear()
-            if await ctx.embed_requested():
-                em = discord.Embed(
-                    title="Emoji Reset",
-                    description=f"Successfully reset back to default.",
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"The red emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
-                await ctx.reply(embed=em, mention_author=False)
+                await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await ctx.send("Successfully reset back to default.")
+                await self.maybe_reply(ctx=ctx, message="The red emoji has been reset.")
         else:
             await self.config.red.set(str(emoji))
-            if await ctx.embed_requested():
-                em = discord.Embed(
-                    title="Emoji Changed",
-                    description=f"Successfully set your emoji to {emoji}.",
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"The red emoji has been set to {emoji}.",
                     color=await ctx.embed_color(),
                 )
-                await ctx.reply(embed=em, mention_author=False)
+                await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await ctx.send(f"Successfully set your emoji to {emoji}.")
+                await self.maybe_reply(
+                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
+                )
 
     @_connectset.command(name="showsettings", aliases=["settings"])
-    async def show_settings(self, ctx: commands.Context):
+    async def _show_settings(self, ctx: commands.Context) -> None:
         """Shows the current settings for OnConnect."""
         config = await self.config.all()
         chan_config = config["statuschannel"]
-        channel = f"<#{chan_config}>" if chan_config else "Not set."
+        status_channel = f"<#{chan_config}>" if chan_config else "Not set."
         green_emoji = config["green"]
         orange_emoji = config["orange"]
         red_emoji = config["red"]
-
-        em = discord.Embed(
-            title="OnConnect Settings:",
-            description=f"**Status channel:** {channel}",
-            colour=await ctx.embed_colour(),
-        )
-        em.add_field(name="Green emoji:", value=green_emoji)
-        em.add_field(name="Orange emoji:", value=orange_emoji)
-        em.add_field(name="Red emoji:", value=red_emoji)
-        try:
-            await ctx.reply(embed=em, mention_author=False)
-        except discord.HTTPException as e:
-            await ctx.send(embed=em)
-            log.info(e)
+        if await ctx.embed_requested():
+            embed = discord.Embed(
+                title="OnConnect Settings",
+                description=f"**Status Channel:** {status_channel}",
+                colour=await ctx.embed_colour(),
+            )
+            embed.add_field(name="Green Emoji:", value=green_emoji)
+            embed.add_field(name="Orange Emoji:", value=orange_emoji)
+            embed.add_field(name="Red Emoji:", value=red_emoji)
+            await self.maybe_reply(ctx=ctx, embed=embed)
+        else:
+            message = (
+                "**OnConnect Settings**\n"
+                f"Status Channel: {status_channel}\n"
+                f"Green Emoji: {green_emoji}\n"
+                f"Orange Emoji: {orange_emoji}\n"
+                f"Red Emoji: {red_emoji}"
+            )
+            await self.maybe_reply(ctx=ctx, message=message)
 
     @_connectset.command(name="version")
-    async def connectset_version(self, ctx: commands.Context):
+    async def _version(self, ctx: commands.Context) -> None:
         """Shows the cog version."""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_colour(),
-        )
-        await ctx.send(embed=em)
+        message = f"Author: {self.__author__}\nVersion: {self.__version__}"
+        if await ctx.embed_requested():
+            embed = discord.Embed(
+                title="Cog Version:",
+                description=message,
+                colour=await ctx.embed_colour(),
+            )
+            await self.maybe_reply(ctx=ctx, embed=embed)
+        else:
+            await self.maybe_reply(ctx=ctx, message=f"**Cog Version:**\n{message}")
