@@ -63,7 +63,7 @@ class Commands(MixinMeta):
         if channel:
             if channel.permissions_for(ctx.me).manage_webhooks is False:
                 return await ctx.send(
-                        "I do not have the `manage_webhooks` permission in {}.".format(
+                    "I do not have the `manage_webhooks` permission in {}.".format(
                         channel.mention
                     )
                 )
