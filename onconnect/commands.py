@@ -76,12 +76,19 @@ class Commands(MixinMeta):
                 )
 
         elif await self.config.statuschannel() is not None:
-            msg = await ctx.maybe_send_embed("Are you sure you want to disable events?")
-            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Are you sure you want to disable events?",
+                    embed_colour=await ctx.embed_colour(),
+                )
+                msg = await ctx.send(embed=embed)
+            else:
+                msg = await ctx.send("Are you sure you want to disable events?")
 
+            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
-                await self.bot.wait_for("reaction_add", check=pred, timeout=30)
+                await self.bot.wait_for("reaction_add", check=pred, timeout=60)
             except asyncio.TimeoutError:
                 await self.maybe_reply(
                     ctx=ctx,
