@@ -61,6 +61,12 @@ class Commands(MixinMeta):
         """
         embed_requested = await ctx.embed_requested()
         if channel:
+            if channel.permissions_for(ctx.me).manage_webhooks is False:
+                return await ctx.send(
+                        "I do not have the `manage_webhooks` permission in {}.".format(
+                        channel.mention
+                    )
+                )
             await self.config.statuschannel.set(channel.id)
             log.info(f"Status Channel set to {channel} ({channel.id})")
             if embed_requested:
