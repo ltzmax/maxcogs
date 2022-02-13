@@ -41,7 +41,7 @@ class Nekos(commands.Cog):
         self.bot = bot
         self.session = nekosbest.Client()
 
-    __version__ = "0.1.7"
+    __version__ = "0.1.8"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -53,12 +53,7 @@ class Nekos(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command(aliases=["nekos"])
-    @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True)
-    async def neko(self, ctx):
-        """Send a random neko image."""
+    async def NekosBest(self, ctx):
         neko = await self.session.get_image("nekos")
         emb = discord.Embed(
             title="Here's a pic of neko",
@@ -74,20 +69,17 @@ class Nekos(commands.Cog):
         else:
             emb.description = "I was unable to get image, can you try again?"
         try:
-            await ctx.send(embed=emb)
+            return await ctx.send(embed=emb)
         except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while trying to post. Check console for details."
+            return await ctx.send(
+                "I was unable to send image, check logs for more details."
             )
-            log.error(e)
+            log.error(f"Failed to send nekos.best image. {e}")
 
-    @commands.command(hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def nekosversion(self, ctx):
-        """Shows the cog version."""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
-        )
-        await ctx.send(embed=em)
+    @commands.command(aliases=["nekos"])
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def neko(self, ctx):
+        """Send a random neko image."""
+        await self.NekosBest(ctx)
