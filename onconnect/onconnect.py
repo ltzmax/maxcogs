@@ -162,6 +162,6 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
 
         await webhook.send(
             username=self.bot.user.name,
-            avatar_url=self.bot.user.avatar_url,
+            avatar_url=self.bot.user.avatar.url,
             embed=event_embed,
         )
