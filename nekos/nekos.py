@@ -83,3 +83,14 @@ class Nekos(commands.Cog):
     async def neko(self, ctx):
         """Send a random neko image."""
         await self.NekosBest(ctx)
+
+    @commands.command(hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def nekoversion(self, ctx):
+        """Shows the cog version."""
+        em = discord.Embed(
+            title="Cog Version:",
+            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=em)
