@@ -8,7 +8,7 @@
     "min_bot_version": "3.5.0",
     "tags": ["shard", "reconnect", "disconnect", "on_ready"],
     "permissions": ["manage_webhooks", "add_reactions"],
-    "min_python_version": [3, 8, 1],
+    "min_python_version": [3, 8, 5],
     "requirements": ["psutil"],
     "end_user_data_statement": "This cog does not store any End User Data.",
     "type": "COG"
