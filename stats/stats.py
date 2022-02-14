@@ -75,9 +75,8 @@ class Stats(commands.Cog):
         guilds = len(self.bot.guilds)
         uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
 
-        # this needs to change in dpy 2.0
-        if self.bot.user.avatar_url:
-            avatar = self.bot.user.avatar_url
+        if self.bot.user.avatar.url:
+            avatar = self.bot.user.avatar.url
 
         embed = discord.Embed(
             title="BotStats for {}".format(self.bot.user.name),
