@@ -75,8 +75,8 @@ class Stats(commands.Cog):
         guilds = len(self.bot.guilds)
         uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
 
-        if self.bot.user.avatar.url:
-            avatar = self.bot.user.avatar.url
+        if self.bot.user.display_avatar:
+            avatar = self.bot.user.display_avatar
 
         embed = discord.Embed(
             title="BotStats for {}".format(self.bot.user.name),
