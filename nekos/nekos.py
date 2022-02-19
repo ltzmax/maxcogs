@@ -70,19 +70,23 @@ class Nekos(commands.Cog):
             emb.description = "I was unable to get image, can you try again?"
         view = discord.ui.View()
         style = discord.ButtonStyle.gray
-        Artist = discord.ui.Button(
-            style=style,
-            label="Artist",
-            url=neko.artist_href,
-        ),
-        Source = discord.ui.Button(
-            style=style,
-            label="Source",
-            url=neko.source_href,
-        ),
+        Artist = (
+            discord.ui.Button(
+                style=style,
+                label="Artist",
+                url=neko.artist_href,
+            ),
+        )
+        Source = (
+            discord.ui.Button(
+                style=style,
+                label="Source",
+                url=neko.source_href,
+            ),
+        )
         view.add_item(item=Artist)
         view.add_item(item=Source)
-        await ctx.send(embed=emb, view=view)       
+        await ctx.send(embed=emb, view=view)
 
     @commands.command(aliases=["nekos"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
