@@ -7,13 +7,13 @@
 
 To add this repo: 
 
-```
+```yaml
 [p]repo add maxcogs https://github.com/ltzmax/maxcogs
 ```
 
 To install any cog you want:
 
-```
+```yaml
 [p]cog install maxcogs <cog name you want>
 ```
 ---------------------------------------------------------------
@@ -56,3 +56,6 @@ To install any cog you want:
 
 ## Support
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
+
+## License
+This repo is under (c) MIT License.
