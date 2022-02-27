@@ -27,7 +27,7 @@ import discord
 
 log = logging.getLogger("red.maxcogs.veryfun")
 
-NEKOS = "https://nekos.best/api/v2/"
+NEKOS = "https://nekos.best/api/v1/"
 ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
 
 
@@ -45,7 +45,7 @@ async def embedgen(self, ctx, user, url, action: str):
         description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user.id != ctx.author.id else 'themselves'}!",
     )
     emb.set_footer(
-        text="Powered by nekos.best",
+        text="Powered by nekos.best | Anime: %s" % (url["anime_name"]),
         icon_url=ICON,
     )
     emb.set_image(url=url["url"])
