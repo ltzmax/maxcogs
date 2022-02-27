@@ -30,7 +30,7 @@ from redbot.core import commands
 
 log = logging.getLogger("red.maxcogs.nekos")
 
-NEKOS_API = "https://nekos.best/api/v1/"
+NEKOS_API = "https://nekos.best/api/v2/"
 ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
 
 
@@ -54,7 +54,7 @@ class Nekos(commands.Cog):
         return
 
     async def NekosBest(self, ctx):
-        neko = await self.session.get_image("nekos")
+        neko = await self.session.get_image("neko")
         emb = discord.Embed(
             title="Here's a pic of neko",
             description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
