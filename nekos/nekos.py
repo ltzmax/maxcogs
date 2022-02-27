@@ -30,7 +30,7 @@ from redbot.core import commands
 
 log = logging.getLogger("red.maxcogs.nekos")
 
-NEKOS_API = "https://nekos.best/api/v2/"
+NEKOS_API = "https://nekos.best/api/v1/"
 ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
 
 
@@ -53,8 +53,13 @@ class Nekos(commands.Cog):
         """Nothing to delete."""
         return
 
-    async def NekosBest(self, ctx):
-        neko = await self.session.get_image("neko")
+    @commands.command(aliases=["nekos"])
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def neko(self, ctx):
+        """Send a random neko image."""
+        neko = await self.session.get_image("nekos")
         emb = discord.Embed(
             title="Here's a pic of neko",
             description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
@@ -69,20 +74,12 @@ class Nekos(commands.Cog):
         else:
             emb.description = "I was unable to get image, can you try again?"
         try:
-            return await ctx.send(embed=emb)
+            await ctx.send(embed=emb)
         except discord.HTTPException as e:
-            return await ctx.send(
+            await ctx.send(
                 "I was unable to send image, check logs for more details."
             )
             log.error(f"Failed to send nekos.best image. {e}")
-
-    @commands.command(aliases=["nekos"])
-    @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
-    @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def neko(self, ctx):
-        """Send a random neko image."""
-        await self.NekosBest(ctx)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
