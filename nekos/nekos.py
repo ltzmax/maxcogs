@@ -25,12 +25,11 @@ import logging
 
 import aiohttp
 import discord
-import nekosbest
 from redbot.core import commands
 
 log = logging.getLogger("red.maxcogs.nekos")
 
-NEKOS_API = "https://nekos.best/api/v1/"
+NEKOS_API = "https://nekos.best/api/v2/"
 ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
 
 
@@ -39,9 +38,12 @@ class Nekos(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.session = nekosbest.Client()
+        self.session = aiohttp.ClientSession()
 
-    __version__ = "0.1.8"
+    def cog_unload(self):
+        self.bot.loop.create_task(self.session.close())
+
+    __version__ = "0.1.10"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -59,27 +61,24 @@ class Nekos(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def neko(self, ctx):
         """Send a random neko image."""
-        neko = await self.session.get_image("nekos")
-        emb = discord.Embed(
-            title="Here's a pic of neko",
-            description=f"Artist: [{neko.artist_name}]({neko.artist_href})\nSource: {neko.source_url}",
-        )
-        emb.colour = await ctx.embed_color()
-        emb.set_footer(
-            text="Powered by nekos.best",
-            icon_url=ICON,
-        )
-        if neko.url:
-            emb.set_image(url=neko.url)
-        else:
-            emb.description = "I was unable to get image, can you try again?"
-        try:
-            await ctx.send(embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "I was unable to send image, check logs for more details."
+        async with self.session.get(NEKOS_API + "neko") as response:
+            if response.status != 200:
+                return await ctx.send(
+                    "Something went wrong while trying to contact API."
+                )
+            url = await response.json()
+            emb = discord.Embed(
+                title="Here's a pic of neko",
             )
-            log.error(f"Failed to send nekos.best image. {e}")
+            emb.colour = await ctx.embed_color()
+            emb.set_image(url=url["results"][0]["url"])
+            emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
+            try:
+                await ctx.send(embed=emb)
+            except discord.HTTPException as e:
+                await ctx.send(
+                    "I was unable to send image, check logs for more details.")
+                log.error(e)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
