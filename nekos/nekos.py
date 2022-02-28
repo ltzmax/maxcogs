@@ -41,10 +41,9 @@ class Nekos(commands.Cog):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-
     __version__ = "0.2.0"
     __author__ = "MAX"
-    
+
     def cog_unload(self):
         asyncio.create_task(self.session.close())
 
