@@ -28,25 +28,24 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-log = logging.getLogger("red.maxcogs.nekos")
+log = logging.getLogger("red.maxcogs.kitsune")
 
 NEKOS_API = "https://nekos.best/api/v2/"
 ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
 
 
-class Nekos(commands.Cog):
-    """Sending nekos images from nekos.best."""
+class Kitsune(commands.Cog):
+    """Sending Kitsune images from nekos.best."""
 
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-
-    __version__ = "0.2.0"
-    __author__ = "MAX"
-    
     def cog_unload(self):
         asyncio.create_task(self.session.close())
+
+    __version__ = "0.0.2"
+    __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -57,20 +56,20 @@ class Nekos(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command(aliases=["nekos"])
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def neko(self, ctx):
-        """Send a random neko image."""
-        async with self.session.get(NEKOS_API + "neko") as response:
+    async def kitsune(self, ctx):
+        """Send a random kitsune image."""
+        async with self.session.get(NEKOS_API + "kitsune") as response:
             if response.status != 200:
                 return await ctx.send(
                     "Something went wrong while trying to contact API."
                 )
             url = await response.json()
             emb = discord.Embed(
-                title="Here's a pic of neko",
+                title="Here's a pic of kitsune",
             )
             emb.colour = await ctx.embed_color()
             emb.set_image(url=url["results"][0]["url"])
@@ -85,7 +84,7 @@ class Nekos(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def nekoversion(self, ctx):
+    async def hitsuneversion(self, ctx):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
