@@ -52,7 +52,6 @@ class VeryFun(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
-
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="vrfversion", hidden=True)
     async def veryfun_version(self, ctx):

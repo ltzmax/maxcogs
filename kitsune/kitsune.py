@@ -23,6 +23,7 @@ SOFTWARE.
 """
 import logging
 
+import asyncio
 import aiohttp
 import discord
 from redbot.core import commands
@@ -41,9 +42,9 @@ class Kitsune(commands.Cog):
         self.session = aiohttp.ClientSession()
 
     def cog_unload(self):
-        self.bot.loop.create_task(self.session.close())
+        asyncio.create_task(self.session.close())
 
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -77,7 +78,8 @@ class Kitsune(commands.Cog):
                 await ctx.send(embed=emb)
             except discord.HTTPException as e:
                 await ctx.send(
-                    "I was unable to send image, check logs for more details.")
+                    "I was unable to send image, check logs for more details."
+                )
                 log.error(e)
 
     @commands.command(hidden=True)
