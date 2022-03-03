@@ -44,7 +44,7 @@ class Kitsune(commands.Cog):
     def cog_unload(self):
         asyncio.create_task(self.session.close())
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -68,8 +68,14 @@ class Kitsune(commands.Cog):
                     "Something went wrong while trying to contact API."
                 )
             url = await response.json()
+
+            artist_name = url["results"][0]["artist_name"]
+            source_url = url["results"][0]["source_url"]
+            artist_href = url["results"][0]["artist_href"]
+
             emb = discord.Embed(
                 title="Here's a pic of kitsune",
+                description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
             )
             emb.colour = await ctx.embed_color()
             emb.set_image(url=url["results"][0]["url"])
