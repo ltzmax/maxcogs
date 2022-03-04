@@ -44,7 +44,7 @@ class Kitsune(commands.Cog):
     def cog_unload(self):
         asyncio.create_task(self.session.close())
 
-    __version__ = "0.0.3"
+    __version__ = "0.0.4"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -90,7 +90,7 @@ class Kitsune(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def hitsuneversion(self, ctx):
+    async def kitsuneversion(self, ctx):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
