@@ -110,7 +110,7 @@ class Kitsune(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def hitsuneversion(self, ctx):
+    async def kitsuneversion(self, ctx):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
