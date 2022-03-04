@@ -276,6 +276,7 @@ class Commands(MixinMeta):
             embed.add_field(name="Green Emoji:", value=green_emoji)
             embed.add_field(name="Orange Emoji:", value=orange_emoji)
             embed.add_field(name="Red Emoji:", value=red_emoji)
+            embed.set_thumbnail(url=str(self.bot.user.display_avatar))
             await self.maybe_reply(ctx=ctx, embed=embed)
         else:
             message = (
