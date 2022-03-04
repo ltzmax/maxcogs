@@ -40,6 +40,7 @@ async def api_call(self, ctx, action: str):
 
 
 async def embedgen(self, ctx, user, url, action: str):
+
     anime_name = url["results"][0]["anime_name"]
 
     emb = discord.Embed(
