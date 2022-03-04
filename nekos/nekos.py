@@ -46,7 +46,7 @@ class Nekos(commands.Cog):
 
     __version__ = "0.2.0"
     __author__ = "MAX"
-        
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
