@@ -60,7 +60,9 @@ class EmbedUptime(commands.Cog):
                 log.info(e)
             self.bot.add_command(uptime)
 
-    async def EmbedUptime(self, ctx):
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
         name = ctx.bot.user.name
         delta = datetime.datetime.utcnow() - self.bot.uptime
@@ -76,12 +78,6 @@ class EmbedUptime(commands.Cog):
             await ctx.reply(embed=emb, mention_author=False)
         except discord.HTTPException as e:
             await ctx.send(embed=emb)
-
-    @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
-    async def uptime(self, ctx: commands.Context):
-        """Shows [botname]'s uptime."""
-        await self.EmbedUptime(ctx)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)

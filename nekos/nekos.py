@@ -68,17 +68,37 @@ class Nekos(commands.Cog):
                     "Something went wrong while trying to contact API."
                 )
             url = await response.json()
+
+            artist_name = url["results"][0]["artist_name"]
+            source_url = url["results"][0]["source_url"]
+            artist_href = url["results"][0]["artist_href"]
+
             emb = discord.Embed(
-                title="Here's a pic of neko",
+                title="Here's a pic of nekos",
+                description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
             )
             emb.colour = await ctx.embed_color()
             emb.set_image(url=url["results"][0]["url"])
             emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
+            view = discord.ui.View()
+            style = discord.ButtonStyle.gray
+            artist = discord.ui.Button(
+                style=style,
+                label="Artist",
+                url=artist_href,
+            )
+            source = discord.ui.Button(
+                style=style,
+                label="Source",
+                url=source_url,
+            )
+            view.add_item(item=artist)
+            view.add_item(item=source)
             try:
-                await ctx.send(embed=emb)
+                await ctx.send(embed=emb, view=view)
             except discord.HTTPException as e:
                 await ctx.send(
-                    "I was unable to send image, check logs for more details."
+                    "Something went wrong while posting. Check your console for details."
                 )
                 log.error(e)
 

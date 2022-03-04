@@ -40,12 +40,14 @@ async def api_call(self, ctx, action: str):
 
 
 async def embedgen(self, ctx, user, url, action: str):
+    anime_name = url["results"][0]["anime_name"]
+
     emb = discord.Embed(
         colour=await ctx.embed_color(),
         description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user.id != ctx.author.id else 'themselves'}!",
     )
     emb.set_footer(
-        text="Powered by nekos.best",
+        text=f"Powered by nekos.best | Anime: {anime_name}",
         icon_url=ICON,
     )
     emb.set_image(url=url["results"][0]["url"])
