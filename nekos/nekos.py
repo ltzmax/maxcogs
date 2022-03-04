@@ -92,8 +92,14 @@ class Nekos(commands.Cog):
                 label="Source",
                 url=source_url,
             )
+            image = discord.ui.Button(
+                style=style,
+                label="Open image",
+                url=url["results"][0]["url"],
+            )
             view.add_item(item=artist)
             view.add_item(item=source)
+            view.add_item(item=image)
             try:
                 await ctx.send(embed=emb, view=view)
             except discord.HTTPException as e:
