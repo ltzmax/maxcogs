@@ -61,7 +61,8 @@ class Commands(MixinMeta):
         """
         if isinstance(ctx.channel, discord.Thread):
             return await ctx.send(
-                "You can't set events in threads. Please use a vaild channel instead.")
+                "You can't set events in threads. Please use a vaild channel instead."
+            )
         embed_requested = await ctx.embed_requested()
         if channel:
             if channel.permissions_for(ctx.guild.me).manage_webhooks is False:
@@ -155,7 +156,8 @@ class Commands(MixinMeta):
         """
         if isinstance(ctx.channel, discord.Thread):
             return await ctx.send(
-                "You can't change emoji in threads. Please use a vaild channel instead.")
+                "You can't change emoji in threads. Please use a vaild channel instead."
+            )
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.green.clear()
@@ -199,7 +201,8 @@ class Commands(MixinMeta):
         """
         if isinstance(ctx.channel, discord.Thread):
             return await ctx.send(
-                "You can't change emoji in threads. Please use a vaild channel instead.")
+                "You can't change emoji in threads. Please use a vaild channel instead."
+            )
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.orange.clear()
@@ -243,7 +246,8 @@ class Commands(MixinMeta):
         """
         if isinstance(ctx.channel, discord.Thread):
             return await ctx.send(
-                "You can't change emoji in threads. Please use a vaild channel instead.")
+                "You can't change emoji in threads. Please use a vaild channel instead."
+            )
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.red.clear()
