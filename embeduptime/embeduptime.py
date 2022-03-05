@@ -78,6 +78,7 @@ class EmbedUptime(commands.Cog):
             await ctx.reply(embed=emb, mention_author=False)
         except discord.HTTPException as e:
             await ctx.send(embed=emb)
+            log.info(e)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
