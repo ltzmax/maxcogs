@@ -60,9 +60,10 @@ class Commands(MixinMeta):
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
         if isinstance(ctx.channel, discord.Thread):
-            return await ctx.send(
-                "You can't set events in threads. Please use a vaild channel instead."
-            )
+            # I just don't wanna deal with threads so I'm just going to disallow it being used in there.
+            # Removing this check will not work, it will just reset your channel settings and not send any events.
+            # This cog isn't made to be used in threads either.
+            return await ctx.send("You can't set events in threads.")
         embed_requested = await ctx.embed_requested()
         if channel:
             if channel.permissions_for(ctx.guild.me).manage_webhooks is False:
@@ -155,9 +156,7 @@ class Commands(MixinMeta):
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
         if isinstance(ctx.channel, discord.Thread):
-            return await ctx.send(
-                "You can't change emoji in threads. Please use a vaild channel instead."
-            )
+            return await ctx.send("You can't change emoji in threads.")
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.green.clear()
@@ -200,9 +199,7 @@ class Commands(MixinMeta):
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
         if isinstance(ctx.channel, discord.Thread):
-            return await ctx.send(
-                "You can't change emoji in threads. Please use a vaild channel instead."
-            )
+            return await ctx.send("You can't change emoji in threads.")
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.orange.clear()
@@ -245,9 +242,7 @@ class Commands(MixinMeta):
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
         if isinstance(ctx.channel, discord.Thread):
-            return await ctx.send(
-                "You can't change emoji in threads. Please use a vaild channel instead."
-            )
+            return await ctx.send("You can't change emoji in threads.")
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.red.clear()
