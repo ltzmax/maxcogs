@@ -85,7 +85,7 @@ class Commands(MixinMeta):
             if embed_requested:
                 embed = discord.Embed(
                     title="Are you sure you want to disable events?",
-                    embed_colour=await ctx.embed_colour(),
+                    colour=await ctx.embed_colour(),
                 )
                 msg = await ctx.send(embed=embed)
             else:
