@@ -130,6 +130,7 @@ class Commands(MixinMeta):
                 message=(
                     f"Events are already disabled. Use `{ctx.clean_prefix}connectset "
                     "channel #channel` to enable."
+                    "\n**Note** You cannot set events in threads."
                 ),
                 mention_author=True,
             )
