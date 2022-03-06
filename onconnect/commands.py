@@ -60,9 +60,6 @@ class Commands(MixinMeta):
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
         if isinstance(ctx.channel, discord.Thread):
-            # I just don't wanna deal with threads so I'm just going to disallow it being used in there.
-            # Removing this check will not work, it will just reset your channel settings and not send any events.
-            # This cog isn't made to be used in threads either.
             return await ctx.send("You can't set events in threads.")
         embed_requested = await ctx.embed_requested()
         if channel:
