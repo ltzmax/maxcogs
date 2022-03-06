@@ -273,6 +273,8 @@ class Commands(MixinMeta):
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context) -> None:
         """Shows the current settings for OnConnect."""
+        if isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This command is not available in threads.")
         config = await self.config.all()
         chan_config = config["statuschannel"]
         status_channel = f"<#{chan_config}>" if chan_config else "Not set."
@@ -303,6 +305,8 @@ class Commands(MixinMeta):
     @_connectset.command(name="version")
     async def _version(self, ctx: commands.Context) -> None:
         """Shows the cog version."""
+        if isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This command is not available in threads.")
         message = f"Author: {self.__author__}\nVersion: {self.__version__}"
         if await ctx.embed_requested():
             embed = discord.Embed(
