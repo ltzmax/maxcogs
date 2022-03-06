@@ -52,6 +52,8 @@ class Commands(MixinMeta):
     ) -> None:
         """Set the channel to log shard events to.
 
+        Note: Events are not able to be set in threads.
+
         **Example:**
         - `[p]connectset channel #general`
         This will set the event channel to general.
