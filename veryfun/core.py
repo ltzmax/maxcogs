@@ -59,7 +59,7 @@ async def embedgen(self, ctx, user, url, action: str):
         label="Open Image",
         url=url["results"][0]["url"],
     )
-    view.add_item(item=gif)  
+    view.add_item(item=gif)
     try:
         await ctx.send(embed=emb, view=view)
     except discord.HTTPException as e:
