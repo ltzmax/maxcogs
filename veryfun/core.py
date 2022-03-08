@@ -52,8 +52,16 @@ async def embedgen(self, ctx, user, url, action: str):
         icon_url=ICON,
     )
     emb.set_image(url=url["results"][0]["url"])
+    view = discord.ui.View()
+    style = discord.ButtonStyle.gray
+    gif = discord.ui.Button(
+        style=style,
+        label="Open Image",
+        url=url["results"][0]["url"],
+    )
+    view.add_item(item=gif)  
     try:
-        await ctx.send(embed=emb)
+        await ctx.send(embed=emb, view=view)
     except discord.HTTPException as e:
         await ctx.send(
             "Something went wrong while posting. Check your console for details."
