@@ -94,7 +94,7 @@ class Kitsune(commands.Cog):
             )
             image = discord.ui.Button(
                 style=style,
-                label="Open image",
+                label="Image",
                 url=url["results"][0]["url"],
             )
             view.add_item(item=artist)
