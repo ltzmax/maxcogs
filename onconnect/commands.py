@@ -99,6 +99,8 @@ class Commands(MixinMeta):
             else:
                 msg = await ctx.send("Are you sure you want to disable events?")
 
+            # Switch Reaction Predicate to use buttons whenever i have read enough docs for it.
+            # Right now i don't know 100% how to do it correctly.
             start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
             pred = ReactionPredicate.yes_or_no(msg, ctx.author)
             try:
