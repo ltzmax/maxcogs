@@ -44,6 +44,10 @@ class Commands(MixinMeta):
     @commands.group(name="connectset")
     async def _connectset(self, ctx: commands.Context) -> None:
         """Settings for shard event logging."""
+        if isinstance(ctx.channel, discord.Thread):
+            return await self.maybe_reply(
+                ctx=ctx, message="You cannot use this in threads."
+            )
 
     @_connectset.command(name="channel", usage="[channel]")
     @commands.bot_has_permissions(manage_webhooks=True, add_reactions=True)
@@ -61,11 +65,6 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx,
-                message="This command is not available in threads.\n**Note** You cannot set events in threads.",
-            )
         embed_requested = await ctx.embed_requested()
         if channel:
             if channel.permissions_for(ctx.guild.me).manage_webhooks is False:
@@ -140,7 +139,7 @@ class Commands(MixinMeta):
                 mention_author=True,
             )
 
-    @_connectset.group(name="emoji")
+    @_connectset.group(name="emoji", aliases=["emojis"])
     async def _emoji(self, ctx: commands.Context):
         """Settings to change default emoji.
 
@@ -161,10 +160,6 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx, message="You can't change emoji in threads."
-            )
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.green.clear()
@@ -206,10 +201,6 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx, message="You can't change emoji in threads."
-            )
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.orange.clear()
@@ -251,10 +242,6 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[emoji]` - Is where you set the emoji. Leave it blank to reset.
         """
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx, message="You can't change emoji in threads."
-            )
         embed_requested = await ctx.embed_requested()
         if not emoji:
             await self.config.red.clear()
@@ -284,10 +271,6 @@ class Commands(MixinMeta):
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context) -> None:
         """Shows the current settings for OnConnect."""
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx, message="This command is not available in threads."
-            )
         config = await self.config.all()
         chan_config = config["statuschannel"]
         status_channel = f"<#{chan_config}>" if chan_config else "Not set."
@@ -318,10 +301,6 @@ class Commands(MixinMeta):
     @_connectset.command(name="version")
     async def _version(self, ctx: commands.Context) -> None:
         """Shows the cog version."""
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx, message="This command is not available in threads."
-            )
         message = f"Author: {self.__author__}\nVersion: {self.__version__}"
         if await ctx.embed_requested():
             embed = discord.Embed(
