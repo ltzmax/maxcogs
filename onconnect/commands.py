@@ -286,7 +286,7 @@ class Commands(MixinMeta):
         """Shows the current settings for OnConnect."""
         if isinstance(ctx.channel, discord.Thread):
             return await self.maybe_reply(
-                ctx=ctx, message="You can't change emoji in threads."
+                ctx=ctx, message="This command is not available in threads."
             )
         config = await self.config.all()
         chan_config = config["statuschannel"]
@@ -319,7 +319,9 @@ class Commands(MixinMeta):
     async def _version(self, ctx: commands.Context) -> None:
         """Shows the cog version."""
         if isinstance(ctx.channel, discord.Thread):
-            return await ctx.send("This command is not available in threads.")
+            return await self.maybe_reply(
+                ctx=ctx, message="This command is not available in threads."
+            )
         message = f"Author: {self.__author__}\nVersion: {self.__version__}"
         if await ctx.embed_requested():
             embed = discord.Embed(
