@@ -5,7 +5,7 @@
     "description": "Shows current uptime of the bot.",
     "short": "Shows current uptime of the bot.",
     "hidden": false,
-    "min_bot_version": "3.4.6",
+    "min_bot_version": "3.5.0",
     "tags": ["uptime"],
     "permissions": ["embed_links"],
     "min_python_version": [3, 8, 5],

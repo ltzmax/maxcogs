@@ -92,8 +92,8 @@ class EmbedUptime(commands.Cog):
         await ctx.send(embed=em)
 
 
-def setup(bot):
+async def setup(bot):
     eu = EmbedUptime(bot)
     global uptime
     uptime = bot.remove_command("uptime")
-    bot.add_cog(eu)
+    await bot.add_cog(eu)
