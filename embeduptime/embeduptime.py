@@ -51,14 +51,14 @@ class EmbedUptime(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def cog_unload(self):
+    async def cog_unload(self):
         global uptime
         if uptime:
             try:
-                self.bot.remove_command("uptime")
+                await self.bot.remove_command("uptime")
             except Exception as e:
                 log.info(e)
-            self.bot.add_command(uptime)
+            await self.bot.add_command(uptime)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -96,4 +96,4 @@ async def setup(bot):
     eu = EmbedUptime(bot)
     global uptime
     uptime = bot.remove_command("uptime")
-    bot.add_cog(eu)
+    await bot.add_cog(eu)

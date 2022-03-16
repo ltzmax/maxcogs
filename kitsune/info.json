@@ -5,7 +5,7 @@
     "description": "Cog that sends random kitsune images from nekos.best",
     "short": "Random kitsune images.",
     "hidden" : false,
-    "min_bot_version": "3.5.0.dev1",
+    "min_bot_version": "3.5.0",
     "tags": ["images", "kitsune"],
     "permissions": ["embed_links"],
     "min_python_version": [3, 8, 1],
