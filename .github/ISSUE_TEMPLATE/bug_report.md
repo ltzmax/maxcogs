@@ -2,7 +2,7 @@ name: Bug report
 about: Create a report to help us improve
 title: [BUG]
 labels: Status Pending
-assignees: ltzmax
+assignees: "ltzmax"
 body:
   - type: dropdown
     id: cog

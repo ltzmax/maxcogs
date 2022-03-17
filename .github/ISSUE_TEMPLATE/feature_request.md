@@ -2,7 +2,7 @@ name: Feature request
 about: Suggest an idea for this project
 title: [Suggestion]
 labels: Status Pending
-assignees: ltzmax
+assignees: "ltzmax"
 body:
   - type: dropdown
     id: cog
