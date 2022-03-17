@@ -25,6 +25,7 @@ SOFTWARE.
 """
 import datetime
 import logging
+from typing import Optional
 
 import discord
 from redbot.core import commands
@@ -60,6 +61,35 @@ class EmbedUptime(commands.Cog):
                 log.info(e)
             await self.bot.add_command(uptime)
 
+    @staticmethod
+    async def maybe_reply(
+        ctx: commands.Context,
+        message: Optional[str] = None,
+        embed: Optional[discord.Embed] = None,
+        mention_author: Optional[bool] = False,
+    ) -> None:
+        """Try to reply to a message.
+
+        Parameters
+        ----------
+        ctx : redbot.core.commands.Context
+            The command invocation context.
+
+        message : Optional[str] = None
+            The message to send.
+
+        embed : Optional[discord.Embed] = None
+            The embed to send in the message.
+
+        mention_author : Optional[bool] = False
+            Whether to mention the author of the message. Defaults to False.
+        """
+        try:
+            await ctx.reply(message, embed=embed, mention_author=mention_author)
+        except discord.NotFound as e:
+            await ctx.send(message, embed=embed)
+            log.info(e)
+
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def uptime(self, ctx: commands.Context):
@@ -74,11 +104,7 @@ class EmbedUptime(commands.Cog):
             description=msg,
             colour=await ctx.embed_color(),
         )
-        try:
-            await ctx.reply(embed=emb, mention_author=False)
-        except discord.HTTPException as e:
-            await ctx.send(embed=emb)
-            log.info(e)
+        await self.maybe_reply(ctx=ctx, embed=emb)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -89,7 +115,7 @@ class EmbedUptime(commands.Cog):
             description=f"Author: {self.__author__}\nVersion: {self.__version__}",
             colour=await ctx.embed_color(),
         )
-        await ctx.send(embed=em)
+        await self.maybe_reply(ctx=ctx, embed=em)
 
 
 async def setup(bot):
