@@ -290,11 +290,10 @@ class Commands(MixinMeta):
             await self.maybe_reply(ctx=ctx, embed=embed)
         else:
             message = (
-                "**OnConnect Settings**\n"
-                f"Status Channel: {status_channel}\n"
-                f"Green Emoji: {green_emoji}\n"
-                f"Orange Emoji: {orange_emoji}\n"
-                f"Red Emoji: {red_emoji}"
+                f"**`{'Status Channel':<15}:`** {status_channel}\n"
+                f"**`{'Green Emoji':<15}:`** {green_emoji}\n"
+                f"**`{'Orange Emoji':<15}:`** {orange_emoji}\n"
+                f"**`{'Red Emoji':<15}:`** {red_emoji}"
             )
             await self.maybe_reply(ctx=ctx, message=message)
 
