@@ -1,48 +1,31 @@
+---
 name: Bug report
 about: Create a report to help us improve
-title: [BUG]
+title: "[BUG]"
 labels: Status Pending
-assignees: "ltzmax"
-body:
-  - type: dropdown
-    id: cog
-    attributes:
-      label: Cog
-      description: Which cog has this bug occured in?
-      options:
-        - EmbedUptime
-        - Kitsune
-        - Nekos
-        - OnConnect
-        - VeryFun
-    validations:
-      required: true
-  - type: input
-    id: details
-    attributes:
-      label: Details
-      description: Can you tell exactly what happened? give as much as details as possible!
-    validations:
-      required: true
-  - type: input
-    id: discord_user_info
-    attributes:
-      label: Discord User Information
-      description: "What is your Discord? username#1234"
-    validations:
-      required: true
-  - type: textarea
-    id: logs
-    attributes:
-      label: Post your traceback here.
-      description: Please copy your traceback you got in your logs from the cog you're reporting bug from.
-      render: py
-    validations: 
-      required: false
-  - type: input
-    id: repro
-    attributes:
-      label: Reproduction
-      description: Anything else?
-    validations:
-      required: false
+assignees: ltzmax
+
+---
+
+Text marked with `*` is required to file out.
+
+## Describe the bug:*
+A clear and concise description of what the bug is.
+
+## What cog did you use?*
+What cog did you see the issue from?
+
+## What steps did you take to reproduce the bug?*
+Please give as much as details as possible.
+
+## What did you expect to see?* 
+What you expected to see.
+
+## What did you see instead?*
+What you saw instead.
+
+## Please post full traceback here:*
+If applicable, add traceback here to help explain your problem.
+
+## Additional context:
+Add any other context about the problem here if you have anything more you want to add.
