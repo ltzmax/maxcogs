@@ -13,11 +13,11 @@ always use following:
 
 ## How to use isort?
 - First you will have to install it
-```py
+```yaml
 [p]pip install isort
 ```
 - Then run
-```py
+```yaml
 isort <source_file_or_directory>
 ```
 ## Versions:
