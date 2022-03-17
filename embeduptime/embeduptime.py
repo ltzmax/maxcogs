@@ -96,4 +96,4 @@ async def setup(bot):
     eu = EmbedUptime(bot)
     global uptime
     uptime = bot.remove_command("uptime")
-    await bot.add_cog(eu)
+    bot.add_cog(eu)

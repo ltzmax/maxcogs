@@ -5,7 +5,7 @@
     "description": "On connect is a shard event cog that shows on ready, disconnect and resume.",
     "short": "Shard events cog that shows on ready, disconnect and resume.",
     "hidden" : false,
-    "min_bot_version": "3.5.0",
+    "min_bot_version": "3.5.0.dev1",
     "tags": ["shard", "reconnect", "disconnect", "on_ready"],
     "permissions": ["manage_webhooks", "add_reactions"],
     "min_python_version": [3, 8, 5],

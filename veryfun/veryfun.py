@@ -41,7 +41,7 @@ class VeryFun(commands.Cog):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         asyncio.create_task(self.session.close())
 
     __version__ = "0.2.0"
