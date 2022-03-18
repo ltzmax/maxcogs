@@ -104,7 +104,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
         except discord.NotFound:
             await ctx.send(message, embed=embed)
 
-    # Based on https://github.com/Cog-Creators/Red-DiscordBot/blob/9ab307c1efc391301fc6498391d2e403aeee2faa/redbot/core/bot.py#L925 # noqa
+    # Based on https://github.com/Cog-Creators/Red-DiscordBot/blob/9ab307c1efc391301fc6498391d2e403aeee2faa/redbot/core/bot.py#L925 
     async def get_or_fetch_channel(self, channel_id: int):
         """Retrieves a channel based on its ID.
 
@@ -151,7 +151,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
                 name=f"{self.bot.user.name}'s OnConnect"
             )
         else:
-            # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/3326d3f38135dc971b084609fd62ddd59d4bb239/on_connect/cog.py#L49 # noqa
+            # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/3326d3f38135dc971b084609fd62ddd59d4bb239/on_connect/cog.py#L49
             usable_webhooks = [webhook for webhook in webhooks if webhook.token]
             if not usable_webhooks:
                 webhook = await channel.create_webhook(

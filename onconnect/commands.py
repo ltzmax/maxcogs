@@ -43,7 +43,7 @@ class Commands(MixinMeta):
     @commands.guild_only()
     @commands.group(name="connectset")
     async def _connectset(self, ctx: commands.Context) -> None:
-        """Settings for shard event logging."""
+        """Manage settings for onconnect."""
         if isinstance(ctx.channel, discord.Thread):
             return await self.maybe_reply(
                 ctx=ctx, message="You cannot use this in threads."
