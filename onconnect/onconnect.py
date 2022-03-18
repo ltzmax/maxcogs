@@ -104,7 +104,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
         except discord.NotFound:
             await ctx.send(message, embed=embed)
 
-    # Based on https://github.com/Cog-Creators/Red-DiscordBot/blob/9ab307c1efc391301fc6498391d2e403aeee2faa/redbot/core/bot.py#L925 
+    # Based on https://github.com/Cog-Creators/Red-DiscordBot/blob/9ab307c1efc391301fc6498391d2e403aeee2faa/redbot/core/bot.py#L925
     async def get_or_fetch_channel(self, channel_id: int):
         """Retrieves a channel based on its ID.
 
