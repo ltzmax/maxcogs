@@ -63,14 +63,9 @@ async def embedgen(self, ctx, user, url, action: str):
     try:
         await ctx.send(embed=emb, view=view)
     except discord.HTTPException as e:
-        msg = (
-            "Something went wrong\n"
-            "Please contact bot owner for more information."
-        )
+        msg = "Something went wrong\n" "Please contact bot owner for more information."
         # Based on https://github.com/flaree/flare-cogs/blob/501f8d25d939fa183b18addde96ad06eb26d4890/giveaways/giveaways.py#L473
         if await self.bot.is_owner(ctx.author):
-            msg += (
-                "Something went wrong. Check your console for more information."
-            )
+            msg += "Something went wrong. Check your console for more information."
         await ctx.send(msg)
         log.error(f"Command '{ctx.command.name}' failed to post: {e}")
