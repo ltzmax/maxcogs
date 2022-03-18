@@ -55,4 +55,4 @@ To install any cog you want:
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
 
 ## License
-This repo is under (c) MIT License.
+This repo is under MIT LICENSE. Please see [`LICENSE file`](https://github.com/ltzmax/maxcogs/blob/master/LICENSE).
