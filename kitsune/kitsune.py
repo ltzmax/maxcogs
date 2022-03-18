@@ -56,12 +56,18 @@ class Kitsune(commands.Cog):
         """Nothing to delete."""
         return
 
+    # Before you ask "Why is this the same code as nekos?"
+    # I suggest you read the code from nekos.py on same place as this.
+    # where i explain it.
+
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx):
         """Send a random kitsune image."""
+        async with ctx.typing():
+            pass
         async with self.session.get(NEKOS_API + "kitsune") as response:
             if response.status != 200:
                 return await ctx.send(

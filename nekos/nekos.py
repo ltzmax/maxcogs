@@ -56,12 +56,21 @@ class Nekos(commands.Cog):
         """Nothing to delete."""
         return
 
+    # Before you ask "Why is this the same code as Kitsune?"
+    # Because based to a stat that i did in the past and still does, People prefered Nekos being alone command.
+    # When i had a image cog back in the day, people removed the other commands and only kept nekos alone in the same cog.
+    # Some people does not like kitsune, some people does not like nekos but likes kitsune instead. 
+    # So i decided to make it seperate based on their suggestion and what they wanted.
+    # I made it easier for them since most of them does not know how code works.
+
     @commands.command(aliases=["nekos"])
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def neko(self, ctx):
         """Send a random neko image."""
+        async with ctx.typing():
+            pass
         async with self.session.get(NEKOS_API + "neko") as response:
             if response.status != 200:
                 return await ctx.send(
