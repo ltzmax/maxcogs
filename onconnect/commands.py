@@ -65,9 +65,10 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
+        guild = ctx.guild
         embed_requested = await ctx.embed_requested()
         if channel:
-            if channel.permissions_for(ctx.guild.me).manage_webhooks is False:
+            if not channel.permissions_for(guild.me).manage_webhooks:
                 return await self.maybe_reply(
                     ctx=ctx,
                     message="I do not have the `manage_webhooks` permission in {}.".format(
