@@ -103,9 +103,16 @@ class Kitsune(commands.Cog):
             try:
                 await ctx.send(embed=emb, view=view)
             except discord.HTTPException as e:
-                await ctx.send(
-                    "Something went wrong while posting. Check your console for details."
+                meg = (
+                    "Something went wrong.\n"
+                    "Please contact bot owner for infromation."
                 )
+                # Based on https://github.com/flaree/flare-cogs/blob/501f8d25d939fa183b18addde96ad06eb26d4890/giveaways/giveaways.py#L473
+                if await self.bot.is_owner(ctx.author):
+                    meg += (
+                        "Something went wrong. Check your console for more information."
+                    )
+                await ctx.send(meg)
                 log.error(e)
 
     @commands.command(hidden=True)
