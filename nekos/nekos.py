@@ -44,7 +44,7 @@ class Nekos(commands.Cog):
     def cog_unload(self):
         asyncio.create_task(self.session.close())
 
-    __version__ = "0.1.12"
+    __version__ = "0.1.13"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -56,11 +56,11 @@ class Nekos(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command(aliases=["nekos"])
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def neko(self, ctx):
+    async def nekos(self, ctx):
         """Send a random neko image."""
         async with self.session.get(NEKOS_API + "neko") as response:
             if response.status != 200:
