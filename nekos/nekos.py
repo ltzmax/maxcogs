@@ -63,11 +63,11 @@ class Nekos(commands.Cog):
     # So i decided to make it seperate based on their suggestion and what they wanted.
     # I made it easier for them since most of them does not know how code works.
 
-    @commands.command(aliases=["nekos"])
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def neko(self, ctx):
+    async def nekos(self, ctx):
         """Send a random neko image."""
         async with ctx.typing():
             pass
