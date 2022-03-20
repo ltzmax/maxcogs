@@ -40,6 +40,11 @@ class VeryFun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.config = Config.get_conf(self, identifier=78634567)
+        default_global = {
+            "button": False,
+        }
+        self.config.register_global(**default_global)
 
     async def cog_unload(self):
         asyncio.create_task(self.session.close())
@@ -51,6 +56,25 @@ class VeryFun(commands.Cog):
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+
+    @commands.group()
+    @commands.is_owner()
+    async def veryfunset(self, ctx):
+        """Settings to toggle button."""
+
+    @veryfunset.command(aliases=["toggle", "enable", "disable"])
+    async def button(self, ctx):
+        """toggle buttons on or off
+        
+        Buttons are disabled by default.
+        """
+        button = await self.config.button()
+        if button:
+            await self.config.button.set(False)
+            await ctx.send("Button disabled.")
+        else:
+            await self.config.button.set(True)
+            await ctx.send("Button enabled.")
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="vrfversion", hidden=True)

@@ -72,12 +72,4 @@ async def embedgen(self, ctx, url):
     view.add_item(item=artist)
     view.add_item(item=source)
     view.add_item(item=image)
-    try:
-        await ctx.send(embed=emb, view=view)
-    except discord.HTTPException as e:
-        meg = "Something went wrong. " "Please contact bot owner for infromation."
-        # Based on https://github.com/flaree/flare-cogs/blob/501f8d25d939fa183b18addde96ad06eb26d4890/giveaways/giveaways.py#L473
-        if await self.bot.is_owner(ctx.author):
-            meg += "Something went wrong. Check your console for more details."
-        await ctx.send(meg)
-        log.error(e)
+    await ctx.send(embed=emb, view=view)
