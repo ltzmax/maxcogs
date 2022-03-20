@@ -77,8 +77,8 @@ class VeryFun(commands.Cog):
             await ctx.send("Button enabled.")
 
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command(name="vrfversion", hidden=True)
-    async def veryfun_version(self, ctx):
+    @veryfunset.command(name="version", hidden=True)
+    async def veryfunset_version(self, ctx):
         """Shows the cog version."""
         em = discord.Embed(
             title="Cog Version:",
