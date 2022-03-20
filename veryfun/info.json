@@ -1,7 +1,7 @@
 {
     "author": ["max"],
     "name": "VeryFun",
-    "install_msg": "Thanks for installing.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/veryfun>",
+    "install_msg": "Thanks for installing. Check `[p]veryfunset` for the setting to enable and disable buttons.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/veryfun>",
     "description": "Roleplay cog with alot of fun to have with your members. This is with help of nekos.best.",
     "short": "Roleplay cog. With help of nekos.best.",
     "hidden": false,
