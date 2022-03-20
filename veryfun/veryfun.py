@@ -62,7 +62,7 @@ class VeryFun(commands.Cog):
     async def veryfunset(self, ctx):
         """Settings to toggle button."""
 
-    @veryfunset.command(aliases=["toggle", "enable", "disable"])
+    @veryfunset.command(aliases=["toggle"])
     async def button(self, ctx):
         """toggle buttons on or off
 
