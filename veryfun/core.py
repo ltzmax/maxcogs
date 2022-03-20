@@ -50,7 +50,7 @@ async def embedgen(self, ctx, user, url, action: str):
         description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user.id != ctx.author.id else 'themselves'}!",
     )
     emb.set_footer(
-        text=f"Powered by nekos.best | Anime: {anime_name}",
+        text=f"Powered by nekos.best\nAnime Name: {anime_name}",
         icon_url=ICON,
     )
     emb.set_image(url=url["results"][0]["url"])
@@ -65,7 +65,7 @@ async def embedgen(self, ctx, user, url, action: str):
     try:
         await ctx.send(embed=emb, view=view)
     except discord.HTTPException as e:
-        msg = "Something went wrong\n" "Please contact bot owner for more information."
+        msg = "Something went wrong. Please contact bot owner for more information."
         # Based on https://github.com/flaree/flare-cogs/blob/501f8d25d939fa183b18addde96ad06eb26d4890/giveaways/giveaways.py#L473
         if await self.bot.is_owner(ctx.author):
             msg += "Something went wrong. Check your console for more information."
