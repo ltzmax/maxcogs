@@ -27,7 +27,7 @@ import aiohttp
 import discord
 from redbot.core import commands
 
-from .embed import embedgen, api_call
+from .embed import api_call, embedgen
 
 
 class Nekos(commands.Cog):
