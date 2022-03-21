@@ -46,7 +46,7 @@ class VeryFun(commands.Cog):
         }
         self.config.register_global(**default_global)
 
-    async def cog_unload(self):
+    def cog_unload(self):
         asyncio.create_task(self.session.close())
 
     __version__ = "0.2.0"
@@ -60,14 +60,14 @@ class VeryFun(commands.Cog):
     @commands.group()
     @commands.is_owner()
     async def veryfunset(self, ctx):
-        """Settings to toggle button."""
+        """Settings to toggle button.
+        
+        Buttons are disabled by default.
+        """
 
     @veryfunset.command(aliases=["toggle"])
     async def button(self, ctx):
-        """toggle buttons on or off
-
-        Buttons are disabled by default.
-        """
+        """toggle buttons on or off."""
         button = await self.config.button()
         if button:
             await self.config.button.set(False)

@@ -118,7 +118,7 @@ class EmbedUptime(commands.Cog):
         await self.maybe_reply(ctx=ctx, embed=em)
 
 
-async def setup(bot):
+def setup(bot):
     eu = EmbedUptime(bot)
     global uptime
     uptime = bot.remove_command("uptime")
