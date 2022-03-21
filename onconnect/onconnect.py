@@ -40,7 +40,9 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
     This allows the metaclass used for proper type detection to
     coexist with discord.py's metaclass
     """
+
     pass
+
 
 class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""

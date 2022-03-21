@@ -61,7 +61,7 @@ class VeryFun(commands.Cog):
     @commands.is_owner()
     async def veryfunset(self, ctx):
         """Settings to toggle button.
-        
+
         Buttons are disabled by default.
         """
 
