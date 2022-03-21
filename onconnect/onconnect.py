@@ -140,28 +140,9 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
         except discord.NotFound as e:
             if await self.config.statuschannel() is not None:
                 await self.config.statuschannel.clear()
-                log.error(f"Statuschannel not found, deleting ID from config. {e}")
-
+                log.error(
+                    f"Failed to send evens: {e} - Clearing statuschannel")
             return
 
         event_embed = discord.Embed(description=message, colour=colour)
-        webhooks = await channel.webhooks()
-        if not webhooks:
-            webhook = await channel.create_webhook(
-                name=f"{self.bot.user.name}'s OnConnect"
-            )
-        else:
-            # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/3326d3f38135dc971b084609fd62ddd59d4bb239/on_connect/cog.py#L49
-            usable_webhooks = [webhook for webhook in webhooks if webhook.token]
-            if not usable_webhooks:
-                webhook = await channel.create_webhook(
-                    name=f"{self.bot.user.name}'s OnConnect"
-                )
-            else:
-                webhook = usable_webhooks[0]
-
-        await webhook.send(
-            username=self.bot.user.name,
-            avatar_url=self.bot.user.display_avatar,
-            embed=event_embed,
-        )
+        embed_channel = await channel.send(embed=event_embed)

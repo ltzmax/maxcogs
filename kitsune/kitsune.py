@@ -37,8 +37,8 @@ class Kitsune(commands.Cog):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-    def cog_unload(self):
-        asyncio.create_task(self.session.close())
+    async def cog_unload(self):
+        await self.session.close()
 
     __version__ = "0.2.0"
     __author__ = "MAX"

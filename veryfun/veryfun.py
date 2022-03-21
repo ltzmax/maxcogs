@@ -46,8 +46,8 @@ class VeryFun(commands.Cog):
         }
         self.config.register_global(**default_global)
 
-    def cog_unload(self):
-        asyncio.create_task(self.session.close())
+    async def cog_unload(self):
+        await self.session.close()
 
     __version__ = "0.2.0"
     __author__ = "MAX"
@@ -60,32 +60,35 @@ class VeryFun(commands.Cog):
     @commands.group()
     @commands.is_owner()
     async def veryfunset(self, ctx):
-        """Settings to toggle button.
+        """Settings to toggle button."""
 
-        Buttons are disabled by default.
+    @veryfunset.command(aliases=["button"])
+    async def toggle(self, ctx: commands.Context, *, toggle: bool):
+        """Toggle button on/off.
+        
+        Note: buttons are disabled by default.
+
+        **Example:**
+        `[p]veryfunset toggle True`
+
+        **Arguments:**
+        `<toggle>` - `True` to enable or `False` to disable.
         """
+        await self.config.button.set(toggle)
+        await ctx.send(f"Button is now {'enabled' if toggle else 'disabled'}.")
 
-    @veryfunset.command(aliases=["toggle"])
-    async def button(self, ctx):
-        """toggle buttons on or off."""
-        button = await self.config.button()
-        if button:
-            await self.config.button.set(False)
-            await ctx.send("Button disabled.")
-        else:
-            await self.config.button.set(True)
-            await ctx.send("Button enabled.")
-
-    @commands.bot_has_permissions(embed_links=True)
     @veryfunset.command(name="version", hidden=True)
     async def veryfunset_version(self, ctx):
         """Shows the cog version."""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
-        )
-        await ctx.send(embed=em)
+        if await ctx.embed_requested():
+            em = discord.Embed(
+                title="Cog Version:",
+                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+                colour=await ctx.embed_color(),
+            )
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

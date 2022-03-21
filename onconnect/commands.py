@@ -44,13 +44,9 @@ class Commands(MixinMeta):
     @commands.group(name="connectset")
     async def _connectset(self, ctx: commands.Context) -> None:
         """Manage settings for onconnect."""
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx, message="You cannot use this in threads."
-            )
 
-    @_connectset.command(name="channel", usage="[channel]")
-    @commands.bot_has_permissions(manage_webhooks=True, add_reactions=True)
+    @_connectset.command(name="channel")
+    @commands.bot_has_permissions(add_reactions=True)
     async def _channel(
         self, ctx, *, channel: Optional[discord.TextChannel] = None
     ) -> None:
@@ -65,13 +61,19 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
+        # i have no idea where to add this, but works for now.
+        # just doesn't work outside of a thread, it will clear the channel instead.
+        if isinstance(ctx.channel, discord.Thread):
+            return await self.maybe_reply(
+                ctx=ctx, message="You can't set events in thread."
+            )
         guild = ctx.guild
         embed_requested = await ctx.embed_requested()
         if channel:
-            if not channel.permissions_for(guild.me).manage_webhooks:
+            if not channel.permissions_for(guild.me).embed_links:
                 return await self.maybe_reply(
                     ctx=ctx,
-                    message="I do not have the `manage_webhooks` permission in {}.".format(
+                    message="I do not have the `embed_links` permission in {}.".format(
                         channel.mention
                     ),
                 )
@@ -148,7 +150,7 @@ class Commands(MixinMeta):
         as the custom emoji.
         """
 
-    @_emoji.command(name="green", usage="[emoji]")
+    @_emoji.command(name="green")
     async def _emoji_green(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
     ) -> None:
@@ -189,7 +191,7 @@ class Commands(MixinMeta):
                     ctx=ctx, message=f"The green emoji has been set to {emoji}."
                 )
 
-    @_emoji.command(name="orange", usage="[emoji]")
+    @_emoji.command(name="orange")
     async def _emoji_orange(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
     ) -> None:
@@ -230,7 +232,7 @@ class Commands(MixinMeta):
                     ctx=ctx, message=f"The orange emoji has been set to {emoji}."
                 )
 
-    @_emoji.command(name="red", usage="[emoji]")
+    @_emoji.command(name="red")
     async def _emoji_red(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
     ) -> None:
