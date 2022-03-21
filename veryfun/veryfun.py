@@ -65,7 +65,7 @@ class VeryFun(commands.Cog):
     @veryfunset.command(aliases=["button"])
     async def toggle(self, ctx: commands.Context, *, toggle: bool):
         """Toggle button on/off.
-        
+
         Note: buttons are disabled by default.
 
         **Example:**
@@ -88,7 +88,9 @@ class VeryFun(commands.Cog):
             )
             await ctx.send(embed=em)
         else:
-            await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
+            await ctx.send(
+                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
+            )
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

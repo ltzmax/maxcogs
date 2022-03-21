@@ -140,8 +140,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
         except discord.NotFound as e:
             if await self.config.statuschannel() is not None:
                 await self.config.statuschannel.clear()
-                log.error(
-                    f"Failed to send evens: {e} - Clearing statuschannel")
+                log.error(f"Failed to send evens: {e} - Clearing statuschannel")
             return
 
         event_embed = discord.Embed(description=message, colour=colour)
