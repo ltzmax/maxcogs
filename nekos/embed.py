@@ -71,4 +71,3 @@ async def embedgen(self, ctx, url):
         await ctx.send(embed=emb, view=view)
     else:
         await ctx.send(embed=emb)
-

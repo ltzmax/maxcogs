@@ -72,7 +72,7 @@ class Nekos(commands.Cog):
     @nekoset.command(aliases=["button"])
     async def toggle(self, ctx: commands.Context, *, toggle: bool):
         """Toggle button on/off.
-        
+
         Note: buttons are enabled by default.
 
         **Example:**
