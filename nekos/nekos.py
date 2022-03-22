@@ -25,7 +25,7 @@ import asyncio
 
 import aiohttp
 import discord
-from redbot.core import commands
+from redbot.core import Config, commands
 
 from .embed import api_call, embedgen
 
@@ -36,6 +36,11 @@ class Nekos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.config = Config.get_conf(self, identifier=78634567)
+        default_global = {
+            "buttons": True,
+        }
+        self.config.register_global(**default_global)
 
     async def cog_unload(self):
         await self.session.close()
@@ -59,6 +64,37 @@ class Nekos(commands.Cog):
     # So i decided to make it seperate based on their suggestion and what they wanted.
     # I made it easier for them since most of them does not know how code works.
 
+    @commands.group()
+    @commands.is_owner()
+    async def nekoset(self, ctx):
+        """Settings to toggle button."""
+
+    @nekoset.command(aliases=["button"])
+    async def toggle(self, ctx: commands.Context, *, toggle: bool):
+        """Toggle button on/off.
+        
+        Note: buttons are enabled by default.
+
+        **Example:**
+        `[p]nekoset toggle True`
+
+        **Arguments:**
+        `<toggle>` - `True` to enable or `False` to disable.
+        """
+        await self.config.buttons.set(toggle)
+        await ctx.send(f"Buttons is now {'enabled' if toggle else 'disabled'}.")
+
+    @nekoset.command(name="version")
+    @commands.bot_has_permissions(embed_links=True)
+    async def nekoset_version(self, ctx):
+        """Shows the cog version."""
+        em = discord.Embed(
+            title="Cog Version:",
+            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=em)
+
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
@@ -67,14 +103,3 @@ class Nekos(commands.Cog):
         """Send a random neko image."""
         url = await api_call(self, ctx)
         await embedgen(self, ctx, url)
-
-    @commands.command(hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def nekoversion(self, ctx):
-        """Shows the cog version."""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
-        )
-        await ctx.send(embed=em)

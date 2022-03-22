@@ -25,7 +25,7 @@ import asyncio
 
 import aiohttp
 import discord
-from redbot.core import commands
+from redbot.core import Config, commands
 
 from .embed import api_call, embedgen
 
@@ -36,6 +36,11 @@ class Kitsune(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.config = Config.get_conf(self, identifier=78634567)
+        default_global = {
+            "buttons": True,
+        }
+        self.config.register_global(**default_global)
 
     async def cog_unload(self):
         await self.session.close()
@@ -56,6 +61,37 @@ class Kitsune(commands.Cog):
     # I suggest you read the code from nekos.py on same place as this.
     # where i explain it.
 
+    @commands.group()
+    @commands.is_owner()
+    async def kitsuneset(self, ctx):
+        """Settings to toggle button."""
+
+    @kitsuneset.command(aliases=["button"])
+    async def toggle(self, ctx: commands.Context, *, toggle: bool):
+        """Toggle button on/off.
+        
+        Note: buttons are enabled by default.
+
+        **Example:**
+        `[p]kitsuneset toggle True`
+
+        **Arguments:**
+        `<toggle>` - `True` to enable or `False` to disable.
+        """
+        await self.config.buttons.set(toggle)
+        await ctx.send(f"Buttons is now {'enabled' if toggle else 'disabled'}.")
+
+    @kitsuneset.command(name="version")
+    @commands.bot_has_permissions(embed_links=True)
+    async def kitsune_version(self, ctx):
+        """Shows the cog version."""
+        em = discord.Embed(
+            title="Cog Version:",
+            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=em)
+
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
@@ -64,14 +100,3 @@ class Kitsune(commands.Cog):
         """Send a random kitsune image."""
         url = await api_call(self, ctx)
         await embedgen(self, ctx, url)
-
-    @commands.command(hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def kitsuneversion(self, ctx):
-        """Shows the cog version."""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
-        )
-        await ctx.send(embed=em)
