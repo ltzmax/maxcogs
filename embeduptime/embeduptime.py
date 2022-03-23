@@ -37,7 +37,7 @@ log = logging.getLogger("red.maxcogs.embeduptime")
 class EmbedUptime(commands.Cog):
     """Shows [botname]'s uptime."""
 
-    __version__ = "0.0.8"
+    __version__ = "0.2.0"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
