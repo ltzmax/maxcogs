@@ -28,7 +28,7 @@ import logging
 from typing import Optional
 
 import discord
-from redbot.core import commands
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import humanize_timedelta
 
 log = logging.getLogger("red.maxcogs.embeduptime")
@@ -51,6 +51,11 @@ class EmbedUptime(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config.get_conf(self, identifier=78634567)
+        default_global = {
+            "reply": True,
+        }
+        self.config.register_global(**default_global)
 
     async def cog_unload(self):
         global uptime
@@ -60,6 +65,37 @@ class EmbedUptime(commands.Cog):
             except Exception as e:
                 log.info(e)
             await self.bot.add_command(uptime)
+
+    @commands.group()
+    @commands.is_owner()
+    async def uptimeset(self, ctx):
+        """Settings to change replies."""
+
+    @uptimeset.command(name="toggle", aliases=["replies", "reply"])
+    async def uptimeset_toggle(self, ctx: commands.Context, *, toggle: bool):
+        """Toggle replies on/off.
+
+        Note: Replies are enabled by default.
+
+        **Example:**
+        `[p]uptimeset toggle True`
+
+        **Arguments:**
+        `<toggle>` - `True` to enable or `False` to disable.
+        """
+        await self.config.reply.set(toggle)
+        await ctx.send(f"Replies is now {'enabled' if toggle else 'disabled'}.")
+
+    @uptimeset.command(name="version")
+    @commands.bot_has_permissions(embed_links=True)
+    async def uptimeset_version(self, ctx):
+        """Shows the cog version."""
+        em = discord.Embed(
+            title="Cog Version:",
+            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=em)
 
     @staticmethod
     async def maybe_reply(
@@ -94,6 +130,7 @@ class EmbedUptime(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
+        reply = await self.config.reply()
         name = ctx.bot.user.name
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
@@ -104,18 +141,10 @@ class EmbedUptime(commands.Cog):
             description=msg,
             colour=await ctx.embed_color(),
         )
-        await self.maybe_reply(ctx=ctx, embed=emb)
-
-    @commands.command(hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def uptimeversion(self, ctx):
-        """Shows the cog version."""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
-        )
-        await self.maybe_reply(ctx=ctx, embed=em)
+        if reply:
+            await self.maybe_reply(ctx=ctx, embed=emb)
+        else:
+            await ctx.send(embed=emb)
 
 
 async def setup(bot):

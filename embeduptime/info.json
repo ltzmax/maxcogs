@@ -1,7 +1,7 @@
 {
     "author": ["max"],
     "name": "EmbedUptime",
-    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/embeduptime>",
+    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.\nYou can toggle replies off by using `[p]uptimeset`.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/embeduptime>",
     "description": "Shows current uptime of the bot.",
     "short": "Shows current uptime of the bot.",
     "hidden": false,
