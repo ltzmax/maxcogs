@@ -57,10 +57,10 @@ class Nekos(commands.Cog):
         """Nothing to delete."""
         return
 
-    # Before you ask "Why is this the same code as Kitsune?"
+    # Before you ask "Why is this the same code as Kitsune and waifu?"
     # Because based to a stat that i did in the past and still does, People prefered Nekos being alone command.
     # When i had a image cog back in the day, people removed the other commands and only kept nekos alone in the same cog.
-    # Some people does not like kitsune, some people does not like nekos but likes kitsune instead.
+    # Some people does not like kitsune, some people does not like nekos but likes kitsune instead and waifu or maybe just waifu?
     # So i decided to make it seperate based on their suggestion and what they wanted.
     # I made it easier for them since most of them does not know how code works.
 

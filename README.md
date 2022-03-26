@@ -17,30 +17,14 @@ To install any cog you want:
 [p]cog install maxcogs <cog name you want>
 ```
 ---------------------------------------------------------------
-## Cogs on this repo: 
-<table>
-<thead>
-<tr>
-<th>Cog name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>nekos</td>
-<td>Sending random nekos images. This is for you weebs. Powered with help of nekos.best api.</td>
-</tr>
-<td>embeduptime</td>
-<td>This will reply with your uptime of your bot, this is an embed version.</td>
-</tr>
-<td>veryfun</td>
-<td>Just any other fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
-</tr>
-<td>onconnect</td>
-<td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
-</tr>
-</tbody>
-</table>
+## Cogs on this repo: <br>
+| Cogs list | Description | Version | Authors | Stable? | Hidden? |
+|:---:|---|:---:|:---:|:---:|:---:|
+| EmbedUptime | Shows bot's uptime | 0.2.0 | ltzmax | ✅ | ❌ |
+| kitsune | Sends random kitsune images | 0.2.0 | ltzmax | ✅ | ❌ |
+| Nekos |  | 0.2.0 | ltzmax | ✅ | ❌ |
+| OnConnect | Cog that sends shard events. | 0.2.0 | ltzmax, Arman0334 | ✅ | ❌ |
+| VeryFun | Just anyother roleplay cog that you can play with members with. | 0.2.0 | ltzmax | ✅ | ❌ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.

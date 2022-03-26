@@ -57,7 +57,7 @@ class Kitsune(commands.Cog):
         """Nothing to delete."""
         return
 
-    # Before you ask "Why is this the same code as nekos?"
+    # Before you ask "Why is this the same code as nekos and waifu?"
     # I suggest you read the code from nekos.py on same place as this.
     # where i explain it.
 
