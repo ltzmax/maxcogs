@@ -18,7 +18,7 @@ To install any cog you want:
 ```
 ---------------------------------------------------------------
 ## Cogs on this repo: <br>
-| Cogs list | Description | Version | Authors | Stable | Hidden |
+| Cogs list | Description | Version | Author | Stable | Hidden |
 |:---:|---|:---:|:---:|:---:|:---:|
 | EmbedUptime | Shows bot's uptime. | 0.2.0 | ltzmax | ✅ | ❌ |
 | kitsune | Sends random kitsune images. | 0.2.0 | ltzmax | ✅ | ❌ |
