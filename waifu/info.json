@@ -1,0 +1,14 @@
+{
+    "author": ["max"],
+    "name": "Waifu",
+    "install_msg" : "Thanks for installing. You can toggle buttons off by using `[p]waifuset`.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/waifu>",
+    "description": "Cog that sends random waifu images from nekos.best",
+    "short": "Random waifu images.",
+    "hidden" : false,
+    "min_bot_version": "3.5.0.dev1",
+    "tags": ["images", "waifu", "waifus"],
+    "permissions": ["embed_links"],
+    "min_python_version": [3, 8, 5],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
