@@ -29,6 +29,7 @@ from redbot.core import Config, commands
 
 from .embed import api_call, embedgen
 
+
 class Waifu(commands.Cog):
     """Sending waifu images from nekos.best."""
 
