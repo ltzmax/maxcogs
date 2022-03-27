@@ -1,47 +1,31 @@
-name: Bug Report
-description: File a bug report
-title: "[Bug]: "
-labels: ["Status Pending"]
-assignees:
-  - ltzmax
-body:
-  - type: markdown
-    attributes:
-      value: |
-        Hello, This is a bug report, please enter as much as details as possible. thank you.
-  - type: input
-    id: contact
-    attributes:
-      label: Your discord username
-      description: Please enter your discord username so i can @ you if i need more informations about your bug.
-      placeholder: ex. username#0001
-    validations:
-      required: true
-  - type: textarea
-    id: what-happened
-    attributes:
-      label: What happened?
-      description: what did you expect to happen?
-    validations:
-      required: true
-  - type: textarea
-    id: traceback
-    attributes:
-      label: post your traceback here
-      description: Please provide full traceback, this will help us.
-    validations:
-      required: true
-  - type: dropdown
-    id: cog
-    attributes:
-      label: What cog did you see the bug from?
-      multiple: true
-      options:
-        - embeduptime
-        - kitsune
-        - nekos
-        - onconnect
-        - veryfun
-        - waifu
-    validations:
-      required: true
+---
+name: Bug report
+about: Create a report to help us improve
+title: "[BUG]"
+labels: Status Pending
+assignees: ltzmax
+
+---
+
+Text marked with `*` is required to file out.
+
+## Describe the bug:*
+A clear and concise description of what the bug is.
+
+## What cog did you use?*
+What cog did you see the issue from?
+
+## What steps did you take to reproduce the bug?*
+Please give as much as details as possible.
+
+## What did you expect to see?* 
+What you expected to see.
+
+## What did you see instead?*
+What you saw instead.
+
+## Please post full traceback here:*
+If applicable, add traceback here to help explain your problem.
+
+## Additional context:
+Add any other context about the problem here if you have anything more you want to add.
