@@ -61,25 +61,9 @@ class Kitsune(commands.Cog):
     # I suggest you read the code from nekos.py on same place as this.
     # where i explain it.
 
-    @commands.group()
-    @commands.is_owner()
+    @commands.group(hidden=True)
     async def kitsuneset(self, ctx):
-        """Settings to toggle button."""
-
-    @kitsuneset.command(aliases=["button"])
-    async def toggle(self, ctx: commands.Context, *, toggle: bool):
-        """Toggle button on/off.
-
-        Note: buttons are enabled by default.
-
-        **Example:**
-        `[p]kitsuneset toggle True`
-
-        **Arguments:**
-        `<toggle>` - `True` to enable or `False` to disable.
-        """
-        await self.config.buttons.set(toggle)
-        await ctx.send(f"Buttons is now {'enabled' if toggle else 'disabled'}.")
+        """Place to show version of the cog"""
 
     @kitsuneset.command(name="version")
     @commands.bot_has_permissions(embed_links=True)

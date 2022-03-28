@@ -25,7 +25,7 @@ import asyncio
 
 import aiohttp
 import discord
-from redbot.core import Config, commands
+from redbot.core import commands
 
 from .embed import api_call, embedgen
 
@@ -36,11 +36,6 @@ class Waifu(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(self, identifier=78634567)
-        default_global = {
-            "buttons": True,
-        }
-        self.config.register_global(**default_global)
 
     async def cog_unload(self):
         await self.session.close()
@@ -60,30 +55,13 @@ class Waifu(commands.Cog):
     # Before you ask "Why is this the same code as nekos and kitune?"
     # read same line in nekos.py.
 
-    @commands.group()
-    @commands.is_owner()
-    async def waifuset(self, ctx):
-        """Settings to toggle button."""
-
-    @waifuset.command(aliases=["button"])
-    async def toggle(self, ctx: commands.Context, *, toggle: bool):
-        """Toggle button on/off.
-
-        Note: buttons are enabled by default.
-
-        **Example:**
-        `[p]waifuset toggle True`
-
-        **Arguments:**
-        `<toggle>` - `True` to enable or `False` to disable.
-        """
-        await self.config.buttons.set(toggle)
-        await ctx.send(f"Buttons is now {'enabled' if toggle else 'disabled'}.")
+    @commands.group(hidden=True)
+    async def waifuset(self, ctx: commands.Context):
+        """Place to show version of the cog"""
 
     @waifuset.command(name="version")
-    @commands.bot_has_permissions(embed_links=True)
-    async def waifuset_version(self, ctx):
-        """Shows the cog version."""
+    async def waifuset_version(self, ctx: commands.Context):
+        """Shows the version of the cog"""
         em = discord.Embed(
             title="Cog Version:",
             description=f"Author: {self.__author__}\nVersion: {self.__version__}",

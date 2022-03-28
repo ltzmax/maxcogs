@@ -64,25 +64,9 @@ class Nekos(commands.Cog):
     # So i decided to make it seperate based on their suggestion and what they wanted.
     # I made it easier for them since most of them does not know how code works.
 
-    @commands.group()
-    @commands.is_owner()
+    @commands.group(hidden=True)
     async def nekoset(self, ctx):
-        """Settings to toggle button."""
-
-    @nekoset.command(aliases=["button"])
-    async def toggle(self, ctx: commands.Context, *, toggle: bool):
-        """Toggle button on/off.
-
-        Note: buttons are enabled by default.
-
-        **Example:**
-        `[p]nekoset toggle True`
-
-        **Arguments:**
-        `<toggle>` - `True` to enable or `False` to disable.
-        """
-        await self.config.buttons.set(toggle)
-        await ctx.send(f"Buttons is now {'enabled' if toggle else 'disabled'}.")
+        """Place to show version of the cog"""
 
     @nekoset.command(name="version")
     @commands.bot_has_permissions(embed_links=True)
