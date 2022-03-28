@@ -79,4 +79,3 @@ async def embedgen(self, ctx, url):
             meg += "Something went wrong. Check your console for more details."
         await ctx.send(meg)
         log.error(e)
-
