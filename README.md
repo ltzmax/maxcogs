@@ -21,11 +21,9 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable | Hidden |
 |:---:|---|:---:|:---:|:---:|:---:|
 | EmbedUptime | Shows bot's uptime. | 0.2.0 | ltzmax | ✅ | ❌ |
-| kitsune | Sends random kitsune images. | 0.2.0 | ltzmax | ✅ | ❌ |
-| Nekos | Sends random nekos images. | 0.2.0 | ltzmax | ✅ | ❌ |
 | OnConnect | Cog that sends shard events. | 0.2.0 | ltzmax, Arman0334 | ✅ | ❌ |
-| VeryFun | Just anyother roleplay cog that you can play with members with. | 0.2.0 | ltzmax | ✅ | ❌ |
-| Waifu | Sends random waifu images. | 0.2.0 | ltzmax | ✅ | ❌ |
+| VeryFun | Just anyother roleplay cog that you can play together with in a server. | 0.2.0 | ltzmax | ✅ | ❌ |
+| Weebs | Sends random images of kitsune, nekos and waifu. | 0.2.0 | ltzmax | ✅ | ❌ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.

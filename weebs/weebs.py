@@ -30,8 +30,8 @@ from redbot.core import commands
 from .embed import api_call, embedgen
 
 
-class Waifu(commands.Cog):
-    """Sending waifu images from nekos.best."""
+class Weebs(commands.Cog):
+    """sends random nekos, kitsune and waifu images from nekos.best."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -52,15 +52,12 @@ class Waifu(commands.Cog):
         """Nothing to delete."""
         return
 
-    # Before you ask "Why is this the same code as nekos and kitune?"
-    # read same line in nekos.py.
-
     @commands.group(hidden=True)
-    async def waifuset(self, ctx: commands.Context):
+    async def weebset(self, ctx):
         """Place to show version of the cog"""
 
-    @waifuset.command(name="version")
-    async def waifuset_version(self, ctx: commands.Context):
+    @weebset.command(name="version")
+    async def weebset_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         em = discord.Embed(
             title="Cog Version:",
@@ -73,7 +70,31 @@ class Waifu(commands.Cog):
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def waifu(self, ctx):
+    async def waifu(self, ctx: commands.Context):
         """Send a random waifu image."""
-        url = await api_call(self, ctx)
-        await embedgen(self, ctx, url)
+        async with ctx.typing():
+            pass
+        url = await api_call(self, ctx, "waifu")
+        await embedgen(self, ctx, url, "waifu")
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def nekos(self, ctx: commands.Context):
+        """Send a random neko image."""
+        async with ctx.typing():
+            pass
+        url = await api_call(self, ctx, "neko")
+        await embedgen(self, ctx, url, "nekos")
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    @commands.max_concurrency(1, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def kitsune(self, ctx: commands.Context):
+        """Send a random kitsune image."""
+        async with ctx.typing():
+            pass
+        url = await api_call(self, ctx, "kitsune")
+        await embedgen(self, ctx, url, "kitsune")

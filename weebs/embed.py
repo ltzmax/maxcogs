@@ -25,26 +25,26 @@ import logging
 
 import discord
 
-log = logging.getLogger("red.maxcogs.kitsune")
+log = logging.getLogger("red.maxcogs.weebs")
 
 NEKOS_API = "https://nekos.best/api/v2/"
 ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
 
 
-async def api_call(self, ctx):
-    async with self.session.get(NEKOS_API + "kitsune") as response:
+async def api_call(self, ctx, endpoint: str):
+    async with self.session.get(NEKOS_API + endpoint) as response:
         if response.status != 200:
             return await ctx.send("Something went wrong while trying to contact API.")
         url = await response.json()
         return url
 
 
-async def embedgen(self, ctx, url):
+async def embedgen(self, ctx, url, endpoint: str):
     artist_name = url["results"][0]["artist_name"]
     source_url = url["results"][0]["source_url"]
     artist_href = url["results"][0]["artist_href"]
     emb = discord.Embed(
-        title="Here's a pic of kitsune",
+        title=f"Here's a pic of {endpoint}",
         description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
     )
     emb.colour = await ctx.embed_color()
