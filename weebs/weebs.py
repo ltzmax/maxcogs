@@ -70,7 +70,7 @@ class Weebs(commands.Cog):
     @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def waifu(self, ctx:
+    async def waifu(self, ctx):
         """Send a random waifu image."""
         url = await api_call(self, ctx, "waifu")
         await embedgen(self, ctx, url, "waifu")
@@ -81,8 +81,6 @@ class Weebs(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def nekos(self, ctx):
         """Send a random neko image."""
-        async with ctx.typing():
-            pass
         url = await api_call(self, ctx, "neko")
         await embedgen(self, ctx, url, "nekos")
 
@@ -92,7 +90,5 @@ class Weebs(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx):
         """Send a random kitsune image."""
-        async with ctx.typing():
-            pass
         url = await api_call(self, ctx, "kitsune")
         await embedgen(self, ctx, url, "kitsune")
