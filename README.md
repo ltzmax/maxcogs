@@ -18,7 +18,7 @@ To install any cog you want:
 ```
 ---------------------------------------------------------------
 ## Cogs on this repo: <br>
-| Cogs list | Description | Version | Author | Stable | |
+| Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|:---:|
 | EmbedUptime | Shows bot's uptime. | 0.2.0 | ltzmax | ✅ | |
 | OnConnect | Cog that sends shard events. | 0.2.0 | ltzmax, Arman0334 | ✅ | |
