@@ -27,7 +27,6 @@ from typing import Optional
 
 import discord
 from redbot.core import commands
-from redbot.core.utils._internal_utils import bot_can_react
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 
