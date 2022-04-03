@@ -29,6 +29,7 @@ import discord
 from redbot.core import commands
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
+from redbot.core.utils._internal_utils import bot_can_react
 
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
@@ -45,8 +46,8 @@ class Commands(MixinMeta):
     async def _connectset(self, ctx: commands.Context) -> None:
         """Manage settings for onconnect."""
 
+    @commands.bot_can_react()
     @_connectset.command(name="channel")
-    @commands.bot_has_permissions(add_reactions=True)
     async def _channel(
         self, ctx, *, channel: Optional[discord.TextChannel] = None
     ) -> None:
