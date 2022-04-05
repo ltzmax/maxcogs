@@ -147,7 +147,7 @@ class Commands(MixinMeta):
         """Settings to change default emoji.
 
         NOTE: If you want to set custom emojis, your bot needs to share the same server
-        as the custom emoji.
+        as the custom emoji. Make sure shard event channel has external emoji permission enabled.
         """
 
     @_emoji.command(name="green")
