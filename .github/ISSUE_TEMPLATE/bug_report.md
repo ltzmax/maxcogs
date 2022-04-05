@@ -18,7 +18,7 @@ What cog did you see the issue from?
 ## What steps did you take to reproduce the bug?*
 Please give as much as details as possible.
 
-## What did you expect to see?* 
+## What did you expect to see?*
 What you expected to see.
 
 ## What did you see instead?*
