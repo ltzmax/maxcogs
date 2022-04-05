@@ -5,7 +5,7 @@
 
 `[p]` is your prefix.
 
-To add this repo: 
+To add this repo:
 
 ```yaml
 [p]repo add maxcogs https://github.com/ltzmax/maxcogs
