@@ -44,12 +44,10 @@ class Commands(MixinMeta):
     @commands.group(name="connectset")
     async def _connectset(self, ctx: commands.Context) -> None:
         """Manage settings for onconnect."""
-  
+
     @commands.bot_can_react()
     @_connectset.command(name="channel")
-    async def _channel(
-        self, ctx, *, channel: Optional[discord.TextChannel] = None
-    ) -> None:
+    async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None) -> None:
         """Set the channel to log shard events to.
 
         Note: Events are not able to be set in threads.
@@ -64,9 +62,7 @@ class Commands(MixinMeta):
         # i have no idea where to add this, but works for now.
         # just doesn't work outside of a thread, it will clear the channel instead.
         if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(
-                ctx=ctx, message="You can't set events in thread."
-            )
+            return await self.maybe_reply(ctx=ctx, message="You can't set events in thread.")
         guild = ctx.guild
         embed_requested = await ctx.embed_requested()
         if channel:
@@ -126,9 +122,7 @@ class Commands(MixinMeta):
                         )
                         await self.maybe_reply(ctx=ctx, embed=embed)
                     else:
-                        await self.maybe_reply(
-                            ctx=ctx, message="Events have been disabled."
-                        )
+                        await self.maybe_reply(ctx=ctx, message="Events have been disabled.")
                 else:
                     await self.maybe_reply(ctx=ctx, message="Cancelled.")
         else:
@@ -174,9 +168,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The green emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -215,9 +207,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The orange emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -267,9 +257,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
-                )
+                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context) -> None:

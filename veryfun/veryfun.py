@@ -88,9 +88,7 @@ class VeryFun(commands.Cog):
             )
             await ctx.send(embed=em)
         else:
-            await ctx.send(
-                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
-            )
+            await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

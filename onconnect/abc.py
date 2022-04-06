@@ -52,7 +52,5 @@ class MixinMeta(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def send_event_message(
-        self, message: str, colour: Union[discord.Colour, int]
-    ) -> None:
+    async def send_event_message(self, message: str, colour: Union[discord.Colour, int]) -> None:
         raise NotImplementedError()
