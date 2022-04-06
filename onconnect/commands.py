@@ -46,7 +46,7 @@ class Commands(MixinMeta):
         """Settings for shard event logging."""
 
     @_connectset.command(name="channel", usage="[channel]")
-    @commands.bot_has_permissions(manage_webhooks=True, add_reactions=True)
+    @commands.bot_has_permissions(add_reactions=True)
     async def _channel(
         self, ctx, *, channel: Optional[discord.TextChannel] = None
     ) -> None:
@@ -61,9 +61,9 @@ class Commands(MixinMeta):
         """
         embed_requested = await ctx.embed_requested()
         if channel:
-            if channel.permissions_for(ctx.guild.me).manage_webhooks is False:
+            if channel.permissions_for(ctx.guild.me).embed_links is False:
                 return await ctx.send(
-                    "I do not have the `manage_webhooks` permission in {}.".format(
+                    "I do not have the `embed_links` permission in {}.".format(
                         channel.mention
                     )
                 )
@@ -129,7 +129,7 @@ class Commands(MixinMeta):
                 mention_author=True,
             )
 
-    @_connectset.group(name="emoji")
+    @_connectset.group(name="emoji", aliases=["emojis"])
     async def _emoji(self, ctx: commands.Context):
         """Settings to change default emoji.
 

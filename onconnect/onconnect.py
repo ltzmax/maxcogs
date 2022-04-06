@@ -47,7 +47,7 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
 class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
-    __version__ = "0.1.14"
+    __version__ = "0.1.15"
     __author__ = "MAX"
 
     def __init__(self, bot: Red) -> None:
@@ -145,23 +145,4 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
             return
 
         event_embed = discord.Embed(description=message, colour=colour)
-        webhooks = await channel.webhooks()
-        if not webhooks:
-            webhook = await channel.create_webhook(
-                name=f"{self.bot.user.name}'s OnConnect"
-            )
-        else:
-            # Based on https://github.com/TheDiscordHistorian/historian-cogs/blob/3326d3f38135dc971b084609fd62ddd59d4bb239/on_connect/cog.py#L49 # noqa
-            usable_webhooks = [webhook for webhook in webhooks if webhook.token]
-            if not usable_webhooks:
-                webhook = await channel.create_webhook(
-                    name=f"{self.bot.user.name}'s OnConnect"
-                )
-            else:
-                webhook = usable_webhooks[0]
-
-        await webhook.send(
-            username=self.bot.user.name,
-            avatar_url=self.bot.user.avatar_url,
-            embed=event_embed,
-        )
+        embed_channel = await channel.send(embed=event_embed)
