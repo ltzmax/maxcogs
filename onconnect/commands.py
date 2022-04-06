@@ -44,7 +44,7 @@ class Commands(MixinMeta):
     @commands.group(name="connectset")
     async def _connectset(self, ctx: commands.Context) -> None:
         """Manage settings for onconnect."""
-
+  
     @commands.bot_can_react()
     @_connectset.command(name="channel")
     async def _channel(
