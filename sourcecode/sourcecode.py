@@ -1,8 +1,9 @@
-from inspect import getsource, getcomments
+from inspect import getcomments, getsource
 from textwrap import indent
+
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import pagify, box
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
+from redbot.core.utils.chat_formatting import box, pagify
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 
 class SourceCode(commands.Cog):
