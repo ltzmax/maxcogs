@@ -1,7 +1,6 @@
 {
     "author": [
-        "max",
-        "Arman0334"
+        "max, Arman0334"
     ],
     "name": "OnConnect",
     "install_msg": "Thanks for installing. Use `[p]connectset channel` to set event channel.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/onconnect>",
