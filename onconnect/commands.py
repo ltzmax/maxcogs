@@ -60,6 +60,7 @@ class Commands(MixinMeta):
         # just doesn't work outside of a thread, it will clear the channel instead.
         if isinstance(ctx.channel, discord.Thread):
             return await self.maybe_reply(ctx=ctx, message="You can't set events in thread.")
+        guild = ctx.guild
         embed_requested = await ctx.embed_requested()
         if not channel.permissions_for(guild.me).send_messages:
             return await ctx.send("I don't have permission `send_messages` in {channel.mention}.")
