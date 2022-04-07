@@ -64,7 +64,9 @@ class Commands(MixinMeta):
         if not channel.permissions_for(guild.me).send_messages:
             return await ctx.send("I don't have permission `send_messages` in {channel.mention}.")
         await self.config.statuschannel.set(channel.id if channel else None)
-        msg = "Events is now {channel}.".format(channel=f"enabled in {channel.mention}" if channel else "disabled")
+        msg = "Events is now {channel}.".format(
+            channel=f"enabled in {channel.mention}" if channel else "disabled"
+        )
         if embed_requested:
             embed = discord.Embed(
                 title="Events Changed",
