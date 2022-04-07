@@ -27,8 +27,6 @@ from typing import Optional
 
 import discord
 from redbot.core import commands
-from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.predicates import ReactionPredicate
 
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
@@ -45,7 +43,6 @@ class Commands(MixinMeta):
     async def _connectset(self, ctx: commands.Context) -> None:
         """Manage settings for onconnect."""
 
-    @commands.bot_can_react()
     @_connectset.command(name="channel")
     async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None) -> None:
         """Set the channel to log shard events to.
@@ -63,78 +60,20 @@ class Commands(MixinMeta):
         # just doesn't work outside of a thread, it will clear the channel instead.
         if isinstance(ctx.channel, discord.Thread):
             return await self.maybe_reply(ctx=ctx, message="You can't set events in thread.")
-        guild = ctx.guild
         embed_requested = await ctx.embed_requested()
-        if channel:
-            if not channel.permissions_for(guild.me).embed_links:
-                return await self.maybe_reply(
-                    ctx=ctx,
-                    message="I do not have the `embed_links` permission in {}.".format(
-                        channel.mention
-                    ),
-                )
-            await self.config.statuschannel.set(channel.id)
-            log.info(f"Status Channel set to {channel} ({channel.id})")
-            if embed_requested:
-                embed = discord.Embed(
-                    title="Setting Changed",
-                    description=f"Events will now be sent to {channel.mention}.",
-                    colour=await ctx.embed_colour(),
-                )
-                await self.maybe_reply(ctx=ctx, embed=embed)
-            else:
-                await self.maybe_reply(
-                    ctx=ctx, message=f"Events will now be sent to {channel.mention}."
-                )
-
-        elif await self.config.statuschannel() is not None:
-            if embed_requested:
-                embed = discord.Embed(
-                    title="Are you sure you want to disable events?",
-                    colour=await ctx.embed_colour(),
-                )
-                msg = await ctx.send(embed=embed)
-            else:
-                msg = await ctx.send("Are you sure you want to disable events?")
-
-            # Switch Reaction Predicate to use buttons whenever i have read enough docs for it.
-            # Right now i don't know 100% how to do it correctly.
-            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
-            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
-            try:
-                await self.bot.wait_for("reaction_add", check=pred, timeout=60)
-            except asyncio.TimeoutError:
-                await self.maybe_reply(
-                    ctx=ctx,
-                    message="You took too long to respond, cancelling.",
-                    mention_author=True,
-                )
-                await msg.clear_reactions()
-            else:
-                if pred.result is True:
-                    await self.config.statuschannel.set(None)
-                    log.info("Status Channel has been disabled.")
-                    if embed_requested:
-                        embed = discord.Embed(
-                            title="Setting Changed",
-                            description="Events have been disabled.",
-                            colour=await ctx.embed_colour(),
-                        )
-                        await self.maybe_reply(ctx=ctx, embed=embed)
-                    else:
-                        await self.maybe_reply(ctx=ctx, message="Events have been disabled.")
-                else:
-                    await self.maybe_reply(ctx=ctx, message="Cancelled.")
-        else:
-            await self.maybe_reply(
-                ctx=ctx,
-                message=(
-                    f"Events are already disabled. Use `{ctx.clean_prefix}connectset "
-                    "channel #channel` to enable."
-                    "\n**Note** You cannot set events in threads."
-                ),
-                mention_author=True,
+        if not channel.permissions_for(guild.me).send_messages:
+            return await ctx.send("I don't have permission `send_messages` in {channel.mention}.")
+        await self.config.statuschannel.set(channel.id if channel else None)
+        msg = "Events is now {channel}.".format(channel=f"enabled in {channel.mention}" if channel else "disabled")
+        if embed_requested:
+            embed = discord.Embed(
+                title="Events Changed",
+                description=msg,
+                color=await ctx.embed_color(),
             )
+            await self.maybe_reply(ctx=ctx, embed=embed)
+        else:
+            await self.maybe_reply(ctx=ctx, message=msg)
 
     @_connectset.group(name="emoji", aliases=["emojis"])
     async def _emoji(self, ctx: commands.Context):

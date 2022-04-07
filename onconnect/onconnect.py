@@ -142,4 +142,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
             return
 
         event_embed = discord.Embed(description=message, colour=colour)
-        embed_channel = await channel.send(embed=event_embed)
+        if channel.permissions_for(channel.guild.me).embed_links:
+            embed_channel = await channel.send(embed=event_embed)
+        else:
+            embed_channel = await channel.send(message)
