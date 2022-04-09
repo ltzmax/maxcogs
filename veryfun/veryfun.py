@@ -25,7 +25,7 @@ import asyncio
 
 import aiohttp
 import discord
-from redbot.core import Config, commands
+from redbot.core import commands
 
 from .core import api_call, embedgen
 
@@ -40,11 +40,6 @@ class VeryFun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(self, identifier=78634567)
-        default_global = {
-            "button": False,
-        }
-        self.config.register_global(**default_global)
 
     async def cog_unload(self):
         await self.session.close()
@@ -57,25 +52,9 @@ class VeryFun(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
-    @commands.group()
-    @commands.is_owner()
+    @commands.group(hidden=True)
     async def veryfunset(self, ctx):
         """Settings to toggle button."""
-
-    @veryfunset.command(aliases=["button"])
-    async def toggle(self, ctx: commands.Context, *, toggle: bool):
-        """Toggle button on/off.
-
-        Note: buttons are disabled by default.
-
-        **Example:**
-        `[p]veryfunset toggle True`
-
-        **Arguments:**
-        `<toggle>` - `True` to enable or `False` to disable.
-        """
-        await self.config.button.set(toggle)
-        await ctx.send(f"Button is now {'enabled' if toggle else 'disabled'}.")
 
     @veryfunset.command(name="version", hidden=True)
     async def veryfunset_version(self, ctx):

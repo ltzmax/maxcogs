@@ -42,7 +42,6 @@ async def api_call(self, ctx, action: str):
 
 
 async def embedgen(self, ctx, user, url, action: str):
-    button = await self.config.button()
     anime_name = url["results"][0]["anime_name"]
 
     emb = discord.Embed(
@@ -54,15 +53,12 @@ async def embedgen(self, ctx, user, url, action: str):
         icon_url=ICON,
     )
     emb.set_image(url=url["results"][0]["url"])
-    if button:
-        view = discord.ui.View()
-        style = discord.ButtonStyle.gray
-        gif = discord.ui.Button(
-            style=style,
-            label="Open Image",
-            url=url["results"][0]["url"],
-        )
-        view.add_item(item=gif)
-        await ctx.send(embed=emb, view=view)
-    else:
-        await ctx.send(embed=emb)
+    view = discord.ui.View()
+    style = discord.ButtonStyle.gray
+    gif = discord.ui.Button(
+        style=style,
+        label="Open Image",
+        url=url["results"][0]["url"],
+    )
+    view.add_item(item=gif)
+    await ctx.send(embed=emb, view=view)

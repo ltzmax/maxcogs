@@ -57,7 +57,7 @@ class Commands(MixinMeta):
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
         # i have no idea where to add this, but works for now.
-        # just doesn't work outside of a thread, it will clear the channel instead.
+        # just doesn't work outside of a thread, it will error instead.
         if isinstance(ctx.channel, discord.Thread):
             return await self.maybe_reply(ctx=ctx, message="You can't set events in thread.")
         guild = ctx.guild
