@@ -53,12 +53,12 @@ async def embedgen(self, ctx, user, url, action: str):
         icon_url=ICON,
     )
     emb.set_image(url=url["results"][0]["url"])
-    view = discord.ui.View()
-    style = discord.ButtonStyle.gray
-    gif = discord.ui.Button(
-        style=style,
-        label="Open Image",
-        url=url["results"][0]["url"],
-    )
-    view.add_item(item=gif)
-    await ctx.send(embed=emb, view=view)
+    try:
+        await ctx.send(embed=emb)
+    except discord.HTTPException as e:
+        meg = "Something went wrong. Please contact bot owner for infromation."
+        # Based on https://github.com/flaree/flare-cogs/blob/501f8d25d939fa183b18addde96ad06eb26d4890/giveaways/giveaways.py#L473
+        if await self.bot.is_owner(ctx.author):
+            meg += "Something went wrong. Check your console for more details."
+        await ctx.send(meg)
+        log.error(e)
