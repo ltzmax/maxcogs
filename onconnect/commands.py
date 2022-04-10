@@ -44,6 +44,7 @@ class Commands(MixinMeta):
         """Manage settings for onconnect."""
 
     @_connectset.command(name="channel")
+    @commands.bot_has_permissions(send_messages=True, view_channel=True)
     async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None) -> None:
         """Set the channel to log shard events to.
 
@@ -57,13 +58,17 @@ class Commands(MixinMeta):
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
         # i have no idea where to add this, but works for now.
-        # just doesn't work outside of a thread, it will error instead.
         if isinstance(ctx.channel, discord.Thread):
             return await self.maybe_reply(ctx=ctx, message="You can't set events in thread.")
         guild = ctx.guild
         embed_requested = await ctx.embed_requested()
-        if not channel.permissions_for(guild.me).send_messages:
-            return await ctx.send("I don't have permission `send_messages` in {channel.mention}.")
+        if channel: # i had to do it this way cause it would error otherwise if choose a thread.
+            if channel.permissions_for(ctx.guild.me).send_messages is False:
+                return await ctx.send(
+                    "I do not have the `send_messages` permission in {}.".format(
+                        channel.mention
+                    )
+                )
         await self.config.statuschannel.set(channel.id if channel else None)
         msg = "Events is now {channel}.".format(
             channel=f"enabled in {channel.mention}" if channel else "disabled"
