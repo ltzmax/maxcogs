@@ -62,12 +62,10 @@ class Commands(MixinMeta):
             return await self.maybe_reply(ctx=ctx, message="You can't set events in thread.")
         guild = ctx.guild
         embed_requested = await ctx.embed_requested()
-        if channel: # i had to do it this way cause it would error otherwise if choose a thread.
+        if channel:  # i had to do it this way cause it would error otherwise if choose a thread.
             if channel.permissions_for(ctx.guild.me).send_messages is False:
                 return await ctx.send(
-                    "I do not have the `send_messages` permission in {}.".format(
-                        channel.mention
-                    )
+                    "I do not have the `send_messages` permission in {}.".format(channel.mention)
                 )
         await self.config.statuschannel.set(channel.id if channel else None)
         msg = "Events is now {channel}.".format(
