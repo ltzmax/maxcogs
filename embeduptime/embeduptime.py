@@ -87,15 +87,17 @@ class EmbedUptime(commands.Cog):
         await ctx.send(f"Replies is now {'enabled' if toggle else 'disabled'}.")
 
     @uptimeset.command(name="version")
-    @commands.bot_has_permissions(embed_links=True)
     async def uptimeset_version(self, ctx):
         """Shows the cog version."""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
-        )
-        await ctx.send(embed=em)
+        if await ctx.embed_requested():
+            em = discord.Embed(
+                title="Cog Version:",
+                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+                colour=await ctx.embed_color(),
+            )
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
     @staticmethod
     async def maybe_reply(

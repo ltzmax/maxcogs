@@ -59,12 +59,15 @@ class Weebs(commands.Cog):
     @weebset.command(name="version")
     async def weebset_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
-        em = discord.Embed(
-            title="Cog Version:",
-            description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-            colour=await ctx.embed_color(),
-        )
-        await ctx.send(embed=em)
+        if await ctx.embed_requested():
+            em = discord.Embed(
+                title="Cog Version:",
+                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+                colour=await ctx.embed_color(),
+            )
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
