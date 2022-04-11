@@ -71,7 +71,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def baka(self, ctx, user: discord.Member):
         """Baka baka baka!"""
@@ -80,7 +79,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cry(self, ctx, user: discord.Member):
         """Cry!"""
@@ -89,7 +87,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cuddle(self, ctx, user: discord.Member):
         """Cuddle a user!"""
@@ -98,7 +95,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def dance(self, ctx, user: discord.Member):
         """Dance!"""
@@ -107,7 +103,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def feed(self, ctx, user: discord.Member):
         """Feeds a user!"""
@@ -116,7 +111,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def hugs(self, ctx, user: discord.Member):
         """Hugs a user!"""
@@ -125,7 +119,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def kiss(self, ctx, user: discord.Member):
         """Kiss a user!"""
@@ -134,7 +127,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def laugh(self, ctx, user: discord.Member):
         """laugh!"""
@@ -143,7 +135,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def pat(self, ctx, user: discord.Member):
         """Pats a user!"""
@@ -152,7 +143,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def poke(self, ctx, user: discord.Member):
         """Poke a user!"""
@@ -161,7 +151,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def slap(self, ctx, user: discord.Member):
         """Slap a user!"""
@@ -170,7 +159,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def smile(self, ctx, user: discord.Member):
         """Smile!"""
@@ -179,7 +167,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def smug(self, ctx, user: discord.Member):
         """Smugs at someone!"""
@@ -188,7 +175,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def tickle(self, ctx, user: discord.Member):
         """Tickle a user!"""
@@ -197,7 +183,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def wave(self, ctx, user: discord.Member):
         """Waves!"""
@@ -206,7 +191,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def bite(self, ctx, user: discord.Member):
         """Bite a user!"""
@@ -215,7 +199,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def blush(self, ctx, user: discord.Member):
         """blushs!"""
@@ -224,7 +207,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def bored(self, ctx, user: discord.Member):
         """You're bored!"""
@@ -233,7 +215,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def facepalm(self, ctx, user: discord.Member):
         """Facepalm a user!"""
@@ -242,7 +223,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def happy(self, ctx, user: discord.Member):
         """happiness with a user!"""
@@ -251,7 +231,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def highfive(self, ctx, user: discord.Member):
         """highfive a user!"""
@@ -260,7 +239,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def pout(self, ctx, user: discord.Member):
         """Pout a user!"""
@@ -269,7 +247,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def shrug(self, ctx, user: discord.Member):
         """Shrugs a user!"""
@@ -278,7 +255,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def sleep(self, ctx, user: discord.Member):
         """Sleep zzzz!"""
@@ -287,7 +263,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def stare(self, ctx, user: discord.Member):
         """Stares at a user!"""
@@ -296,7 +271,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def think(self, ctx, user: discord.Member):
         """Thinking!"""
@@ -305,7 +279,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def thumbsup(self, ctx, user: discord.Member):
         """thumbsup!"""
@@ -314,7 +287,6 @@ class VeryFun(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.max_concurrency(1, commands.BucketType.user)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def wink(self, ctx, user: discord.Member):
         """Winks at a user!"""
