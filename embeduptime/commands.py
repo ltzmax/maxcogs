@@ -1,13 +1,14 @@
-import discord
+import datetime
 import logging
 
-import datetime
-
-from .abc import MixinMeta
+import discord
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import humanize_timedelta
 
+from .abc import MixinMeta
+
 log = logging.getLogger("red.maxcogs.embeduptime")
+
 
 class Commands(MixinMeta):
     """Commands in this cog."""

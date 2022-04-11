@@ -1,9 +1,9 @@
-from abc import ABC
 from abc import ABC, abstractmethod
+from typing import Optional
+
+import discord
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from typing import Optional
-import discord
 
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
@@ -11,6 +11,7 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
     This allows the metaclass used for proper type detection to
     coexist with discord.py's metaclass
     """
+
 
 class MixinMeta(ABC):
     """

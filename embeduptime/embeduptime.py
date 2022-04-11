@@ -23,12 +23,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import discord
 from typing import Optional
-from redbot.core import commands, Config
-from .abc import *
 
+import discord
+from redbot.core import Config, commands
+
+from .abc import *
 from .commands import Commands
+
 
 class EmbedUptime(
     Commands,
@@ -38,6 +40,7 @@ class EmbedUptime(
     """
     Shows the uptime of the bot.
     """
+
     __version__ = "0.2.0"
     __author__ = "MAX"
 
@@ -95,6 +98,7 @@ class EmbedUptime(
         except discord.NotFound as e:
             await ctx.send(message, embed=embed)
             log.info(e)
+
 
 async def setup(bot):
     eu = EmbedUptime(bot)

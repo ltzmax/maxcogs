@@ -22,17 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import logging
-from .abc import *
 from typing import Optional, Union
 
 import discord
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 
+from .abc import *
 from .commands import Commands
 from .events import Events
 
 log = logging.getLogger("red.maxcogs.onconnect")
+
 
 class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
