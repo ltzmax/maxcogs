@@ -71,7 +71,6 @@ class Weebs(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def waifu(self, ctx):
         """Send a random waifu image."""
@@ -80,7 +79,6 @@ class Weebs(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def nekos(self, ctx):
         """Send a random neko image."""
@@ -89,7 +87,6 @@ class Weebs(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
-    @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx):
         """Send a random kitsune image."""
