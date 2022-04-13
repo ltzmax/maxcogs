@@ -109,7 +109,7 @@ class VeryFun(commands.Cog):
         url = await api_call(self, ctx, "feed")
         await embedgen(self, ctx, user, url, "feeds")
 
-    @commands.command() # i want `hug` as alias. but i can't cause of core have their own hug command.
+    @commands.command()  # i want `hug` as alias. but i can't cause of core have their own hug command.
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def hugs(self, ctx, user: discord.Member):
