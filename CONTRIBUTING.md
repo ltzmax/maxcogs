@@ -21,5 +21,5 @@ always use following:
 isort <source_file_or_directory>
 ```
 ## Versions:
-- Version `22.1.0` of black.
+- Version `22.3.0` of black.
 - Version `5.10.1` of isort.
