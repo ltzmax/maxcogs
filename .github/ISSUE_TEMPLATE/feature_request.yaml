@@ -1,0 +1,40 @@
+name: "Feature request"
+description: A feature request for a cog
+title: "[Feature]: "
+labels: ["Status Pending"]
+assignees:
+  - ltzmax
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to make a feature request!
+  - type: input
+    id: contact
+    attributes:
+      label: Discord username
+      description: Can you tell me your discord username so i can get in touch with you if i need more info?
+      placeholder: ex. discord#1234
+    validations:
+      required: false
+  - type: textarea
+    id: what-you-want
+    attributes:
+      label: What feature do you want?
+      description: Tell us, what do you want to see.
+      placeholder: Tell us what you see!
+      value: "I want to see a new feature but what exactly?"
+    validations:
+      required: true
+  - type: dropdown
+    id: Cog
+    attributes:
+      label: Cog
+      description: What cog are you feature requesting to?
+      options:
+        - embeduptime
+        - onconnect
+        - veryfun
+        - weebs
+    validations:
+      required: true

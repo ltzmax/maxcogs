@@ -1,0 +1,48 @@
+name: "Bug report"
+description: Create a report to help us improve
+title: "[BUG]: "
+labels: ["Status Pending"]
+assignees:
+  - ltzmax
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: contact
+    attributes:
+      label: Discord username
+      description: Can you tell me your discord username so i can get in touch with you if i need more info?
+      placeholder: ex. discord#1234
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened but what exactly happened?"
+    validations:
+      required: true
+  - type: dropdown
+    id: Cog
+    attributes:
+      label: Cog
+      description: What cog are you running this issue into?
+      options:
+        - embeduptime
+        - onconnect
+        - veryfun
+        - weebs
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant error from your log. This will be automatically formatted into code, so no need for backticks.
+      render: py
+    validations:
+      required: true
