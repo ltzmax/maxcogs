@@ -9,7 +9,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report!
-    - type: dropdown
+  - type: dropdown
     id: Cog
     attributes:
       label: Cog
