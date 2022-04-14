@@ -25,12 +25,14 @@ SOFTWARE.
 """
 from typing import Optional
 
+import logging 
 import discord
 from redbot.core import Config, commands
 
 from .abc import *
 from .commands import Commands
 
+log = logging.getLogger("red.maxcogs.embeduptime")
 
 class EmbedUptime(
     Commands,

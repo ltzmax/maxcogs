@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
-import logging
 from typing import Optional
 
 import discord
@@ -30,8 +29,6 @@ from redbot.core import commands
 
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
-
-log = logging.getLogger("red.maxcogs.onconnect")
 
 
 class Commands(MixinMeta):
