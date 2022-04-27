@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
+from typing import Optional
 
 import aiohttp
 import discord
 from redbot.core import commands
-from typing import Optional
 
 from .embed import api_call, embedgen
 
