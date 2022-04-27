@@ -18,7 +18,8 @@ body:
         - embeduptime
         - onconnect
         - veryfun
-        - weebs
+        - kitsune
+        - nekos
     validations:
       required: true
   - type: input
