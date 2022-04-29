@@ -45,7 +45,7 @@ class VeryFun(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
 
-    __version__ = "0.2.0"
+    __version__ = "0.1.15"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:

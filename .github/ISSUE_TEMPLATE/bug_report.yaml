@@ -16,9 +16,9 @@ body:
       description: What cog are you getting issue from?
       options:
         - embeduptime
+        - nekosbest
         - onconnect
         - veryfun
-        - weebs
     validations:
       required: true
   - type: input

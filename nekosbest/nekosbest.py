@@ -30,7 +30,7 @@ from redbot.core import commands
 from .embed import api_call, embedgen
 
 
-class Weebs(commands.Cog):
+class NekosBest(commands.Cog):
     """sends random nekos, kitsune and waifu images from nekos.best."""
 
     def __init__(self, bot):
@@ -40,7 +40,7 @@ class Weebs(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
 
-    __version__ = "0.2.0"
+    __version__ = "0.1.17"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
