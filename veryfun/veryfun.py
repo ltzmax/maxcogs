@@ -293,3 +293,35 @@ class VeryFun(commands.Cog):
         """Winks at a user!"""
         url = await api_call(self, ctx, "wink")
         await embedgen(self, ctx, user, url, "winks")
+
+    @commands.command(aliases=["handholding"])
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def handhold(self, ctx, user: Optional[discord.Member] = None):
+        """handhold a user!"""
+        url = await api_call(self, ctx, "handhold")
+        await embedgen(self, ctx, user, url, "handholds")
+
+    @commands.command(aliases=["sparke"]) # It means kick in Norwegian. since mod cog has a command kick, i use my native language here.
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def spark(self, ctx, user: Optional[discord.Member] = None):
+        """kick a user!"""
+        url = await api_call(self, ctx, "kick")
+        await embedgen(self, ctx, user, url, "kicks")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def punch(self, ctx, user: Optional[discord.Member] = None):
+        """punch a user!"""
+        url = await api_call(self, ctx, "punch")
+        await embedgen(self, ctx, user, url, "punches")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def shoot(self, ctx, user: Optional[discord.Member] = None):
+        """shoot a user!"""
+        url = await api_call(self, ctx, "shoot")
+        await embedgen(self, ctx, user, url, "shoots")

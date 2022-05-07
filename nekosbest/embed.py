@@ -32,6 +32,8 @@ ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf90046
 
 
 async def api_call(self, ctx, endpoint: str):
+    async with ctx.typing():
+        pass
     async with self.session.get(NEKOS_API + endpoint) as response:
         if response.status != 200:
             return await ctx.send("Something went wrong while trying to contact API.")
