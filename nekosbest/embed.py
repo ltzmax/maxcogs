@@ -46,7 +46,7 @@ async def embedgen(self, ctx, url, endpoint: str):
     source_url = url["results"][0]["source_url"]
     artist_href = url["results"][0]["artist_href"]
     image = url["results"][0]["url"]
-    
+
     emb = discord.Embed(
         title=f"Here's a pic of {endpoint}",
         description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
