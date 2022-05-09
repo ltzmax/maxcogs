@@ -21,7 +21,7 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | EmbedUptime | Shows bot's uptime. | 0.1.12 | ltzmax | ✅ |
-| NekosBest | Sends random images of kitsune, nekos and waifu. | 0.1.17 | ltzmax | ✅ |
+| NekosBest | Sends random images of kitsune, nekos and waifu. | 0.1.18 | ltzmax | ✅ |
 | OnConnect | Cog that sends shard events. | 0.1.19 | ltzmax, Arman0334 | ✅ |
 | VeryFun | Just anyother roleplay cog that you can play together with in a server. | 0.1.15 | ltzmax | ✅ |
 

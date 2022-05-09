@@ -45,12 +45,14 @@ async def embedgen(self, ctx, url, endpoint: str):
     artist_name = url["results"][0]["artist_name"]
     source_url = url["results"][0]["source_url"]
     artist_href = url["results"][0]["artist_href"]
+    image = url["results"][0]["url"]
+    
     emb = discord.Embed(
         title=f"Here's a pic of {endpoint}",
         description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
     )
     emb.colour = await ctx.embed_color()
-    emb.set_image(url=url["results"][0]["url"])
+    emb.set_image(url=image)
     emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
     view = discord.ui.View()
     style = discord.ButtonStyle.gray
@@ -67,7 +69,7 @@ async def embedgen(self, ctx, url, endpoint: str):
     image = discord.ui.Button(
         style=style,
         label="Open Image",
-        url=url["results"][0]["url"],
+        url=image,
     )
     view.add_item(item=artist)
     view.add_item(item=source)

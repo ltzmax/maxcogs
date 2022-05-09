@@ -40,7 +40,7 @@ class NekosBest(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
 
-    __version__ = "0.1.17"
+    __version__ = "0.1.18"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
