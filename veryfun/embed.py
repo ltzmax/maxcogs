@@ -43,6 +43,7 @@ async def api_call(self, ctx, action: str):
 
 async def embedgen(self, ctx, user, url, action: str):
     anime_name = url["results"][0]["anime_name"]
+    image = url["results"][0]["url"]
 
     emb = discord.Embed(
         colour=await ctx.embed_color(),
@@ -52,7 +53,7 @@ async def embedgen(self, ctx, user, url, action: str):
         text=f"Powered by nekos.best | Anime: {anime_name}",
         icon_url=ICON,
     )
-    emb.set_image(url=url["results"][0]["url"])
+    emb.set_image(url=image)
     try:
         await ctx.send(embed=emb)
     except discord.HTTPException as e:
