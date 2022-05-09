@@ -53,11 +53,11 @@ class NekosBest(commands.Cog):
         return
 
     @commands.group(hidden=True)
-    async def weebset(self, ctx):
+    async def nekoset(self, ctx):
         """Place to show version of the cog"""
 
-    @weebset.command(name="version")
-    async def weebset_version(self, ctx: commands.Context):
+    @nekoset.command(name="version")
+    async def nekoset_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         if await ctx.embed_requested():
             em = discord.Embed(
