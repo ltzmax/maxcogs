@@ -40,10 +40,12 @@ async def api_call(self, ctx, endpoint: str):
         url = await response.json()
         return url
 
+
 # Add support for menus.
 # Since nekos.best support amount we want to make sure people are allowed to browse though menus instead of spamming the command 100 times.
 # but this is limited to 20 pages and it's not really a problem if you don't want to spam the command but only looking though.
 # This is planned to be added in the future.
+
 
 async def embedgen(self, ctx, url, endpoint: str):
     artist_name = url["results"][0]["artist_name"]
