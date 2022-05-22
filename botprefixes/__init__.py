@@ -1,6 +1,8 @@
 import re
+
 import discord
 from redbot.core.bot import Red, commands
+
 
 class BotPrefixes(commands.Cog):
     """Mention to get the bot current prefixes."""
@@ -26,10 +28,9 @@ class BotPrefixes(commands.Cog):
         if not prefixes:
             return
         await message.channel.send(
-            "My prefixes are:\n{}".format(
-                ", ".join(f"`{prefix}`" for prefix in prefixes)
-            )
+            "My prefixes are:\n{}".format(", ".join(f"`{prefix}`" for prefix in prefixes))
         )
+
 
 async def setup(bot: Red):
     await bot.add_cog(BotPrefixes(bot))
