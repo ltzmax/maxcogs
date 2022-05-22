@@ -20,6 +20,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
+| BotPrefixes | Gives you the current prefixes when mentioning the bot | 0.0.1 | ltzmax | ✅ |
 | EmbedUptime | Shows bot's uptime. | 0.1.12 | ltzmax | ✅ |
 | NekosBest | Sends random images of kitsune, nekos and waifu. | 0.1.18 | ltzmax | ✅ |
 | OnConnect | Cog that sends shard events. | 0.1.19 | ltzmax, Arman0334 | ✅ |
