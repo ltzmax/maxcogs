@@ -151,7 +151,7 @@ shrug a user
 ```yaml
 [p]sleep
 ```
-## Description 
+## Description
 Sleep zzzz
 
 ```yaml
@@ -189,7 +189,7 @@ Handhold a user
 ```
 ``
 Note that kick is a core command so it has to be kicks
-`` 
+``
 ## Descritpion
 Kick a user
 
