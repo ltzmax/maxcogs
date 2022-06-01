@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
-from typing import Optional
+from typing import Optional, Union
 
 import discord
 from redbot.core import commands
@@ -36,13 +36,18 @@ class Commands(MixinMeta):
 
     @commands.is_owner()
     @commands.guild_only()
-    @commands.group(name="connectset")
+    @commands.hybrid_group(name="connectset")
     async def _connectset(self, ctx: commands.Context) -> None:
         """Manage settings for onconnect."""
 
     @_connectset.command(name="channel")
-    @commands.bot_has_permissions(send_messages=True, view_channel=True)
-    async def _channel(self, ctx, *, channel: Optional[discord.TextChannel] = None) -> None:
+    @commands.bot_has_permissions(send_messages=True)
+    async def _channel(
+        self,
+        ctx: commands.Context,
+        *,
+        channel: Optional[Union[discord.TextChannel]] = None,
+    ) -> None:
         """Set the channel to log shard events to.
 
         Note: Events are not able to be set in threads.
@@ -54,16 +59,16 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
-        # i have no idea where to add this, but works for now.
-        if isinstance(ctx.channel, discord.Thread):
-            return await self.maybe_reply(ctx=ctx, message="You can't set events in thread.")
+        if not isinstance(ctx.channel, (discord.TextChannel)):
+            return await ctx.send("OnConnect events can only be set to text channels.")
         guild = ctx.guild
         embed_requested = await ctx.embed_requested()
-        if channel:  # i had to do it this way cause it would error otherwise if choose a thread.
-            if channel.permissions_for(ctx.guild.me).send_messages is False:
-                return await ctx.send(
-                    "I do not have the `send_messages` permission in {}.".format(channel.mention)
+        if channel.permissions_for(ctx.guild.me).send_messages is False:
+            return await ctx.send(
+                "I do not have the `send_messages` permission in {}.".format(
+                    channel.mention
                 )
+            )
         await self.config.statuschannel.set(channel.id if channel else None)
         msg = "Events is now {channel}.".format(
             channel=f"enabled in {channel.mention}" if channel else "disabled"
@@ -110,7 +115,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The green emoji has been reset."
+                )
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -149,7 +156,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The orange emoji has been reset."
+                )
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -199,7 +208,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
+                await self.maybe_reply(
+                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
+                )
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context) -> None:
