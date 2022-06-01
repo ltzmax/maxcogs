@@ -13,7 +13,7 @@ This cog only shows the bot uptime and does not really do anything special other
 ```yaml
 [p]uptime
 ```
-# Description
+## Description
 Show's bot's uptime.
 
 ## Missing the cog?
