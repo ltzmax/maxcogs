@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "EmbedUptime",
-    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back. **Important note**, this cog support slash command, once you sync the tree it will show up under `/` on discord.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/embeduptime>",
+    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back. **Important note**, this cog support slash command, once you sync the tree it will show up under `/` on discord.",
     "description": "Shows current uptime of the bot.",
     "short": "Shows current uptime of the bot.",
     "hidden": false,
