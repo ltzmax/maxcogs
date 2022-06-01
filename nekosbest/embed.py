@@ -40,6 +40,7 @@ async def api_call(self, ctx, endpoint: str):
         url = await response.json()
         return url
 
+
 async def embedgen(self, ctx, url, endpoint: str):
     artist_name = url["results"][0]["artist_name"]
     source_url = url["results"][0]["source_url"]
