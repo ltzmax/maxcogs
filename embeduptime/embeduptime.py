@@ -90,6 +90,7 @@ class NekosBest(commands.Cog):
         )
         await ctx.send(embed=emb)
 
+
 async def setup(bot):
     eu = EmbedUptime(bot)
     global uptime
