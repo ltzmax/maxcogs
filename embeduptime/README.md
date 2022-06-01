@@ -8,8 +8,8 @@ Once you load this cog, it will replace the uptime in core with this one, on unl
 
 ## Usage
 This cog only shows the bot uptime and does not really do anything special other than that, this cog is in embed and are a fork of red's bot uptime command.
-Command
 
+## Command
 ```yaml
 [p]uptime
 ```
