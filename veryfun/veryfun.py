@@ -81,7 +81,7 @@ class VeryFun(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cry(self, ctx, user: discord.Member):
-        """Cry!"""
+        """Cry at someone or yourself."""
         url = await api_call(self, ctx, "cry")
         await embedgen(self, ctx, user, url, "cries at")
 
@@ -89,7 +89,7 @@ class VeryFun(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cuddle(self, ctx, user: discord.Member):
-        """Cuddle a user!"""
+        """Cuddle a user or yourself."""
         url = await api_call(self, ctx, "cuddle")
         await embedgen(self, ctx, user, url, "cuddles")
 
