@@ -301,7 +301,7 @@ class VeryFun(commands.Cog):
         url = await api_call(self, ctx, "handhold")
         await embedgen(self, ctx, user, url, "handholds")
 
-    @commands.command() # Clearly kick is taken by the mod cog so we call it kicks. sounds weird but yee.
+    @commands.command()  # Clearly kick is taken by the mod cog so we call it kicks. sounds weird but yee.
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def kicks(self, ctx, user: discord.Member):
