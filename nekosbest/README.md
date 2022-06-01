@@ -6,7 +6,7 @@
 ## Usage
 This cog sends a random nekos, waifu and kitsune image. All images are SFW (safe for work). This is all help with nekos.best.
 
-## Command
+## Commands
 ```yaml
 [p]kitsune
 ```
