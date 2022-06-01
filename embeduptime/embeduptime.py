@@ -24,22 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import logging
-from typing import Optional
 
 import discord
-from redbot.core import Config, commands
-
-from .abc import *
-from .commands import Commands
+from redbot.core import commands
 
 log = logging.getLogger("red.maxcogs.embeduptime")
 
 
-class EmbedUptime(
-    Commands,
-    commands.Cog,
-    metaclass=CompositeMetaClass,
-):
+class NekosBest(commands.Cog):
     """
     Shows the uptime of the bot.
     """
@@ -58,11 +50,6 @@ class EmbedUptime(
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=78634567)
-        default_global = {
-            "reply": True,
-        }
-        self.config.register_global(**default_global)
 
     async def cog_unload(self):
         global uptime
@@ -73,35 +60,35 @@ class EmbedUptime(
                 log.info(e)
             await self.bot.add_command(uptime)
 
-    @staticmethod
-    async def maybe_reply(
-        ctx: commands.Context,
-        message: Optional[str] = None,
-        embed: Optional[discord.Embed] = None,
-        mention_author: Optional[bool] = False,
-    ) -> None:
-        """Try to reply to a message.
+    @commands.command(hidden=True)
+    async def uptimeversion(self, ctx):
+        """Shows the cog version."""
+        if await ctx.embed_requested():
+            em = discord.Embed(
+                title="Cog Version:",
+                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+                colour=await ctx.embed_color(),
+            )
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
-        Parameters
-        ----------
-        ctx : redbot.core.commands.Context
-            The command invocation context.
-
-        message : Optional[str] = None
-            The message to send.
-
-        embed : Optional[discord.Embed] = None
-            The embed to send in the message.
-
-        mention_author : Optional[bool] = False
-            Whether to mention the author of the message. Defaults to False.
-        """
-        try:
-            await ctx.reply(message, embed=embed, mention_author=mention_author)
-        except discord.NotFound as e:
-            await ctx.send(message, embed=embed)
-            log.info(e)
-
+    @commands.hybrid_command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def uptime(self, ctx: commands.Context):
+        """Shows [botname]'s uptime."""
+        reply = await self.config.reply()
+        name = ctx.bot.user.name
+        delta = datetime.datetime.utcnow() - self.bot.uptime
+        uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
+        uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
+        msg = f"{uptime_str}\n" f"Since: <t:{int(uptime.timestamp())}:F>"
+        emb = discord.Embed(
+            title=f"{name} has been up for:",
+            description=msg,
+            colour=await ctx.embed_color(),
+        )
+        await ctx.send(embed=emb)
 
 async def setup(bot):
     eu = EmbedUptime(bot)
