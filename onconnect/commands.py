@@ -65,9 +65,7 @@ class Commands(MixinMeta):
         embed_requested = await ctx.embed_requested()
         if channel.permissions_for(ctx.guild.me).send_messages is False:
             return await ctx.send(
-                "I do not have the `send_messages` permission in {}.".format(
-                    channel.mention
-                )
+                "I do not have the `send_messages` permission in {}.".format(channel.mention)
             )
         await self.config.statuschannel.set(channel.id if channel else None)
         msg = "Events is now {channel}.".format(
@@ -115,9 +113,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The green emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -156,9 +152,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The orange emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -208,9 +202,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
-                )
+                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context) -> None:
