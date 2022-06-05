@@ -73,7 +73,7 @@ class NekosBest(commands.Cog):
         else:
             await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
