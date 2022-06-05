@@ -69,7 +69,7 @@ class NekosBest(commands.Cog):
         else:
             await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def waifu(self, ctx):
@@ -77,7 +77,7 @@ class NekosBest(commands.Cog):
         url = await api_call(self, ctx, "waifu")
         await embedgen(self, ctx, url, "waifu")
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def nekos(self, ctx):
@@ -85,7 +85,7 @@ class NekosBest(commands.Cog):
         url = await api_call(self, ctx, "neko")
         await embedgen(self, ctx, url, "nekos")
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx):
