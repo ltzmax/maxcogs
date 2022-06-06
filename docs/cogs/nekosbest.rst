@@ -21,7 +21,7 @@ Commands
 
     [p]kitsune
 
-**Description**:
+**Description**: 
 
 Sends a random kitsune image.
 

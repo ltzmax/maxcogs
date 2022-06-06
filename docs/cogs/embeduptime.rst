@@ -18,7 +18,7 @@ This cog only shows the bot uptime and does not really do anything special other
 Commands
 ----
 .. code-block:: none
-
+        
         [p]uptime
 
 **Description**:
