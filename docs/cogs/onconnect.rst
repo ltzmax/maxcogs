@@ -5,7 +5,7 @@ onconnect
 
 ``[p] is your prefix.``
 
-- ``[]`` means optional. 
+- ``[]`` means optional.
 - ``<>`` means required.
 
 .. note ::
