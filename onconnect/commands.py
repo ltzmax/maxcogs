@@ -63,10 +63,11 @@ class Commands(MixinMeta):
             return await ctx.send("OnConnect events can only be set to text channels.")
         guild = ctx.guild
         embed_requested = await ctx.embed_requested()
-        if channel.permissions_for(ctx.guild.me).send_messages is False:
-            return await ctx.send(
-                "I do not have the `send_messages` permission in {}.".format(channel.mention)
-            )
+        if channel:
+            if channel.permissions_for(ctx.guild.me).send_messages is False:
+                return await ctx.send(
+                    "I do not have the `send_messages` permission in {}.".format(channel.mention)
+                )
         await self.config.statuschannel.set(channel.id if channel else None)
         msg = "Events is now {channel}.".format(
             channel=f"enabled in {channel.mention}" if channel else "disabled"
