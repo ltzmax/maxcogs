@@ -5,7 +5,7 @@
 
 `[p]` is your prefix.
 
-To add this repo: 
+To add this repo:
 
 ```yaml
 [p]repo add maxcogs https://github.com/ltzmax/maxcogs
@@ -17,35 +17,18 @@ To install any cog you want:
 [p]cog install maxcogs <cog name you want>
 ```
 ---------------------------------------------------------------
-## Cogs on this repo: 
-<table>
-<thead>
-<tr>
-<th>Cog name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>nekos</td>
-<td>Sending random nekos images. This is for you weebs. Powered with help of nekos.best api.</td>
-</tr>
-<td>embeduptime</td>
-<td>This will reply with your uptime of your bot, this is an embed version.</td>
-</tr>
-<td>veryfun</td>
-<td>Just any other fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
-</tr>
-<td>onconnect</td>
-<td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
-</tr>
-</tbody>
-</table>
+## Cogs on this repo: <br>
+| Cogs list | Description | Version | Author | Stable |
+|:---:|---|:---:|:---:|:---:|
+| EmbedUptime | Shows bot's uptime. | 0.1.12 | ltzmax | ✅ |
+| NekosBest | Sends random images of kitsune, nekos and waifu. | 0.1.18 | ltzmax | ✅ |
+| OnConnect | Cog that sends shard events. | 0.1.19 | ltzmax, Arman0334 | ✅ |
+| VeryFun | Just anyother roleplay cog that you can play together with in a server. | 0.1.16 | ltzmax | ✅ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
 
-- [fixator10](https://github.com/fixator10) For help with coding at most parts.
+- [fixator10](https://github.com/fixator10) For helping doing alot of help.
 
 - [Preda](https://github.com/PredaaA/predacogs) For help on the OnConnect cog and alot more.
 
@@ -55,4 +38,4 @@ To install any cog you want:
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
 
 ## License
-This repo is under (c) MIT License.
+This repo is under MIT LICENSE. Please see [`LICENSE file`](https://github.com/ltzmax/maxcogs/blob/master/LICENSE).

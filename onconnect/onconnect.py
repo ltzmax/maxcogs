@@ -22,33 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import logging
-from abc import ABC
 from typing import Optional, Union
 
 import discord
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 
+from .abc import *
 from .commands import Commands
 from .events import Events
 
 log = logging.getLogger("red.maxcogs.onconnect")
 
 
-class CompositeMetaClass(type(commands.Cog), type(ABC)):
-    """
-    This allows the metaclass used for proper type detection to
-    coexist with discord.py's metaclass
-    """
-
-    pass
-
-
 class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
-    __version__ = "0.1.15"
-    __author__ = "MAX"
+    __version__ = "0.1.19"
+    __author__ = "MAX, Arman0334"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -104,7 +95,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
         except discord.NotFound:
             await ctx.send(message, embed=embed)
 
-    # Based on https://github.com/Cog-Creators/Red-DiscordBot/blob/9ab307c1efc391301fc6498391d2e403aeee2faa/redbot/core/bot.py#L925 # noqa
+    # Based on https://github.com/Cog-Creators/Red-DiscordBot/blob/9ab307c1efc391301fc6498391d2e403aeee2faa/redbot/core/bot.py#L925
     async def get_or_fetch_channel(self, channel_id: int):
         """Retrieves a channel based on its ID.
 
@@ -118,9 +109,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
 
         return await self.bot.fetch_channel(channel_id)
 
-    async def send_event_message(
-        self, message: str, colour: Union[discord.Colour, int]
-    ) -> None:
+    async def send_event_message(self, message: str, colour: Union[discord.Colour, int]) -> None:
         """Send an embed message to the set statuschannel.
 
         Parameters
@@ -140,9 +129,11 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
         except discord.NotFound as e:
             if await self.config.statuschannel() is not None:
                 await self.config.statuschannel.clear()
-                log.error(f"Statuschannel not found, deleting ID from config. {e}")
-
+                log.error(f"Failed to send evens: {e} - Clearing statuschannel")
             return
 
         event_embed = discord.Embed(description=message, colour=colour)
-        embed_channel = await channel.send(embed=event_embed)
+        if channel.permissions_for(channel.guild.me).embed_links:
+            embed_channel = await channel.send(embed=event_embed)
+        else:
+            embed_channel = await channel.send(message)

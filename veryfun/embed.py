@@ -32,6 +32,8 @@ ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf90046
 
 
 async def api_call(self, ctx, action: str):
+    async with ctx.typing():
+        pass
     async with self.session.get(NEKOS + action) as response:
         if response.status != 200:
             return await ctx.send("Something went wrong while trying to contact API.")
@@ -40,22 +42,24 @@ async def api_call(self, ctx, action: str):
 
 
 async def embedgen(self, ctx, user, url, action: str):
-
     anime_name = url["results"][0]["anime_name"]
+    image = url["results"][0]["url"]
 
     emb = discord.Embed(
         colour=await ctx.embed_color(),
-        description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user else 'themselves!'}",
+        description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user.id != ctx.author.id else 'themselves'}!",
     )
     emb.set_footer(
         text=f"Powered by nekos.best | Anime: {anime_name}",
         icon_url=ICON,
     )
-    emb.set_image(url=url["results"][0]["url"])
+    emb.set_image(url=image)
     try:
         await ctx.send(embed=emb)
     except discord.HTTPException as e:
-        await ctx.send(
-            "Something went wrong while posting. Check your console for details."
-        )
-        log.error(f"Command '{ctx.command.name}' failed to post: {e}")
+        meg = "Something went wrong. Please contact bot owner for infromation."
+        # Based on https://github.com/flaree/flare-cogs/blob/501f8d25d939fa183b18addde96ad06eb26d4890/giveaways/giveaways.py#L473
+        if await self.bot.is_owner(ctx.author):
+            meg += "Something went wrong. Check your console for more details."
+        await ctx.send(meg)
+        log.error(e)

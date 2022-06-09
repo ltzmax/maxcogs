@@ -35,11 +35,18 @@ class Events(MixinMeta):
     """The listeners for shard events are found here."""
 
     @commands.Cog.listener()
+    async def on_connect(self) -> None:
+        emoji = await self.config.green()
+        message = f"{emoji} {self.bot.user.name} successfully connected to discord!"
+        await self.bot.wait_until_red_ready()
+        await self.send_event_message(message=message, colour=discord.Colour.green())
+
+    @commands.Cog.listener()
     async def on_shard_connect(self, shard_id: int) -> None:
-        emoji = await self.config.orange()
+        emoji = await self.config.green()
         message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) connected!"
         await self.bot.wait_until_red_ready()
-        await self.send_event_message(message=message, colour=discord.Colour.orange())
+        await self.send_event_message(message=message, colour=discord.Colour.green())
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard_id: int) -> None:
@@ -64,13 +71,7 @@ class Events(MixinMeta):
     @commands.Cog.listener()
     async def on_ready(self) -> None:
         await self.bot.wait_until_red_ready()
-        process_start = datetime.fromtimestamp(
-            psutil.Process().create_time(), tz=timezone.utc
-        )
-        launch_time = humanize_timedelta(
-            timedelta=datetime.now(tz=timezone.utc) - process_start
-        )
-        message = (
-            f"> Launch time: {launch_time}\n\n{self.bot.user.name} is ready to use!"
-        )
+        process_start = datetime.fromtimestamp(psutil.Process().create_time(), tz=timezone.utc)
+        launch_time = humanize_timedelta(timedelta=datetime.now(tz=timezone.utc) - process_start)
+        message = f"> Launch time: {launch_time}\n\n{self.bot.user.name} is ready to use!"
         await self.send_event_message(message=message, colour=discord.Colour.green())

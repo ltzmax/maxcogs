@@ -1,21 +1,25 @@
 ## PR is always welcome at anytime.
 
-- feel free to do bug fixes when you see something that aren't working or are missing.
+- Feel free to do bug fixes when you see something that aren't working or are missing.
+- If you wanna do more than just bug fixes, i kindly ask you to talk with me on discord first. MAX#1000
 
 ## When you do PR's you need to remember two things:
 always use following:
-- black
-
-I will explain it simple and not a wall of text on how to install and use to make it easy, for question please ask me on discord MAX#1000.
+- Black
+- Isort
 
 ## How to use black?
+- Black are automatically fixed on pr by pre commits if you haven't done it yourself.
 
-it's simple first you need to install black:
-- `pip install black`
-
-When that is done you run:
-
-- `black {source_file_or_directory}`
-
-
-Version `21.11b1` of black is what this repo is using.
+## How to use isort?
+- First you will have to install it
+```yaml
+[p]pip install isort
+```
+- Then run
+```yaml
+isort <source_file_or_directory>
+```
+## Versions:
+- Version `22.3.0` of black.
+- Version `5.10.1` of isort.

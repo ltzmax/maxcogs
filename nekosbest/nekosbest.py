@@ -1,5 +1,3 @@
-# Thanks Red-DiscordBot for their hard work.
-# This uptimer is a fork of red, which uses embed.
 """
 MIT License
 
@@ -23,20 +21,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
+import asyncio
 
+import aiohttp
 import discord
 from redbot.core import commands
 
-log = logging.getLogger("red.maxcogs.embeduptime")
+from .embed import api_call, embedgen
 
 
 class NekosBest(commands.Cog):
-    """
-    Shows the uptime of the bot.
-    """
+    """sends random nekos, kitsune and waifu images from nekos.best."""
 
-    __version__ = "0.1.12"
+    def __init__(self, bot):
+        self.bot = bot
+        self.session = aiohttp.ClientSession()
+
+    async def cog_unload(self):
+        await self.session.close()
+
+    __version__ = "0.1.18"
     __author__ = "MAX"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -48,21 +52,13 @@ class NekosBest(commands.Cog):
         """Nothing to delete."""
         return
 
-    def __init__(self, bot):
-        self.bot = bot
+    @commands.group(hidden=True)
+    async def nekoset(self, ctx):
+        """Place to show version of the cog"""
 
-    async def cog_unload(self):
-        global uptime
-        if uptime:
-            try:
-                await self.bot.remove_command("uptime")
-            except Exception as e:
-                log.info(e)
-            await self.bot.add_command(uptime)
-
-    @commands.command(hidden=True)
-    async def uptimeversion(self, ctx):
-        """Shows the cog version."""
+    @nekoset.command(name="version")
+    async def nekoset_version(self, ctx: commands.Context):
+        """Shows the version of the cog"""
         if await ctx.embed_requested():
             em = discord.Embed(
                 title="Cog Version:",
@@ -73,26 +69,26 @@ class NekosBest(commands.Cog):
         else:
             await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
 
-    @commands.command()
-    @commands.bot_has_permissions(embed_links=True)
-    async def uptime(self, ctx: commands.Context):
-        """Shows [botname]'s uptime."""
-        reply = await self.config.reply()
-        name = ctx.bot.user.name
-        delta = datetime.datetime.utcnow() - self.bot.uptime
-        uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
-        uptime_str = humanize_timedelta(timedelta=delta) or ("Less than one second.")
-        msg = f"{uptime_str}\n" f"Since: <t:{int(uptime.timestamp())}:F>"
-        emb = discord.Embed(
-            title=f"{name} has been up for:",
-            description=msg,
-            colour=await ctx.embed_color(),
-        )
-        await ctx.send(embed=emb)
+    @commands.hybrid_command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def waifu(self, ctx):
+        """Send a random waifu image."""
+        url = await api_call(self, ctx, "waifu")
+        await embedgen(self, ctx, url, "waifu")
 
+    @commands.hybrid_command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def nekos(self, ctx):
+        """Send a random neko image."""
+        url = await api_call(self, ctx, "neko")
+        await embedgen(self, ctx, url, "nekos")
 
-async def setup(bot):
-    eu = EmbedUptime(bot)
-    global uptime
-    uptime = bot.remove_command("uptime")
-    await bot.add_cog(eu)
+    @commands.hybrid_command()
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def kitsune(self, ctx):
+        """Send a random kitsune image."""
+        url = await api_call(self, ctx, "kitsune")
+        await embedgen(self, ctx, url, "kitsune")

@@ -16,10 +16,9 @@ body:
       description: What cog are you feature requesting to?
       options:
         - embeduptime
+        - nekosbest
         - onconnect
         - veryfun
-        - kitsune
-        - nekos
     validations:
       required: true
   - type: input

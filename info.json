@@ -1,5 +1,7 @@
 {
-    "author": ["MAX"],
+    "author": [
+        "MAX"
+    ],
     "name": "maxcogs",
     "short": "Cogs for Red-DiscordBot V3.",
     "description": "Cogs for Red-DiscordBot V3.",
@@ -8,7 +10,9 @@
         "uptime",
         "roleplay",
         "neko",
-        "fun",
-        "stats"
+        "kitsune",
+        "waifu",
+        "onconnect",
+        "fun"
     ]
 }

@@ -1,14 +1,24 @@
 {
-    "author": ["max"],
+    "author": [
+        "max"
+    ],
     "name": "EmbedUptime",
-    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.\nFeel free to check out the docs for this cog <https://maxbooiii.gitbook.io/maxcogs/cogs/embeduptime>",
+    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.\nFeel free to check the docs: <https://maxcogs.readthedocs.io/en/latest/embeduptime.html>",
     "description": "Shows current uptime of the bot.",
     "short": "Shows current uptime of the bot.",
     "hidden": false,
-    "min_bot_version": "3.4.6",
-    "tags": ["uptime"],
-    "permissions": ["embed_links"],
-    "min_python_version": [3, 8, 1],
+    "min_bot_version": "3.5.0",
+    "tags": [
+        "uptime"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "min_python_version": [
+        3,
+        8,
+        5
+    ],
     "end_user_data_statement": "This cog does not store any End User Data.",
     "type": "COG"
-  }
+}
