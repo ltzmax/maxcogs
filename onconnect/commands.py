@@ -30,6 +30,7 @@ from redbot.core import commands
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
 
+
 class Commands(MixinMeta):
     """Commands for managing the cog's settings are found here."""
 
@@ -40,9 +41,7 @@ class Commands(MixinMeta):
         """Manage settings for onconnect."""
 
     @_connectset.command(name="channel")
-    async def _channel(
-        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
-    ):
+    async def _channel(self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None):
         """Set the channel to log shard events to.
 
         **Example:**
@@ -116,9 +115,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The green emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -157,9 +154,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The orange emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -209,9 +204,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
-                )
+                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context) -> None:
