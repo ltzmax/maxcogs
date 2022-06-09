@@ -26,6 +26,8 @@ from typing import Optional, Union
 
 import discord
 from redbot.core import commands
+from redbot.core.utils.menus import start_adding_reactions
+from redbot.core.utils.predicates import ReactionPredicate
 
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
@@ -63,24 +65,71 @@ class Commands(MixinMeta):
             return await ctx.send("OnConnect events can only be set to text channels.")
         guild = ctx.guild
         embed_requested = await ctx.embed_requested()
-        if channel:
-            if channel.permissions_for(ctx.guild.me).send_messages is False:
-                return await ctx.send(
-                    "I do not have the `send_messages` permission in {}.".format(channel.mention)
-                )
-        await self.config.statuschannel.set(channel.id if channel else None)
-        msg = "Events is now {channel}.".format(
-            channel=f"enabled in {channel.mention}" if channel else "disabled"
-        )
-        if embed_requested:
-            embed = discord.Embed(
-                title="Events Changed",
-                description=msg,
-                color=await ctx.embed_color(),
+        if not channel.permissions_for(ctx.guild.me).send_messages:
+            return await ctx.send(
+                "I do not have the `send_messages` permission in {}.".format(channel.mention)
             )
-            await self.maybe_reply(ctx=ctx, embed=embed)
+            await self.config.statuschannel.set(channel.id)
+            log.info(f"Status Channel set to {channel} ({channel.id})")
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Setting Changed",
+                    description=f"Events will now be sent to {channel.mention}.",
+                    colour=await ctx.embed_colour(),
+                )
+                await self.maybe_reply(ctx=ctx, embed=embed)
+            else:
+                await self.maybe_reply(
+                    ctx=ctx, message=f"Events will now be sent to {channel.mention}."
+                )
+
+        elif await self.config.statuschannel() is not None:
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Are you sure you want to disable events?",
+                    colour=await ctx.embed_colour(),
+                )
+                msg = await ctx.send(embed=embed)
+            else:
+                msg = await ctx.send("Are you sure you want to disable events?")
+
+            start_adding_reactions(msg, ReactionPredicate.YES_OR_NO_EMOJIS)
+            pred = ReactionPredicate.yes_or_no(msg, ctx.author)
+            try:
+                await self.bot.wait_for("reaction_add", check=pred, timeout=60)
+            except asyncio.TimeoutError:
+                await self.maybe_reply(
+                    ctx=ctx,
+                    message="You took too long to respond, cancelling.",
+                    mention_author=True,
+                )
+                await msg.clear_reactions()
+            else:
+                if pred.result is True:
+                    await self.config.statuschannel.set(None)
+                    log.info("Status Channel has been disabled.")
+                    if embed_requested:
+                        embed = discord.Embed(
+                            title="Setting Changed",
+                            description="Events have been disabled.",
+                            colour=await ctx.embed_colour(),
+                        )
+                        await self.maybe_reply(ctx=ctx, embed=embed)
+                    else:
+                        await self.maybe_reply(
+                            ctx=ctx, message="Events have been disabled."
+                        )
+                else:
+                    await self.maybe_reply(ctx=ctx, message="Cancelled.")
         else:
-            await self.maybe_reply(ctx=ctx, message=msg)
+            await self.maybe_reply(
+                ctx=ctx,
+                message=(
+                    f"Events are already disabled. Use `{ctx.clean_prefix}connectset "
+                    "channel #channel` to enable."
+                ),
+                mention_author=True,
+            )
 
     @_connectset.group(name="emoji", aliases=["emojis"])
     async def _emoji(self, ctx: commands.Context):
