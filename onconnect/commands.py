@@ -116,9 +116,7 @@ class Commands(MixinMeta):
                         )
                         await self.maybe_reply(ctx=ctx, embed=embed)
                     else:
-                        await self.maybe_reply(
-                            ctx=ctx, message="Events have been disabled."
-                        )
+                        await self.maybe_reply(ctx=ctx, message="Events have been disabled.")
                 else:
                     await self.maybe_reply(ctx=ctx, message="Cancelled.")
         else:
