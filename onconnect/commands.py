@@ -56,9 +56,7 @@ class Commands(MixinMeta):
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
         if isinstance(ctx.channel, (discord.VoiceChannel, discord.ForumChannel)):
-            return await ctx.send(
-                "This command can only be used in a text channel or thread."
-            )
+            return await ctx.send("This command can only be used in a text channel or thread.")
         if channel is None:
             channel = ctx.channel
             await self.config.statuschannel.set(None)
@@ -76,9 +74,7 @@ class Commands(MixinMeta):
             await self.config.statuschannel.set(True)
             await self.maybe_reply(
                 ctx=ctx,
-                message="Events will now be sent in {channel.mention}.".format(
-                    channel=channel
-                ),
+                message="Events will now be sent in {channel.mention}.".format(channel=channel),
             )
 
     @_connectset.group(name="emoji", aliases=["emojis"])
@@ -109,9 +105,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The green emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -150,9 +144,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The orange emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -202,9 +194,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
-                )
+                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context) -> None:
