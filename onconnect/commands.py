@@ -71,7 +71,7 @@ class Commands(MixinMeta):
                     "Please enable and try again.".format(channel=channel)
                 )
                 return
-            await self.config.statuschannel.set(True)
+            await self.config.statuschannel.set(channel.id)
             await self.maybe_reply(
                 ctx=ctx,
                 message="Events will now be sent in {channel.mention}.".format(channel=channel),
