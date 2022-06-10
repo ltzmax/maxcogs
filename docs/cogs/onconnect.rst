@@ -14,7 +14,7 @@ onconnect
 
 .. note ::
 
-    Please be aware that you cannot set events in thread, forum or voice text channels, this will not be available to work.
+    Please be aware that you cannot set events in forum or voice text channels, this will not be available to work.
 
 ----
 Usage
