@@ -218,7 +218,7 @@ class Commands(MixinMeta):
     @_connectset.command(name="guide")
     async def _guide(self, ctx: commands.Context):
         """Shows a small guide about OnConnect.
-        
+
         These are the most commonly asked qustions.
         This is only a small guide. If you have any questions, please ask in cogsupport.
         """
@@ -244,7 +244,7 @@ class Commands(MixinMeta):
         )
         embed.add_field(
             name="How to disable event without resetting everything:",
-            value=f"To disable OnConnect, use the `{ctx.clean_prefix}connectset channel` without specifying a channel."
+            value=f"To disable OnConnect, use the `{ctx.clean_prefix}connectset channel` without specifying a channel.",
         )
         await self.maybe_reply(ctx=ctx, embed=embed)
 
