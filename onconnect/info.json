@@ -15,8 +15,8 @@
         "on_ready"
     ],
     "permissions": [
-        "embed_links",
-        "add_reactions"
+        "view_channel",
+        "send_messages"
     ],
     "min_python_version": [
         3,
