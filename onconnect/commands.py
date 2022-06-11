@@ -197,7 +197,10 @@ class Commands(MixinMeta):
 
     @_connectset.command(name="clear", aliases=["reset"])
     async def _clear_settings(self, ctx: commands.Context):
-        """Clears all settings for OnConnect."""
+        """Clears all settings for OnConnect.
+        
+        This will reset all settings to their default values.
+        """
         await ctx.send(
             "Are you sure you want to clear all settings for OnConnect?\n"
             "This will reset all settings to their default values.\n"
