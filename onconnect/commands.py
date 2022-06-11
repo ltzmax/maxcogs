@@ -195,6 +195,59 @@ class Commands(MixinMeta):
             else:
                 await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
+    @_connectset.command(name="clear", aliases=["reset"])
+    async def _clear_settings(self, ctx: commands.Context):
+        """Clears all settings for OnConnect."""
+        await ctx.send(
+            "Are you sure you want to clear all settings for OnConnect?\n"
+            "This will reset all settings to their default values.\n"
+            "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
+        )
+        try:
+            pred = MessagePredicate.yes_or_no(ctx, user=ctx.author)
+            msg = await ctx.bot.wait_for("message", check=pred, timeout=30)
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond.")
+            return
+        if pred.result:
+            await self.config.clear()
+            await ctx.send("All settings have been reset.")
+        else:
+            await ctx.send("Settings have not been reset.")
+
+    @_connectset.command(name="guide")
+    async def _guide(self, ctx: commands.Context):
+        """Shows a small guide about OnConnect.
+        
+        These are the most commonly asked qustions.
+        This is only a small guide. If you have any questions, please ask in cogsupport.
+        """
+        embed = discord.Embed(
+            title="OnConnect",
+            description="A cog that allows you to set up a channel to see shards reconnections.",
+            color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="How to use OnConnect:",
+            value=f"To set up OnConnect, use the `{ctx.clean_prefix}connectset channel [#channel_name]`.",
+            inline=False,
+        )
+        embed.add_field(
+            name="How to change Emojis:",
+            value=f"To change OnConnect Emojis, use the `{ctx.clean_prefix}connectset emoji`.",
+            inline=False,
+        )
+        embed.add_field(
+            name="How to reset settings:",
+            value=f"To reset all settings, use the `{ctx.clean_prefix}connectset clear`.",
+            inline=False,
+        )
+        embed.add_field(
+            name="How to disable event without resetting everything:",
+            value=f"To disable OnConnect, use the `{ctx.clean_prefix}connectset channel` without specifying a channel."
+        )
+        await self.maybe_reply(ctx=ctx, embed=embed)
+
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context):
         """Shows the current settings for OnConnect."""
@@ -223,26 +276,6 @@ class Commands(MixinMeta):
                 f"**`{'Red Emoji':<15}:`** {red_emoji}"
             )
             await self.maybe_reply(ctx=ctx, message=message)
-
-    @_connectset.command(name="clear", aliases=["reset"])
-    async def _clear_settings(self, ctx: commands.Context):
-        """Clears all settings for OnConnect."""
-        await ctx.send(
-            "Are you sure you want to clear all settings for OnConnect?\n"
-            "This will reset all settings to their default values.\n"
-            "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
-        )
-        try:
-            pred = MessagePredicate.yes_or_no(ctx, user=ctx.author)
-            msg = await ctx.bot.wait_for("message", check=pred, timeout=30)
-        except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond.")
-            return
-        if pred.result:
-            await self.config.clear()
-            await ctx.send("All settings have been reset.")
-        else:
-            await ctx.send("Settings have not been reset.")
 
     @_connectset.command(name="version")
     async def _version(self, ctx: commands.Context):
