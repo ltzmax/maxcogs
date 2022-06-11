@@ -237,7 +237,7 @@ class Commands(MixinMeta):
             msg = await ctx.bot.wait_for("message", check=pred, timeout=30)
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond.")
-            return           
+            return
         if pred.result:
             await self.config.clear()
             await ctx.send("All settings have been reset.")
