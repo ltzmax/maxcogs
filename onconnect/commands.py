@@ -26,6 +26,7 @@ from typing import Optional, Union
 
 import discord
 from redbot.core import commands
+from redbot.core.utils.predicates import MessagePredicate
 
 from .abc import MixinMeta
 from .converters import RealEmojiConverter
@@ -37,7 +38,7 @@ class Commands(MixinMeta):
     @commands.is_owner()
     @commands.guild_only()
     @commands.hybrid_group(name="connectset")
-    async def _connectset(self, ctx: commands.Context) -> None:
+    async def _connectset(self, ctx: commands.Context):
         """Manage settings for onconnect."""
 
     @_connectset.command(name="channel")
@@ -55,8 +56,6 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
-        if isinstance(ctx.channel, (discord.VoiceChannel, discord.ForumChannel)):
-            return await ctx.send("This command can only be used in a text channel or thread.")
         if channel is None:
             channel = ctx.channel
             await self.config.statuschannel.set(None)
@@ -84,7 +83,7 @@ class Commands(MixinMeta):
     @_emoji.command(name="green")
     async def _emoji_green(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
-    ) -> None:
+    ):
         """Change the green emoji to your own.
 
         **Example:**
@@ -123,7 +122,7 @@ class Commands(MixinMeta):
     @_emoji.command(name="orange")
     async def _emoji_orange(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
-    ) -> None:
+    ):
         """Change the orange emoji to your own.
 
         **Example:**
@@ -162,7 +161,7 @@ class Commands(MixinMeta):
     @_emoji.command(name="red")
     async def _emoji_red(
         self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
-    ) -> None:
+    ):
         """Change the red emoji to your own.
 
         **Example:**
@@ -197,7 +196,7 @@ class Commands(MixinMeta):
                 await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
-    async def _show_settings(self, ctx: commands.Context) -> None:
+    async def _show_settings(self, ctx: commands.Context):
         """Shows the current settings for OnConnect."""
         config = await self.config.all()
         chan_config = config["statuschannel"]
@@ -225,8 +224,28 @@ class Commands(MixinMeta):
             )
             await self.maybe_reply(ctx=ctx, message=message)
 
+    @_connectset.command(name="clear", aliases=["reset"])
+    async def _clear_settings(self, ctx: commands.Context):
+        """Clears all settings for OnConnect."""
+        await ctx.send(
+            "Are you sure you want to clear all settings for OnConnect?\n"
+            "This will reset all settings to their default values.\n"
+            "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
+        )
+        try:
+            pred = MessagePredicate.yes_or_no(ctx, user=ctx.author)
+            msg = await ctx.bot.wait_for("message", check=pred, timeout=30)
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond.")
+            return           
+        if pred.result:
+            await self.config.clear()
+            await ctx.send("All settings have been reset.")
+        else:
+            await ctx.send("Settings have not been reset.")
+
     @_connectset.command(name="version")
-    async def _version(self, ctx: commands.Context) -> None:
+    async def _version(self, ctx: commands.Context):
         """Shows the cog version."""
         message = f"Author: {self.__author__}\nVersion: {self.__version__}"
         if await ctx.embed_requested():
