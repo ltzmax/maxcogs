@@ -128,9 +128,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The green emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -169,9 +167,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message="The orange emoji has been reset."
-                )
+                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -221,9 +217,7 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(
-                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
-                )
+                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
     @_connectset.command(name="reset", aliases=["clear"])
     async def _reset(self, ctx: commands.Context):
@@ -248,15 +242,11 @@ class Commands(MixinMeta):
             return
         if pred.result:
             await self.config.clear()
-            await self.maybe_reply(
-                ctx=ctx, message=("Done, all settings have been reset.")
-            )
+            await self.maybe_reply(ctx=ctx, message=("Done, all settings have been reset."))
         else:
             # Yes, i did not spell "cancelled".
             # https://www.grammarly.com/blog/canceled-vs-cancelled/
-            await self.maybe_reply(
-                ctx=ctx, message=("Canceled, i won't reset anything.")
-            )
+            await self.maybe_reply(ctx=ctx, message=("Canceled, i won't reset anything."))
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context):
