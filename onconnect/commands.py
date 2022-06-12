@@ -214,9 +214,9 @@ class Commands(MixinMeta):
             return
         if pred.result:
             await self.config.clear()
-            await ctx.send("All settings have been reset.")
+            await ctx.send("Done, all settings have been reset.")
         else:
-            await ctx.send("Settings have not been reset.")
+            await ctx.send("Canceled, i won't reset anything.")
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context):
