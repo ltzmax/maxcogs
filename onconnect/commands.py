@@ -215,16 +215,16 @@ class Commands(MixinMeta):
             else:
                 await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
 
-    @_connectset.command(name="clear", aliases=["reset"])
-    async def _clear_settings(self, ctx: commands.Context):
-        """Clears all settings for OnConnect.
+    @_connectset.command(name="reset", aliases=["clear"])
+    async def _reset(self, ctx: commands.Context):
+        """Reset all settings for OnConnect.
 
         This will reset all settings to their default values.
         """
         await self.maybe_reply(ctx=ctx, message=(
-            "**WARNING**\n"
+            "\N{WARNING SIGN}\N{VARIATION SELECTOR-16}**WARNING**\N{WARNING SIGN}\N{VARIATION SELECTOR-16}\n"
             "Are you sure you want to clear all settings for OnConnect?\n"
-            "This will reset all settings to the default values.\n"
+            "This action will reset all settings to the default values.\n"
             "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
             )
         )
