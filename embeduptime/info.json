@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "EmbedUptime",
-    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.\nFeel free to check the docs: <https://maxcogs.readthedocs.io/en/latest/embeduptime.html>",
+    "install_msg": "Thanks for installing. Once you load this cog, it will replace the uptime in core with this one, on unload you will have the core one back.\nFeel free to check the docs: <https://maxcogs.readthedocs.io/en/latest/cogs/embeduptime.html>",
     "description": "Shows current uptime of the bot.",
     "short": "Shows current uptime of the bot.",
     "hidden": false,
