@@ -74,10 +74,12 @@ class Commands(MixinMeta):
                 not channel.permissions_for(ctx.me).send_messages
                 or not channel.permissions_for(ctx.me).view_channel
             ):
-                await self.maybe_reply(ctx=ctx, message=(
-                    "I do not have permission to `send_messages` or `view_channel` in {channel.mention}. "
-                    "Please enable and try again.".format(channel=channel)
-                    )
+                await self.maybe_reply(
+                    ctx=ctx,
+                    message=(
+                        "I do not have permission to `send_messages` or `view_channel` in {channel.mention}. "
+                        "Please enable and try again.".format(channel=channel)
+                    ),
                 )
                 return
             await self.config.statuschannel.set(channel.id)
@@ -93,7 +95,9 @@ class Commands(MixinMeta):
             else:
                 await self.maybe_reply(
                     ctx=ctx,
-                    message="Events will now be sent in {channel.mention}.".format(channel=channel),
+                    message="Events will now be sent in {channel.mention}.".format(
+                        channel=channel
+                    ),
                 )
 
     @_connectset.group(name="emoji", aliases=["emojis"])
@@ -124,7 +128,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The green emoji has been reset."
+                )
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -163,7 +169,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The orange emoji has been reset."
+                )
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -213,7 +221,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
+                await self.maybe_reply(
+                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
+                )
 
     @_connectset.command(name="reset", aliases=["clear"])
     async def _reset(self, ctx: commands.Context):
@@ -221,12 +231,14 @@ class Commands(MixinMeta):
 
         This will reset all settings to their default values.
         """
-        await self.maybe_reply(ctx=ctx, message=(
-            "\N{WARNING SIGN}\N{VARIATION SELECTOR-16}**WARNING**\N{WARNING SIGN}\N{VARIATION SELECTOR-16}\n"
-            "Are you sure you want to clear all settings for OnConnect?\n"
-            "This action will reset all settings to the default values.\n"
-            "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
-            )
+        await self.maybe_reply(
+            ctx=ctx,
+            message=(
+                "\N{WARNING SIGN}\N{VARIATION SELECTOR-16}**WARNING**\N{WARNING SIGN}\N{VARIATION SELECTOR-16}\n"
+                "Are you sure you want to clear all settings for OnConnect?\n"
+                "This action will reset all settings to the default values.\n"
+                "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
+            ),
         )
         try:
             pred = MessagePredicate.yes_or_no(ctx, user=ctx.author)
@@ -236,11 +248,15 @@ class Commands(MixinMeta):
             return
         if pred.result:
             await self.config.clear()
-            await self.maybe_reply(ctx=ctx, message=("Done, all settings have been reset."))
+            await self.maybe_reply(
+                ctx=ctx, message=("Done, all settings have been reset.")
+            )
         else:
             # Yes, i did not spell "cancelled".
             # https://www.grammarly.com/blog/canceled-vs-cancelled/
-            await self.maybe_reply(ctx=ctx, message=("Canceled, i won't reset anything."))
+            await self.maybe_reply(
+                ctx=ctx, message=("Canceled, i won't reset anything.")
+            )
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context):
