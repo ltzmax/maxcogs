@@ -56,25 +56,45 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
+        embed_requested = await ctx.embed_requested()
         if channel is None:
             channel = ctx.channel
             await self.config.statuschannel.set(None)
-            await self.maybe_reply(ctx=ctx, message="Events have been disabled.")
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Event channel disabled",
+                    description="The event have been disabled.",
+                    color=await ctx.embed_color(),
+                )
+                await self.maybe_reply(ctx=ctx, embed=embed)
+            else:
+                await self.maybe_reply(ctx=ctx, message="Events have been disabled.")
         else:
             if (
                 not channel.permissions_for(ctx.me).send_messages
                 or not channel.permissions_for(ctx.me).view_channel
             ):
-                await ctx.send(
+                await self.maybe_reply(ctx=ctx, message=(
                     "I do not have permission to `send_messages` or `view_channel` in {channel.mention}. "
                     "Please enable and try again.".format(channel=channel)
+                    )
                 )
                 return
             await self.config.statuschannel.set(channel.id)
-            await self.maybe_reply(
-                ctx=ctx,
-                message="Events will now be sent in {channel.mention}.".format(channel=channel),
-            )
+            if embed_requested:
+                embed = discord.Embed(
+                    title="Event channel set",
+                    description="The event channel has been set to {channel.mention}.".format(
+                        channel=channel
+                    ),
+                    color=await ctx.embed_color(),
+                )
+                await self.maybe_reply(ctx=ctx, embed=embed)
+            else:
+                await self.maybe_reply(
+                    ctx=ctx,
+                    message="Events will now be sent in {channel.mention}.".format(channel=channel),
+                )
 
     @_connectset.group(name="emoji", aliases=["emojis"])
     async def _emoji(self, ctx: commands.Context):
@@ -201,22 +221,26 @@ class Commands(MixinMeta):
 
         This will reset all settings to their default values.
         """
-        await ctx.send(
+        await self.maybe_reply(ctx=ctx, message=(
+            "**WARNING**\n"
             "Are you sure you want to clear all settings for OnConnect?\n"
-            "This will reset all settings to their default values.\n"
+            "This will reset all settings to the default values.\n"
             "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
+            )
         )
         try:
             pred = MessagePredicate.yes_or_no(ctx, user=ctx.author)
             msg = await ctx.bot.wait_for("message", check=pred, timeout=30)
         except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond.")
+            await self.maybe_reply(ctx=ctx, message=("You took too long to respond."))
             return
         if pred.result:
             await self.config.clear()
-            await ctx.send("Done, all settings have been reset.")
+            await self.maybe_reply(ctx=ctx, message=("Done, all settings have been reset."))
         else:
-            await ctx.send("Canceled, i won't reset anything.")
+            # Yes, i did not spell "cancelled".
+            # https://www.grammarly.com/blog/canceled-vs-cancelled/
+            await self.maybe_reply(ctx=ctx, message=("Canceled, i won't reset anything."))
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context):
