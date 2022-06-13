@@ -233,11 +233,15 @@ class Commands(MixinMeta):
             return
         if pred.result:
             await self.config.clear()
-            await self.maybe_reply(ctx=ctx, message=("\N{WHITE HEAVY CHECK MARK} Done, all settings have been reset."))
+            await self.maybe_reply(
+                ctx=ctx, message=("\N{WHITE HEAVY CHECK MARK} Done, all settings have been reset.")
+            )
         else:
             # Yes, i did not spell "cancelled".
             # https://www.grammarly.com/blog/canceled-vs-cancelled/
-            await self.maybe_reply(ctx=ctx, message=("\N{CROSS MARK} Canceled, i won't reset anything."))
+            await self.maybe_reply(
+                ctx=ctx, message=("\N{CROSS MARK} Canceled, i won't reset anything.")
+            )
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context):
