@@ -228,7 +228,6 @@ class Commands(MixinMeta):
         await self.maybe_reply(
             ctx=ctx,
             message=(
-                "\N{WARNING SIGN}\N{VARIATION SELECTOR-16}**WARNING**\N{WARNING SIGN}\N{VARIATION SELECTOR-16}\n"
                 "Are you sure you want to clear all settings for OnConnect?\n"
                 "This action will reset all settings to the default values.\n"
                 "Type `yes` to confirm. | Type `no` to cancel. - You have 30 seconds to respond."
