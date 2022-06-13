@@ -120,7 +120,7 @@ class Commands(MixinMeta):
             await self.config.green.clear()
             if embed_requested:
                 embed = discord.Embed(
-                    description=f"The green emoji has been reset.",
+                    description="The green emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
@@ -157,7 +157,7 @@ class Commands(MixinMeta):
             await self.config.orange.clear()
             if embed_requested:
                 embed = discord.Embed(
-                    description=f"The orange emoji has been reset.",
+                    description="The orange emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
@@ -194,7 +194,7 @@ class Commands(MixinMeta):
             await self.config.red.clear()
             if embed_requested:
                 embed = discord.Embed(
-                    description=f"The red emoji has been reset.",
+                    description="The red emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
@@ -233,11 +233,11 @@ class Commands(MixinMeta):
             return
         if pred.result:
             await self.config.clear()
-            await self.maybe_reply(ctx=ctx, message=("Done, all settings have been reset."))
+            await self.maybe_reply(ctx=ctx, message=("\N{WHITE HEAVY CHECK MARK} Done, all settings have been reset."))
         else:
             # Yes, i did not spell "cancelled".
             # https://www.grammarly.com/blog/canceled-vs-cancelled/
-            await self.maybe_reply(ctx=ctx, message=("Canceled, i won't reset anything."))
+            await self.maybe_reply(ctx=ctx, message=("\N{CROSS MARK} Canceled, i won't reset anything."))
 
     @_connectset.command(name="showsettings", aliases=["settings"])
     async def _show_settings(self, ctx: commands.Context):
