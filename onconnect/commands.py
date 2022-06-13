@@ -62,7 +62,6 @@ class Commands(MixinMeta):
             await self.config.statuschannel.set(None)
             if embed_requested:
                 embed = discord.Embed(
-                    title="Event channel disabled",
                     description="The event have been disabled.",
                     color=await ctx.embed_color(),
                 )
@@ -85,7 +84,6 @@ class Commands(MixinMeta):
             await self.config.statuschannel.set(channel.id)
             if embed_requested:
                 embed = discord.Embed(
-                    title="Event channel set",
                     description="The event channel has been set to {channel.mention}.".format(
                         channel=channel
                     ),
@@ -122,7 +120,6 @@ class Commands(MixinMeta):
             await self.config.green.clear()
             if embed_requested:
                 embed = discord.Embed(
-                    title="Setting Changed",
                     description=f"The green emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
@@ -133,7 +130,6 @@ class Commands(MixinMeta):
             await self.config.green.set(str(emoji))
             if embed_requested:
                 embed = discord.Embed(
-                    title="Setting Changed",
                     description=f"The green emoji has been set to {emoji}.",
                     color=await ctx.embed_color(),
                 )
@@ -161,7 +157,6 @@ class Commands(MixinMeta):
             await self.config.orange.clear()
             if embed_requested:
                 embed = discord.Embed(
-                    title="Setting Changed",
                     description=f"The orange emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
@@ -172,7 +167,6 @@ class Commands(MixinMeta):
             await self.config.orange.set(str(emoji))
             if embed_requested:
                 embed = discord.Embed(
-                    title="Setting Changed",
                     description=f"The orange emoji has been set to {emoji}.",
                     color=await ctx.embed_color(),
                 )
@@ -200,7 +194,6 @@ class Commands(MixinMeta):
             await self.config.red.clear()
             if embed_requested:
                 embed = discord.Embed(
-                    title="Setting Changed",
                     description=f"The red emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
@@ -211,7 +204,6 @@ class Commands(MixinMeta):
             await self.config.red.set(str(emoji))
             if embed_requested:
                 embed = discord.Embed(
-                    title="Setting Changed",
                     description=f"The red emoji has been set to {emoji}.",
                     color=await ctx.embed_color(),
                 )
