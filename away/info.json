@@ -12,7 +12,7 @@
     "min_bot_version": "3.5.0.dev1",
     "tags": [
         "away",
-        "aft"
+        "afk"
     ],
     "permissions": [
         "embed_links"
