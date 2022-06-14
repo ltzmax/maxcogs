@@ -24,9 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import logging
+import datetime
 
 import discord
 from redbot.core import commands
+from redbot.core.utils.chat_formatting import humanize_timedelta
 
 log = logging.getLogger("red.maxcogs.embeduptime")
 
