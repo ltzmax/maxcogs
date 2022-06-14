@@ -1,7 +1,8 @@
-
 {
     "author": [
-        "max", "TheDiscordHistorian", "dia ♡#0666"
+        "max",
+        "TheDiscordHistorian",
+        "dia \u2661#0666"
     ],
     "name": "Away",
     "install_msg": "Thanks for installing. **Important note**, this cog support slash command, once you sync the tree it will show up under `/` on discord.\nFeel free to check the docs <https://maxcogs.readthedocs.io/en/latest/cogs/away.html>",
@@ -10,7 +11,8 @@
     "hidden": false,
     "min_bot_version": "3.5.0.dev1",
     "tags": [
-        "away", "aft"
+        "away",
+        "aft"
     ],
     "permissions": [
         "embed_links"

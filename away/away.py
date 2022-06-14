@@ -1,5 +1,5 @@
 # This cog was orginially made by kato & dia ♡#0666.
-# This repo/cog had no license, 
+# This repo/cog had no license,
 # but permission to continue the cog was granted.
 # https://github.com/TheDiscordHistorian/historian-cogs
 
@@ -26,9 +26,7 @@ class Away(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cache = {}
-        self.config = Config.get_conf(
-            self, identifier=0x390440438, force_registration=True
-        )
+        self.config = Config.get_conf(self, identifier=0x390440438, force_registration=True)
         default_guild = {
             "role": None,
             "delete_after": None,
