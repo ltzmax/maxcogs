@@ -15,7 +15,7 @@ body:
       label: Cog
       description: What cog are you getting issue from?
       options:
-        . away
+        - away
         - embeduptime
         - nekosbest
         - onconnect
