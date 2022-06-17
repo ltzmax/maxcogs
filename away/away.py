@@ -28,7 +28,6 @@ class Away(commands.Cog):
         self.cache = {}
         self.config = Config.get_conf(self, identifier=0x390440438, force_registration=True)
         default_guild = {
-            "role": None,
             "delete_after": None,
             "delete": False,
         }
@@ -157,8 +156,6 @@ class Away(commands.Cog):
             data = self.cache[ctx.guild.id]
         else:
             data = await self.config.guild(ctx.guild)()
-        if data["role"] != None:
-            await ctx.author.add_roles(discord.Object(data["role"]))
         _userdata = await self.config.member(ctx.author).all()
         if _userdata["nick"] is True:
             try:
@@ -194,9 +191,6 @@ class Away(commands.Cog):
             data = self.cache[ctx.guild.id]
         else:
             data = await self.config.guild(ctx.guild).all()
-        if data["role"] != None:
-            if ctx.author._roles.has(data["role"]):
-                await ctx.author.remove_roles(discord.Object(data["role"]))
         _userdata = await self.config.member(ctx.author).all()
         if _userdata["nick"] is True:
             try:
@@ -219,23 +213,6 @@ class Away(commands.Cog):
     @commands.group(aliases=["afkset"])
     async def awayset(self, ctx: commands.Context):
         """Manage away settings."""
-
-    @awayset.command()
-    @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True)
-    @commands.cooldown(1, 3, commands.BucketType.user)
-    async def role(self, ctx: commands.Context, role: discord.Role):
-        """Set the role to be used for away status."""
-
-        if role.position >= ctx.me.top_role.position:
-            return await ctx.send("You can't assign roles higher / equal to my own.")
-        if role.position >= ctx.author.top_role.position:
-            return await ctx.send("You can't assign roles higher / equal to your own.")
-        await self.config.guild(ctx.guild).role.set(role.id)
-        await self.update_guild_cache(ctx.guild)
-        await ctx.send(
-            f"Away role set to {role.mention}.",
-        )
 
     @awayset.command()
     @commands.has_permissions(manage_guild=True)
@@ -279,3 +256,23 @@ class Away(commands.Cog):
         """
         await self.config.member(ctx.author).nick.set(toggle)
         await ctx.send(f"Away nick set to {toggle}.")
+
+    @awayset.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def showsettings(self, ctx: commands.Context):
+        """Show the current away settings."""
+        if ctx.guild.id in self.cache:
+            data = self.cache[ctx.guild.id]
+        else:
+            data = await self.config.guild(ctx.guild)()
+        _userdata = await self.config.member(ctx.author).all()
+        embed = discord.Embed(
+            description=f"Away Settings for {ctx.guild.name}",
+            color=await ctx.embed_color(),
+        )
+        embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
+        embed.add_field(name="Delete after:", value=data["delete_after"], inline=False)
+        embed.add_field(name="Delete:", value=data["delete"], inline=False)
+        embed.add_field(name="Autoback:", value=_userdata["autoback"], inline=False)
+        embed.add_field(name="Nick:", value=_userdata["nick"])
+        await ctx.send(embed=embed)
