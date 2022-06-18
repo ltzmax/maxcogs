@@ -143,6 +143,7 @@ class Away(commands.Cog):
             except discord.HTTPException as e:
                 log.error(f"Failed to edit nickname due to: {e}")
 
+    @commands.guild_only()
     @commands.hybrid_command(aliases=["afk"])
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def away(self, ctx: commands.Context, *, message: str):
@@ -177,6 +178,7 @@ class Away(commands.Cog):
             return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
 
+    @commands.guild_only()
     @commands.hybrid_command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def back(self, ctx: commands.Context):
@@ -210,6 +212,7 @@ class Away(commands.Cog):
             return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
 
+    @commands.guild_only()
     @commands.group(aliases=["afkset"])
     async def awayset(self, ctx: commands.Context):
         """Manage away settings."""
