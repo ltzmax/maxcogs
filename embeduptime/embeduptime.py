@@ -33,7 +33,7 @@ from redbot.core.utils.chat_formatting import humanize_timedelta
 log = logging.getLogger("red.maxcogs.embeduptime")
 
 
-class NekosBest(commands.Cog):
+class EmbedUptime(commands.Cog):
     """
     Shows the uptime of the bot.
     """
