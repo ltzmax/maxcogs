@@ -9,7 +9,7 @@
     "description": "Set yourself as away.",
     "short": "Set yourself as away.",
     "hidden": false,
-    "min_bot_version": "3.5.0.dev1",
+    "min_bot_version": "3.5.0",
     "tags": [
         "away",
         "afk"
