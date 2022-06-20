@@ -1,0 +1,22 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "Pingreplace",
+    "install_msg": "Thanks for installing. Once you load this cog, it will replace the ping in core with this one, on unload you will have the core one back.\nFeel free to check the docs <https://maxcogs.readthedocs.io/en/latest/cogs/pingreplace.html>",
+    "description": "Replace the ping pong word with random pokemon names and shows bot's latency.",
+    "short": "Replace the ping pong word with random pokemon names and shows bot's latency.",
+    "hidden": false,
+    "min_bot_version": "3.5.0.dev1",
+    "tags": [
+        "ping",
+        "latency"
+    ],
+    "min_python_version": [
+        3,
+        8,
+        5
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}

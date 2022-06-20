@@ -17,4 +17,5 @@ Hello and welcome to the docs of maxcogs. Here i will explain the usage of each 
     cogs/embeduptime
     cogs/nekosbest
     cogs/onconnect
+    cogs/pingreplace
     cogs/veryfun
