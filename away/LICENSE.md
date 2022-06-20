@@ -12,7 +12,7 @@ If you find software that doesn’t have a license, that generally means you hav
 **Your options**:
 
     - **Ask the maintainers nicely to add a license**. Unless the software includes strong indications to the contrary, lack of a license is probably an oversight.
-    
+
     - **Don’t use the software**. Find or create an alternative that is under an open source license.
-    
+
     - **Negotiate a private license**. Bring your lawyer.
