@@ -4,7 +4,7 @@ This cog and github repo had NO license but permissions to continue the cog was 
 
 ## What does no lience means?
 TD;LR
-- you are not allowed to use that sourcecode without permissions granted from orginial owners.
+- you are not allowed to use that sourcecode.
 
 ## Actuall meaning
 If you find software that doesn’t have a license, that generally means you have no permission from the creators of the software to use, modify, or share the software. Although a code host such as GitHub may allow you to view and fork the code, this does not imply that you are permitted to use, modify, or share the software for any purpose.
