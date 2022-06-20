@@ -19,6 +19,7 @@ body:
         - embeduptime
         - nekosbest
         - onconnect
+        - pingreplace
         - veryfun
     validations:
       required: true
