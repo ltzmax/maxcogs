@@ -21,14 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import random
-import discord
 import logging
+import random
 
+import discord
 from redbot.core import commands
+
 from .pokemon.pokemon import pokemon_names
 
 log = logging.getLogger("red.maxcogs.pingreplace")
+
 
 class Pingreplace(commands.Cog):
     """Replace the ping pong word with random pokemon names and shows bot's latency."""
@@ -62,8 +64,8 @@ class Pingreplace(commands.Cog):
         """Shows the bot's ping."""
         poke = random.choice(pokemon_names)
         ping = round(self.bot.latency * 1000)
-        msg = (f"{poke} `{ping}ms`")
-        async with ctx.typing():   
+        msg = f"{poke} `{ping}ms`"
+        async with ctx.typing():
             await ctx.send(msg)
 
     @commands.command(hidden=True)
@@ -78,6 +80,7 @@ class Pingreplace(commands.Cog):
             await ctx.send(embed=em)
         else:
             await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
+
 
 async def setup(bot):
     ping = Pingreplace(bot)
