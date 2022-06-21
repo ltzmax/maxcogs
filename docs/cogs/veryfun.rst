@@ -11,3 +11,8 @@ This cog is a roleplay cog that is well known for alot with example slap, baka a
 .. note ::
 
     This cog is a roleplay cog and therefore i will not list every commands, it has over 30 commands and that is too much to note down. Please run ``[p]help VeryFun`` to see all the commands in this cog.
+
+.. info ::
+
+    You probably want to know why this is ``veryfun``? That's because Vexed's cog has a cog called roleplay, and i did not want to make users to have to uninstall this one to install his one which isn't exactly same as mine.
+
