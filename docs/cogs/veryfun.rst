@@ -15,4 +15,3 @@ This cog is a roleplay cog that is well known for alot with example slap, baka a
 .. info ::
 
     You probably want to know why this is ``veryfun``? That's because Vexed's cog has a cog called roleplay, and i did not want to make users to have to uninstall this one to install his one which isn't exactly same as mine.
-
