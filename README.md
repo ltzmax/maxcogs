@@ -20,11 +20,9 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
-| Away | Set yourself as away | 0.2.0 | TheDiscordHistorian, sora, ltzmax | ✅ |
 | EmbedUptime | Shows bot's uptime. | 0.1.12 | ltzmax | ✅ |
 | NekosBest | Sends random images of kitsune, nekos and waifu. | 0.1.18 | ltzmax | ✅ |
 | OnConnect | Cog that sends shard events. | 0.1.20 | ltzmax, Arman0334 | ✅ |
-| Pingreplace | Replace the word ping pong with pokemon names and shows bot's latency. | 0.0.1 | ltzmax | ✅ |
 | VeryFun | Just anyother roleplay cog that you can play together with in a server. | 0.1.16 | ltzmax | ✅ |
 
 ## Credits:

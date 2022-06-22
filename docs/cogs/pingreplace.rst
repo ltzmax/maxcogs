@@ -12,7 +12,7 @@ Pingreplace
 ----
 Usage
 ----
-This cog only shows the bot ping and does not really do anything special other than that. This cog shows the pokemon names instead of ``ping pong`` with the bot's latency since i do believe alot people do not care about ``ping pong`` so i made it with pokemon names. This has the full list of pokemons from the national dex.
+This cog only shows the bot ping and does not really do anything special other than that. This cog shows the pokemon names instead of ``pong`` with the bot's latency since i do believe alot people do not care about ``pong`` so i made it with random pokemon names because i'm such a pokemon nerd and wanted to do it this way. This has the full list of pokemons from the entire national dex.
 
 ----
 Commands

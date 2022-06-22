@@ -15,11 +15,9 @@ body:
       label: Cog
       description: What cog are you feature requesting to?
       options:
-        - away
         - embeduptime
         - nekosbest
         - onconnect
-        - pingreplace
         - veryfun
     validations:
       required: true

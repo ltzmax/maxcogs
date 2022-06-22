@@ -33,7 +33,7 @@ from .converters import RealEmojiConverter
 
 
 class Commands(MixinMeta):
-    """Commands for managing the cog's settings are found here."""
+    """Commands for managing the cog's settings."""
 
     @commands.is_owner()
     @commands.guild_only()
