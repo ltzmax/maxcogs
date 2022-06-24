@@ -79,7 +79,6 @@ class EmbedUptime(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def uptime(self, ctx: commands.Context):
         """Shows [botname]'s uptime."""
-        reply = await self.config.reply()
         name = ctx.bot.user.name
         delta = datetime.datetime.utcnow() - self.bot.uptime
         uptime = self.bot.uptime.replace(tzinfo=datetime.timezone.utc)
