@@ -92,8 +92,9 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
         """
         try:
             await ctx.reply(message, embed=embed, mention_author=mention_author)
-        except discord.NotFound:
+        except discord.HTTPException as e:
             await ctx.send(message, embed=embed)
+            log.info(e)
 
     # Based on https://github.com/Cog-Creators/Red-DiscordBot/blob/9ab307c1efc391301fc6498391d2e403aeee2faa/redbot/core/bot.py#L925
     async def get_or_fetch_channel(self, channel_id: int):
