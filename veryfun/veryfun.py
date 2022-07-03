@@ -306,7 +306,7 @@ class VeryFun(commands.Cog):
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def vkick(self, ctx, user: discord.Member):
         """kick a user!
-        
+
         This is `vkick` because kick is taken by the mod cog.
         If you do not use mod cog, you can use alias cog to make it `kick`.
         """
