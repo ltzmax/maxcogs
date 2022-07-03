@@ -50,7 +50,7 @@ class Quote(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.commands(aliases=["quotes"])
+    @commands.command(aliases=["quotes"])
     @commands.cooldown(rate=1, per=5, type=commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def quote(self, ctx):
