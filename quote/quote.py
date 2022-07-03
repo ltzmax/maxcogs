@@ -35,11 +35,8 @@ class Quote(commands.Cog):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-    # async def cog_unload(self):
-    #    await self.session.close()
-
-    def cog_unload(self):
-        asyncio.create_task(self.session.close())
+    async def cog_unload(self):
+        await self.session.close()
 
     __version__ = "0.0.5"
     __author__ = "MAX"

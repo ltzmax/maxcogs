@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Quote",
-    "install_msg": "Thanks for installing. This cog is unsupported and you may experience issues.",
+    "install_msg": "Thanks for installing. **Important note**, this cog support slash command, once you sync the tree it will show up under `/` on discord.\nFeel free to check the docs <https://maxcogs.readthedocs.io/en/latest/cogs/quote.html>",
     "description": "Cog that sends a random quote.",
     "short": "Cog that sends a random quote.",
     "hidden": false,
