@@ -35,7 +35,7 @@ class Quote(commands.Cog):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-    #async def cog_unload(self):
+    # async def cog_unload(self):
     #    await self.session.close()
 
     def cog_unload(self):
