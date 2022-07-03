@@ -19,6 +19,7 @@ body:
         - onconnect
         - veryfun
         - kitsune
+        - quote
         - nekos
     validations:
       required: true
