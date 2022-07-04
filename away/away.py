@@ -1,10 +1,11 @@
 import logging
+from typing import Literal
 
 import discord
-from typing import Literal
 from redbot.core import Config, commands
 
 log = logging.getLogger("red.maxcogs.away")
+
 
 class Away(commands.Cog):
     """An away thingy to set away and be not away."""
@@ -19,16 +20,17 @@ class Away(commands.Cog):
         )
 
     async def red_delete_data_for_user(
-        self, *, requester: Literal["discord", "owner", "user", "user_strict"], user_id: int,
+        self,
+        *,
+        requester: Literal["discord", "owner", "user", "user_strict"],
+        user_id: int,
     ):
         await self.config.user_from_id(user_id).clear()
 
     def __init__(self, bot):
         self.bot = bot
         self.cache = {}
-        self.config = Config.get_conf(
-            self, identifier=0x390440438, force_registration=True
-        )
+        self.config = Config.get_conf(self, identifier=0x390440438, force_registration=True)
         default_guild = {
             "role": None,
             "delete_after": None,
