@@ -12,9 +12,8 @@ Hello and welcome to the docs of maxcogs. Here i will explain the usage of each 
 .. toctree::
     :maxdepth: 2
     :caption: Cogs:
-    :numbered:
 
-    cogs/away
+    away
     cogs/embeduptime
     cogs/nekosbest
     cogs/onconnect
