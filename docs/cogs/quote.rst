@@ -22,6 +22,7 @@ Commands
     [p]quote
 
 **Description**:
+
 Get a random quote.
 
 ----
