@@ -201,7 +201,11 @@ class Away(commands.Cog):
         Use `[p]away <message>` to set your afk status.
         """
         if not await self.config.member(ctx.author).away():
-            return await ctx.maybe_send_embed("You're not away.")
+            embed = discord.Embed(
+                description=f"{ctx.author.mention} You're not away. Use `{ctx.clean_prefix}away <message>` to set your away status.",
+                color=await ctx.embed_color(),
+            )
+            return await ctx.send(embed=embed)
         if ctx.guild.id in self.cache:
             data = self.cache[ctx.guild.id]
         else:
@@ -238,13 +242,17 @@ class Away(commands.Cog):
     async def role(self, ctx: commands.Context, role: discord.Role):
         """Set the role to be used for away status."""
         if role.position >= ctx.me.top_role.position:
-            return await ctx.maybe_send_embed(
-                "You can't assign roles higher / equal to my own."
+            embed = discord.Embed(
+                description="I can't set the role to be higher than my highest role.",
+                color=await ctx.embed_color(),
             )
+            return await ctx.send(embed=embed)
         if role.position >= ctx.author.top_role.position:
-            return await ctx.maybe_send_embed(
-                "You can't assign roles higher / equal to your own."
+            embed = discord.Embed(
+                description="I can't set the role to be higher than your highest role.",
+                color=await ctx.embed_color(),
             )
+            return await ctx.send(embed=embed)
         await self.config.guild(ctx.guild).role.set(role.id)
         await self.update_guild_cache(ctx.guild)
         embed = discord.Embed(
