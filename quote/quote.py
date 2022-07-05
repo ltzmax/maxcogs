@@ -61,9 +61,7 @@ class Quote(commands.Cog):
         async with ctx.typing():
             async with self.session.get(base_url) as response:
                 if response.status != 200:
-                    return await ctx.send(
-                        "Something went wrong while trying to contact API."
-                    )
+                    return await ctx.send("Something went wrong while trying to contact API.")
                 data = await response.json()
                 quote = data["content"]
                 author = data["author"]
