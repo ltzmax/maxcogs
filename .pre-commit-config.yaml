@@ -16,7 +16,6 @@ repos:
           - "--indent=4"
           - "--no-sort-keys"
     -   id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
 
 -   repo: https://github.com/psf/black
     rev: 22.6.0
