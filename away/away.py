@@ -1,3 +1,8 @@
+# This cog was orginially made by TheDiscordHistorian (kato#0666) and dia ♡#0666.
+# And are now maintained by ltzmax.
+# Most people knew this cog was without a license on the original repo source
+# but permission to continue the cog was granted by dia #0666.
+# Please continue to respect the original authors to not steal the code without permissions.
 import logging
 from typing import Literal
 
