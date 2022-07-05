@@ -34,7 +34,9 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
         raise NotImplementedError()
 
     @abstractmethod
-    async def send_event_message(self, message: str, colour: Union[discord.Colour, int]) -> None:
+    async def send_event_message(
+        self, message: str, colour: Union[discord.Colour, int]
+    ) -> None:
         raise NotImplementedError()
 
     def __init__(self, *_args) -> None:

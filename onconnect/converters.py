@@ -30,7 +30,9 @@ from redbot.core import commands
 class RealEmojiConverter(commands.EmojiConverter):
     """See `https://github.com/phenom4n4n/phen-cogs/blob/5e99e0a53f560049bfaa563ef957f1baa276fdf4/roleutils/converters.py#L112`"""
 
-    async def convert(self, ctx: commands.Context, argument: str) -> Union[discord.Emoji, str]:
+    async def convert(
+        self, ctx: commands.Context, argument: str
+    ) -> Union[discord.Emoji, str]:
         try:
             emoji = await super().convert(ctx, argument)
         except commands.BadArgument:

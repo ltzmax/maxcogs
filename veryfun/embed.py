@@ -35,7 +35,9 @@ async def api_call(self, ctx, action: str):
     async with ctx.typing():
         async with self.session.get(NEKOS + action) as response:
             if response.status != 200:
-                return await ctx.send("Something went wrong while trying to contact API.")
+                return await ctx.send(
+                    "Something went wrong while trying to contact API."
+                )
             url = await response.json()
             return url
 

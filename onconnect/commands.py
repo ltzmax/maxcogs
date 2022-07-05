@@ -125,7 +125,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The green emoji has been reset."
+                )
         else:
             await self.config.green.set(str(emoji))
             if embed_requested:
@@ -162,7 +164,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
+                await self.maybe_reply(
+                    ctx=ctx, message="The orange emoji has been reset."
+                )
         else:
             await self.config.orange.set(str(emoji))
             if embed_requested:
@@ -209,7 +213,9 @@ class Commands(MixinMeta):
                 )
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
-                await self.maybe_reply(ctx=ctx, message=f"The red emoji has been set to {emoji}.")
+                await self.maybe_reply(
+                    ctx=ctx, message=f"The red emoji has been set to {emoji}."
+                )
 
     @_connectset.command(name="reset", aliases=["clear"])
     async def _reset(self, ctx: commands.Context):
@@ -234,7 +240,10 @@ class Commands(MixinMeta):
         if pred.result:
             await self.config.clear()
             await self.maybe_reply(
-                ctx=ctx, message=("\N{WHITE HEAVY CHECK MARK} Done, all settings have been reset.")
+                ctx=ctx,
+                message=(
+                    "\N{WHITE HEAVY CHECK MARK} Done, all settings have been reset."
+                ),
             )
         else:
             await self.maybe_reply(

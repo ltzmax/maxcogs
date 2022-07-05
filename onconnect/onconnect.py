@@ -109,7 +109,9 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
             return channel
         return await self.bot.fetch_channel(channel_id)
 
-    async def send_event_message(self, message: str, colour: Union[discord.Colour, int]) -> None:
+    async def send_event_message(
+        self, message: str, colour: Union[discord.Colour, int]
+    ) -> None:
         """Send an embed message to the set statuschannel.
 
         Parameters

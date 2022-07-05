@@ -67,7 +67,9 @@ class NekosBest(commands.Cog):
             )
             await ctx.send(embed=em)
         else:
-            await ctx.send(f"Cog Version: {self.__version__}\nAuthor: {self.__author__}")
+            await ctx.send(
+                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
+            )
 
     @commands.hybrid_command()
     @commands.cooldown(1, 3, commands.BucketType.user)

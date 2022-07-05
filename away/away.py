@@ -15,9 +15,7 @@ class Away(commands.Cog):
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         pre_processed = super().format_help_for_context(ctx)
-        return (
-            f"{pre_processed}\n**Cog Version:** {self.__version__}\n**Author:** {self.__author__}"
-        )
+        return f"{pre_processed}\n**Cog Version:** {self.__version__}\n**Author:** {self.__author__}"
 
     async def red_delete_data_for_user(
         self,
@@ -30,7 +28,9 @@ class Away(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cache = {}
-        self.config = Config.get_conf(self, identifier=0x390440438, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=0x390440438, force_registration=True
+        )
         default_guild = {
             "role": None,
             "delete_after": None,
@@ -94,14 +94,18 @@ class Away(commands.Cog):
                         embed=self._format_message(mention, data["message"]),
                         delete_after=g_data["delete_after"],
                         reference=message.to_reference(fail_if_not_exists=False),
-                        allowed_mentions=discord.AllowedMentions(users=False, roles=False),
+                        allowed_mentions=discord.AllowedMentions(
+                            users=False, roles=False
+                        ),
                         mention_author=False,
                     )
                 else:
                     await message.channel.send(
                         embed=self._format_message(mention, data["message"]),
                         reference=message.to_reference(fail_if_not_exists=False),
-                        allowed_mentions=discord.AllowedMentions(users=False, roles=False),
+                        allowed_mentions=discord.AllowedMentions(
+                            users=False, roles=False
+                        ),
                         mention_author=False,
                     )
             else:
@@ -234,9 +238,13 @@ class Away(commands.Cog):
     async def role(self, ctx: commands.Context, role: discord.Role):
         """Set the role to be used for away status."""
         if role.position >= ctx.me.top_role.position:
-            return await ctx.maybe_send_embed("You can't assign roles higher / equal to my own.")
+            return await ctx.maybe_send_embed(
+                "You can't assign roles higher / equal to my own."
+            )
         if role.position >= ctx.author.top_role.position:
-            return await ctx.maybe_send_embed("You can't assign roles higher / equal to your own.")
+            return await ctx.maybe_send_embed(
+                "You can't assign roles higher / equal to your own."
+            )
         await self.config.guild(ctx.guild).role.set(role.id)
         await self.update_guild_cache(ctx.guild)
         embed = discord.Embed(
