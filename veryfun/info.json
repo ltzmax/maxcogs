@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "VeryFun",
-    "install_msg": "Thanks for installing.\nFeel free to check the docs <https://maxcogs.readthedocs.io/en/latest/cogs/veryfun.html>",
+    "install_msg": "Thanks for installing.\nFeel free to check the docs <https://readdocs.voltrabot.com/docs/Cogs/veryfun>",
     "description": "Roleplay cog with alot of fun to have with your members. This is with help of nekos.best.",
     "short": "Roleplay cog. With help of nekos.best.",
     "hidden": false,

@@ -29,7 +29,7 @@ from redbot.core import commands
 
 
 class Quote(commands.Cog):
-    """Get a random quote."""
+    """This cog gives you a random quote from quotable.io."""
 
     def __init__(self, bot):
         self.bot = bot

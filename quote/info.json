@@ -3,9 +3,9 @@
         "max"
     ],
     "name": "Quote",
-    "install_msg": "Thanks for installing.\nFeel free to check the docs <https://maxcogs.readthedocs.io/en/latest/cogs/quote.html>",
-    "description": "Cog that sends a random quote.",
-    "short": "Cog that sends a random quote.",
+    "install_msg": "Thanks for installing.\nFeel free to check the docs <https://readdocs.voltrabot.com/docs/Cogs/quote>",
+    "description": "This cog gives you a random quote from quotable.io.",
+    "short": "This cog gives you a random quote from quotable.io.",
     "hidden": false,
     "min_bot_version": "3.5.0.dev1",
     "tags": [
