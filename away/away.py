@@ -260,14 +260,20 @@ class Away(commands.Cog):
 
     @awayset.command()
     @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def toggle(self, ctx: commands.Context, delete: bool):
         """Toggle whether to delete away messages or not."""
         await self.config.guild(ctx.guild).delete.set(delete)
         await self.update_guild_cache(ctx.guild)
-        await ctx.maybe_send_embed(f"Away delete set to {delete}.")
+        embed = discord.Embed(
+            description=f"Away delete set to {delete}.",
+            color=await ctx.embed_color(),
+        )
+        await ctx.send(embed=embed)
 
     @awayset.command()
     @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def timeout(self, ctx: commands.Context, delete_after: int):
         """Set the amount of time in seconds to delete the message after [p]away."""
 
@@ -275,7 +281,11 @@ class Away(commands.Cog):
             return await ctx.maybe_send_embed("The minimum is 5 seconds.")
         await self.config.guild(ctx.guild).delete_after.set(delete_after)
         await self.update_guild_cache(ctx.guild)
-        await ctx.maybe_send_embed(f"Away delete after set to {delete_after}.")
+        embed = discord.Embed(
+            description=f"Set the timeout to {delete_after} seconds.",
+            color=await ctx.embed_color(),
+        )
+        await ctx.send(embed=embed)
 
     @awayset.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -293,8 +303,8 @@ class Away(commands.Cog):
         await ctx.send(embed=embed)
 
     @awayset.command(aliases=["nick"])
-    @commands.bot_has_permissions(manage_nicknames=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
+    @commands.bot_has_permissions(manage_nicknames=True, embed_links=True)
     async def nickname(self, ctx: commands.Context, toggle: bool):
         """Toggle whether to change the nickname to name + [away]
 
