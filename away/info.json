@@ -7,7 +7,7 @@
     "description": "Away cog to set yourself as away.",
     "short": "Away cog to set yourself as away.",
     "hidden": false,
-    "min_bot_version": "3.5.0.dev1",
+    "min_bot_version": "3.5.0",
     "tags": [
         "afk",
         "away"

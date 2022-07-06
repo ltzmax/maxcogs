@@ -7,7 +7,7 @@
     "description": "This cog gives you a random quote from quotable.io.",
     "short": "This cog gives you a random quote from quotable.io.",
     "hidden": false,
-    "min_bot_version": "3.5.0.dev1",
+    "min_bot_version": "3.5.0",
     "tags": [
         "quote"
     ],
