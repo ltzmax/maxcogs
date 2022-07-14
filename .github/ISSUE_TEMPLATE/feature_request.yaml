@@ -19,7 +19,6 @@ body:
         - embeduptime
         - nekosbest
         - onconnect
-        - quote
         - veryfun
     validations:
       required: true
