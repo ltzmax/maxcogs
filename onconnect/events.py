@@ -37,27 +37,31 @@ class Events(MixinMeta):
     @commands.Cog.listener()
     async def on_shard_connect(self, shard_id: int) -> None:
         emoji = await self.config.orange()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) connected!"
+        shardcount = self.bot.shard_count = max(self.bot.shard_count, shard_id + 1)
+        message = f"{emoji} Shard #{shard_id}/{shardcount} connected!"
         await self.bot.wait_until_red_ready()
         await self.send_event_message(message=message, colour=discord.Colour.orange())
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard_id: int) -> None:
         emoji = await self.config.green()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) ready!"
+        shardcount = self.bot.shard_count = max(self.bot.shard_count, shard_id + 1)
+        message = f"{emoji} Shard #{shard_id}/{shardcount} ready!"
         await self.bot.wait_until_red_ready()
         await self.send_event_message(message=message, colour=discord.Colour.green())
 
     @commands.Cog.listener()
     async def on_shard_disconnect(self, shard_id: int) -> None:
         emoji = await self.config.red()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) disconnected!"
+        shardcount = self.bot.shard_count = max(self.bot.shard_count, shard_id + 1)
+        message = f"{emoji} Shard #{shard_id}/{shardcount} disconnected!"
         await self.send_event_message(message=message, colour=discord.Colour.red())
 
     @commands.Cog.listener()
     async def on_shard_resumed(self, shard_id: int) -> None:
         emoji = await self.config.orange()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) resumed!"
+        shardcount = self.bot.shard_count = max(self.bot.shard_count, shard_id + 1)
+        message = f"{emoji} Shard #{shard_id}/{shardcount} resumed!"
         await self.bot.wait_until_red_ready()
         await self.send_event_message(message=message, colour=discord.Colour.orange())
 
