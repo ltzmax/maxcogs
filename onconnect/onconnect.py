@@ -47,7 +47,7 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
 class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
-    __version__ = "0.1.15"
+    __version__ = "0.1.16"
     __author__ = "MAX"
 
     def __init__(self, bot: Red) -> None:
