@@ -35,36 +35,37 @@ class Events(MixinMeta):
     """The listeners for shard events are found here."""
 
     @commands.Cog.listener()
-    async def on_connect(self) -> None:
-        emoji = await self.config.green()
-        message = f"{emoji} {self.bot.user.name} successfully connected to discord!"
-        await self.bot.wait_until_red_ready()
-        await self.send_event_message(message=message, colour=discord.Colour.green())
-
-    @commands.Cog.listener()
     async def on_shard_connect(self, shard_id: int) -> None:
-        emoji = await self.config.green()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) connected!"
+        emoji = await self.config.orange()
+        for s in self.bot.shards:
+            shard_count = self.bot.shard_count
+        message = f"{emoji} Shard #{s+1}/{shard_count} connected!"
         await self.bot.wait_until_red_ready()
-        await self.send_event_message(message=message, colour=discord.Colour.green())
+        await self.send_event_message(message=message, colour=discord.Colour.orange())
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard_id: int) -> None:
         emoji = await self.config.green()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) ready!"
+        for s in self.bot.shards:
+            shard_count = self.bot.shard_count
+        message = f"{emoji} Shard #{s+1}/{shard_count} ready!"
         await self.bot.wait_until_red_ready()
         await self.send_event_message(message=message, colour=discord.Colour.green())
 
     @commands.Cog.listener()
     async def on_shard_disconnect(self, shard_id: int) -> None:
         emoji = await self.config.red()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) disconnected!"
+        for s in self.bot.shards:
+            shard_count = self.bot.shard_count
+        message = f"{emoji} Shard #{s+1}/{shard_count} disconnected!"
         await self.send_event_message(message=message, colour=discord.Colour.red())
 
     @commands.Cog.listener()
     async def on_shard_resumed(self, shard_id: int) -> None:
         emoji = await self.config.orange()
-        message = f"{emoji} {self.bot.user.name} (Shard ID {shard_id}) resumed!"
+        for s in self.bot.shards:
+            shard_count = self.bot.shard_count
+        message = f"{emoji} Shard #{s+1}/{shard_count} resumed!"
         await self.bot.wait_until_red_ready()
         await self.send_event_message(message=message, colour=discord.Colour.orange())
 

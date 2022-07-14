@@ -38,6 +38,7 @@ log = logging.getLogger("red.maxcogs.onconnect")
 class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
     """This cog is used to send shard events."""
 
+
     __version__ = "0.1.20"
     __author__ = "MAX, Arman0334"
 
