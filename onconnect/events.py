@@ -43,12 +43,12 @@ class Events(MixinMeta):
 
     @commands.Cog.listener()
     async def on_shard_connect(self, shard_id: int) -> None:
-        emoji = await self.config.orange()
+        emoji = await self.config.green()
         for s in self.bot.shards:
             shard_count = self.bot.shard_count
         message = f"{emoji} Shard #{s+1}/{shard_count} connected!"
         await self.bot.wait_until_red_ready()
-        await self.send_event_message(message=message, colour=discord.Colour.orange())
+        await self.send_event_message(message=message, colour=discord.Colour.green())
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard_id: int) -> None:
