@@ -330,3 +330,11 @@ class VeryFun(commands.Cog):
         """shoot a user!"""
         url = await api_call(self, ctx, "shoot")
         await embedgen(self, ctx, user, url, "shoots")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def yeet(self, ctx, user: discord.Member):
+        """yeet a user far far away."""
+        url = await api_call(self, ctx, "shoot")
+        await embedgen(self, ctx, user, url, "yeets")
