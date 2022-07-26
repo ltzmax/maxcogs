@@ -336,5 +336,5 @@ class VeryFun(commands.Cog):
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def yeet(self, ctx, user: discord.Member):
         """yeet a user far far away."""
-        url = await api_call(self, ctx, "shoot")
+        url = await api_call(self, ctx, "yeet")
         await embedgen(self, ctx, user, url, "yeets")
