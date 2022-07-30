@@ -210,7 +210,7 @@ class Away(commands.Cog):
                 description=f"{ctx.author.mention} You're not away. Use `{ctx.clean_prefix}away <message>` to set your away status.",
                 color=await ctx.embed_color(),
             )
-            return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, ephemeral=True)
         if ctx.guild.id in self.cache:
             data = self.cache[ctx.guild.id]
         else:
@@ -239,7 +239,7 @@ class Away(commands.Cog):
 
     @commands.group(aliases=["afkset"])
     async def awayset(self, ctx: commands.Context):
-        """Change away settings."""
+        """Manage away settings."""
 
     @awayset.command()
     @commands.has_permissions(manage_roles=True)
