@@ -210,7 +210,9 @@ class Away(commands.Cog):
                 description=f"{ctx.author.mention} You're not away. Use `{ctx.clean_prefix}away <message>` to set your away status.",
                 color=await ctx.embed_color(),
             )
-            return await ctx.send(embed=embed, ephemeral=True) # ephemeral will only be sent if you used `/`.
+            return await ctx.send(
+                embed=embed, ephemeral=True
+            )  # ephemeral will only be sent if you used `/`.
         if ctx.guild.id in self.cache:
             data = self.cache[ctx.guild.id]
         else:
