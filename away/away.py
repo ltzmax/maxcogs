@@ -210,7 +210,7 @@ class Away(commands.Cog):
                 description=f"{ctx.author.mention} You're not away. Use `{ctx.clean_prefix}away <message>` to set your away status.",
                 color=await ctx.embed_color(),
             )
-            return await ctx.send(embed=embed, ephemeral=True)
+            return await ctx.send(embed=embed, ephemeral=True) # ephemeral will only be sent if you used `/`.
         if ctx.guild.id in self.cache:
             data = self.cache[ctx.guild.id]
         else:
@@ -274,7 +274,7 @@ class Away(commands.Cog):
         await self.config.guild(ctx.guild).role.clear()
         await self.update_guild_cache(ctx.guild)
         embed = discord.Embed(
-            description=f"Removed the away role.",
+            description=f"Removed {role.mention} from the away role.",
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
@@ -297,7 +297,6 @@ class Away(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def timeout(self, ctx: commands.Context, delete_after: int):
         """Set the amount of time in seconds to delete the message after [p]away."""
-
         if delete_after < 5:
             return await ctx.maybe_send_embed("The minimum is 5 seconds.")
         await self.config.guild(ctx.guild).delete_after.set(delete_after)
