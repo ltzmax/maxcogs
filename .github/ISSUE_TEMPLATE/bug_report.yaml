@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for taking the time to fill out this bug report. Before you report, make sure that the cog is up to date.
   - type: dropdown
     id: Cog
     attributes:
@@ -20,6 +20,13 @@ body:
         - nekosbest
         - onconnect
         - veryfun
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: "What is the version of the cog?"
+      placeholder: e.g 0.4.5
     validations:
       required: true
   - type: input
