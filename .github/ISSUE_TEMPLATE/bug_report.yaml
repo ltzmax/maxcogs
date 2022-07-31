@@ -34,7 +34,7 @@ body:
     attributes:
       label: Discord username
       description: Can you tell me your discord username so i can get in touch with you if i need more info?
-      placeholder: ex. discord#1234 (This is Optional)
+      placeholder: e.g discord#1234 (This is Optional)
     validations:
       required: false
   - type: textarea
