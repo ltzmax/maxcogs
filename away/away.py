@@ -337,7 +337,7 @@ class Away(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @awayset.command(aliases=["settings"])
+    @awayset.command(aliases=["settings", "showsetting"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def showsettings(self, ctx):
@@ -366,3 +366,18 @@ class Away(commands.Cog):
         embed.add_field(name="Autoback:", value=_userdata["autoback"], inline=False)
         embed.add_field(name="Nick:", value=_userdata["nick"])
         await ctx.send(embed=embed)
+
+    @awayset.command(name="version")
+    async def awayset_version(self, ctx: commands.Context):
+        """Shows the version of the cog"""
+        if await ctx.embed_requested():
+            em = discord.Embed(
+                title="Cog Version:",
+                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+                colour=await ctx.embed_color(),
+            )
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(
+                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
+            )

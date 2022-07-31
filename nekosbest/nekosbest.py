@@ -52,12 +52,8 @@ class NekosBest(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.group(hidden=True)
-    async def nekoset(self, ctx):
-        """Place to show version of the cog"""
-
-    @nekoset.command(name="version")
-    async def nekoset_version(self, ctx: commands.Context):
+    @commands.command(name="nekostversion", aliases=["nekosbestv"])
+    async def nekosbest_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         if await ctx.embed_requested():
             em = discord.Embed(
