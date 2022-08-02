@@ -68,7 +68,6 @@ class NekosBest(commands.Cog):
             )
 
     @commands.hybrid_command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def waifu(self, ctx):
         """Send a random waifu image."""
@@ -76,7 +75,6 @@ class NekosBest(commands.Cog):
         await embedgen(self, ctx, url, "waifu")
 
     @commands.hybrid_command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def nekos(self, ctx):
         """Send a random neko image."""
@@ -84,7 +82,6 @@ class NekosBest(commands.Cog):
         await embedgen(self, ctx, url, "nekos")
 
     @commands.hybrid_command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx):
         """Send a random kitsune image."""
@@ -92,7 +89,6 @@ class NekosBest(commands.Cog):
         await embedgen(self, ctx, url, "kitsune")
 
     @commands.hybrid_command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def husbando(self, ctx):
         """Send a random husbando image."""
