@@ -1,4 +1,4 @@
-from .kitsune import Kitsune
+from .nekosbest import Nekosbest
 
 __red_end_user_data_statement__ = (
     "This cog does not persistently store data about users."
@@ -6,4 +6,4 @@ __red_end_user_data_statement__ = (
 
 
 def setup(bot):
-    bot.add_cog(Kitsune(bot))
+    bot.add_cog(Nekosbest(bot))
