@@ -31,7 +31,7 @@ from .embed import api_call, embedgen
 
 
 class NekosBest(commands.Cog):
-    """sends random nekos, kitsune and waifu images from nekos.best."""
+    """Sends random images from nekos.best."""
 
     def __init__(self, bot):
         self.bot = bot
