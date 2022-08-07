@@ -52,7 +52,7 @@ class NekosBest(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command(name="nekostversion", aliases=["nekosbestv"])
+    @commands.command(name="nekostversion", aliases=["nekosbestv"], hidden=True)
     async def nekosbest_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         if await ctx.embed_requested():
