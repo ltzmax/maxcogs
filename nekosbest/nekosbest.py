@@ -94,3 +94,10 @@ class NekosBest(commands.Cog):
         """Send a random husbando image."""
         url = await api_call(self, ctx, "husbando")
         await embedgen(self, ctx, url, "husbando")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def waifu(self, ctx):
+        """Send a random waifu image."""
+        url = await api_call(self, ctx, "waifu")
+        await embedgen(self, ctx, url, "waifu")
