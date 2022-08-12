@@ -9,9 +9,17 @@
     "hidden": false,
     "min_bot_version": "3.4.6",
     "max_bot_version": "3.4.99",
-    "tags": ["roleplay"],
-    "permissions": ["embed_links"],
-    "min_python_version": [3, 8, 1],
+    "tags": [
+        "roleplay"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "min_python_version": [
+        3,
+        8,
+        1
+    ],
     "end_user_data_statement": "This cog does not store any End User Data.",
     "type": "COG"
 }
