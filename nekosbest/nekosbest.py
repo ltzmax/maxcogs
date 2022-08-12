@@ -31,7 +31,7 @@ from .embed import api_call, embedgen
 
 
 class NekosBest(commands.Cog):
-    """sends random nekos, kitsune and waifu images from nekos.best."""
+    """Sends random images from nekos.best."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -52,7 +52,7 @@ class NekosBest(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.command(name="nekostversion", aliases=["nekosbestv"])
+    @commands.command(name="nekostversion", aliases=["nekosbestv"], hidden=True)
     async def nekosbest_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         if await ctx.embed_requested():

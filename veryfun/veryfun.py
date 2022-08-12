@@ -303,7 +303,7 @@ class VeryFun(commands.Cog):
         url = await api_call(self, ctx, "handhold")
         await embedgen(self, ctx, user, url, "handholds")
 
-    @commands.command()
+    @commands.command(aliases=["kicks"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def vkick(self, ctx, user: discord.Member):
