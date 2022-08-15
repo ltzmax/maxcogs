@@ -1,24 +1,18 @@
 import asyncio
-import base64
 from contextlib import suppress
-from io import BytesIO
 from math import floor
 from random import choice
 from string import capwords
 
 import aiohttp
 import jmespath
-from aiocache import SimpleMemoryCache, cached
-from bs4 import BeautifulSoup as bsp
-from discord import Colour, Embed, File
+from discord import Colour, Embed
 from redbot.core import commands
 from redbot.core.commands import Context
 from redbot.core.utils.chat_formatting import bold, humanize_number, pagify
-from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
+from redbot.core.utils.views import SimpleMenu
 
-from .utils import BADGES, STYLES, TRAINERS, get_generation
-
-cache = SimpleMemoryCache()
+from .utils import get_generation
 
 API_URL = "https://pokeapi.co/api/v2"
 BULBAPEDIA_URL = "https://bulbapedia.bulbagarden.net/wiki"
@@ -48,7 +42,6 @@ class Pokebase(commands.Cog):
         """Nothing to delete."""
         return
 
-    @cached(ttl=86400, cache=SimpleMemoryCache)
     async def get_data(self, url: str):
         try:
             async with self.session.get(url) as response:
@@ -189,15 +182,13 @@ class Pokebase(commands.Cog):
             )
         return f"{base_evo} {evolves_to}" if evolves_to else ""
 
-    @commands.group(aliases=["pokemon"], invoke_without_command=True)
+    @commands.hybrid_command(aliases=["pokemon"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def pokedex(self, ctx: Context, *, pokemon: str):
-        """Command group to get various info about a Pokémon.
+        """Search for a pokenmon by name or ID.
 
-        You can search by name or ID of a Pokémon.
-
-        Pokémon ID refers to: [National Pokédex](https://bulbapedia.bulbagarden.net/wiki/National_Pok%C3%A9dex) number.
+        Pokémon ID's and names refers to: [National Pokédex](https://pokemondb.net/pokedex/national).
         """
         pokemon = pokemon.replace(" ", "-")
         async with ctx.typing():
@@ -249,7 +240,12 @@ class Pokebase(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @pokedex.command()
+    @commands.hybrid_group()
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    async def pokeinfo(self, ctx):
+        """Commands for Pokémon infomations."""
+
+    @pokeinfo.command()
     async def ability(self, ctx: Context, *, ability: str):
         """Get various info about a known Pokémon ability.
 
@@ -312,7 +308,7 @@ class Pokebase(commands.Cog):
             embed.set_footer(text="Powered by Poke API")
         await ctx.send(embed=embed)
 
-    @pokedex.command()
+    @pokeinfo.command()
     async def moves(self, ctx: Context, pokemon: str):
         """Get the Pokémon's moves set."""
         pokemon = pokemon.replace(" ", "-")
@@ -342,9 +338,12 @@ class Pokebase(commands.Cog):
                 )
                 embed.set_footer(text=f"Page {i} of {len(all_pages)}")
                 pages.append(embed)
-        await menu(ctx, pages, DEFAULT_CONTROLS, timeout=60.0)
+            await SimpleMenu(
+                pages,
+                disable_after_timeout=True,
+            ).start(ctx)
 
-    @commands.command()
+    @pokeinfo.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def moveinfo(self, ctx: Context, *, move: str):
@@ -433,7 +432,7 @@ class Pokebase(commands.Cog):
             embed.set_footer(text="Powered by Poke API")
         await ctx.send(embed=embed)
 
-    @pokedex.command()
+    @pokeinfo.command()
     async def item(self, ctx: Context, *, item: str):
         """Get various info about a Pokémon item.
 
@@ -467,20 +466,20 @@ class Pokebase(commands.Cog):
             embed.title = item_data.get("name").title().replace("-", " ")
             embed.url = f"{BULBAPEDIA_URL}/{item.title().replace('-', '_')}"
             effect_entries = item_data.get("effect_entries", [{}])
-            item_effect = (
-                "**Item effect:** "
-                + [
-                    x.get("effect")
-                    for x in effect_entries
-                    if x["language"].get("name") == "en"
-                ][0]
-            )
             item_summary = (
                 "**Summary:** "
                 + [
                     x.get("short_effect")
                     for x in item_data.get("effect_entries", [{}])
                     if x.get("language").get("name") == "en"
+                ][0]
+            )
+            item_effect = (
+                "**Item effect:** "
+                + [
+                    x.get("effect")
+                    for x in effect_entries
+                    if x["language"].get("name") == "en"
                 ][0]
             )
             embed.description = f"{item_effect}\n\n{item_summary}"
@@ -524,7 +523,7 @@ class Pokebase(commands.Cog):
             embed.set_footer(text="Powered by Poke API!")
         await ctx.send(embed=embed)
 
-    @commands.command(name="itemcategory", aliases=["itemcat"])
+    @pokeinfo.command(name="itemcategory", aliases=["itemcat"])
     @commands.bot_has_permissions(embed_links=True)
     async def item_category(self, ctx: Context, *, category: str):
         """Fetch items in a given Pokémon item category."""
@@ -553,7 +552,7 @@ class Pokebase(commands.Cog):
             embed.set_footer(text="Powered by Poke API!")
         await ctx.send(embed=embed)
 
-    @pokedex.command()
+    @pokeinfo.command()
     async def location(self, ctx: Context, pokemon: str):
         """Responds with the location data for a Pokémon."""
         pokemon = pokemon.replace(" ", "-")
@@ -569,7 +568,7 @@ class Pokebase(commands.Cog):
                 return await ctx.send("No location data found for said Pokémon.")
 
             get_encounters = await self.get_data(data["location_area_encounters"])
-            if get_encounters.get("http_code"):
+            if not get_encounters:
                 return await ctx.send("No location data found for this Pokémon.")
 
             jquery = jmespath.compile(
@@ -640,114 +639,7 @@ class Pokebase(commands.Cog):
                     text=f"Page {i} of {len(output['data'])} • Powered by Pokémon TCG API!"
                 )
                 pages.append(embed)
-
-        if len(pages) == 1:
-            return await ctx.send(embed=pages[0])
-
-        await menu(ctx, pages, DEFAULT_CONTROLS, timeout=60.0)
-
-    @commands.command()
-    @cached(ttl=86400, cache=SimpleMemoryCache)
-    @commands.bot_has_permissions(attach_files=True, embed_links=True)
-    @commands.cooldown(1, 60, commands.BucketType.guild)
-    async def trainercard(
-        self,
-        ctx: Context,
-        name: str,
-        style: str,
-        trainer: str,
-        badge: str,
-        *,
-        pokemons: str,
-    ):
-        """Generate a trainer card for a Pokémon trainer in different styles.
-
-        This command requires you to pass values for multiple parameters.
-
-        Supported values for these parameters are explained briefly as follows:
-        ```apache
-        name    : Provide any personalised name of your choice.
-        style   : default, black, collector, dp, purple
-        trainer : ash, red, ethan, lyra, brendan, may, lucas, dawn
-        badge   : kanto, johto, hoenn, sinnoh, unova and kalos
-        pokemons: You can provide maximum up to 6 Pokémon's names or #IDs
-        ```
-
-        ℹ Pokémons from #891 to #898 are not supported yet for trainer card
-        """
-        base_url = "https://pokecharms.com/index.php?trainer-card-maker/render"
-        if style.lower() not in ["default", "black", "collector", "dp", "purple"]:
-            return await ctx.send(
-                f"style value `{style}` is unsupported. See command help!"
-            )
-        if trainer.lower() not in [
-            "ash",
-            "red",
-            "ethan",
-            "lyra",
-            "brendan",
-            "may",
-            "lucas",
-            "dawn",
-        ]:
-            return await ctx.send(
-                f"trainer value `{trainer}` is unsupported. See command help!"
-            )
-        if badge.lower() not in ["kanto", "johto", "hoenn", "sinnoh", "unova", "kalos"]:
-            return await ctx.send(
-                f"badge value `{badge}` is unsupported. See command help!"
-            )
-        if len(pokemons.split()) > 6:
-            return await ctx.send("You cannot provide more than 6 Pokémons.")
-
-        async with ctx.typing():
-            pkmn_ids = []
-            for pokemon in pokemons.split():
-                get_ids = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
-                if get_ids.get("http_code"):
-                    continue
-                if get_ids.get("id"):
-                    pkmn_ids.append(get_ids["id"])
-
-            panel_ids = []
-            panel_url = "https://pokecharms.com/trainer-card-maker/pokemon-panels"
-            for npn in pkmn_ids:
-                payload = aiohttp.FormData()
-                payload.add_field("number", npn)
-                payload.add_field("_xfResponseType", "json")
-                async with self.session.post(panel_url, data=payload) as resp:
-                    if resp.status != 200:
-                        panel_ids.append("1")
-                    soup = bsp((await resp.json()).get("templateHtml"), "html.parser")
-                    try:
-                        panel_ids.append(soup.find_all("li")[0].get("data-id"))
-                    except IndexError:
-                        panel_ids.append("1")
-
-            form = aiohttp.FormData()
-            form.add_field("trainername", name[:12])
-            form.add_field("background", str(STYLES[style.lower()]))
-            form.add_field("character", str(TRAINERS[trainer.lower()]))
-            form.add_field("badges", "8")
-            form.add_field(
-                "badgesUsed", ",".join(str(x) for x in BADGES[badge.lower()])
-            )
-            form.add_field("pokemon", str(len(pokemons.split())))
-            form.add_field("pokemonUsed", ",".join(panel_ids))
-            form.add_field("_xfResponseType", "json")
-            try:
-                async with self.session.post(base_url, data=form) as response:
-                    if response.status != 200:
-                        return await ctx.send(f"https://http.cat/{response.status}")
-                    output = (await response.json()).get("trainerCard")
-            except asyncio.TimeoutError:
-                return await ctx.send("Operation timed out.")
-
-        if output:
-            base64_img_bytes = output.encode("utf-8")
-            decoded_image_data = BytesIO(base64.decodebytes(base64_img_bytes))
-            decoded_image_data.seek(0)
-            await ctx.send(file=File(decoded_image_data, "trainer-card.png"))
-            return
-        else:
-            await ctx.send("No trainer card was generated. :(")
+            await SimpleMenu(
+                pages,
+                disable_after_timeout=True,
+            ).start(ctx)

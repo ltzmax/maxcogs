@@ -11,8 +11,6 @@
     ],
     "required_cogs": {},
     "requirements": [
-        "aiocache",
-        "beautifulsoup4",
         "jmespath",
         "msgpack",
         "ujson"
@@ -25,7 +23,7 @@
         "pokemontcg",
         "pokecord"
     ],
-    "min_bot_version": "3.4.16",
+    "min_bot_version": "3.5.0",
     "hidden": false,
     "disabled": false,
     "type": "COG"

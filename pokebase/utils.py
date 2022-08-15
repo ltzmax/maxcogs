@@ -1,15 +1,5 @@
 from typing import Dict, Sequence
 
-BADGES: Dict[str, Sequence[int]] = {
-    "kanto": [2, 3, 4, 5, 6, 7, 8, 9],
-    "johto": [10, 11, 12, 13, 14, 15, 16, 17],
-    "hoenn": [18, 19, 20, 21, 22, 23, 24, 25],
-    "sinnoh": [26, 27, 28, 29, 30, 31, 32, 33],
-    "unova": [34, 35, 36, 37, 38, 39, 40, 41],
-    "kalos": [44, 45, 46, 47, 48, 49, 50, 51],
-}
-
-
 GENERATIONS: Dict[str, str] = {
     "na": "Unknown",
     "rb": "Red/Blue\n(Gen. 1)",
@@ -24,27 +14,6 @@ GENERATIONS: Dict[str, str] = {
 
 
 GEN_KEYS: Sequence[str] = list(GENERATIONS.keys())
-
-
-STYLES: Dict[str, int] = {
-    "default": 3,
-    "black": 50,
-    "collector": 96,
-    "dp": 5,
-    "purple": 43,
-}
-
-
-TRAINERS: Dict[str, int] = {
-    "ash": 13,
-    "red": 922,
-    "ethan": 900,
-    "lyra": 901,
-    "brendan": 241,
-    "may": 255,
-    "lucas": 747,
-    "dawn": 856,
-}
 
 
 def get_generation(pokemon_id: int) -> str:
