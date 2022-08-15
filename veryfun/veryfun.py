@@ -31,7 +31,7 @@ from .embed import api_call, embedgen
 
 
 class VeryFun(commands.Cog):
-    """Roleplay commands."""
+    """Roleplay cog to interact with other users."""
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
