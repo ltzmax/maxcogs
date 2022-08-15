@@ -1,0 +1,22 @@
+{
+    "name": "WhosThatPokemon",
+    "short": "Play a game of Who's That Pokémon.",
+    "description": "Play a game of Who's That Pokémon.",
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+    "install_msg": "Hi, thank you for installing WhosThatPokemon cog. Hope you will enjoy it.",
+    "author": [
+        "ow0x",
+        "ltzmax (MAX#1000)"
+    ],
+    "required_cogs": {},
+    "requirements": ["pillow"],
+    "tags": [
+        "pokemon",
+        "whosthatpokemon",
+        "whos that pokemon"
+    ],
+    "min_bot_version": "3.4.16",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}
