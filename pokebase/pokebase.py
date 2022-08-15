@@ -46,10 +46,10 @@ class Pokebase(commands.Cog):
         try:
             async with self.session.get(url) as response:
                 if response.status != 200:
-                    return {"http_code": response.status}
+                    return None
                 return await response.json()
         except asyncio.TimeoutError:
-            return {"http_code": 408}
+            return None
 
     @staticmethod
     def basic_embed(colour: Colour, data: dict) -> Embed:
@@ -166,7 +166,7 @@ class Pokebase(commands.Cog):
 
     async def evolution_chain(self, evo_url: str) -> str:
         result = await self.get_data(evo_url)
-        if result.get("http_code"):
+        if not result:
             return ""
         evo_data = result.get("chain", [{}])
         base_evo = evo_data["species"].get("name").title()
@@ -193,14 +193,8 @@ class Pokebase(commands.Cog):
         pokemon = pokemon.replace(" ", "-")
         async with ctx.typing():
             data = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
-            if err := data.get("http_code"):
-                if err == 404:
-                    return await ctx.send(
-                        "⚠ Could not find any Pokémon with that name."
-                    )
-                return await ctx.send(
-                    f"⚠ API sent response code: https://http.cat/{data}"
-                )
+            if not data:
+                return await ctx.send(f"⚠ Could not find any Pokémon with that name.")
 
             embed = self.basic_embed(await ctx.embed_colour(), data)
             embed.set_footer(text="Powered by Poke API")
@@ -209,7 +203,7 @@ class Pokebase(commands.Cog):
                 f'{API_URL}/pokemon-species/{data.get("id")}'
             )
 
-            if not species_data.get("http_code"):
+            if species_data is not None:
                 with suppress(IndexError):
                     pokemon_name = [
                         x["name"]
@@ -240,7 +234,7 @@ class Pokebase(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @commands.hybrid_group()
+    @commands.hybrid_group(invoke_without_command=False)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def pokeinfo(self, ctx):
         """Commands for Pokémon infomations."""
@@ -262,17 +256,9 @@ class Pokebase(commands.Cog):
             data = await self.get_data(
                 f'{API_URL}/ability/{ability.replace(" ", "-").lower()}'
             )
-            if err := data.get("http_code"):
-                if err == 404:
-                    return await ctx.send(
-                        "⚠ Could not find Pokémon abilities with that name."
-                    )
-                return await ctx.send(
-                    f"⚠ API sent response code: https://http.cat/{data}"
-                )
             if not data:
                 return await ctx.send(
-                    "Something went wrong while trying to query PokeAPI."
+                    f"⚠ Could not find any Pokémon abilities with that name."
                 )
 
             embed = Embed(colour=await ctx.embed_colour())
@@ -314,14 +300,8 @@ class Pokebase(commands.Cog):
         pokemon = pokemon.replace(" ", "-")
         async with ctx.typing():
             data = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
-            if err := data.get("http_code"):
-                if err == 404:
-                    return await ctx.send("⚠ Could not find Pokémon moves.")
-                return await ctx.send(
-                    f"⚠ API sent response code: https://http.cat/{data}"
-                )
-            if not (data or data.get("moves")):
-                return await ctx.send("No moves found for this Pokémon.")
+            if not data:
+                return await ctx.send("⚠ Could not find moves for that Pokémon.")
 
             moves_list = "\n".join(
                 f'`[{i:>2}]` **{move["move"]["name"].title().replace("-", " ")}**'
@@ -363,17 +343,9 @@ class Pokebase(commands.Cog):
         move_query = move.replace(",", " ").replace(" ", "-").replace("'", "").lower()
         async with ctx.typing():
             data = await self.get_data(f"{API_URL}/move/{move_query}")
-            if err := data.get("http_code"):
-                if err == 404:
-                    return await ctx.send(
-                        "⚠ Could not find Pokémon move with that name."
-                    )
-                return await ctx.send(
-                    f"⚠ API sent response code: https://http.cat/{data}"
-                )
             if not data:
                 return await ctx.send(
-                    "Something went wrong while trying to query PokeAPI."
+                    "⚠ Could not find Pokémon move with that name."
                 )
 
             embed = Embed(colour=await ctx.embed_colour())
@@ -451,38 +423,33 @@ class Pokebase(commands.Cog):
         item = item.replace(" ", "-").lower()
         async with ctx.typing():
             embed = Embed(colour=await ctx.embed_colour())
-            item_data = await self.get_data(f"{API_URL}/item/{item}")
-            if err := item_data.get("http_code"):
-                if err == 404:
-                    return await ctx.send(
-                        "⚠ Could not find Pokémon item with that name."
-                    )
-                return await ctx.send(
-                    f"⚠ API sent response code: https://http.cat/{item_data}"
-                )
+            item_data = await self.get_data(f"{API_URL}/item/{item}/")
             if not item_data:
-                return await ctx.send("No results.")
+                return await ctx.send("⚠ Could not find Pokémon item with that name.")
 
             embed.title = item_data.get("name").title().replace("-", " ")
             embed.url = f"{BULBAPEDIA_URL}/{item.title().replace('-', '_')}"
-            effect_entries = item_data.get("effect_entries", [{}])
-            item_summary = (
-                "**Summary:** "
-                + [
-                    x.get("short_effect")
-                    for x in item_data.get("effect_entries", [{}])
-                    if x.get("language").get("name") == "en"
-                ][0]
-            )
-            item_effect = (
-                "**Item effect:** "
-                + [
-                    x.get("effect")
+
+            item_effect = ""
+            if effect_entries := item_data.get("effect_entries"):
+                item_effect += "\n".join(
+                    (x.get("effect") or x.get("short_effect"))
                     for x in effect_entries
-                    if x["language"].get("name") == "en"
-                ][0]
-            )
-            embed.description = f"{item_effect}\n\n{item_summary}"
+                    if x.get("language", {}).get("name") == "en"
+                )
+
+            flavour_entry = ""
+            if flavour_entries := item_data.get("flavor_text_entries"):
+                flavour_entry += (
+                    "**Effect Summary:** "
+                    + [
+                        x.get("text") for x in flavour_entries
+                        if x.get("language", {}).get("name") == "en"
+                    ][0]
+                )
+
+            embed.description = f"{item_effect}\n\n{flavour_entry}"
+
             embed.add_field(name="Cost", value=humanize_number(item_data.get("cost")))
             embed.add_field(
                 name="Category",
@@ -505,7 +472,7 @@ class Pokebase(commands.Cog):
                 )
             if item_data.get("fling_effect"):
                 fling_data = await self.get_data(item_data["fling_effect"]["url"])
-                if not fling_data.get("http_code"):
+                if fling_data is not None:
                     fling_effect = [
                         x.get("effect")
                         for x in fling_data.get("effect_entries", [{}])
@@ -530,16 +497,9 @@ class Pokebase(commands.Cog):
         category = category.replace(" ", "-").lower()
         async with ctx.typing():
             category_data = await self.get_data(f"{API_URL}/item-category/{category}")
-            if err := category_data.get("http_code"):
-                if err == 404:
-                    return await ctx.send(
-                        "⚠ Could not find Pokémon item category with that name."
-                    )
-                return await ctx.send(
-                    f"⚠ API sent response code: https://http.cat/{category_data}"
-                )
             if not category_data:
-                return await ctx.send("No results.")
+                return await ctx.send("⚠ Could not find Pokémon item category with that name.")
+
             embed = Embed(colour=await ctx.embed_colour())
             embed.title = f"{category_data['name'].title().replace('-', ' ')}"
             items_list = "\n".join(
@@ -558,14 +518,8 @@ class Pokebase(commands.Cog):
         pokemon = pokemon.replace(" ", "-")
         async with ctx.typing():
             data = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
-            if err := data.get("http_code"):
-                if err == 404:
-                    return await ctx.send("⚠ Could not find a location with that name.")
-                return await ctx.send(
-                    f"⚠ API sent response code: https://http.cat/{data}"
-                )
-            if not data or not data.get("location_area_encounters"):
-                return await ctx.send("No location data found for said Pokémon.")
+            if not data:
+                return await ctx.send("⚠ Could not find a location with that name.")
 
             get_encounters = await self.get_data(data["location_area_encounters"])
             if not get_encounters:
@@ -579,10 +533,10 @@ class Pokebase(commands.Cog):
             pretty_data = ""
             for i, loc in enumerate(new_dict, 1):
                 area_data = await self.get_data(loc["url"])
-                if area_data.get("http_code"):
+                if not area_data:
                     continue
                 location_data = await self.get_data(area_data["location"]["url"])
-                if location_data.get("http_code"):
+                if not location_data:
                     continue
                 location_names = ", ".join(
                     x["name"]
