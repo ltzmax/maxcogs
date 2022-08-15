@@ -1,0 +1,27 @@
+{
+    "name": "Pokebase",
+    "short": "Your personal Pokédex to get info on a lot of Pokémon related stuff.",
+    "description": "Fetch various info about a Pokémon and some fun commands.",
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+    "install_msg": "Hi, thanks for installing Pokebase cog. Hope you will find it useful.",
+    "author": [
+        "ow0x",
+        "ltzmax (MAX#1000)",
+        "phalt"
+    ],
+    "required_cogs": {},
+    "requirements": ["aiocache", "beautifulsoup4", "jmespath", "msgpack", "ujson"],
+    "tags": [
+        "pokemon",
+        "pokedex",
+        "pokebase",
+        "pokeapi",
+        "pokemontcg",
+        "pokecord"
+    ],
+    "min_bot_version": "3.4.16",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}
+
