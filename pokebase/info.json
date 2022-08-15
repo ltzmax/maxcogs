@@ -3,7 +3,7 @@
     "short": "Your personal Pok\u00e9dex to get info on a lot of Pok\u00e9mon related stuff.",
     "description": "Fetch various info about a Pok\u00e9mon and some fun commands.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "install_msg": "Hi, thanks for installing Pokebase cog. Hope you will find it useful.",
+    "install_msg": "Hi, thanks for installing Pokebase cog. Hope you will find it useful.\nFeel free to check the docs <https://readdocs.voltrabot.com/docs/Cogs/pokebase>",
     "author": [
         "ow0x",
         "ltzmax (MAX#1000)",
