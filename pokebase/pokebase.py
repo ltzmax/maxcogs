@@ -344,9 +344,7 @@ class Pokebase(commands.Cog):
         async with ctx.typing():
             data = await self.get_data(f"{API_URL}/move/{move_query}")
             if not data:
-                return await ctx.send(
-                    "⚠ Could not find Pokémon move with that name."
-                )
+                return await ctx.send("⚠ Could not find Pokémon move with that name.")
 
             embed = Embed(colour=await ctx.embed_colour())
             embed.title = data.get("name").replace("-", " ").title()
@@ -443,7 +441,8 @@ class Pokebase(commands.Cog):
                 flavour_entry += (
                     "**Effect Summary:** "
                     + [
-                        x.get("text") for x in flavour_entries
+                        x.get("text")
+                        for x in flavour_entries
                         if x.get("language", {}).get("name") == "en"
                     ][0]
                 )
@@ -498,7 +497,9 @@ class Pokebase(commands.Cog):
         async with ctx.typing():
             category_data = await self.get_data(f"{API_URL}/item-category/{category}")
             if not category_data:
-                return await ctx.send("⚠ Could not find Pokémon item category with that name.")
+                return await ctx.send(
+                    "⚠ Could not find Pokémon item category with that name."
+                )
 
             embed = Embed(colour=await ctx.embed_colour())
             embed.title = f"{category_data['name'].title().replace('-', ' ')}"
