@@ -1,8 +1,6 @@
-import random
+from typing import Dict, Sequence
 
-from redbot.core import commands
-
-BADGES = {
+BADGES: Dict[str, Sequence[int]] = {
     "kanto": [2, 3, 4, 5, 6, 7, 8, 9],
     "johto": [10, 11, 12, 13, 14, 15, 16, 17],
     "hoenn": [18, 19, 20, 21, 22, 23, 24, 25],
@@ -11,7 +9,8 @@ BADGES = {
     "kalos": [44, 45, 46, 47, 48, 49, 50, 51],
 }
 
-GENERATIONS = {
+
+GENERATIONS: Dict[str, str] = {
     "na": "Unknown",
     "rb": "Red/Blue\n(Gen. 1)",
     "gs": "Gold/Silver\n(Gen. 2)",
@@ -22,10 +21,21 @@ GENERATIONS = {
     "sm": "Sun/Moon\n(Gen. 7)",
     "ss": "Sword/Shield\n(Gen. 8)",
 }
-GEN_KEYS = list(GENERATIONS.keys())
 
-STYLES = {"default": 3, "black": 50, "collector": 96, "dp": 5, "purple": 43}
-TRAINERS = {
+
+GEN_KEYS: Sequence[str] = list(GENERATIONS.keys())
+
+
+STYLES: Dict[str, int] = {
+    "default": 3,
+    "black": 50,
+    "collector": 96,
+    "dp": 5,
+    "purple": 43,
+}
+
+
+TRAINERS: Dict[str, int] = {
     "ash": 13,
     "red": 922,
     "ethan": 900,
