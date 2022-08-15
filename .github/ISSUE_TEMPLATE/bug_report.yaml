@@ -19,14 +19,16 @@ body:
         - embeduptime
         - nekosbest
         - onconnect
+        - pokebase
         - veryfun
+        - whosthatpokemon
     validations:
       required: true
   - type: input
     id: version
     attributes:
       label: "What is the version of the cog?"
-      placeholder: e.g 0.4.5
+      placeholder: e.g 0.4.5 (You find versions below in README)
     validations:
       required: true
   - type: input

@@ -19,7 +19,9 @@ body:
         - embeduptime
         - nekosbest
         - onconnect
+        - pokebase
         - veryfun
+        - whosthatpokemon
     validations:
       required: true
   - type: input
