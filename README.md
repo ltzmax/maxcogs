@@ -24,7 +24,7 @@ To install any cog you want:
 | EmbedUptime | Shows bot's uptime. | 0.1.12 | ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.18 | ltzmax | ✅ |
 | OnConnect | Cog that sends shard events. | 0.1.20 | ltzmax, Arman0334 | ✅ |
-| Pokebase | Get information about pokemon. | 1.2.0 | ltzmax, ow0x | ✅ |
+| Pokebase | Get information about pokemon. | 1.2.0 | ltzmax, ow0x, phalt | ✅ |
 | VeryFun | Roleplay cog to interact with other users. | 0.1.16 | ltzmax | ✅ |
 | WhosThatPokemon | Guess whos that pokemon? | 1.0.0 | ltzmax, ow0x | ✅ |
 
