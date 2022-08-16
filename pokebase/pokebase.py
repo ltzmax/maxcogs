@@ -240,6 +240,7 @@ class Pokebase(commands.Cog):
         """Commands for Pokémon infomations."""
 
     @pokeinfo.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def ability(self, ctx: Context, *, ability: str):
         """Get various info about a known Pokémon ability.
 
@@ -295,6 +296,7 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @pokeinfo.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def moves(self, ctx: Context, pokemon: str):
         """Get the Pokémon's moves set."""
         pokemon = pokemon.replace(" ", "-")
@@ -403,6 +405,7 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @pokeinfo.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def item(self, ctx: Context, *, item: str):
         """Get various info about a Pokémon item.
 
@@ -514,6 +517,7 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @pokeinfo.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def location(self, ctx: Context, pokemon: str):
         """Responds with the location data for a Pokémon."""
         pokemon = pokemon.replace(" ", "-")
