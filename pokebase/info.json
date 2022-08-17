@@ -11,9 +11,7 @@
     ],
     "required_cogs": {},
     "requirements": [
-        "jmespath",
-        "msgpack",
-        "ujson"
+        "jmespath"
     ],
     "tags": [
         "pokemon",
