@@ -96,7 +96,7 @@ class WhosThatPokemon(commands.Cog):
         poke_image.close()
         return temp
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
