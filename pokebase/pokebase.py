@@ -10,7 +10,9 @@ from redbot.core import commands
 from redbot.core.commands import Context
 from redbot.core.utils.chat_formatting import bold, humanize_number, pagify
 from redbot.core.utils.views import SimpleMenu
+
 from .utils import get_generation
+
 try:
     import jmespath
 except Exception as e:
