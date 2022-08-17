@@ -194,7 +194,7 @@ class Pokebase(commands.Cog):
         async with ctx.typing():
             data = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
             if not data:
-                return await ctx.send(f"⚠ Could not find any Pokémon with that name.")
+                return await ctx.send("⚠ Could not find any Pokémon with that name.")
 
             embed = self.basic_embed(await ctx.embed_colour(), data)
             embed.set_footer(text="Powered by Poke API")
@@ -259,7 +259,7 @@ class Pokebase(commands.Cog):
             )
             if not data:
                 return await ctx.send(
-                    f"⚠ Could not find any Pokémon abilities with that name."
+                    "⚠ Could not find any Pokémon abilities with that name."
                 )
 
             embed = Embed(colour=await ctx.embed_colour())
