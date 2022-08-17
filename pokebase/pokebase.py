@@ -18,7 +18,7 @@ try:
 except Exception as e:
     raise CogLoadError(
         f"I can't load jmespath. {e}"
-        "Please install it with `pip install jmespath "
+        "Please install it with `pip install jmespath` "
         "in your python environment."
     )
 # Based on Fixator10's leveler cog.
