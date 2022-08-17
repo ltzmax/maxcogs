@@ -5,14 +5,23 @@ from random import choice
 from string import capwords
 
 import aiohttp
-import jmespath
 from discord import Colour, Embed
 from redbot.core import commands
 from redbot.core.commands import Context
 from redbot.core.utils.chat_formatting import bold, humanize_number, pagify
 from redbot.core.utils.views import SimpleMenu
-
 from .utils import get_generation
+try:
+    import jmespath
+except Exception as e:
+    raise CogLoadError(
+        f"I can't load jmespath. {e}"
+        "Please install it with `pip install jmespath "
+        "in your python environment."
+    )
+# Based on Fixator10's leveler cog.
+# https://github.com/fixator10/Fixator10-Cogs/blob/5087cbfe9ff28cf48e24ef210d0338c683b50e73/leveler/utils.py#L12
+
 
 API_URL = "https://pokeapi.co/api/v2"
 BULBAPEDIA_URL = "https://bulbapedia.bulbagarden.net/wiki"
