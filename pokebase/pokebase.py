@@ -334,6 +334,7 @@ class Pokebase(commands.Cog):
             await SimpleMenu(
                 pages,
                 disable_after_timeout=True,
+                timeout=120,
             ).start(ctx)
 
     @pokeinfo.command()
@@ -612,4 +613,5 @@ class Pokebase(commands.Cog):
             await SimpleMenu(
                 pages,
                 disable_after_timeout=True,
+                timeout=120,
             ).start(ctx)
