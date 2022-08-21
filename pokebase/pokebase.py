@@ -14,7 +14,6 @@ from redbot.core.utils.views import SimpleMenu
 
 from .utils import get_generation
 
-
 API_URL = "https://pokeapi.co/api/v2"
 BULBAPEDIA_URL = "https://bulbapedia.bulbagarden.net/wiki"
 
