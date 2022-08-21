@@ -49,7 +49,7 @@ async def embedgen(self, ctx, url, endpoint: str):
     image = url["results"][0]["url"]
 
     emb = discord.Embed(
-        title=f"Here's a pic of {endpoint}",
+        title=f"Here's a picture of a {endpoint}",
         description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
     )
     emb.colour = await ctx.embed_color()
