@@ -37,7 +37,7 @@ class Commands(MixinMeta):
 
     @commands.is_owner()
     @commands.guild_only()
-    @commands.hybrid_group(name="connectset")
+    @commands.group(name="connectset")
     async def _connectset(self, ctx: commands.Context):
         """Manage settings for onconnect."""
 
