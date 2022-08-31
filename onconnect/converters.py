@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2020-2021 phenom4n4n
+Copyright (c) 2021-present Kuro-Rui
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,26 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Union
+# based on https://github.com/Kuro-Rui/Kuro-Cogs/blob/2a4545078ce66939a526f5eec3094c137ee44ff0/osu/converters.py#L25-L36
+try:
+    from emoji import UNICODE_EMOJI_ENGLISH as EMOJI_DATA  # emoji<2.0.0
+except ImportError:
+    from emoji import EMOJI_DATA  # emoji>=2.0.0
+from redbot.core.commands import Context, EmojiConverter
 
-import discord
-from redbot.core import commands
-
-
-class RealEmojiConverter(commands.EmojiConverter):
-    """See `https://github.com/phenom4n4n/phen-cogs/blob/5e99e0a53f560049bfaa563ef957f1baa276fdf4/roleutils/converters.py#L112`"""
-
-    async def convert(
-        self, ctx: commands.Context, argument: str
-    ) -> Union[discord.Emoji, str]:
-        try:
-            emoji = await super().convert(ctx, argument)
-        except commands.BadArgument:
-            try:
-                await ctx.message.add_reaction(argument)
-            except discord.HTTPException:
-                raise commands.EmojiNotFound(argument)
-            else:
-                emoji = argument
-
-        return emoji
+class Emoji(EmojiConverter):
+    async def convert(self, ctx: Context, argument: str):
+        if argument in EMOJI_DATA:
+            return argument
+        return str(await super().convert(ctx, argument))

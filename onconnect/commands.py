@@ -29,7 +29,7 @@ from redbot.core import commands
 from redbot.core.utils.predicates import MessagePredicate
 
 from .abc import MixinMeta
-from .converters import RealEmojiConverter
+from .converters import Emoji
 
 
 class Commands(MixinMeta):
@@ -104,7 +104,7 @@ class Commands(MixinMeta):
 
     @_emoji.command(name="green")
     async def _emoji_green(
-        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+        self, ctx: commands.Context, *, emoji: Optional[Emoji] = None
     ):
         """Change the green emoji to your own.
 
@@ -143,7 +143,7 @@ class Commands(MixinMeta):
 
     @_emoji.command(name="orange")
     async def _emoji_orange(
-        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+        self, ctx: commands.Context, *, emoji: Optional[Emoji] = None
     ):
         """Change the orange emoji to your own.
 
@@ -182,7 +182,7 @@ class Commands(MixinMeta):
 
     @_emoji.command(name="red")
     async def _emoji_red(
-        self, ctx: commands.Context, *, emoji: Optional[RealEmojiConverter] = None
+        self, ctx: commands.Context, *, emoji: Optional[Emoji] = None
     ):
         """Change the red emoji to your own.
 
