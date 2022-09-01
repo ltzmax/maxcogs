@@ -181,9 +181,7 @@ class Commands(MixinMeta):
                 )
 
     @_emoji.command(name="red")
-    async def _emoji_red(
-        self, ctx: commands.Context, *, emoji: Optional[Emoji] = None
-    ):
+    async def _emoji_red(self, ctx: commands.Context, *, emoji: Optional[Emoji] = None):
         """Change the red emoji to your own.
 
         **Example:**

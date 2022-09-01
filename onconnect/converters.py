@@ -28,6 +28,7 @@ except ImportError:
     from emoji import EMOJI_DATA  # emoji>=2.0.0
 from redbot.core.commands import Context, EmojiConverter
 
+
 class Emoji(EmojiConverter):
     async def convert(self, ctx: Context, argument: str):
         if argument in EMOJI_DATA:
