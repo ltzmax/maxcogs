@@ -275,11 +275,7 @@ class Away(commands.Cog):
         """Remove the away role set from `awayset role`."""
         await self.config.guild(ctx.guild).role.clear()
         await self.update_guild_cache(ctx.guild)
-        embed = discord.Embed(
-            description=f"Removed {role.mention} from the away role.",
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
+        await ctx.tick()
 
     @awayset.command()
     @commands.has_permissions(manage_guild=True)
