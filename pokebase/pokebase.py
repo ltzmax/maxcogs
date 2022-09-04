@@ -194,7 +194,9 @@ class Pokebase(commands.Cog):
         pokemon = pokemon.replace(" ", "-")
         data = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
         if not data:
-            return await ctx.send("⚠ Could not find any Pokémon with that name.", ephemeral=True)
+            return await ctx.send(
+                "⚠ Could not find any Pokémon with that name.", ephemeral=True
+            )
 
         embed = self.basic_embed(await ctx.embed_colour(), data)
         embed.set_footer(text="Powered by Poke API")
@@ -216,9 +218,7 @@ class Pokebase(commands.Cog):
             evo_url = species_data["evolution_chain"].get("url")
             if_evolves = await self.evolution_chain(evo_url)
             if if_evolves:
-                embed.add_field(
-                    name="Evolution Chain", value=if_evolves, inline=False
-                )
+                embed.add_field(name="Evolution Chain", value=if_evolves, inline=False)
 
         type_effect_url = (
             f"{BULBAPEDIA_URL}/{pokemon_name.replace(' ', '_')}"
