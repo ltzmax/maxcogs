@@ -184,7 +184,7 @@ class Pokebase(commands.Cog):
 
     @commands.hybrid_command(aliases=["pokemon"])
     @commands.bot_has_permissions(embed_links=True)
-    @app_commands.describe(pokemon=("Search Pokémon by ID or name"))
+    @app_commands.describe(pokemon=("Search for a pokenmon by name or ID."))
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def pokedex(self, ctx: Context, *, pokemon: str):
         """Search for a pokenmon by name or ID.
