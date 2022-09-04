@@ -192,47 +192,46 @@ class Pokebase(commands.Cog):
         Pokémon ID's and names refers to: [National Pokédex](https://pokemondb.net/pokedex/national).
         """
         pokemon = pokemon.replace(" ", "-")
-        async with ctx.typing():
-            data = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
-            if not data:
-                return await ctx.send("⚠ Could not find any Pokémon with that name.")
+        data = await self.get_data(f"{API_URL}/pokemon/{pokemon.lower()}")
+        if not data:
+            return await ctx.send("⚠ Could not find any Pokémon with that name.", ephemeral=True)
 
-            embed = self.basic_embed(await ctx.embed_colour(), data)
-            embed.set_footer(text="Powered by Poke API")
-            pokemon_name = data.get("name", "none").title()
-            species_data = await self.get_data(
-                f'{API_URL}/pokemon-species/{data.get("id")}'
-            )
+        embed = self.basic_embed(await ctx.embed_colour(), data)
+        embed.set_footer(text="Powered by Poke API")
+        pokemon_name = data.get("name", "none").title()
+        species_data = await self.get_data(
+            f'{API_URL}/pokemon-species/{data.get("id")}'
+        )
 
-            if species_data is not None:
-                with suppress(IndexError):
-                    pokemon_name = [
-                        x["name"]
-                        for x in species_data["names"]
-                        if x["language"]["name"] == "en"
-                    ][0]
-                embed = self.species_embed(embed, species_data)
-            embed = self.base_stats_embed(embed, data)
-            if species_data and species_data.get("evolution_chain"):
-                evo_url = species_data["evolution_chain"].get("url")
-                if_evolves = await self.evolution_chain(evo_url)
-                if if_evolves:
-                    embed.add_field(
-                        name="Evolution Chain", value=if_evolves, inline=False
-                    )
+        if species_data is not None:
+            with suppress(IndexError):
+                pokemon_name = [
+                    x["name"]
+                    for x in species_data["names"]
+                    if x["language"]["name"] == "en"
+                ][0]
+            embed = self.species_embed(embed, species_data)
+        embed = self.base_stats_embed(embed, data)
+        if species_data and species_data.get("evolution_chain"):
+            evo_url = species_data["evolution_chain"].get("url")
+            if_evolves = await self.evolution_chain(evo_url)
+            if if_evolves:
+                embed.add_field(
+                    name="Evolution Chain", value=if_evolves, inline=False
+                )
 
-            type_effect_url = (
-                f"{BULBAPEDIA_URL}/{pokemon_name.replace(' ', '_')}"
-                "_%28Pokémon%29#Type_effectiveness"
-            )
-            embed.add_field(
-                name="Weakness/Resistance",
-                value=f"[See it on Bulbapedia]({type_effect_url})",
-            )
-            embed.set_author(
-                name=f"#{data['id']:>03} - {pokemon_name}",
-                url=f"https://www.pokemon.com/us/pokedex/{data.get('name')}",
-            )
+        type_effect_url = (
+            f"{BULBAPEDIA_URL}/{pokemon_name.replace(' ', '_')}"
+            "_%28Pokémon%29#Type_effectiveness"
+        )
+        embed.add_field(
+            name="Weakness/Resistance",
+            value=f"[See it on Bulbapedia]({type_effect_url})",
+        )
+        embed.set_author(
+            name=f"#{data['id']:>03} - {pokemon_name}",
+            url=f"https://www.pokemon.com/us/pokedex/{data.get('name')}",
+        )
         await ctx.send(embed=embed)
 
     @commands.hybrid_group(invoke_without_command=False)
