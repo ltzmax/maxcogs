@@ -6,7 +6,7 @@ from typing import Optional
 
 import aiohttp
 import discord
-from discord import Colour, Embed, File
+from discord import Colour, Embed, File, app_commands
 from PIL import Image
 from redbot.core import commands
 from redbot.core.bot import Red
@@ -97,6 +97,7 @@ class WhosThatPokemon(commands.Cog):
         return temp
 
     @commands.hybrid_command()
+    @app_commands.describe(generation=("You can optionally specify a generation from gen 1 to gen 8."))
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
