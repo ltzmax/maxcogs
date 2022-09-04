@@ -6,8 +6,7 @@ from string import capwords
 
 import aiohttp
 import jmespath
-from discord import Colour, Embed
-from discord import app_commands
+from discord import Colour, Embed, app_commands
 from redbot.core import commands
 from redbot.core.commands import Context
 from redbot.core.utils.chat_formatting import bold, humanize_number, pagify
@@ -569,7 +568,9 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    @app_commands.describe(query=("Fetch Pokémon cards based on Pokémon trading cards game."))
+    @app_commands.describe(
+        query=("Fetch Pokémon cards based on Pokémon trading cards game.")
+    )
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def tcgcard(self, ctx: Context, *, query: str):
