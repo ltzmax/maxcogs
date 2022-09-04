@@ -7,6 +7,7 @@ import logging
 from typing import Literal
 
 import discord
+from discord import app_commands
 from redbot.core import Config, commands
 
 log = logging.getLogger("red.maxcogs.away")
@@ -158,6 +159,7 @@ class Away(commands.Cog):
                 log.error(f"Failed to edit nickname due to: {e}")
 
     @commands.hybrid_command(aliases=["afk"])
+    @app_commands.describe(message=("Set the away message you'll like to show."))
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def away(self, ctx: commands.Context, *, message: str):

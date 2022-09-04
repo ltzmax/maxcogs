@@ -7,6 +7,7 @@ from string import capwords
 import aiohttp
 import jmespath
 from discord import Colour, Embed
+from discord import app_commands
 from redbot.core import commands
 from redbot.core.commands import Context
 from redbot.core.utils.chat_formatting import bold, humanize_number, pagify
@@ -184,6 +185,7 @@ class Pokebase(commands.Cog):
 
     @commands.hybrid_command(aliases=["pokemon"])
     @commands.bot_has_permissions(embed_links=True)
+    @app_commands.describe(pokemon=("Search Pokémon by ID or name"))
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def pokedex(self, ctx: Context, *, pokemon: str):
         """Search for a pokenmon by name or ID.
@@ -240,6 +242,7 @@ class Pokebase(commands.Cog):
         """Commands for Pokémon infomations."""
 
     @pokeinfo.command()
+    @app_commands.describe(ability=("Get various info about a known Pokémon ability"))
     @commands.bot_has_permissions(embed_links=True)
     async def ability(self, ctx: Context, *, ability: str):
         """Get various info about a known Pokémon ability.
@@ -296,6 +299,7 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @pokeinfo.command()
+    @app_commands.describe(pokemon=("Get the Pokémon's move set."))
     @commands.bot_has_permissions(embed_links=True)
     async def moves(self, ctx: Context, pokemon: str):
         """Get the Pokémon's moves set."""
@@ -327,6 +331,7 @@ class Pokebase(commands.Cog):
             ).start(ctx)
 
     @pokeinfo.command()
+    @app_commands.describe(move=("Fetch info about a Pokémon's move."))
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def moveinfo(self, ctx: Context, *, move: str):
@@ -406,6 +411,7 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @pokeinfo.command()
+    @app_commands.describe(item=("Get various info about a Pokémon item."))
     @commands.bot_has_permissions(embed_links=True)
     async def item(self, ctx: Context, *, item: str):
         """Get various info about a Pokémon item.
@@ -494,6 +500,7 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @pokeinfo.command(name="itemcategory", aliases=["itemcat"])
+    @app_commands.describe(category=("Fetch item in a given Pokémon item category"))
     @commands.bot_has_permissions(embed_links=True)
     async def item_category(self, ctx: Context, *, category: str):
         """Fetch items in a given Pokémon item category."""
@@ -518,6 +525,7 @@ class Pokebase(commands.Cog):
         await ctx.send(embed=embed)
 
     @pokeinfo.command()
+    @app_commands.describe(pokemon=("Responds with the location data for a Pokémon."))
     @commands.bot_has_permissions(embed_links=True)
     async def location(self, ctx: Context, pokemon: str):
         """Responds with the location data for a Pokémon."""
@@ -560,7 +568,8 @@ class Pokebase(commands.Cog):
             )
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.hybrid_command()
+    @app_commands.describe(query=("Fetch Pokémon cards based on Pokémon trading cards game."))
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def tcgcard(self, ctx: Context, *, query: str):
