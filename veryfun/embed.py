@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import logging
-
+from redbot.core import Config
 import discord
 
 log = logging.getLogger("red.maxcogs.veryfun")
@@ -43,6 +43,7 @@ async def api_call(self, ctx, action: str):
 
 
 async def embedgen(self, ctx, user, url, action: str):
+    replies = await self.config.guild(ctx.guild).replies()
     anime_name = url["results"][0]["anime_name"]
     image = url["results"][0]["url"]
 
@@ -55,4 +56,13 @@ async def embedgen(self, ctx, user, url, action: str):
         icon_url=ICON,
     )
     emb.set_image(url=image)
-    await ctx.send(embed=emb)
+
+    if replies is True:
+        try:
+            await ctx.reply(embed=emb, mention_author=False)
+        except discord.HTTPException as e:
+            # Gotta handle when messages auto deletes
+            await ctx.send(embed=emb)
+            log.info(e)
+    else:
+        await ctx.send(embed=emb)

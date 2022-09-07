@@ -25,7 +25,7 @@ import asyncio
 
 import aiohttp
 import discord
-from redbot.core import commands
+from redbot.core import commands, Config
 
 from .embed import api_call, embedgen
 
@@ -40,6 +40,11 @@ class VeryFun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.config = Config.get_conf(self, identifier=0x345628097929936898)
+        default_guild = {
+            "replies": False,
+        }
+        self.config.register_guild(**default_guild)
 
     async def cog_unload(self):
         await self.session.close()
@@ -52,9 +57,34 @@ class VeryFun(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
-    @commands.group(hidden=True)
+    @commands.group()
+    @commands.admin_or_permissions(manage_server=True)
     async def veryfunset(self, ctx):
         """Settings to toggle button."""
+
+    @veryfunset.command(name="reply", aliases=["replies"])
+    async def veryfunset_reply(self, ctx: commands.Context, *, replies: bool):
+        """Toggle to use replies on each roleplay."""
+        await self.config.guild(ctx.guild).replies.set(replies)
+        if not replies:
+            await ctx.send("Replies has been disabled")
+        else:
+            await ctx.send("Replies has been enabled")
+
+    @commands.bot_has_permissions(embed_links=True)
+    @veryfunset.command(name="settings", aliases=["showsettings"])
+    async def veryfunset_settings(self, ctx):
+        """Shows current settings."""
+        replies = await self.config.guild(ctx.guild).replies()
+        embed = discord.Embed(
+            title="VeryFun settings",
+            colour=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="Toggle is",
+            value=f"{replies}"
+        )
+        await ctx.send(embed=embed)
 
     @veryfunset.command(name="version", hidden=True)
     async def veryfunset_version(self, ctx):
