@@ -25,7 +25,7 @@ import asyncio
 
 import aiohttp
 import discord
-from redbot.core import commands, Config
+from redbot.core import Config, commands
 
 from .embed import api_call, embedgen
 
@@ -80,10 +80,7 @@ class VeryFun(commands.Cog):
             title="VeryFun settings",
             colour=await ctx.embed_color(),
         )
-        embed.add_field(
-            name="Toggle is",
-            value=f"{replies}"
-        )
+        embed.add_field(name="Toggle is", value=f"{replies}")
         await ctx.send(embed=embed)
 
     @veryfunset.command(name="version", hidden=True)
