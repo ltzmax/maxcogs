@@ -67,7 +67,7 @@ class VeryFun(commands.Cog):
         """Toggle to use replies on each roleplay.
 
         This is not global setting, this will only enable for this guild.
-        
+
         **Example**:
         - `[p]verfynset reply true` - This will enable replies.
         - `[p]veryfunset reply false` - This will disable replies.
