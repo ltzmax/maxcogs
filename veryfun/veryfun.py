@@ -78,7 +78,9 @@ class VeryFun(commands.Cog):
         """
         mentions = await self.config.guild(ctx.guild).mentions()
         if mentions is True:
-            return await ctx.send("You need to disable mentions before you can disable replies.")
+            return await ctx.send(
+                "You need to disable mentions before you can disable replies."
+            )
         await self.config.guild(ctx.guild).replies.set(replies)
         if not replies:
             await ctx.send("Replies has been disabled")
