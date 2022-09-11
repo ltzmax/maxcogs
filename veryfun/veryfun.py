@@ -65,7 +65,7 @@ class VeryFun(commands.Cog):
     @veryfunset.command(name="reply", aliases=["replies"])
     async def veryfunset_reply(self, ctx: commands.Context, *, replies: bool):
         """Toggle to use replies on each roleplay.
-        
+
         **Example**:
         - `[p]verfynset reply true` - This will enable replies.
         - `[p]veryfunset reply false` - This will disable replies.
@@ -83,7 +83,7 @@ class VeryFun(commands.Cog):
     @veryfunset.command(name="settings", aliases=["showsettings"])
     async def veryfunset_settings(self, ctx):
         """Shows current settings.
-        
+
         - `False` = Disabled.
         - `True` = Enabled.
         """
