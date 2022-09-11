@@ -57,14 +57,22 @@ class VeryFun(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
-    @commands.group()
+    @commands.group(aliases=["vfset"])
     @commands.admin_or_permissions(manage_server=True)
     async def veryfunset(self, ctx):
-        """Settings to toggle button."""
+        """Settings to toggle replies."""
 
     @veryfunset.command(name="reply", aliases=["replies"])
     async def veryfunset_reply(self, ctx: commands.Context, *, replies: bool):
-        """Toggle to use replies on each roleplay."""
+        """Toggle to use replies on each roleplay.
+        
+        **Example**:
+        - `[p]verfynset reply true` - This will enable replies.
+        - `[p]veryfunset reply false` - This will disable replies.
+
+        **Arguments**:
+        - `<replies>` - Where you set either true or false.
+        """
         await self.config.guild(ctx.guild).replies.set(replies)
         if not replies:
             await ctx.send("Replies has been disabled")
@@ -74,13 +82,17 @@ class VeryFun(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @veryfunset.command(name="settings", aliases=["showsettings"])
     async def veryfunset_settings(self, ctx):
-        """Shows current settings."""
+        """Shows current settings.
+        
+        - `False` = Disabled.
+        - `True` = Enabled.
+        """
         replies = await self.config.guild(ctx.guild).replies()
         embed = discord.Embed(
             title="VeryFun settings",
+            description=f"Replies is set to {replies}",
             colour=await ctx.embed_color(),
         )
-        embed.add_field(name="Toggle is", value=f"{replies}")
         await ctx.send(embed=embed)
 
     @veryfunset.command(name="version", hidden=True)
