@@ -85,7 +85,7 @@ class VeryFun(commands.Cog):
     @veryfunset.command(name="settings", aliases=["showsettings"])
     async def veryfunset_settings(self, ctx):
         """Shows current settings.
-        
+
         - `False` = Disabled.
         - `True` = Enabled.
         """
