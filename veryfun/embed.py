@@ -45,6 +45,7 @@ async def api_call(self, ctx, action: str):
 
 async def embedgen(self, ctx, user, url, action: str):
     replies = await self.config.guild(ctx.guild).replies()
+    mentions = await self.config.guild(ctx.guild).mentions()
     anime_name = url["results"][0]["anime_name"]
     image = url["results"][0]["url"]
 
@@ -60,7 +61,7 @@ async def embedgen(self, ctx, user, url, action: str):
 
     if replies is True:
         try:
-            await ctx.reply(embed=emb, mention_author=False)
+            await ctx.reply(embed=emb, mention_author=mentions)
         except discord.HTTPException as e:
             # Gotta handle when messages auto deletes
             await ctx.send(embed=emb)
