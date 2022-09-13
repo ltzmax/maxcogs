@@ -34,9 +34,7 @@ class Tcgcard(commands.Cog):
         return
 
     @commands.hybrid_command()
-    @app_commands.describe(
-        query=("The Pokémon you want to search a card for.")
-    )
+    @app_commands.describe(query=("The Pokémon you want to search a card for."))
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def tcgcard(self, ctx: commands.Context, *, query: str):
@@ -69,8 +67,9 @@ class Tcgcard(commands.Cog):
                     name="Belongs to Set:", value=str(data["set"]["name"]), inline=False
                 )
                 embed.add_field(
-                    name="Set Release Date:", value=discord.utils.format_dt(release, style='D')
-                    )
+                    name="Set Release Date:",
+                    value=discord.utils.format_dt(release, style="D"),
+                )
                 embed.set_thumbnail(url=str(data["set"]["images"]["logo"]))
                 embed.set_image(url=str(data["images"]["large"]))
                 embed.set_footer(
