@@ -98,7 +98,7 @@ class WhosThatPokemon(commands.Cog):
 
     @commands.hybrid_command()
     @app_commands.describe(
-        generation=("You can optionally specify a generation from gen 1 to gen 8.")
+        generation=("Choose between gen 1 to gen 8.")
     )
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.channel)

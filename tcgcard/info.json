@@ -1,0 +1,20 @@
+{
+    "name": "Tcgcard",
+    "short": "Fetch Pokémon cards based on Pokémon Trading Card Game.",
+    "description": "Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)",
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+    "install_msg": "Thanks for installing Pokebase cog. Hope you will find it useful.\nFeel free to check the docs <https://readdocs.voltrabot.com/docs/Cogs/tcgcard>",
+    "author": [
+        "ow0x",
+        "ltzmax (MAX#1000)"
+    ],
+    "tags": [
+        "pokemon",
+        "pokemontcg",
+        "tcgcard"
+    ],
+    "min_bot_version": "3.5.0",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}
