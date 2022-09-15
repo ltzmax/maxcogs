@@ -33,14 +33,14 @@ ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf90046
 
 
 async def api_call(self, ctx, action: str):
-    async with ctx.typing():
-        async with self.session.get(NEKOS + action) as response:
-            if response.status != 200:
-                return await ctx.send(
-                    "Something went wrong while trying to contact API."
-                )
-            url = await response.json()
-            return url
+    await ctx.typing()
+    async with self.session.get(NEKOS + action) as response:
+        if response.status != 200:
+            return await ctx.send(
+                "Something went wrong while trying to contact API."
+            )
+        url = await response.json()
+        return url
 
 
 async def embedgen(self, ctx, user, url, action: str):

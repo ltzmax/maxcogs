@@ -111,37 +111,37 @@ class WhosThatPokemon(commands.Cog):
 
         Otherwise, it will default to pulling random pokemon from all 8 Gens.
         """
-        async with ctx.typing():
-            poke_id = generation or randint(1, 898)
-            if_guessed_right = False
+        await ctx.typing()
+        poke_id = generation or randint(1, 898)
+        if_guessed_right = False
 
-            temp = await self.generate_image(f"{poke_id:>03}", hide=True)
-            if temp is None:
-                return await ctx.send("Failed to generate whosthatpokemon card image.")
+        temp = await self.generate_image(f"{poke_id:>03}", hide=True)
+        if temp is None:
+            return await ctx.send("Failed to generate whosthatpokemon card image.")
 
-            inital_img = await ctx.send(
-                "You have **30 seconds** to answer. Who's that Pokémon?",
-                file=File(temp, "guessthatpokemon.png"),
+        inital_img = await ctx.send(
+            "You have **30 seconds** to answer. Who's that Pokémon?",
+            file=File(temp, "guessthatpokemon.png"),
+        )
+        message = await ctx.send(
+            "You have **3**/3 attempts left to guess it right."
+        )
+        species_data = await self.get_data(f"{API_URL}/pokemon-species/{poke_id}")
+        if species_data.get("http_code"):
+            return await ctx.send("Failed to get species data from PokeAPI.")
+        names_data = species_data.get("names", [{}])
+        eligible_names = [x["name"].lower() for x in names_data]
+        english_name = [
+            x["name"] for x in names_data if x["language"]["name"] == "en"
+        ][0]
+
+        def check(msg: discord.Message) -> bool:
+            return (
+                msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
             )
-            message = await ctx.send(
-                "You have **3**/3 attempts left to guess it right."
-            )
-            species_data = await self.get_data(f"{API_URL}/pokemon-species/{poke_id}")
-            if species_data.get("http_code"):
-                return await ctx.send("Failed to get species data from PokeAPI.")
-            names_data = species_data.get("names", [{}])
-            eligible_names = [x["name"].lower() for x in names_data]
-            english_name = [
-                x["name"] for x in names_data if x["language"]["name"] == "en"
-            ][0]
 
-            def check(msg: discord.Message) -> bool:
-                return (
-                    msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
-                )
-
-            revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
-            revealed_img = File(revealed, "whosthatpokemon.png")
+        revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
+        revealed_img = File(revealed, "whosthatpokemon.png")
 
         attempts = 0
         while attempts != 3:
