@@ -7,7 +7,7 @@
     "description": "Cog that sends random nekos, kitsune, husbando and waifu images from nekos.best",
     "short": "Sending random kitsune, waifue, husbando and nekos images.",
     "hidden": false,
-    "min_bot_version": "3.4.0",
+    "min_bot_version": "3.5.0",
     "tags": [
         "images",
         "waifu",
