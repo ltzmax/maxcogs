@@ -123,22 +123,18 @@ class WhosThatPokemon(commands.Cog):
             "You have **30 seconds** to answer. Who's that Pokémon?",
             file=File(temp, "guessthatpokemon.png"),
         )
-        message = await ctx.send(
-            "You have **3**/3 attempts left to guess it right."
-        )
+        message = await ctx.send("You have **3**/3 attempts left to guess it right.")
         species_data = await self.get_data(f"{API_URL}/pokemon-species/{poke_id}")
         if species_data.get("http_code"):
             return await ctx.send("Failed to get species data from PokeAPI.")
         names_data = species_data.get("names", [{}])
         eligible_names = [x["name"].lower() for x in names_data]
-        english_name = [
-            x["name"] for x in names_data if x["language"]["name"] == "en"
-        ][0]
+        english_name = [x["name"] for x in names_data if x["language"]["name"] == "en"][
+            0
+        ]
 
         def check(msg: discord.Message) -> bool:
-            return (
-                msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
-            )
+            return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
 
         revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
         revealed_img = File(revealed, "whosthatpokemon.png")
