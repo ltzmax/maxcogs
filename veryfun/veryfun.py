@@ -117,8 +117,9 @@ class VeryFun(commands.Cog):
         - `False` = Disabled.
         - `True` = Enabled.
         """
-        replies = await self.config.guild(ctx.guild).replies()
-        mentions = await self.config.guild(ctx.guild).mentions()
+        config = await self.config.guild(ctx.guild).all()
+        replies = config["replies"]
+        mentions = config["mentions"]
         embed = discord.Embed(
             title="VeryFun settings",
             description=f"Replies is set to {replies}\nMentions is set to {mentions}",

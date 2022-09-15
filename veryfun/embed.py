@@ -44,8 +44,9 @@ async def api_call(self, ctx, action: str):
 
 
 async def embedgen(self, ctx, user, url, action: str):
-    replies = await self.config.guild(ctx.guild).replies()
-    mentions = await self.config.guild(ctx.guild).mentions()
+    config = await self.config.guild(ctx.guild).all()
+    replies = config["replies"]
+    mentions = config["mentions"]
     anime_name = url["results"][0]["anime_name"]
     image = url["results"][0]["url"]
 
