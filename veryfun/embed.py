@@ -44,7 +44,6 @@ async def api_call(self, ctx, action: str):
 async def embedgen(self, ctx, user, url, action: str):
     config = await self.config.guild(ctx.guild).all()
     replies = config["replies"]
-    mentions = config["mentions"]
     anime_name = url["results"][0]["anime_name"]
     image = url["results"][0]["url"]
 
@@ -60,9 +59,10 @@ async def embedgen(self, ctx, user, url, action: str):
 
     if replies is True:
         try:
-            await ctx.reply(embed=emb, mention_author=mentions)
+            await ctx.reply(embed=emb, mention_author=False)
         except discord.HTTPException as e:
-            # Gotta handle when messages auto deletes
+            # Gotta handle when messages get auto deleted
+            # when `modset deleterepeats` is enabled.
             await ctx.send(embed=emb)
             log.info(e)
     else:

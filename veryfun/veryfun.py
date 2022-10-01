@@ -76,38 +76,11 @@ class VeryFun(commands.Cog):
         **Arguments**:
         - `<replies>` - Where you set either true or false.
         """
-        mentions = await self.config.guild(ctx.guild).mentions()
-        if mentions is True:
-            return await ctx.send(
-                "You need to disable mentions before you can disable replies."
-            )
         await self.config.guild(ctx.guild).replies.set(replies)
         if not replies:
             await ctx.send("Replies has been disabled")
         else:
             await ctx.send("Replies has been enabled")
-
-    @veryfunset.command(name="mention", aliases=["mentions"])
-    async def veryfunset_mention(self, ctx: commands.Context, *, mentions: bool):
-        """Toggle to use mentions on replies.
-
-        This is not global setting, this will only enable for this guild.
-
-        **Example**:
-        - `[p]verfynset mention true` - This will enable replies.
-        - `[p]veryfunset mention false` - This will disable replies.
-
-        **Arguments**:
-        - `<mentions>` - Where you set either true or false.
-        """
-        replies = await self.config.guild(ctx.guild).replies()
-        if replies is False:
-            return await ctx.send("You need to enable replies to use mentions.")
-        await self.config.guild(ctx.guild).mentions.set(mentions)
-        if not mentions:
-            await ctx.send("mentions has been disabled")
-        else:
-            await ctx.send("mentions has been enabled")
 
     @commands.bot_has_permissions(embed_links=True)
     @veryfunset.command(name="settings", aliases=["showsettings"])
@@ -119,10 +92,9 @@ class VeryFun(commands.Cog):
         """
         config = await self.config.guild(ctx.guild).all()
         replies = config["replies"]
-        mentions = config["mentions"]
         embed = discord.Embed(
             title="VeryFun settings",
-            description=f"Replies is set to {replies}\nMentions is set to {mentions}",
+            description=f"Replies is set to {replies}",
             colour=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
