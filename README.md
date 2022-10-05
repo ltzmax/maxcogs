@@ -21,7 +21,6 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | Away | Set yourself as afk | 2.0.1 | ltzmax, dia ♡#0666, TheDiscordHistorian (kato#0666) | ✅ |
-| EmbedUptime | Shows bot's uptime. | 0.1.12 | ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.18 | ltzmax | ✅ |
 | OnConnect | Cog that sends shard events. | 0.1.20 | ltzmax, Arman0334 | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.2.0 | ltzmax, ow0x | ✅ |
