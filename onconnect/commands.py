@@ -63,10 +63,9 @@ class Commands(MixinMeta):
         if channel:
             if channel.permissions_for(ctx.guild.me).embed_links is False:
                 return await ctx.send(
-                    "I do not have the `embed_links` permission in {}.".format(
-                        channel.mention
-                    )
+                    f"I do not have the `embed_links` permission in {channel.mention}."
                 )
+
             await self.config.statuschannel.set(channel.id)
             log.info(f"Status Channel set to {channel} ({channel.id})")
             if embed_requested:
@@ -156,9 +155,10 @@ class Commands(MixinMeta):
             if embed_requested:
                 embed = discord.Embed(
                     title="Setting Changed",
-                    description=f"The green emoji has been reset.",
+                    description="The green emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
+
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
                 await self.maybe_reply(
@@ -197,9 +197,10 @@ class Commands(MixinMeta):
             if embed_requested:
                 embed = discord.Embed(
                     title="Setting Changed",
-                    description=f"The orange emoji has been reset.",
+                    description="The orange emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
+
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
                 await self.maybe_reply(
@@ -238,9 +239,10 @@ class Commands(MixinMeta):
             if embed_requested:
                 embed = discord.Embed(
                     title="Setting Changed",
-                    description=f"The red emoji has been reset.",
+                    description="The red emoji has been reset.",
                     color=await ctx.embed_color(),
                 )
+
                 await self.maybe_reply(ctx=ctx, embed=embed)
             else:
                 await self.maybe_reply(ctx=ctx, message="The red emoji has been reset.")
