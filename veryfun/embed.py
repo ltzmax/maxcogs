@@ -62,7 +62,8 @@ async def embedgen(self, ctx, user, url, action: str):
             await ctx.reply(embed=emb, mention_author=False)
         except discord.HTTPException as e:
             # Gotta handle when messages get auto deleted
-            # when `set deleterepeats` is enabled.
+            # when `set deletedelay` and `modset deleterepeats` is enabled.
+            # or from similar bots who deletes messages after x same message used.
             await ctx.send(embed=emb)
             log.info(e)
     else:
