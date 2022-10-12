@@ -107,18 +107,14 @@ class Away(commands.Cog):
                     embed=self._format_message(mention, data["message"]),
                     delete_after=g_data["delete_after"],
                     reference=message.to_reference(fail_if_not_exists=False),
-                    allowed_mentions=discord.AllowedMentions(
-                        users=False, roles=False
-                    ),
+                    allowed_mentions=discord.AllowedMentions(users=False, roles=False),
                     mention_author=False,
                 )
             else:
                 await message.channel.send(
                     embed=self._format_message(mention, data["message"]),
                     reference=message.to_reference(fail_if_not_exists=False),
-                    allowed_mentions=discord.AllowedMentions(
-                        users=False, roles=False
-                    ),
+                    allowed_mentions=discord.AllowedMentions(users=False, roles=False),
                     mention_author=False,
                 )
 
