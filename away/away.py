@@ -94,31 +94,31 @@ class Away(commands.Cog):
             if data["message"] is None:
                 continue
             g_data = self.cache.get(guild.id)
-            if g_data != None:
-                if g_data["delete_after"] is not None and g_data["delete"] is True:
-                    await message.channel.send(
-                        embed=self._format_message(mention, data["message"]),
-                        delete_after=g_data["delete_after"],
-                        reference=message.to_reference(fail_if_not_exists=False),
-                        allowed_mentions=discord.AllowedMentions(
-                            users=False, roles=False
-                        ),
-                        mention_author=False,
-                    )
-                else:
-                    await message.channel.send(
-                        embed=self._format_message(mention, data["message"]),
-                        reference=message.to_reference(fail_if_not_exists=False),
-                        allowed_mentions=discord.AllowedMentions(
-                            users=False, roles=False
-                        ),
-                        mention_author=False,
-                    )
-            else:
+            if g_data is None:
                 await message.channel.send(
                     embed=self._format_message(mention, data["message"]),
                     reference=message.to_reference(fail_if_not_exists=False),
                     allowed_mentions=discord.AllowedMentions(users=False, roles=False),
+                    mention_author=False,
+                )
+
+            elif g_data["delete_after"] is not None and g_data["delete"] is True:
+                await message.channel.send(
+                    embed=self._format_message(mention, data["message"]),
+                    delete_after=g_data["delete_after"],
+                    reference=message.to_reference(fail_if_not_exists=False),
+                    allowed_mentions=discord.AllowedMentions(
+                        users=False, roles=False
+                    ),
+                    mention_author=False,
+                )
+            else:
+                await message.channel.send(
+                    embed=self._format_message(mention, data["message"]),
+                    reference=message.to_reference(fail_if_not_exists=False),
+                    allowed_mentions=discord.AllowedMentions(
+                        users=False, roles=False
+                    ),
                     mention_author=False,
                 )
 
@@ -181,9 +181,7 @@ class Away(commands.Cog):
         _userdata = await self.config.member(ctx.author).all()
         if _userdata["nick"] is True:
             try:
-                await ctx.author.edit(
-                    nick="[AFK] {}".format(ctx.author.name[:25])
-                )  # to be safe lets use 25.
+                await ctx.author.edit(nick=f"[AFK] {ctx.author.name[:25]}")
             except discord.HTTPException as e:
                 log.error(f"Failed to edit nickname due to: {e}")
         async with self.config.member(ctx.author).all() as a:
@@ -194,7 +192,7 @@ class Away(commands.Cog):
             color=await ctx.embed_color(),
         )
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
-        embed.set_footer(text=f"You're now away.")
+        embed.set_footer(text="You're now away.")
         if data["delete_after"] is not None and data["delete"] is True:
             return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
@@ -219,9 +217,8 @@ class Away(commands.Cog):
             data = self.cache[ctx.guild.id]
         else:
             data = await self.config.guild(ctx.guild).all()
-        if data["role"] != None:
-            if ctx.author._roles.has(data["role"]):
-                await ctx.author.remove_roles(discord.Object(data["role"]))
+        if data["role"] != None and ctx.author._roles.has(data["role"]):
+            await ctx.author.remove_roles(discord.Object(data["role"]))
         _userdata = await self.config.member(ctx.author).all()
         if _userdata["nick"] is True:
             try:
@@ -236,7 +233,7 @@ class Away(commands.Cog):
             color=await ctx.embed_color(),
         )
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
-        embed.set_footer(text=f"You're now back.")
+        embed.set_footer(text="You're now back.")
         if data["delete_after"] is not None and data["delete"] is True:
             return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
@@ -351,11 +348,7 @@ class Away(commands.Cog):
 
         # to not show just role id, it's easier to show the role name instead.
         role = ctx.guild.get_role(data["role"])
-        if role is None:
-            role = "None"
-        else:
-            role = role.mention
-
+        role = "None" if role is None else role.mention
         embed = discord.Embed(
             description=f"Current away settings for {ctx.guild.name}.",
             color=await ctx.embed_color(),
