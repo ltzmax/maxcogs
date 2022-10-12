@@ -180,7 +180,7 @@ class WhosThatPokemon(commands.Cog):
                 else:
                     emb.title = "You took too many attempts! 😔 😮\u200d💨"
                     emb.colour = Colour(0xFF0000)
-                emb.set_image(url=f"attachment://whosthatpokemon.png")
+                emb.set_image(url="attachment://whosthatpokemon.png")
                 emb.set_footer(
                     text=f"Requested by {ctx.author}",
                     icon_url=ctx.author.display_avatar.url,

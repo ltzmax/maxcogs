@@ -283,7 +283,12 @@ class Away(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(embed_links=True)
     async def toggle(self, ctx: commands.Context, delete: bool):
-        """Toggle whether to delete away messages or not."""
+        """Toggle whether to delete away messages or not.
+        
+        Arguments:
+        - `<delete>` - set to true or false.
+        True to enable, false to disable.
+        """
         await self.config.guild(ctx.guild).delete.set(delete)
         await self.update_guild_cache(ctx.guild)
         embed = discord.Embed(
@@ -351,10 +356,7 @@ class Away(commands.Cog):
 
         # to not show just role id, it's easier to show the role name instead.
         role = ctx.guild.get_role(data["role"])
-        if role is None:
-            role = "None"
-        else:
-            role = role.mention
+        role = "None" if role is None else role.mention
 
         embed = discord.Embed(
             description=f"Current away settings for {ctx.guild.name}.",
