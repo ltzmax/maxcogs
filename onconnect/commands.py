@@ -100,9 +100,7 @@ class Commands(MixinMeta):
         """
         if not emoji:
             await self.config.green.clear()
-            await self.maybe_reply(
-                ctx=ctx, message="The green emoji has been reset."
-            )
+            await self.maybe_reply(ctx=ctx, message="The green emoji has been reset.")
         else:
             await self.config.green.set(str(emoji))
             await self.maybe_reply(
@@ -124,9 +122,7 @@ class Commands(MixinMeta):
         """
         if not emoji:
             await self.config.orange.clear()
-            await self.maybe_reply(
-                ctx=ctx, message="The orange emoji has been reset."
-            )
+            await self.maybe_reply(ctx=ctx, message="The orange emoji has been reset.")
         else:
             await self.config.orange.set(str(emoji))
             await self.maybe_reply(
