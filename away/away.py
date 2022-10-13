@@ -284,7 +284,7 @@ class Away(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def toggle(self, ctx: commands.Context, delete: bool):
         """Toggle whether to delete away messages or not.
-        
+
         Arguments:
         - `<delete>` - set to true or false.
         True to enable, false to disable.
