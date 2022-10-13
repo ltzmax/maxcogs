@@ -19,7 +19,7 @@ body:
         - embeduptime
         - nekosbest
         - onconnect
-        - pokebase
+        - tcgcard
         - veryfun
         - whosthatpokemon
     validations:

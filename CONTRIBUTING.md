@@ -1,5 +1,4 @@
 ## PR infomation
-
 - Feel free to do bug fixes when you see something that aren't working or are missing.
     - If you're unsure of how to do something, ask for help with the code you're trying to fix.
     - If you're unable to ask for help with the issue you found in a source code, create an issue.
@@ -7,17 +6,6 @@
     - If you are unable to talk with me on discord, create an issue and we'll discuss it there.
 - If you have a good idea for a new feature, please create an issue or talk with me on discord.
     - I do love new good ideas, but I'm not sure if I'll accept them or not therefore an issue or talk with me on discord first to see if this is something i can do.
-
-## Terms of rules
-- You agree that you have read the [Contributing Guide](https://github.com/ltzmax/maxcogs/blob/master/CONTRIBUTING.md).
-- You agree that you have read the section PR infomation.
-- You agree that you follow the License.
-- Ensure that your PR is in python 3.8 or higher.
-- Do not copy and paste code from other sources or use code from other sources without permission from their owners.
-    - We respect the rights of others and do not allow copying and pasting code from other sources without permission.
-    - We respect the license of others work and do not allow to just use their work without their permission.
-    - We ask that you check with the owners and ask for permission if you use code from other sources.
-    - Using code from other sources is not allowed without permission from code owners and if we find you using code from other sources without adding a screenshot that you asked for permission, we will remove your PR and issue a warning.
 
 ## When you do PR's you need to remember two things:
 always use following:
@@ -48,5 +36,5 @@ black <source_file_or_directory>
 isort <source_file_or_directory>
 ```
 ## Versions:
-- Version `22.6.0` of black.
+- Version `22.10.0` of black.
 - Version `5.10.1` of isort.

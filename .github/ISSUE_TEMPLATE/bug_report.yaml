@@ -19,7 +19,7 @@ body:
         - embeduptime
         - nekosbest
         - onconnect
-        - pokebase
+        - tcgcard
         - veryfun
         - whosthatpokemon
     validations:
@@ -28,7 +28,7 @@ body:
     id: version
     attributes:
       label: "What is the version of the cog?"
-      placeholder: e.g 0.4.5 (You find versions below in README)
+      placeholder: e.g 0.4.5 (You find versions in [p]help <CogName>.)
     validations:
       required: true
   - type: input
