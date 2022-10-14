@@ -17,7 +17,7 @@
         "whosthatpokemon",
         "whos that pokemon"
     ],
-    "min_bot_version": "3.4.16",
+    "min_bot_version": "3.5.0.dev1",
     "hidden": false,
     "disabled": false,
     "type": "COG"

@@ -13,7 +13,7 @@
         "pokemontcg",
         "tcgcard"
     ],
-    "min_bot_version": "3.5.0",
+    "min_bot_version": "3.5.0.dev1",
     "hidden": false,
     "disabled": false,
     "type": "COG"
