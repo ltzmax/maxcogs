@@ -56,6 +56,10 @@ class Commands(MixinMeta):
         **Arguments:**
         - `[channel]` - Is where you set the event channel. Leave it blank to disable.
         """
+        # Select menu to select a channel?
+        # Maybe, maybe not?
+        # I will say no to myself doing it, if you want it, pr it, ill 100% accept.
+        # Or modals? select with channel ID?, probably something of those two.
         if channel is None:
             channel = ctx.channel
             await self.config.statuschannel.set(None)
