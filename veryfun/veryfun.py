@@ -70,7 +70,7 @@ class VeryFun(commands.Cog):
                 )
             data = await response.json()
 
-        async with self.config.user(user).all() as config:
+        async with self.config.user(user or ctx.author).all() as config:
             config["counter"][action] += 1
 
         action_fmt = ACTIONS.get(action, action)
