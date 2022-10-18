@@ -46,7 +46,9 @@ class VeryFun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(self, 0x345628097929936899, force_registration=True)
+        self.config = Config.get_conf(
+            self, 0x345628097929936899, force_registration=True
+        )
         self.config.register_user(counter=Counter())
 
     def cog_unload(self):
@@ -63,7 +65,9 @@ class VeryFun(commands.Cog):
     async def embedgen(self, ctx, user, action: str):
         async with self.session.get(NEKOS + action) as response:
             if response.status != 200:
-                return await ctx.send("Something went wrong while trying to contact API.")
+                return await ctx.send(
+                    "Something went wrong while trying to contact API."
+                )
             data = await response.json()
 
         async with self.config.user(user).all() as config:
@@ -78,12 +82,16 @@ class VeryFun(commands.Cog):
                 f"Received {action} count: {humanize_number(config['counter'][action])}"
             ),
         )
-        emb.set_footer(text=f"Powered by nekos.best | Anime: {anime_name}", icon_url=ICON)
+        emb.set_footer(
+            text=f"Powered by nekos.best | Anime: {anime_name}", icon_url=ICON
+        )
         emb.set_image(url=data["results"][0]["url"])
         try:
             await ctx.send(embed=emb)
         except discord.HTTPException:
-            await ctx.send("Something went wrong while posting. Check your console for details.")
+            await ctx.send(
+                "Something went wrong while posting. Check your console for details."
+            )
             log.exception(f"Command '{ctx.command.name}' failed to post:")
 
     @commands.bot_has_permissions(embed_links=True)
