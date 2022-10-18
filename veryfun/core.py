@@ -29,7 +29,7 @@ from redbot.core.utils.chat_formatting import humanize_number
 log = logging.getLogger("red.maxcogs.veryfun")
 
 NEKOS = "https://nekos.best/api/v2/"
-ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
+ICON = "https://nekos.best/logo_short.png"
 
 
 async def api_call(self, ctx, action: str):
