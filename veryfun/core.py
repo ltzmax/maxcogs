@@ -21,41 +21,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
-
-import discord
-
-log = logging.getLogger("red.maxcogs.veryfun")
 
 NEKOS = "https://nekos.best/api/v2/"
-ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
-
-
-async def api_call(self, ctx, action: str):
-    async with self.session.get(NEKOS + action) as response:
-        if response.status != 200:
-            return await ctx.send("Something went wrong while trying to contact API.")
-        url = await response.json()
-        return url
-
-
-async def embedgen(self, ctx, user, url, action: str):
-
-    anime_name = url["results"][0]["anime_name"]
-
-    emb = discord.Embed(
-        colour=await ctx.embed_color(),
-        description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user else 'themselves!'}",
-    )
-    emb.set_footer(
-        text=f"Powered by nekos.best | Anime: {anime_name}",
-        icon_url=ICON,
-    )
-    emb.set_image(url=url["results"][0]["url"])
-    try:
-        await ctx.send(embed=emb)
-    except discord.HTTPException as e:
-        await ctx.send(
-            "Something went wrong while posting. Check your console for details."
-        )
-        log.error(f"Command '{ctx.command.name}' failed to post: {e}")
+ICON = "https://nekos.best/logo_short.png"
+ACTIONS = {
+    "baka": "baka",
+    "cry": "cries at",
+    "cuddle": "cuddles",
+    "dance": "dance",
+    "feed": "feeds",
+    "hug": "hugs",
+    "kiss": "just kissed",
+    "laugh": "laughs",
+    "pat": "pats",
+    "poke": "pokes",
+    "slap": "just slapped",
+    "smile": "smiles at",
+    "smug": "smugs",
+    "tickle": "tickles",
+    "wave": "waves at",
+    "bite": "bites",
+    "blush": "blushes",
+    "bored": "very bored",
+    "facepalm": "facepalm",
+    "happy": "is happy for",
+    "highfive": "highfives",
+    "pout": "pout",
+    "shrug": "shrugs",
+    "sleep": "sleep",
+    "stare": "stares at",
+    "think": "think",
+    "thumbsup": "thumbsup",
+    "wink": "winks",
+    "handhold": "handholds",
+    "kick": "kicks",
+    "punch": "punches",
+    "shoot": "shoots",
+    "yeet": "yeets",
+}
