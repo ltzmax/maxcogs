@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
+from collections import Counter
 from typing import Optional
 
 import aiohttp
@@ -41,6 +42,8 @@ class VeryFun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.config = Config.get_conf(self, 0x345628097929936899, force_registration=True)
+        self.config.register_user(counter=Counter())
 
     def cog_unload(self):
         asyncio.create_task(self.session.close())

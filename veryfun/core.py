@@ -24,6 +24,7 @@ SOFTWARE.
 import logging
 
 import discord
+from redbot.core.utils.chat_formatting import humanize_number
 
 log = logging.getLogger("red.maxcogs.veryfun")
 
@@ -39,13 +40,18 @@ async def api_call(self, ctx, action: str):
         return url
 
 
-async def embedgen(self, ctx, user, url, action: str):
+async def embedgen(cog, ctx, user, url, action: str):
+    async with cog.config.user(user).all() as config:
+        config["counter"][action] += 1
 
     anime_name = url["results"][0]["anime_name"]
 
     emb = discord.Embed(
         colour=await ctx.embed_color(),
-        description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user else 'themselves!'}",
+        description=(
+            f"**{ctx.author.mention}** {action} {f'**{user.mention}**' if user else 'themselves!'}\n"
+            f"{action} received: {humanize_number(config['counter'][action])}"
+        ),
     )
     emb.set_footer(
         text=f"Powered by nekos.best | Anime: {anime_name}",
@@ -55,7 +61,5 @@ async def embedgen(self, ctx, user, url, action: str):
     try:
         await ctx.send(embed=emb)
     except discord.HTTPException as e:
-        await ctx.send(
-            "Something went wrong while posting. Check your console for details."
-        )
+        await ctx.send("Something went wrong while posting. Check your console for details.")
         log.error(f"Command '{ctx.command.name}' failed to post: {e}")
