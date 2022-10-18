@@ -21,50 +21,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
-
-import discord
-from redbot.core import Config
-
-log = logging.getLogger("red.maxcogs.veryfun")
 
 NEKOS = "https://nekos.best/api/v2/"
-ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
-
-
-async def api_call(self, ctx, action: str):
-    await ctx.typing()
-    async with self.session.get(NEKOS + action) as response:
-        if response.status != 200:
-            return await ctx.send("Something went wrong while trying to contact API.")
-        url = await response.json()
-        return url
-
-
-async def embedgen(self, ctx, user, url, action: str):
-    config = await self.config.guild(ctx.guild).all()
-    replies = config["replies"]
-    anime_name = url["results"][0]["anime_name"]
-    image = url["results"][0]["url"]
-
-    emb = discord.Embed(
-        colour=await ctx.embed_color(),
-        description=f"**{ctx.author.mention}** {action} {f'**{str(user.mention)}**' if user.id != ctx.author.id else 'themselves'}!",
-    )
-    emb.set_footer(
-        text=f"Powered by nekos.best | Anime: {anime_name}",
-        icon_url=ICON,
-    )
-    emb.set_image(url=image)
-
-    if replies is True:
-        try:
-            await ctx.reply(embed=emb, mention_author=False)
-        except discord.HTTPException as e:
-            # Gotta handle when messages get auto deleted
-            # when `set deletedelay` and `modset deleterepeats` is enabled.
-            # or from similar bots who deletes messages after x same message used.
-            await ctx.send(embed=emb)
-            log.info(e)
-    else:
-        await ctx.send(embed=emb)
+ICON = "https://nekos.best/logo_short.png"
+ACTIONS = {
+    "baka": "baka",
+    "cry": "cries at",
+    "cuddle": "cuddles",
+    "dance": "dance",
+    "feed": "feeds",
+    "hug": "hugs",
+    "kiss": "just kissed",
+    "laugh": "laughs",
+    "pat": "pats",
+    "poke": "pokes",
+    "slap": "just slapped",
+    "smile": "smiles at",
+    "smug": "smugs",
+    "tickle": "tickles",
+    "wave": "waves at",
+    "bite": "bites",
+    "blush": "blushes",
+    "bored": "very bored",
+    "facepalm": "facepalm",
+    "happy": "is happy for",
+    "highfive": "highfives",
+    "pout": "pout",
+    "shrug": "shrugs",
+    "sleep": "sleep",
+    "stare": "stares at",
+    "think": "think",
+    "thumbsup": "thumbsup",
+    "wink": "winks",
+    "handhold": "handholds",
+    "kick": "kicks",
+    "punch": "punches",
+    "shoot": "shoots",
+    "yeet": "yeets",
+}

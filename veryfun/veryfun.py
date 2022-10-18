@@ -22,12 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
+import logging
+from collections import Counter
+from typing import Optional
 
 import aiohttp
 import discord
 from redbot.core import Config, commands
+from redbot.core.utils.chat_formatting import humanize_number
 
-from .embed import api_call, embedgen
+from .core import ACTIONS, ICON, NEKOS
+
+log = logging.getLogger("red.maxcogs.veryfun")
 
 
 class VeryFun(commands.Cog):
@@ -40,12 +46,10 @@ class VeryFun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(self, identifier=0x345628097929936898)
-        default_guild = {
-            "replies": False,
-            "mentions": False,
-        }
-        self.config.register_guild(**default_guild)
+        self.config = Config.get_conf(
+            self, 0x345628097929936899, force_registration=True
+        )
+        self.config.register_user(counter=Counter())
 
     async def cog_unload(self):
         await self.session.close()
@@ -58,326 +62,265 @@ class VeryFun(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
 
-    @commands.group(aliases=["vfset"])
-    @commands.admin_or_permissions(manage_server=True)
-    async def veryfunset(self, ctx):
-        """Settings to toggle replies."""
+    async def embedgen(self, ctx, user, action: str):
+        async with self.session.get(NEKOS + action) as response:
+            if response.status != 200:
+                return await ctx.send(
+                    "Something went wrong while trying to contact API."
+                )
+            data = await response.json()
 
-    @veryfunset.command(name="reply", aliases=["replies"])
-    async def veryfunset_reply(self, ctx: commands.Context, *, replies: bool):
-        """Toggle to use replies on each roleplay.
+        async with self.config.user(user).all() as config:
+            config["counter"][action] += 1
 
-        This is not global setting, this will only enable for this guild.
-
-        **Example**:
-        - `[p]verfynset reply true` - This will enable replies.
-        - `[p]veryfunset reply false` - This will disable replies.
-
-        **Arguments**:
-        - `<replies>` - Where you set either true or false.
-        """
-        await self.config.guild(ctx.guild).replies.set(replies)
-        if not replies:
-            await ctx.send("Replies has been disabled")
-        else:
-            await ctx.send("Replies has been enabled")
-
-    @commands.bot_has_permissions(embed_links=True)
-    @veryfunset.command(name="settings", aliases=["showsettings"])
-    async def veryfunset_settings(self, ctx):
-        """Shows current settings.
-
-        - `False` = Disabled.
-        - `True` = Enabled.
-        """
-        config = await self.config.guild(ctx.guild).all()
-        replies = config["replies"]
-        embed = discord.Embed(
-            title="VeryFun settings",
-            description=f"Replies is set to {replies}",
+        action_fmt = ACTIONS.get(action, action)
+        anime_name = data["results"][0]["anime_name"]
+        emb = discord.Embed(
             colour=await ctx.embed_color(),
+            description=(
+                f"**{ctx.author.mention}** {action_fmt} {f'**{user.mention}**' if user else 'themselves!'}\n"
+                f"Received {action} count: {humanize_number(config['counter'][action])}"
+            ),
         )
-        await ctx.send(embed=embed)
-
-    @veryfunset.command(name="version", hidden=True)
-    async def veryfunset_version(self, ctx):
-        """Shows the cog version."""
-        if await ctx.embed_requested():
-            em = discord.Embed(
-                title="Cog Version:",
-                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-                colour=await ctx.embed_color(),
-            )
-            await ctx.send(embed=em)
-        else:
+        emb.set_footer(
+            text=f"Powered by nekos.best | Anime: {anime_name}", icon_url=ICON
+        )
+        emb.set_image(url=data["results"][0]["url"])
+        try:
+            await ctx.send(embed=emb)
+        except discord.HTTPException:
             await ctx.send(
-                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
+                "Something went wrong while posting. Check your console for details."
             )
+            log.exception(f"Command '{ctx.command.name}' failed to post:")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def baka(self, ctx, user: discord.Member):
         """Baka baka baka!"""
-        url = await api_call(self, ctx, "baka")
-        await embedgen(self, ctx, user, url, "baka")
+        await self.embedgen(ctx, user, "baka")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cry(self, ctx, user: discord.Member):
-        """Cry at someone or yourself."""
-        url = await api_call(self, ctx, "cry")
-        await embedgen(self, ctx, user, url, "cries at")
+        """Cry!"""
+        await self.embedgen(ctx, user, "cry")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cuddle(self, ctx, user: discord.Member):
-        """Cuddle a user or yourself."""
-        url = await api_call(self, ctx, "cuddle")
-        await embedgen(self, ctx, user, url, "cuddles")
+        """Cuddle a user!"""
+        await self.embedgen(ctx, user, "cuddle")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def dance(self, ctx, user: discord.Member):
         """Dance!"""
-        url = await api_call(self, ctx, "dance")
-        await embedgen(self, ctx, user, url, "dance")
+        await self.embedgen(ctx, user, "dance")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def feed(self, ctx, user: discord.Member):
         """Feeds a user!"""
-        url = await api_call(self, ctx, "feed")
-        await embedgen(self, ctx, user, url, "feeds")
+        await self.embedgen(ctx, user, "feed")
 
     @commands.command()  # i want `hug` as alias. but i can't cause of core have their own hug command.
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def hugs(self, ctx, user: discord.Member):
         """Hugs a user!"""
-        url = await api_call(self, ctx, "hug")
-        await embedgen(self, ctx, user, url, "hugs")
+        await self.embedgen(ctx, user, "hug")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def kiss(self, ctx, user: discord.Member):
         """Kiss a user!"""
-        url = await api_call(self, ctx, "kiss")
-        await embedgen(self, ctx, user, url, "just kissed")
+        await self.embedgen(ctx, user, "kiss")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def laugh(self, ctx, user: discord.Member):
         """laugh!"""
-        url = await api_call(self, ctx, "laugh")
-        await embedgen(self, ctx, user, url, "laughs")
+        await self.embedgen(ctx, user, "laugh")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def pat(self, ctx, user: discord.Member):
         """Pats a user!"""
-        url = await api_call(self, ctx, "pat")
-        await embedgen(self, ctx, user, url, "pats")
+        await self.embedgen(ctx, user, "pat")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def poke(self, ctx, user: discord.Member):
         """Poke a user!"""
-        url = await api_call(self, ctx, "poke")
-        await embedgen(self, ctx, user, url, "pokes")
+        await self.embedgen(ctx, user, "poke")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def slap(self, ctx, user: discord.Member):
         """Slap a user!"""
-        url = await api_call(self, ctx, "slap")
-        await embedgen(self, ctx, user, url, "just slapped")
+        await self.embedgen(ctx, user, "slap")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def smile(self, ctx, user: discord.Member):
         """Smile!"""
-        url = await api_call(self, ctx, "smile")
-        await embedgen(self, ctx, user, url, "smiles at")
+        await self.embedgen(ctx, user, "smile")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def smug(self, ctx, user: discord.Member):
         """Smugs at someone!"""
-        url = await api_call(self, ctx, "smug")
-        await embedgen(self, ctx, user, url, "smugs")
+        await self.embedgen(ctx, user, "smug")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def tickle(self, ctx, user: discord.Member):
         """Tickle a user!"""
-        url = await api_call(self, ctx, "tickle")
-        await embedgen(self, ctx, user, url, "tickles")
+        await self.embedgen(ctx, user, "tickle")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def wave(self, ctx, user: discord.Member):
         """Waves!"""
-        url = await api_call(self, ctx, "wave")
-        await embedgen(self, ctx, user, url, "waves at")
+        await self.embedgen(ctx, user, "wave")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def bite(self, ctx, user: discord.Member):
         """Bite a user!"""
-        url = await api_call(self, ctx, "bite")
-        await embedgen(self, ctx, user, url, "bites")
+        await self.embedgen(ctx, user, "bite")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def blush(self, ctx, user: discord.Member):
         """blushs!"""
-        url = await api_call(self, ctx, "blush")
-        await embedgen(self, ctx, user, url, "blushes")
+        await self.embedgen(ctx, user, "blush")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def bored(self, ctx, user: discord.Member):
         """You're bored!"""
-        url = await api_call(self, ctx, "bored")
-        await embedgen(self, ctx, user, url, "very bored")
+        await self.embedgen(ctx, user, "bored")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def facepalm(self, ctx, user: discord.Member):
         """Facepalm a user!"""
-        url = await api_call(self, ctx, "facepalm")
-        await embedgen(self, ctx, user, url, "facepalm")
+        await self.embedgen(ctx, user, "facepalm")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def happy(self, ctx, user: discord.Member):
         """happiness with a user!"""
-        url = await api_call(self, ctx, "happy")
-        await embedgen(self, ctx, user, url, "is happy for")
+        await self.embedgen(ctx, user, "happy")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def highfive(self, ctx, user: discord.Member):
         """highfive a user!"""
-        url = await api_call(self, ctx, "highfive")
-        await embedgen(self, ctx, user, url, "highfives")
+        await self.embedgen(ctx, user, "highfive")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def pout(self, ctx, user: discord.Member):
         """Pout a user!"""
-        url = await api_call(self, ctx, "pout")
-        await embedgen(self, ctx, user, url, "pout")
+        await self.embedgen(ctx, user, "pout")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def shrug(self, ctx, user: discord.Member):
         """Shrugs a user!"""
-        url = await api_call(self, ctx, "shrug")
-        await embedgen(self, ctx, user, url, "shrugs")
+        await self.embedgen(ctx, user, "shrug")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def sleep(self, ctx, user: discord.Member):
         """Sleep zzzz!"""
-        url = await api_call(self, ctx, "sleep")
-        await embedgen(self, ctx, user, url, "sleep")
+        await self.embedgen(ctx, user, "sleep")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def stare(self, ctx, user: discord.Member):
         """Stares at a user!"""
-        url = await api_call(self, ctx, "stare")
-        await embedgen(self, ctx, user, url, "stares at")
+        await self.embedgen(ctx, user, "stare")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def think(self, ctx, user: discord.Member):
         """Thinking!"""
-        url = await api_call(self, ctx, "think")
-        await embedgen(self, ctx, user, url, "think")
+        await self.embedgen(ctx, user, "think")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def thumbsup(self, ctx, user: discord.Member):
         """thumbsup!"""
-        url = await api_call(self, ctx, "thumbsup")
-        await embedgen(self, ctx, user, url, "thumbsup")
+        await self.embedgen(ctx, user, "thumbsup")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def wink(self, ctx, user: discord.Member):
         """Winks at a user!"""
-        url = await api_call(self, ctx, "wink")
-        await embedgen(self, ctx, user, url, "winks")
+        await self.embedgen(ctx, user, "wink")
 
     @commands.command(aliases=["handholding"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def handhold(self, ctx, user: discord.Member):
         """handhold a user!"""
-        url = await api_call(self, ctx, "handhold")
-        await embedgen(self, ctx, user, url, "handholds")
+        await self.embedgen(ctx, user, "handhold")
 
     @commands.command(aliases=["vkicks"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def vkick(self, ctx, user: discord.Member):
-        """kick a user!
-
-        This is `vkick` because kick is taken by the mod cog.
-        If you do not use mod cog, you can use alias cog to make it `kick`.
-        """
-        url = await api_call(self, ctx, "kick")
-        await embedgen(self, ctx, user, url, "kicks")
+        """kick a user!"""
+        await self.embedgen(ctx, user, "kick")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def punch(self, ctx, user: discord.Member):
         """punch a user!"""
-        url = await api_call(self, ctx, "punch")
-        await embedgen(self, ctx, user, url, "punches")
+        await self.embedgen(ctx, user, "punch")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def shoot(self, ctx, user: discord.Member):
         """shoot a user!"""
-        url = await api_call(self, ctx, "shoot")
-        await embedgen(self, ctx, user, url, "shoots")
+        await self.embedgen(ctx, user, "shoot")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def yeet(self, ctx, user: discord.Member):
         """yeet a user far far away."""
-        url = await api_call(self, ctx, "yeet")
-        await embedgen(self, ctx, user, url, "yeets")
+        await self.embedgen(ctx, user, "yeet")
