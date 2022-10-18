@@ -1,6 +1,6 @@
 name: "Feature request"
 description: A feature request for a cog
-title: "[Feature]: "
+title: "[Feature Request]: "
 labels: ["Status Pending"]
 assignees:
   - ltzmax
