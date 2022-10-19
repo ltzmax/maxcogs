@@ -71,7 +71,13 @@ class VeryFun(commands.Cog):
             data = await response.json()
 
         async with self.config.user(user or ctx.author).all() as config:
-            config["counter"][action] += 1
+            try:
+                config["counter"][action] += 1
+            except KeyError:
+                return await ctx.send(
+                    f"Hello, Thank you for using this cog. Unfortunately this cog did not make it in time to work on discord.py 2.0 therefore you should `{ctx.clean_prefix}unload veryfun`. If you want this cog to work on discord.py 2.0 faster than i can make it work there, you're free to create a pr <https://github.com/ltzmax/maxcogs>.\nFor questions please join Red cog support server: https://discord.gg/GET4DVk and ask in <#240212783503900673>. Please do ping MAX#1000 (345628097929936898)",
+                    reference=ctx.message.to_reference(fail_if_not_exists=False),
+                )
 
         action_fmt = ACTIONS.get(action, action)
         anime_name = data["results"][0]["anime_name"]
