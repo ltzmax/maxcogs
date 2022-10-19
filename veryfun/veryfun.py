@@ -88,11 +88,11 @@ class VeryFun(commands.Cog):
         emb.set_image(url=data["results"][0]["url"])
         try:
             await ctx.send(embed=emb)
-        except discord.HTTPException:
+        except discord.HTTPException as e:
             await ctx.send(
                 "Something went wrong while posting. Check your console for details."
             )
-            log.exception(f"Command '{ctx.command.name}' failed to post:")
+            log.exception(f"Command '{ctx.command.name}' failed to post: {e}")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
