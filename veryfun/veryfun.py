@@ -73,6 +73,10 @@ class VeryFun(commands.Cog):
         async with self.config.user(user or ctx.author).all() as config:
             try:
                 config["counter"][action] += 1
+                # It doesn't work on discord.py 2.0,
+                # removing this keyerror fix will result it not 
+                # responsing correctly as you hoped it will and want it todo so.
+                # you will see a keyerror when removing this instead of the message below.
             except KeyError:
                 return await ctx.send(
                     f"Hello, Thank you for using this cog. Unfortunately this cog did not make it in time to work on discord.py 2.0 therefore you should `{ctx.clean_prefix}unload veryfun`. If you want this cog to work on discord.py 2.0 faster than i can make it work there, you're free to create a pr <https://github.com/ltzmax/maxcogs>.\nFor questions please join Red cog support server: https://discord.gg/GET4DVk and ask in <#240212783503900673>. Please do ping MAX#1000 (345628097929936898)",
@@ -92,13 +96,7 @@ class VeryFun(commands.Cog):
             text=f"Powered by nekos.best | Anime: {anime_name}", icon_url=ICON
         )
         emb.set_image(url=data["results"][0]["url"])
-        try:
-            await ctx.send(embed=emb)
-        except discord.HTTPException as e:
-            await ctx.send(
-                "Something went wrong while posting. Check your console for details."
-            )
-            log.exception(f"Command '{ctx.command.name}' failed to post: {e}")
+        await ctx.send(embed=emb)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
