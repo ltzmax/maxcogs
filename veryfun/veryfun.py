@@ -74,7 +74,7 @@ class VeryFun(commands.Cog):
             try:
                 config["counter"][action] += 1
                 # It doesn't work on discord.py 2.0,
-                # removing this keyerror fix will result it not 
+                # removing this keyerror fix will result it not
                 # responsing correctly as you hoped it will and want it todo so.
                 # you will see a keyerror when removing this instead of the message below.
             except KeyError:
