@@ -28,7 +28,7 @@ import discord
 log = logging.getLogger("red.maxcogs.nekosbest")
 
 NEKOS_API = "https://nekos.best/api/v2/"
-ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
+ICON = "https://nekos.best/logo_short.png"
 
 
 async def api_call(self, ctx, endpoint: str):
