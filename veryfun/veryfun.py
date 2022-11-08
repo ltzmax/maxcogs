@@ -78,7 +78,7 @@ class VeryFun(commands.Cog):
                 # responsing correctly as you hoped it will and want it todo so.
                 # you will see a keyerror when removing this instead of the message below.
             except KeyError:
-                msg = f"Hello, Thank you for using this cog. Unfortunately this cog did not make it in time to work on discord.py 2.0 therefore you should run the command `{ctx.clean_prefix}unload veryfun`. If you want this cog to work on discord.py 2.0 faster than i can make it work there, you're free to create a pr <https://github.com/ltzmax/maxcogs>.\nFor questions please join Red cog support server: https://discord.gg/GET4DVk and ask in <#240212783503900673>. Please do ping MAX#1000 (345628097929936898)"
+                msg = f"Hello, Thank you for using this cog. Unfortunately this cog did not make it in time to work on discord.py 2.0 therefore you should run the command `{ctx.clean_prefix}unload veryfun`. If you want this cog to work on discord.py 2.0 faster than i can make it work there, you're free to create a pr <https://github.com/ltzmax/maxcogs>.\nFor questions please join Red cog support server: https://discord.gg/GET4DVk and go to <#1038801696190648530> and then go to `maxcogs` thread and ask your question if you have any."
                 return await ctx.send(
                     msg,
                     reference=ctx.message.to_reference(fail_if_not_exists=False),
