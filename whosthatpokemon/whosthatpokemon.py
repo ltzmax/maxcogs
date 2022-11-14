@@ -109,7 +109,14 @@ class WhosThatPokemon(commands.Cog):
         You can optionally specify generation from `gen1` to `gen8` only,
         to restrict this guessing game to specific Pokemon generation.
 
-        Otherwise, it will default to pulling random pokemon from all 8 Gens.
+        Otherwise, it will default to pulling random pokemon from gen 1 to gen 8.
+
+        **Example:**
+        - `[p]whosthatpokemon` - This will start a new Generation.
+        - `[p]whosthatpokemon gen1` - This will pick any pokemon from generation 1 for you to guess.
+
+        **Arguments:**
+        - `[generation]` - Where you choose any generation from gen 1 to gen 8.
         """
         await ctx.typing()
         poke_id = generation or randint(1, 898)
@@ -175,7 +182,7 @@ class WhosThatPokemon(commands.Cog):
                     await message.delete()
                 emb = Embed(description=f"It was ... **{english_name}**")
                 if if_guessed_right:
-                    emb.title = "🎉 POGGERS!! You guessed it right! 🎉"
+                    emb.title = "🎉 You guessed it right!! 🎉"
                     emb.colour = Colour(0x00FF00)
                 else:
                     emb.title = "You took too many attempts! 😔 😮\u200d💨"
