@@ -21,7 +21,7 @@ API_URL = "https://pokeapi.co/api/v2"
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __authors__ = ["ow0x", "MAX#1000"]
+    __authors__ = ["<@306810730055729152>", "MAX#1000"]
     __version__ = "1.0.0"
 
     def format_help_for_context(self, ctx: Context) -> str:
