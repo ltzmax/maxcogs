@@ -96,7 +96,7 @@ class WhosThatPokemon(commands.Cog):
         poke_image.close()
         return temp
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(generation=("Choose between gen 1 to gen 8."))
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.channel)
