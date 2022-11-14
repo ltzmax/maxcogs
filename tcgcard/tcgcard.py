@@ -38,7 +38,14 @@ class Tcgcard(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def tcgcard(self, ctx: commands.Context, *, query: str):
-        """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
+        """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).
+        
+        **Example:**
+        - `[p]tcgcard pikachu` - returns information about pikachu's cards.
+
+        **Arguments:**
+        - `<query>` - The pokemon you want to search for.
+        """
         api_key = (await ctx.bot.get_shared_api_tokens("pokemontcg")).get("api_key")
         headers = {"X-Api-Key": api_key} if api_key else None
         await ctx.typing()
