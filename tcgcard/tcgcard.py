@@ -39,7 +39,7 @@ class Tcgcard(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.member)
     async def tcgcard(self, ctx: commands.Context, *, query: str):
         """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).
-        
+
         **Example:**
         - `[p]tcgcard pikachu` - returns information about pikachu's cards.
 
