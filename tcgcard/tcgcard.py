@@ -11,7 +11,7 @@ from redbot.core.utils.views import SimpleMenu
 class Tcgcard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
-    __authors__ = ["ow0x", "MAX#1000"]
+    __authors__ = ["<@306810730055729152>", "MAX#1000"]
     __version__ = "1.2.0"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
