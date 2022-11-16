@@ -247,32 +247,20 @@ class Away(commands.Cog):
 
     @awayset.command(with_app_command=False)
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True, embed_links=True)
+    @commands.bot_has_permissions(manage_roles=True)
     async def role(self, ctx: commands.Context, role: discord.Role):
         """Set the role to be used for away status."""
         if role.position >= ctx.me.top_role.position:
-            embed = discord.Embed(
-                description="I can't set the role to be higher than my highest role.",
-                color=await ctx.embed_color(),
-            )
-            return await ctx.send(embed=embed)
+            return await ctx.send("I can't set the role to be higher than my highest role.")
         if role.position >= ctx.author.top_role.position:
-            embed = discord.Embed(
-                description="I can't set the role to be higher than your highest role.",
-                color=await ctx.embed_color(),
-            )
-            return await ctx.send(embed=embed)
+            return await ctx.send("I can't set the role to be higher than your highest role.")
         await self.config.guild(ctx.guild).role.set(role.id)
         await self.update_guild_cache(ctx.guild)
-        embed = discord.Embed(
-            description=f"Set the away role to {role.mention}.",
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(f"Set the away role to {role.mention}.")
 
     @awayset.command(with_app_command=False)
     @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_permissions(manage_roles=True, embed_links=True)
+    @commands.bot_has_permissions(manage_roles=True)
     async def deleterole(self, ctx: commands.Context):
         """Remove the away role set from `awayset role`."""
         await self.config.guild(ctx.guild).role.clear()
@@ -281,7 +269,6 @@ class Away(commands.Cog):
 
     @awayset.command(with_app_command=False)
     @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def toggle(self, ctx: commands.Context, delete: bool):
         """Toggle whether to delete away messages or not.
 
@@ -291,26 +278,17 @@ class Away(commands.Cog):
         """
         await self.config.guild(ctx.guild).delete.set(delete)
         await self.update_guild_cache(ctx.guild)
-        embed = discord.Embed(
-            description=f"Away delete set to {delete}.",
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(f"Away delete set to {delete}.")
 
     @awayset.command(with_app_command=False)
     @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(embed_links=True)
     async def timeout(self, ctx: commands.Context, delete_after: int):
         """Set the amount of time in seconds to delete the message after [p]away."""
         if delete_after < 5:
             return await ctx.maybe_send_embed("The minimum is 5 seconds.")
         await self.config.guild(ctx.guild).delete_after.set(delete_after)
         await self.update_guild_cache(ctx.guild)
-        embed = discord.Embed(
-            description=f"Set the timeout to {delete_after} seconds.",
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(f"Set the timeout to `{delete_after}` seconds.")
 
     @awayset.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -322,26 +300,18 @@ class Away(commands.Cog):
         Pass `True` to enable, `False` to disable.
         """
         await self.config.member(ctx.author).autoback.set(toggle)
-        embed = discord.Embed(
-            description=f"Set your autoback to {toggle}.",
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(f"You have successfully set toggle to {toggle}.")
 
     @awayset.command(aliases=["nick"], with_app_command=False)
     @commands.cooldown(1, 3, commands.BucketType.user)
-    @commands.bot_has_permissions(manage_nicknames=True, embed_links=True)
+    @commands.bot_has_permissions(manage_nicknames=True)
     async def nickname(self, ctx: commands.Context, toggle: bool):
         """Toggle whether to change the nickname to name + [away]
 
         Pass `True` to enable, `False` to disable.
         """
         await self.config.member(ctx.author).nick.set(toggle)
-        embed = discord.Embed(
-            description=f"Set the nickname to {toggle}.",
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(f"Nickname have been set to {toggle}")
 
     @awayset.command(aliases=["settings", "showsetting"], with_app_command=False)
     @commands.bot_has_permissions(embed_links=True)
