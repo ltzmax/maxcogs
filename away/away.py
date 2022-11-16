@@ -147,7 +147,7 @@ class Away(commands.Cog):
             a["message"] = None
         await message.channel.send(
             f"Welcome back {message.author.mention}, I removed your AFK",
-            delete_after=5,
+            delete_after=10,
             reference=message.to_reference(fail_if_not_exists=False),
             allowed_mentions=discord.AllowedMentions(users=False, roles=False),
             mention_author=False,
@@ -196,8 +196,8 @@ class Away(commands.Cog):
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now away.")
         if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(embed=embed, delete_after=data["delete_after"])
-        await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, delete_after=data["delete_after"], ephemeral=True)
+        await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
@@ -214,7 +214,7 @@ class Away(commands.Cog):
             )
             return await ctx.send(
                 embed=embed, ephemeral=True
-            )  # ephemeral will only be sent if you used `/`.
+            )
         if ctx.guild.id in self.cache:
             data = self.cache[ctx.guild.id]
         else:
@@ -238,8 +238,8 @@ class Away(commands.Cog):
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now back.")
         if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(embed=embed, delete_after=data["delete_after"])
-        await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, delete_after=data["delete_after"], ephemeral=True)
+        await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_group(aliases=["afkset"])
     async def awayset(self, ctx: commands.Context):
