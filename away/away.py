@@ -251,9 +251,13 @@ class Away(commands.Cog):
     async def role(self, ctx: commands.Context, role: discord.Role):
         """Set the role to be used for away status."""
         if role.position >= ctx.me.top_role.position:
-            return await ctx.send("I can't set the role to be higher than my highest role.")
+            return await ctx.send(
+                "I can't set the role to be higher than my highest role."
+            )
         if role.position >= ctx.author.top_role.position:
-            return await ctx.send("I can't set the role to be higher than your highest role.")
+            return await ctx.send(
+                "I can't set the role to be higher than your highest role."
+            )
         await self.config.guild(ctx.guild).role.set(role.id)
         await self.update_guild_cache(ctx.guild)
         await ctx.send(f"Set the away role to {role.mention}.")
