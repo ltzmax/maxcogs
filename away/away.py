@@ -210,11 +210,11 @@ class Away(commands.Cog):
         Use `[p]away <message>` to set your afk status.
         """
         if not await self.config.member(ctx.author).away():
-            embed = discord.Embed(
-                description=f"{ctx.author.mention} You're not away. Use `{ctx.clean_prefix}away <message>` to set your away status.",
-                color=await ctx.embed_color(),
+            msg = (
+                f"{ctx.author.mention} You're not away.\n"
+                f"Use `{ctx.clean_prefix}away <message>` to set your away status."
             )
-            return await ctx.send(embed=embed, ephemeral=True)
+            return await ctx.send(msg, ephemeral=True)
         if ctx.guild.id in self.cache:
             data = self.cache[ctx.guild.id]
         else:
