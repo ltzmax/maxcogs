@@ -46,7 +46,7 @@ class Away(commands.Cog):
             "away": False,
             "message": None,
             "nick": False,
-            "autoback": False,
+            "autoback": True,
         }
         self.config.register_guild(**default_guild)
         self.config.register_member(**default_member)
@@ -301,7 +301,9 @@ class Away(commands.Cog):
     @app_commands.describe(toggle=("Pass True to enable, False to disable."))
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def autoback(self, ctx: commands.Context, toggle: bool):
-        """Toggle whether to automatically get back from away.
+        """Toggle whether to automatically stop autoback or enabled them.
+
+        Autoback is default enabled.
 
         Pass `True` to enable, `False` to disable.
         """
