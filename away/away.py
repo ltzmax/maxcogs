@@ -196,7 +196,9 @@ class Away(commands.Cog):
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now away.")
         if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(embed=embed, delete_after=data["delete_after"], ephemeral=True)
+            return await ctx.send(
+                embed=embed, delete_after=data["delete_after"], ephemeral=True
+            )
         await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
@@ -212,9 +214,7 @@ class Away(commands.Cog):
                 description=f"{ctx.author.mention} You're not away. Use `{ctx.clean_prefix}away <message>` to set your away status.",
                 color=await ctx.embed_color(),
             )
-            return await ctx.send(
-                embed=embed, ephemeral=True
-            )
+            return await ctx.send(embed=embed, ephemeral=True)
         if ctx.guild.id in self.cache:
             data = self.cache[ctx.guild.id]
         else:
@@ -238,7 +238,9 @@ class Away(commands.Cog):
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now back.")
         if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(embed=embed, delete_after=data["delete_after"], ephemeral=True)
+            return await ctx.send(
+                embed=embed, delete_after=data["delete_after"], ephemeral=True
+            )
         await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_group(aliases=["afkset"])
