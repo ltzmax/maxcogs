@@ -25,7 +25,6 @@ class Away(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-
     async def red_delete_data_for_user(
         self,
         *,

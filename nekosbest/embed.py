@@ -26,6 +26,7 @@ import discord
 NEKOS_API = "https://nekos.best/api/v2/"
 ICON = "https://nekos.best/logo_short.png"
 
+
 async def api_call(self, ctx, endpoint: str):
     await ctx.typing()
     async with self.session.get(NEKOS_API + endpoint) as response:
