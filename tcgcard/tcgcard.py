@@ -21,7 +21,7 @@ class Tcgcard(commands.Cog):
             f"{super().format_help_for_context(ctx)}\n\n"
             f"Authors:  {', '.join(self.__authors__)}\n"
             f"Cog version:  v{self.__version__}"
-            f"Docs:" {self.__docs__}
+            f"Docs: {self.__docs__}"
         )
 
     def __init__(self, bot):
