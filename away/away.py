@@ -18,10 +18,13 @@ class Away(commands.Cog):
 
     __version__ = "2.0.1"
     __author__ = "dia ♡#0666, max, TheDiscordHistorian (kato#0666)"
+    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/away"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n**Cog Version:** {self.__version__}\n**Author:** {self.__author__}"
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
 
     async def red_delete_data_for_user(
         self,

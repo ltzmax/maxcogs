@@ -23,13 +23,15 @@ class WhosThatPokemon(commands.Cog):
 
     __authors__ = ["<@306810730055729152>", "MAX#1000"]
     __version__ = "1.0.0"
+    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/whosthatpokemon"
 
     def format_help_for_context(self, ctx: Context) -> str:
         """Thanks Sinbad."""
         return (
             f"{super().format_help_for_context(ctx)}\n\n"
-            f"**Authors:**  {', '.join(self.__authors__)}\n"
-            f"**Cog version:**  v{self.__version__}"
+            f"Authors: {', '.join(self.__authors__)}\n"
+            f"Cog version:  v{self.__version__}"
+            f"Docs: {self.__docs__}"
         )
 
     def __init__(self, bot: Red):

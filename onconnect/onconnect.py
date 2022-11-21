@@ -40,6 +40,7 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
 
     __version__ = "0.1.20"
     __author__ = "MAX, Arman0334"
+    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/onconnect"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -56,8 +57,8 @@ class OnConnect(Events, Commands, commands.Cog, metaclass=CompositeMetaClass):
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
-        pre = super().format_help_for_context(ctx)
-        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def red_get_data_for_user(self, *, user_id: int) -> dict:
         """This cog does not story any end user data."""

@@ -56,11 +56,12 @@ class VeryFun(commands.Cog):
 
     __version__ = "0.1.16"
     __author__ = "MAX"
+    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/veryfun"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def embedgen(self, ctx, user, action: str):
         async with self.session.get(NEKOS + action) as response:

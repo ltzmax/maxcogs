@@ -21,15 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
-
 import discord
-
-log = logging.getLogger("red.maxcogs.nekosbest")
 
 NEKOS_API = "https://nekos.best/api/v2/"
 ICON = "https://nekos.best/logo_short.png"
-
 
 async def api_call(self, ctx, endpoint: str):
     await ctx.typing()
