@@ -13,7 +13,7 @@ class Tcgcard(commands.Cog):
 
     __authors__ = ["<@306810730055729152>", "MAX#1000"]
     __version__ = "1.2.0"
-    __docs__ "https://readdocs.voltrabot.com/docs/Cogs/tcgcard"
+    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/tcgcard"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
