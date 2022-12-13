@@ -71,19 +71,10 @@ class VeryFun(commands.Cog):
                 )
             data = await response.json()
 
-        async with self.config.user(user or ctx.author).all() as config:
-            try:
-                config["counter"][action] += 1
-                # It doesn't work on discord.py 2.0,
-                # removing this keyerror fix will result it not
-                # responsing correctly as you hoped it will and want it todo so.
-                # you will see a keyerror when removing this instead of the message below.
-            except KeyError:
-                msg = f"Hello, Thank you for using this cog. Unfortunately this cog did not make it in time to work on discord.py 2.0 therefore you should run the command `{ctx.clean_prefix}unload veryfun`. If you want this cog to work on discord.py 2.0 faster than i can make it work there, you're free to create a pr <https://github.com/ltzmax/maxcogs>.\nFor questions please join Red cog support server: https://discord.gg/GET4DVk and go to <#1038801696190648530> and then go to `maxcogs` thread and ask your question if you have any."
-                return await ctx.send(
-                    msg,
-                    reference=ctx.message.to_reference(fail_if_not_exists=False),
-                )
+        # Removing "#" will cause KeyError.
+        # Please don't remove it, it'd be fixed in the future eventually.
+        #async with self.config.user(user or ctx.author).all() as config:
+        #    config["counter"][action] += 1
 
         action_fmt = ACTIONS.get(action, action)
         anime_name = data["results"][0]["anime_name"]
@@ -91,7 +82,7 @@ class VeryFun(commands.Cog):
             colour=await ctx.embed_color(),
             description=(
                 f"**{ctx.author.mention}** {action_fmt} {f'**{user.mention}**' if user else 'themselves!'}\n"
-                f"Received {action} count: {humanize_number(config['counter'][action])}"
+        #        f"Received {action} count: {humanize_number(config['counter'][action])}"
             ),
         )
         emb.set_footer(
