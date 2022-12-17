@@ -28,7 +28,7 @@ from typing import Optional
 
 import aiohttp
 import discord
-from redbot.core import Config, commands
+from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_number
 
 from .core import ACTIONS, ICON, NEKOS
@@ -46,10 +46,10 @@ class VeryFun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(
-            self, 0x345628097929936899, force_registration=True
-        )
-        self.config.register_user(counter=Counter())
+        #self.config = Config.get_conf(
+        #    self, 0x345628097929936899, force_registration=True
+        #)
+        #self.config.register_user(counter=Counter())
 
     async def cog_unload(self):
         await self.session.close()
@@ -73,6 +73,7 @@ class VeryFun(commands.Cog):
 
         # Removing "#" will cause KeyError.
         # Please don't remove it, it'd be fixed in the future eventually.
+        # There is a breaking changes following discord.py 2.0.
         #async with self.config.user(user or ctx.author).all() as config:
         #    config["counter"][action] += 1
 
