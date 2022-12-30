@@ -58,4 +58,7 @@ ACTIONS = {
     "punch": "punches",
     "shoot": "shoots",
     "yeet": "yeets",
+    "nod": "nods",
+    "nope": "nope",
+    "nom": "nom nom",
 }

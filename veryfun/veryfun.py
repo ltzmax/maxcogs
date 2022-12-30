@@ -335,3 +335,24 @@ class VeryFun(commands.Cog):
     async def yeet(self, ctx, user: Optional[discord.Member] = None):
         """yeet a user far far away."""
         await self.embedgen(ctx, user, "yeet")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def nod(self, ctx, user: Optional[discord.Member] = None):
+        """nods a user far far away."""
+        await self.embedgen(ctx, user, "nod")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def nope(self, ctx, user: Optional[discord.Member] = None):
+        """nope a user far far away."""
+        await self.embedgen(ctx, user, "nope")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
+    async def nom(self, ctx, user: Optional[discord.Member] = None):
+        """nom nom a user far far away."""
+        await self.embedgen(ctx, user, "nom")
