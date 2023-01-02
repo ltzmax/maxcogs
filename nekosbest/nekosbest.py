@@ -40,7 +40,7 @@ class NekosBest(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
 
-    __version__ = "0.1.18"
+    __version__ = "0.1.20"
     __author__ = "MAX"
     __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/nekosbest"
 

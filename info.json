@@ -7,12 +7,9 @@
     "description": "Cogs for Red-DiscordBot V3.",
     "install_msg": "Thanks for installing my repo, Feel free to check the docs too <https://maxcogs.readthedocs.io/en/latest/>. If you have to ask any questions ask them in Cog support discord.gg/GET4DVk in channel #support_othercogs.",
     "tags": [
-        "uptime",
         "roleplay",
-        "neko",
-        "kitsune",
-        "waifu",
-        "onconnect",
+        "nekos",
+        "shards",
         "fun",
         "away",
         "pokemon"

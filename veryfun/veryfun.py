@@ -54,7 +54,7 @@ class VeryFun(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
 
-    __version__ = "0.1.16"
+    __version__ = "0.1.17"
     __author__ = "MAX"
     __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/veryfun"
 

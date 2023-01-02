@@ -12,7 +12,7 @@ class Tcgcard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
     __authors__ = ["<@306810730055729152>", "MAX#1000"]
-    __version__ = "1.2.0"
+    __version__ = "1.3.0"
     __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/tcgcard"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:

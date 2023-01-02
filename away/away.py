@@ -16,7 +16,7 @@ log = logging.getLogger("red.maxcogs.away")
 class Away(commands.Cog):
     """An away thingy to set away and be not away."""
 
-    __version__ = "2.0.1"
+    __version__ = "2.0.2"
     __author__ = "dia ♡#0666, max, TheDiscordHistorian (kato#0666)"
     __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/away"
 
