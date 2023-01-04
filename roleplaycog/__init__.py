@@ -1,4 +1,4 @@
-from .veryfun import VeryFun
+from .roleplaycog import RolePlayCog
 
 __red_end_user_data_statement__ = (
     "This cog does not persistently store data about users."
@@ -6,4 +6,4 @@ __red_end_user_data_statement__ = (
 
 
 async def setup(bot):
-    await bot.add_cog(VeryFun(bot))
+    await bot.add_cog(RolePlayCog(bot))

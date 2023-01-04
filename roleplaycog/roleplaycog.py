@@ -24,7 +24,6 @@ SOFTWARE.
 import asyncio
 import logging
 from collections import Counter
-from typing import Optional
 
 import aiohttp
 import discord
@@ -36,7 +35,7 @@ from .core import ACTIONS, ICON, NEKOS
 log = logging.getLogger("red.maxcogs.veryfun")
 
 
-class VeryFun(commands.Cog):
+class RolePlayCog(commands.Cog):
     """Roleplay cog to interact with other users."""
 
     async def red_delete_data_for_user(self, **kwargs):

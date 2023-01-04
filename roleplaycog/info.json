@@ -2,8 +2,8 @@
     "author": [
         "max"
     ],
-    "name": "VeryFun",
-    "install_msg": "Thanks for installing.\nFeel free to check the docs <https://readdocs.voltrabot.com/docs/Cogs/veryfun>",
+    "name": "RolePlayCog",
+    "install_msg": "Thanks for installing.\nFeel free to check the docs <https://readdocs.voltrabot.com/docs/Cogs/roleplaycog>",
     "description": "Roleplay cog with alot of fun to have with your members. This is with help of nekos.best.",
     "short": "Roleplay cog. With help of nekos.best.",
     "hidden": false,

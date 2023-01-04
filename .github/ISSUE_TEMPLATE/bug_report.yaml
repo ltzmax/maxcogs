@@ -20,7 +20,7 @@ body:
         - nekosbest
         - onconnect
         - tcgcard
-        - veryfun
+        - RolePlayCog
         - whosthatpokemon
     validations:
       required: true

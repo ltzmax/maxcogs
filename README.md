@@ -24,7 +24,7 @@ To install any cog you want:
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | OnConnect | Cog that sends shard events. | 2.0.0 | ltzmax, Arman0334 | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
-| VeryFun | Roleplay cog to interact with other users. | 0.1.17| ltzmax | ✅ |
+| RolePlayCog | Roleplay cog to interact with other users. | 0.1.17| ltzmax | ✅ |
 | WhosThatPokemon | Guess whos that pokemon? | 1.2.0 | ltzmax, o-wo | ✅ |
 
 ## Credits:
