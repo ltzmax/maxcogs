@@ -20,7 +20,7 @@ class Tcgcard(commands.Cog):
         return (
             f"{super().format_help_for_context(ctx)}\n\n"
             f"Authors:  {', '.join(self.__authors__)}\n"
-            f"Cog version:  v{self.__version__}"
+            f"Cog version:  v{self.__version__}\n"
             f"Docs: {self.__docs__}"
         )
 
