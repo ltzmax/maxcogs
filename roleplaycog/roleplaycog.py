@@ -93,252 +93,216 @@ class RolePlayCog(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def baka(self, ctx, member: discord.Member):
         """Baka baka baka!"""
         await self.embedgen(ctx, member, "baka")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cry(self, ctx, member: discord.Member):
         """Cry!"""
         await self.embedgen(ctx, member, "cry")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def cuddle(self, ctx, member: discord.Member):
         """Cuddle a user!"""
         await self.embedgen(ctx, member, "cuddle")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def dance(self, ctx, member: discord.Member):
         """Dance!"""
         await self.embedgen(ctx, member, "dance")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def feed(self, ctx, member: discord.Member):
         """Feeds a user!"""
         await self.embedgen(ctx, member, "feed")
 
     @commands.command()  # i want `hug` as alias. but i can't cause of core have their own hug command.
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def hugs(self, ctx, member: discord.Member):
         """Hugs a user!"""
         await self.embedgen(ctx, member, "hug")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def kiss(self, ctx, member: discord.Member):
         """Kiss a user!"""
         await self.embedgen(ctx, member, "kiss")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def laugh(self, ctx, member: discord.Member):
         """laugh!"""
         await self.embedgen(ctx, member, "laugh")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def pat(self, ctx, member: discord.Member):
         """Pats a user!"""
         await self.embedgen(ctx, member, "pat")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def poke(self, ctx, member: discord.Member):
         """Poke a user!"""
         await self.embedgen(ctx, member, "poke")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def slap(self, ctx, member: discord.Member):
         """Slap a user!"""
         await self.embedgen(ctx, member, "slap")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def smile(self, ctx, member: discord.Member):
         """Smile!"""
         await self.embedgen(ctx, member, "smile")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def smug(self, ctx, member: discord.Member):
         """Smugs at someone!"""
         await self.embedgen(ctx, member, "smug")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def tickle(self, ctx, member: discord.Member):
         """Tickle a user!"""
         await self.embedgen(ctx, member, "tickle")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def wave(self, ctx, member: discord.Member):
         """Waves!"""
         await self.embedgen(ctx, member, "wave")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def bite(self, ctx, member: discord.Member):
         """Bite a user!"""
         await self.embedgen(ctx, member, "bite")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def blush(self, ctx, member: discord.Member):
         """blushs!"""
         await self.embedgen(ctx, member, "blush")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def bored(self, ctx, member: discord.Member):
         """You're bored!"""
         await self.embedgen(ctx, member, "bored")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def facepalm(self, ctx, member: discord.Member):
         """Facepalm a user!"""
         await self.embedgen(ctx, member, "facepalm")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def happy(self, ctx, member: discord.Member):
         """happiness with a user!"""
         await self.embedgen(ctx, member, "happy")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def highfive(self, ctx, member: discord.Member):
         """highfive a user!"""
         await self.embedgen(ctx, member, "highfive")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def pout(self, ctx, member: discord.Member):
         """Pout a user!"""
         await self.embedgen(ctx, member, "pout")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def shrug(self, ctx, member: discord.Member):
         """Shrugs a user!"""
         await self.embedgen(ctx, member, "shrug")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def sleep(self, ctx, member: discord.Member):
         """Sleep zzzz!"""
         await self.embedgen(ctx, member, "sleep")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def stare(self, ctx, member: discord.Member):
         """Stares at a user!"""
         await self.embedgen(ctx, member, "stare")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def think(self, ctx, member: discord.Member):
         """Thinking!"""
         await self.embedgen(ctx, member, "think")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def thumbsup(self, ctx, member: discord.Member):
         """thumbsup!"""
         await self.embedgen(ctx, member, "thumbsup")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def wink(self, ctx, member: discord.Member):
         """Winks at a user!"""
         await self.embedgen(ctx, member, "wink")
 
     @commands.command(aliases=["handholding"])
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def handhold(self, ctx, member: discord.Member):
         """handhold a user!"""
         await self.embedgen(ctx, member, "handhold")
 
     @commands.command(aliases=["vkicks"])
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def vkick(self, ctx, member: discord.Member):
         """kick a user!"""
         await self.embedgen(ctx, member, "kick")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def punch(self, ctx, member: discord.Member):
         """punch a user!"""
         await self.embedgen(ctx, member, "punch")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def shoot(self, ctx, member: discord.Member):
         """shoot a user!"""
         await self.embedgen(ctx, member, "shoot")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def yeet(self, ctx, member: discord.Member):
         """yeet a user far far away."""
         await self.embedgen(ctx, member, "yeet")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def nod(self, ctx, member: discord.Member):
         """nods a user far far away."""
         await self.embedgen(ctx, member, "nod")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def nope(self, ctx, member: discord.Member):
         """nope a user far far away."""
         await self.embedgen(ctx, member, "nope")
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(rate=1, per=3, type=commands.BucketType.user)
     async def nom(self, ctx, member: discord.Member):
         """nom nom a user far far away."""
         await self.embedgen(ctx, member, "nom")
