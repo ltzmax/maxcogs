@@ -16,13 +16,13 @@ Set the channel to log shard events to.<br/><br/>**Example:**<br/>- `[p]connects
 
 Extended Arg Info
 > ### channel: Union[discord.channel.TextChannel, discord.threads.Thread, NoneType] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
-> 
+>
+>
 
 ## connectset emoji
  - Usage: `[p]connectset emoji `
