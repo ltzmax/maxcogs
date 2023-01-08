@@ -9,6 +9,21 @@ This cog is used to send shard events.
 
 Manage settings for onconnect.
 
+## connectset channel
+ - Usage: `[p]connectset channel [channel=None] `
+
+Set the channel to log shard events to.<br/><br/>**Example:**<br/>- `[p]connectset channel #general`<br/>This will set the event channel to general.<br/><br/>**Arguments:**<br/>- `[channel]` - Is where you set the event channel. Leave it blank to disable.
+
+Extended Arg Info
+> ### channel: Union[discord.channel.TextChannel, discord.threads.Thread, NoneType] = None
+> 
+> 
+>     1. Lookup by ID.
+>     2. Lookup by mention.
+>     3. Lookup by name
+> 
+> 
+
 ## connectset emoji
  - Usage: `[p]connectset emoji `
  - Aliases: `emojis`
@@ -41,20 +56,6 @@ Shows the cog version.
 
 Shows the current settings for OnConnect.
 
-## connectset channel
- - Usage: `[p]connectset channel [channel=None] `
-
-Set the channel to log shard events to.<br/><br/>**Example:**<br/>- `[p]connectset channel #general`<br/>This will set the event channel to general.<br/><br/>**Arguments:**<br/>- `[channel]` - Is where you set the event channel. Leave it blank to disable.
-
-Extended Arg Info
-> ### channel: Union[discord.channel.TextChannel, discord.threads.Thread, NoneType] = None
-> 
-> 
->     1. Lookup by ID.
->     2. Lookup by mention.
->     3. Lookup by name
-> 
->     
 ## connectset reset
  - Usage: `[p]connectset reset `
  - Aliases: `clear`
