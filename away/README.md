@@ -29,7 +29,7 @@ Remove your away status / get back from away.<br/><br/>Use `[p]away <message>` t
 
 Manage away settings.
 
-## awayset nickname (Hybrid Command)
+## awayset nickname
  - Usage: `[p]awayset nickname <toggle> `
  - Aliases: `nick`
  - Cooldown: `1 per 3.0 seconds`
@@ -41,7 +41,7 @@ Extended Arg Info
 > ```
 > Can be 1, 0, true, false, t, f
 > ```
-## awayset role (Hybrid Command)
+## awayset role
  - Usage: `[p]awayset role <role> `
 
 Set the role to be used for away status.
@@ -67,14 +67,14 @@ Extended Arg Info
 > ```
 > Can be 1, 0, true, false, t, f
 > ```
-## awayset showsettings (Hybrid Command)
+## awayset showsettings
  - Usage: `[p]awayset showsettings `
  - Aliases: `settings and showsetting`
  - Cooldown: `1 per 5.0 seconds`
 
 Show the current away settings.
 
-## awayset toggle (Hybrid Command)
+## awayset toggle
  - Usage: `[p]awayset toggle <delete> `
 
 Toggle whether to delete away messages or not.<br/><br/>Arguments:<br/>- `<delete>` - set to true or false.<br/>True to enable, false to disable.
@@ -84,12 +84,12 @@ Extended Arg Info
 > ```
 > Can be 1, 0, true, false, t, f
 > ```
-## awayset version (Hybrid Command)
+## awayset version
  - Usage: `[p]awayset version `
 
 Shows the version of the cog
 
-## awayset timeout (Hybrid Command)
+## awayset timeout
  - Usage: `[p]awayset timeout <delete_after> `
 
 Set the amount of time in seconds to delete the message after [p]away.
@@ -99,7 +99,7 @@ Extended Arg Info
 > ```
 > A number without decimal places.
 > ```
-## awayset deleterole (Hybrid Command)
+## awayset deleterole
  - Usage: `[p]awayset deleterole `
 
 Remove the away role set from `awayset role`.
