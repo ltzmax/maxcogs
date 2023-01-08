@@ -13,7 +13,7 @@ Set your away status.<br/><br/>Use `[p]back` to remove your afk status.
 Extended Arg Info
 > ### message: str
 > ```
-> A single word, if not using slash and multiple words are necessary use a quote e.g "Hello world".
+> A single word or multiple. you can use e.g Hello world.
 > ```
 # back (Hybrid Command)
  - Usage: `[p]back `
