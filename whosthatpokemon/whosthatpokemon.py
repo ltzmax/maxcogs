@@ -202,11 +202,11 @@ class WhosThatPokemon(commands.Cog):
     async def generation(
         self,
         interaction: discord.Interaction,
-        current: str,
+        generation: app_commands.Range[int, 1, 8],
     ) -> List[app_commands.Choice[str]]:
         generation = ["gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8"]
         return [
             app_commands.Choice(name=generation, value=generation)
             for generation in generation
-            if current.lower() in generation.lower()
+            if generation.lower() in generation.lower()
         ]
