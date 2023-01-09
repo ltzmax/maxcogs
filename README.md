@@ -22,7 +22,6 @@ To install any cog you want:
 |:---:|---|:---:|:---:|:---:|
 | Away | Set yourself as afk | 2.0.2 | ltzmax, dia ♡#0666, TheDiscordHistorian (kato#0666) | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
-| OnConnect | Cog that sends shard events. | 2.0.0 | ltzmax, Arman0334 | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.1.17| ltzmax | ✅ |
 | WhosThatPokemon | Guess whos that pokemon? | 1.2.0 | ltzmax, o-wo | ✅ |

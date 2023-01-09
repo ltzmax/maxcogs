@@ -18,7 +18,6 @@ body:
         - away
         - embeduptime
         - nekosbest
-        - onconnect
         - tcgcard
         - RolePlayCog
         - whosthatpokemon
