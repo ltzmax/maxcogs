@@ -2,7 +2,7 @@ import asyncio
 from contextlib import suppress
 from io import BytesIO
 from random import randint
-from typing import Optional, List
+from typing import List, Optional
 
 import aiohttp
 import discord
