@@ -48,7 +48,7 @@ class Away(commands.Cog):
             "away": False,
             "message": None,
             "nick": False,
-            "autoback": True,
+            "autoback": False,
         }
         self.config.register_guild(**default_guild)
         self.config.register_member(**default_member)
