@@ -119,6 +119,7 @@ class Feedback(commands.Cog):
         await ctx.send(f"Feedbacks are {toggle}.\nFeedback channel is {channel}.")
 
     @commands.hybrid_command()
+    @commands.cooldown(rate=1, per=60, type=commands.BucketType.user)
     @app_commands.describe(feedback=("The message you want to send as feedback"))
     async def feedback(self, ctx: commands.Context, *, feedback: str):
         """Send a feedback to the server's feedback channel."""
@@ -131,5 +132,14 @@ class Feedback(commands.Cog):
             return await ctx.send(
                 "Feedback channel not found.\nAsk an admin to set it."
             )
-        await channel.send(f"**{ctx.author}** ({ctx.author.id})\n{feedback}")
+        if await ctx.embed_requested():
+            embed = discord.Embed(
+                title="New Feedback",
+                description=f"{feedback}",
+                color=await ctx.embed_color(),
+            )
+            embed.set_footer(text=f"Author: {ctx.author}\nUser ID: {ctx.author.id}")
+            await channel.send(embed=embed)
+        else:
+            await channel.send(f"**{ctx.author}** ({ctx.author.id})\n{feedback}")
         await ctx.send("Feedback sent.")
