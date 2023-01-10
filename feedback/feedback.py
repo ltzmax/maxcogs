@@ -124,9 +124,7 @@ class Feedback(commands.Cog):
             )
             await ctx.send(embed=embed)
         else:
-            await ctx.send(
-                f"Feedbacks are {toggle}.\nFeedback channel is {channel}."
-            )
+            await ctx.send(f"Feedbacks are {toggle}.\nFeedback channel is {channel}.")
 
     @feedbackset.command()
     async def version(self, ctx: commands.Context):
