@@ -52,5 +52,5 @@ Send a feedback to the server's feedback channel.
 Extended Arg Info
 > ### feedback: str
 > ```
-> A single word, if not using slash and multiple words are necessary use a quote e.g "Hello world".
+> A single word, if not using slash and multiple words are not really necessary e.g Hello world.
 > ```
