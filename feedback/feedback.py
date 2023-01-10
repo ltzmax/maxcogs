@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from discord import app_commands
 from redbot.core import Config, commands
 from redbot.core.utils.predicates import MessagePredicate
