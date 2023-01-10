@@ -305,7 +305,7 @@ class Away(commands.Cog):
     async def autoback(self, ctx: commands.Context, toggle: bool):
         """Toggle whether to automatically stop autoback or enabled them.
 
-        Autoback is default enabled.
+        Autoback is default disabled.
 
         Pass `True` to enable, `False` to disable.
         """
