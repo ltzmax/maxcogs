@@ -90,7 +90,7 @@ class Feedback(commands.Cog):
         await self.config.guild(ctx.guild).channel.set(channel.id)
         await ctx.send(f"Feedback channel set to {channel.mention}")
 
-    @feedbackset.command()
+    @feedbackset.command(aliases=["clear"])
     async def reset(self, ctx: commands.Context):
         """Reset feedback settings."""
         await ctx.send(
@@ -116,7 +116,31 @@ class Feedback(commands.Cog):
             channel = "Not set"
         else:
             channel = channel.mention
-        await ctx.send(f"Feedbacks are {toggle}.\nFeedback channel is {channel}.")
+        if await ctx.embed_requested():
+            embed = discord.Embed(
+                title="Feedback settings",
+                description=f"Feedbacks are {toggle}.\nFeedback channel is {channel}.",
+                color=await ctx.embed_color(),
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(
+                f"Feedbacks are {toggle}.\nFeedback channel is {channel}."
+            )
+
+    @feedbackset.command()
+    async def version(self, ctx: commands.Context):
+        """Shows the cog version."""
+        message = f"Author: {self.__author__}\nVersion: {self.__version__}"
+        if await ctx.embed_requested():
+            embed = discord.Embed(
+                title="Cog Version:",
+                description=message,
+                colour=await ctx.embed_colour(),
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"**Cog Version:**\n{message}")
 
     @commands.hybrid_command()
     @commands.cooldown(rate=1, per=60, type=commands.BucketType.user)
@@ -142,4 +166,4 @@ class Feedback(commands.Cog):
             await channel.send(embed=embed)
         else:
             await channel.send(f"**{ctx.author}** ({ctx.author.id})\n{feedback}")
-        await ctx.send("Feedback sent.")
+        await ctx.send("Feedback successfully sent.", ephemeral=True)
