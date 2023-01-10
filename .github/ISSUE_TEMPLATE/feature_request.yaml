@@ -16,7 +16,7 @@ body:
       description: What cog are you feature requesting to?
       options:
         - away
-        - embeduptime
+        - feedback
         - nekosbest
         - tcgcard
         - RolePlayCog

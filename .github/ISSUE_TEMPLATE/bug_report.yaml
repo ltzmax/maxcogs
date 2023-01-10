@@ -16,7 +16,7 @@ body:
       description: What cog are you getting issue from?
       options:
         - away
-        - embeduptime
+        - feedback
         - nekosbest
         - tcgcard
         - RolePlayCog
