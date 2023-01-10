@@ -1,6 +1,6 @@
 import discord
-from redbot.core import commands, Config
 from discord import app_commands
+from redbot.core import Config, commands
 from redbot.core.utils.predicates import MessagePredicate
 
 
@@ -9,7 +9,9 @@ class Feedback(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=1234567890, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=1234567890, force_registration=True
+        )
         default_guild = {
             "toggle": False,
             "channel": None,
@@ -44,7 +46,7 @@ class Feedback(commands.Cog):
             await ctx.send("Feedbacks are now enabled.")
         else:
             await ctx.send("Feedbacks are now disabled.")
-        
+
     @feedbackset.command()
     async def channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
         """Set feedback channel."""
@@ -66,7 +68,9 @@ class Feedback(commands.Cog):
     @feedbackset.command()
     async def reset(self, ctx: commands.Context):
         """Reset feedback settings."""
-        await ctx.send("Are you sure you want to reset feedback settings?\nType `yes` to confirm, Type `no` to cancel.")
+        await ctx.send(
+            "Are you sure you want to reset feedback settings?\nType `yes` to confirm, Type `no` to cancel."
+        )
         try:
             pred = MessagePredicate.yes_or_no(ctx, user=ctx.author)
             msg = await ctx.bot.wait_for("message", check=pred, timeout=30)
@@ -94,9 +98,13 @@ class Feedback(commands.Cog):
     async def feedback(self, ctx: commands.Context, *, feedback: str):
         """Send a feedback to the server's feedback channel."""
         if not await self.config.guild(ctx.guild).toggle():
-            return await ctx.send("Feedbacks are disabled.\nAsk an admin to enable them.")
+            return await ctx.send(
+                "Feedbacks are disabled.\nAsk an admin to enable them."
+            )
         channel = self.bot.get_channel(await self.config.guild(ctx.guild).channel())
         if channel is None:
-            return await ctx.send("Feedback channel not found.\nAsk an admin to set it.")
+            return await ctx.send(
+                "Feedback channel not found.\nAsk an admin to set it."
+            )
         await channel.send(f"**{ctx.author}** ({ctx.author.id})\n{feedback}")
         await ctx.send("Feedback sent.")
