@@ -73,11 +73,9 @@ class Feedback(commands.Cog):
             await ctx.send("Feedbacks are now disabled.")
 
     @feedbackset.command()
-    async def channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
-        """Set feedback channel."""
-        if channel is None:
-            channel = ctx.channel
-        else:
+    async def channel(self, ctx: commands.Context, *, channel: discord.TextChannel = None):
+        """Set the feedback channel."""
+        if channel:
             if (
                 not channel.permissions_for(ctx.me).send_messages
                 or not channel.permissions_for(ctx.me).view_channel
@@ -87,8 +85,11 @@ class Feedback(commands.Cog):
                     "Please enable and try again.".format(channel=channel)
                 )
                 return
-        await self.config.guild(ctx.guild).channel.set(channel.id)
-        await ctx.send(f"Feedback channel set to {channel.mention}")
+            await self.config.guild(ctx.guild).channel.set(channel.id)
+            await ctx.send(f"Feedback channel set to {channel.mention}.")
+        else:
+            await self.config.guild(ctx.guild).channel.set(None)
+            await ctx.send("Feedback channel reset.")
 
     @feedbackset.command(aliases=["clear"])
     async def reset(self, ctx: commands.Context):
@@ -107,7 +108,7 @@ class Feedback(commands.Cog):
             await self.config.guild(ctx.guild).clear()
             await ctx.send("Feedback settings reset.")
 
-    @feedbackset.command(aliases=["settings"])
+    @feedbackset.command(aliases=["settings", "view"])
     async def showsettings(self, ctx: commands.Context):
         """Show feedback settings."""
         toggle = await self.config.guild(ctx.guild).toggle()
@@ -152,7 +153,7 @@ class Feedback(commands.Cog):
         channel = self.bot.get_channel(await self.config.guild(ctx.guild).channel())
         if channel is None:
             return await ctx.send(
-                "Feedback channel not found.\nAsk an admin to set it."
+                "Feedback channel not set.\nAsk an admin to set one."
             )
         if await ctx.embed_requested():
             embed = discord.Embed(
