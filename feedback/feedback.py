@@ -157,11 +157,11 @@ class Feedback(commands.Cog):
             return await ctx.send("Feedback channel not set.\nAsk an admin to set one.")
         if await ctx.embed_requested():
             embed = discord.Embed(
-                title="New Feedback",
+                title="Feedback",
                 description=f"{feedback}",
                 color=await ctx.embed_color(),
             )
-            embed.set_footer(text=f"Author: {ctx.author}\nUser ID: {ctx.author.id}")
+            embed.set_footer(text=f"Author: {ctx.author}")
             await channel.send(embed=embed)
         else:
             await channel.send(f"**{ctx.author}** ({ctx.author.id})\n{feedback}")
