@@ -73,7 +73,9 @@ class Feedback(commands.Cog):
             await ctx.send("Feedbacks are now disabled.")
 
     @feedbackset.command()
-    async def channel(self, ctx: commands.Context, *, channel: discord.TextChannel = None):
+    async def channel(
+        self, ctx: commands.Context, *, channel: discord.TextChannel = None
+    ):
         """Set the feedback channel."""
         if channel:
             if (
@@ -152,9 +154,7 @@ class Feedback(commands.Cog):
             )
         channel = self.bot.get_channel(await self.config.guild(ctx.guild).channel())
         if channel is None:
-            return await ctx.send(
-                "Feedback channel not set.\nAsk an admin to set one."
-            )
+            return await ctx.send("Feedback channel not set.\nAsk an admin to set one.")
         if await ctx.embed_requested():
             embed = discord.Embed(
                 title="New Feedback",
