@@ -135,7 +135,7 @@ class Feedback(commands.Cog):
             channel = self.bot.get_channel(config["channel"]).mention
         if config["toggle"]:
             toggle = "Enabled"
-        else:            
+        else:
             toggle = "Disabled"
 
         if config["title"] is None:
