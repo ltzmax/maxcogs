@@ -40,6 +40,7 @@ class Feedback(commands.Cog):
         default_guild = {
             "toggle": False,
             "channel": None,
+            "title": "Feedback",
         }
         self.config.register_guild(**default_guild)
 
@@ -93,6 +94,20 @@ class Feedback(commands.Cog):
             await self.config.guild(ctx.guild).channel.set(None)
             await ctx.send("Feedback channel reset.")
 
+    @feedbackset.command()
+    async def title(self, ctx: commands.Context, *, title: str = None):
+        """Set the feedback title."""
+        # To allow limited characters in title, this is based on the code from JojoCogs
+        # https://github.com/Just-Jojo/JojoCogs/blob/4b8c34c47ce05e77a0def45f972f3efa23ac9b6f/advancedinvite/advanced_invite.py#L248-L254
+        if not title:
+            await self.config.guild(ctx.guild).title.set(None)
+            return await ctx.send("Feedback title reset.")
+        if len(title) > 256:
+            return await ctx.send("Title cannot be longer than 256 characters.")
+
+        await self.config.guild(ctx.guild).title.set(title)
+        await ctx.send(f"Feedback title set to `{title}`.")
+
     @feedbackset.command(aliases=["clear"])
     async def reset(self, ctx: commands.Context):
         """Reset feedback settings."""
@@ -113,17 +128,40 @@ class Feedback(commands.Cog):
     @feedbackset.command(aliases=["settings", "view"])
     async def showsettings(self, ctx: commands.Context):
         """Show feedback settings."""
-        toggle = await self.config.guild(ctx.guild).toggle()
-        channel = self.bot.get_channel(await self.config.guild(ctx.guild).channel())
-        if channel is None:
+        config = await self.config.guild(ctx.guild).all()
+        if config["channel"] is None:
             channel = "Not set"
         else:
-            channel = channel.mention
+            channel = self.bot.get_channel(config["channel"]).mention
+        if config["toggle"]:
+            toggle = "Enabled"
+        else:            
+            toggle = "Disabled"
+
+        if config["title"] is None:
+            title = "Feedback"
+        else:
+            title = config["title"]
+
         if await ctx.embed_requested():
             embed = discord.Embed(
                 title="Feedback settings",
-                description=f"Feedbacks are {toggle}.\nFeedback channel is {channel}.",
                 color=await ctx.embed_color(),
+            )
+            embed.add_field(
+                name="Feedback is",
+                value=f"{toggle}",
+                inline=False,
+            )
+            embed.add_field(
+                name="Feedback channel is",
+                value=f"{channel}",
+                inline=False,
+            )
+            embed.add_field(
+                name="Current title is",
+                value=f"{title}",
+                inline=False,
             )
             await ctx.send(embed=embed)
         else:
@@ -155,9 +193,12 @@ class Feedback(commands.Cog):
         channel = self.bot.get_channel(await self.config.guild(ctx.guild).channel())
         if channel is None:
             return await ctx.send("Feedback channel not set.\nAsk an admin to set one.")
+        title = await self.config.guild(ctx.guild).title()
+        # If using for suggestions and wants up and down reactions
+        # You can use smartreact from flapjack or other 3rd party cogs that allows this.
         if await ctx.embed_requested():
             embed = discord.Embed(
-                title="Feedback",
+                title=title,
                 description=f"{feedback}",
                 color=await ctx.embed_color(),
             )
@@ -165,4 +206,4 @@ class Feedback(commands.Cog):
             await channel.send(embed=embed)
         else:
             await channel.send(f"**{ctx.author}** ({ctx.author.id})\n{feedback}")
-        await ctx.send("Feedback successfully sent.", ephemeral=True)
+        await ctx.send("Done.")
