@@ -194,6 +194,8 @@ class Feedback(commands.Cog):
         title = await self.config.guild(ctx.guild).title()
         # If using for suggestions and wants up and down reactions
         # You can use smartreact from flapjack or other 3rd party cogs that allows this.
+        # This is originally a feedback cog to give feedback to creators of cogs, bots, servers and developers.
+        # i've never seen a feedback feature have down and upvotes so that's why it's not included at this moment.
         if await ctx.embed_requested():
             embed = discord.Embed(
                 title=title,
