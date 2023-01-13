@@ -125,6 +125,7 @@ class Feedback(commands.Cog):
             await self.config.guild(ctx.guild).clear()
             await ctx.send("Feedback settings reset.")
 
+    @commands.bot_has_permissions(embed_links=True)
     @feedbackset.command(aliases=["settings", "view"])
     async def showsettings(self, ctx: commands.Context):
         """Show feedback settings."""
@@ -143,29 +144,26 @@ class Feedback(commands.Cog):
         else:
             title = config["title"]
 
-        if await ctx.embed_requested():
-            embed = discord.Embed(
-                title="Feedback settings",
-                color=await ctx.embed_color(),
-            )
-            embed.add_field(
-                name="Feedback is",
-                value=f"{toggle}",
-                inline=False,
-            )
-            embed.add_field(
-                name="Feedback channel is",
-                value=f"{channel}",
-                inline=False,
-            )
-            embed.add_field(
-                name="Current title is",
-                value=f"{title}",
-                inline=False,
-            )
-            await ctx.send(embed=embed)
-        else:
-            await ctx.send(f"Feedbacks are {toggle}.\nFeedback channel is {channel}.")
+        embed = discord.Embed(
+            title="Feedback settings",
+            color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="Feedback is",
+            value=f"{toggle}",
+            inline=False,
+        )
+        embed.add_field(
+            name="Feedback channel is",
+            value=f"{channel}",
+            inline=False,
+        )
+        embed.add_field(
+            name="Current title is",
+            value=f"{title}",
+            inline=False,
+        )
+        await ctx.send(embed=embed)
 
     @feedbackset.command()
     async def version(self, ctx: commands.Context):
