@@ -220,16 +220,3 @@ class WhosThatPokemon(commands.Cog):
                     icon_url=ctx.author.display_avatar.url,
                 )
                 await ctx.send(embed=emb, file=revealed_img)
-
-    @whosthatpokemon.autocomplete("generation")
-    async def generation(
-        self,
-        interaction: discord.Interaction,
-        generation: app_commands.Range[int, 1, 8],
-    ) -> List[app_commands.Choice[str]]:
-        generation = ["gen1", "gen2", "gen3", "gen4", "gen5", "gen6", "gen7", "gen8"]
-        return [
-            app_commands.Choice(name=generation, value=generation)
-            for generation in generation
-            if generation.lower() in generation.lower()
-        ]
