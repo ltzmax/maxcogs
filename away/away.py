@@ -200,7 +200,7 @@ class Away(commands.Cog):
             try:
                 await ctx.author.add_roles(discord.Object(data["role"]))
             except discord.NotFound as e:
-                self.config.guild(ctx.guild).role.clear()
+                await self.config.guild(ctx.guild).role.clear()
                 log.error(f"Failed to add role due to: {e}")
         _userdata = await self.config.member(ctx.author).all()
         if _userdata["nick"] is True:
