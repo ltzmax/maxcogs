@@ -75,7 +75,7 @@ class Away(commands.Cog):
         self.config.register_guild(**default_guild)
         self.config.register_member(**default_member)
 
-    async def initialize(self):
+    async def cog_load(self):
         self.cache = await self.config.all_guilds()
 
     async def update_guild_cache(self, guild: discord.Guild):
