@@ -20,7 +20,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
-| Away | Set yourself as afk | 2.0.2 | ltzmax, dia ♡#0666, TheDiscordHistorian (kato#0666) | ✅ |
+| Away | Set yourself as afk | 2.0.3 | ltzmax, dia ♡#0666, TheDiscordHistorian (kato#0666) | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.1.17| ltzmax | ✅ |

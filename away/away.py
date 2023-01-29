@@ -38,7 +38,7 @@ log = logging.getLogger("red.maxcogs.away")
 class Away(commands.Cog):
     """An away thingy to set away and be not away."""
 
-    __version__ = "2.0.2"
+    __version__ = "2.0.3"
     __author__ = "dia ♡#0666, max, TheDiscordHistorian (kato#0666)"
     __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/away"
 
@@ -221,9 +221,9 @@ class Away(commands.Cog):
         embed.set_footer(text=f"You're now away.")
         if data["delete_after"] is not None and data["delete"] is True:
             return await ctx.send(
-                embed=embed, delete_after=data["delete_after"], ephemeral=True
+                embed=embed, delete_after=data["delete_after"]
             )
-        await ctx.send(embed=embed, ephemeral=True)
+        await ctx.send(embed=embed)
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
@@ -263,15 +263,15 @@ class Away(commands.Cog):
         embed.set_footer(text=f"You're now back.")
         if data["delete_after"] is not None and data["delete"] is True:
             return await ctx.send(
-                embed=embed, delete_after=data["delete_after"], ephemeral=True
+                embed=embed, delete_after=data["delete_after"]
             )
-        await ctx.send(embed=embed, ephemeral=True)
+        await ctx.send(embed=embed)
 
-    @commands.hybrid_group(aliases=["afkset"])
+    @commands.group(aliases=["afkset"])
     async def awayset(self, ctx: commands.Context):
         """Manage away settings."""
 
-    @awayset.command(with_app_command=False)
+    @awayset.command()
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def role(self, ctx: commands.Context, role: discord.Role):
@@ -288,7 +288,7 @@ class Away(commands.Cog):
         await self.update_guild_cache(ctx.guild)
         await ctx.send(f"Set the away role to {role.mention}.")
 
-    @awayset.command(with_app_command=False)
+    @awayset.command()
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def deleterole(self, ctx: commands.Context):
@@ -297,7 +297,7 @@ class Away(commands.Cog):
         await self.update_guild_cache(ctx.guild)
         await ctx.send("I've successfully reset the away role.")
 
-    @awayset.command(with_app_command=False)
+    @awayset.command()
     @commands.has_permissions(manage_guild=True)
     async def toggle(self, ctx: commands.Context, delete: bool):
         """Toggle whether to delete away messages or not.
@@ -310,7 +310,7 @@ class Away(commands.Cog):
         await self.update_guild_cache(ctx.guild)
         await ctx.send(f"Away delete set to {delete}.")
 
-    @awayset.command(with_app_command=False)
+    @awayset.command()
     @commands.has_permissions(manage_guild=True)
     async def timeout(self, ctx: commands.Context, delete_after: int):
         """Set the amount of time in seconds to delete the message after [p]away."""
@@ -322,7 +322,6 @@ class Away(commands.Cog):
 
     @awayset.command()
     @commands.bot_has_permissions(embed_links=True)
-    @app_commands.describe(toggle=("Pass True to enable, False to disable."))
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def autoback(self, ctx: commands.Context, toggle: bool):
         """Toggle whether to automatically stop autoback or enabled them.
@@ -334,7 +333,7 @@ class Away(commands.Cog):
         await self.config.member(ctx.author).autoback.set(toggle)
         await ctx.send(f"You have successfully set toggle to {toggle}.")
 
-    @awayset.command(aliases=["nick"], with_app_command=False)
+    @awayset.command(aliases=["nick"])
     @commands.cooldown(1, 3, commands.BucketType.user)
     @commands.bot_has_permissions(manage_nicknames=True)
     async def nickname(self, ctx: commands.Context, toggle: bool):
@@ -345,7 +344,7 @@ class Away(commands.Cog):
         await self.config.member(ctx.author).nick.set(toggle)
         await ctx.send(f"Nickname have been set to {toggle}")
 
-    @awayset.command(aliases=["settings", "showsetting"], with_app_command=False)
+    @awayset.command(aliases=["settings", "showsetting"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def showsettings(self, ctx):
@@ -362,6 +361,7 @@ class Away(commands.Cog):
         role = "None" if role is None else role.mention
 
         embed = discord.Embed(
+            title="Away settings",
             description=f"Current away settings for {ctx.guild.name}.",
             color=await ctx.embed_color(),
         )
@@ -372,7 +372,7 @@ class Away(commands.Cog):
         embed.add_field(name="Nick:", value=_userdata["nick"])
         await ctx.send(embed=embed)
 
-    @awayset.command(name="version", with_app_command=False)
+    @awayset.command(name="version")
     async def awayset_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         if await ctx.embed_requested():
