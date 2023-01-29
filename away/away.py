@@ -220,9 +220,7 @@ class Away(commands.Cog):
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now away.")
         if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(
-                embed=embed, delete_after=data["delete_after"]
-            )
+            return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
@@ -262,9 +260,7 @@ class Away(commands.Cog):
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now back.")
         if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(
-                embed=embed, delete_after=data["delete_after"]
-            )
+            return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
 
     @commands.group(aliases=["afkset"])

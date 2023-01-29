@@ -83,13 +83,13 @@ Set the role to be used for away status.
 
 Extended Arg Info
 > ### role: discord.role.Role
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 ## awayset showsettings
  - Usage: `[p]awayset showsettings `
  - Aliases: `settings and showsetting`
