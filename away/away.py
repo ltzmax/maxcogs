@@ -95,7 +95,6 @@ class Away(commands.Cog):
 
     @commands.Cog.listener("on_message_without_command")
     async def _away_trigger(self, message: discord.Message) -> None:
-
         if message.guild is None:
             return
         if message.author.bot:
@@ -148,7 +147,6 @@ class Away(commands.Cog):
 
     @commands.Cog.listener("on_message_without_command")
     async def _auto_back_moment(self, message: discord.Message) -> None:
-
         if message.guild is None:
             return
         if message.author.bot:
