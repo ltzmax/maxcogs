@@ -35,10 +35,6 @@ To install any cog you want:
 </tr>
 <td>veryfun</td>
 <td>Just any other fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
-</tr>
-<td>onconnect</td>
-<td>This is a cog that sends shard events for resume, on ready and disconnect.</td>
-</tr>
 </tbody>
 </table>
 
@@ -47,9 +43,7 @@ To install any cog you want:
 
 - [fixator10](https://github.com/fixator10) For help with coding at most parts.
 
-- [Preda](https://github.com/PredaaA/predacogs) For help on the OnConnect cog and alot more.
-
-- [Ghost](https://github.com/Arman0334) For all the hard work on OnConnect cog.
+- [Preda](https://github.com/PredaaA/predacogs) For help alot more.
 
 ## Support
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
