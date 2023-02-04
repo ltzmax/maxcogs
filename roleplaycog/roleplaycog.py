@@ -55,7 +55,7 @@ class RolePlayCog(commands.Cog):
 
     __version__ = "0.1.17"
     __author__ = "MAX"
-    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/veryfun"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/roleplaycog/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""

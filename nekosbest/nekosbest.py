@@ -42,7 +42,7 @@ class NekosBest(commands.Cog):
 
     __version__ = "0.1.20"
     __author__ = "MAX"
-    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/nekosbest"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nekosbest/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""

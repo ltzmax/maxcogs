@@ -3,7 +3,7 @@
         "dia \u2661#0666, max, TheDiscordHistorian (kato#0666)"
     ],
     "name": "Away",
-    "install_msg": "Thanks for installing.\nFeel free to check the docs <https://readdocs.voltrabot.com/docs/Cogs/away>",
+    "install_msg": "Thanks for installing.",
     "description": "Away cog to set yourself as away.",
     "short": "Away cog to set yourself as away.",
     "hidden": false,

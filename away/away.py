@@ -40,7 +40,7 @@ class Away(commands.Cog):
 
     __version__ = "2.0.3"
     __author__ = "dia ♡#0666, max, TheDiscordHistorian (kato#0666)"
-    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/away"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/away/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""

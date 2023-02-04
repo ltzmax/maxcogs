@@ -36,7 +36,7 @@ class Tcgcard(commands.Cog):
 
     __authors__ = ["<@306810730055729152>", "MAX#1000"]
     __version__ = "1.3.0"
-    __docs__ = "https://readdocs.voltrabot.com/docs/Cogs/tcgcard"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad."""
