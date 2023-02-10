@@ -31,9 +31,7 @@ To install any cog you want:
 
 - [fixator10](https://github.com/fixator10) For helping doing alot of help.
 
-- [Preda](https://github.com/PredaaA/predacogs) For help on the OnConnect cog and alot more.
-
-- [Ghost](https://github.com/Arman0334) For all the hard work on OnConnect cog.
+- [Preda](https://github.com/PredaaA/predacogs) For help.
 
 ## Support
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogs or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
