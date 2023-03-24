@@ -38,7 +38,7 @@ log = logging.getLogger("red.maxcogs.away")
 class Away(commands.Cog):
     """An away thingy to set away and be not away."""
 
-    __version__ = "2.0.3"
+    __version__ = "2.0.4"
     __author__ = "dia ♡#0666, max, TheDiscordHistorian (kato#0666)"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/away/README.md"
 
@@ -70,7 +70,7 @@ class Away(commands.Cog):
             "away": False,
             "message": None,
             "nick": False,
-            "autoback": False,
+            "autoback": True,
         }
         self.config.register_guild(**default_guild)
         self.config.register_member(**default_member)
@@ -217,8 +217,6 @@ class Away(commands.Cog):
         )
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now away.")
-        if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
@@ -257,8 +255,6 @@ class Away(commands.Cog):
         )
         embed.set_author(name=str(ctx.author), icon_url=self._format_avatar(ctx.author))
         embed.set_footer(text=f"You're now back.")
-        if data["delete_after"] is not None and data["delete"] is True:
-            return await ctx.send(embed=embed, delete_after=data["delete_after"])
         await ctx.send(embed=embed)
 
     @commands.group(aliases=["afkset"])
@@ -287,9 +283,12 @@ class Away(commands.Cog):
     @commands.bot_has_permissions(manage_roles=True)
     async def deleterole(self, ctx: commands.Context):
         """Remove the away role set from `awayset role`."""
-        await self.config.guild(ctx.guild).role.clear()
-        await self.update_guild_cache(ctx.guild)
-        await ctx.send("I've successfully reset the away role.")
+        if await self.config.guild(ctx.guild).role():
+            await self.config.guild(ctx.guild).role.clear()
+            await self.update_guild_cache(ctx.guild)
+            await ctx.send("✅ I've successfully reset the away role.")
+        else:
+            await ctx.send("❌ You do not have any role set for the away.")
 
     @awayset.command()
     @commands.has_permissions(manage_guild=True)
@@ -309,7 +308,7 @@ class Away(commands.Cog):
     async def timeout(self, ctx: commands.Context, delete_after: int):
         """Set the amount of time in seconds to delete the message after [p]away."""
         if delete_after < 5:
-            return await ctx.maybe_send_embed("The minimum is 5 seconds.")
+            return await ctx.send("The minimum is 5 seconds.")
         await self.config.guild(ctx.guild).delete_after.set(delete_after)
         await self.update_guild_cache(ctx.guild)
         await ctx.send(f"Set the timeout to `{delete_after}` seconds.")
@@ -320,7 +319,7 @@ class Away(commands.Cog):
     async def autoback(self, ctx: commands.Context, toggle: bool):
         """Toggle whether to automatically stop autoback or enabled them.
 
-        Autoback is default disabled.
+        Autoback is default enabled.
 
         Pass `True` to enable, `False` to disable.
         """
