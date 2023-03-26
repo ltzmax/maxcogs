@@ -37,13 +37,13 @@ Remove one or more roles to be ignored by CapSpam.<br/><br/>__Parameters__<br/><
 
 Extended Arg Info
 > ### *roles: discord.role.Role
->
->
+> 
+> 
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
->
->
+> 
+>     
 ### capspam ignore addchannels
  - Usage: `[p]capspam ignore addchannels <channels> `
 
@@ -51,13 +51,13 @@ Add one or more channels to be ignored by CapSpam.<br/><br/>If the author of the
 
 Extended Arg Info
 > ### *channels: discord.channel.TextChannel
->
->
+> 
+> 
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
->
->
+> 
+>     
 ### capspam ignore addroles
  - Usage: `[p]capspam ignore addroles <roles> `
 
@@ -65,13 +65,13 @@ Add one or more roles to be ignored by CapSpam.<br/><br/>If the author of the me
 
 Extended Arg Info
 > ### *roles: discord.role.Role
->
->
+> 
+> 
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
->
->
+> 
+>     
 ### capspam ignore removechannels
  - Usage: `[p]capspam ignore removechannels <channels> `
 
@@ -79,14 +79,15 @@ Remove one or more channels to be ignored by CapSpam.<br/><br/>__Parameters__<br
 
 Extended Arg Info
 > ### *channels: discord.channel.TextChannel
->
->
+> 
+> 
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
->
->
+> 
+>     
 ## capspam export
  - Usage: `[p]capspam export `
 
 Export the CapSpam settings.<br/><br/>Returned in a JSON format.
+

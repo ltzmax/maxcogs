@@ -7,8 +7,7 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 
 from .config import DefaultGuild, get_config
-from .const import (CAP_DETECTOR, LOG, WARN_MESSAGE,
-                    WARN_MESSAGE_DELETE_COOLDOWN)
+from .const import CAP_DETECTOR, LOG, WARN_MESSAGE, WARN_MESSAGE_DELETE_COOLDOWN
 
 
 class IgnoredObjects(TypedDict):
@@ -73,9 +72,7 @@ class CapSpam(commands.Cog):
         state = ctx.guild.id in self._enabled_guilds_ids
 
         if not ctx.me.guild_permissions.manage_messages:
-            await ctx.send(
-                'I am missing the "Manage Messages" permission, add it to me so you can enable CapSpam.'
-            )
+            await ctx.send("I am missing the \"Manage Messages\" permission, add it to me so you can enable CapSpam.")
             return
 
         if state == toggle:
@@ -118,9 +115,7 @@ class CapSpam(commands.Cog):
         roles_ids = [role.id for role in roles]
         ignored_roles = await self.config.guild(ctx.guild).ignored_roles()
 
-        can_be_added = [
-            role_id for role_id in roles_ids if role_id not in ignored_roles
-        ]
+        can_be_added = [role_id for role_id in roles_ids if role_id not in ignored_roles]
         not_added = [role_id for role_id in roles_ids if role_id in ignored_roles]
 
         ignored_roles.extend(can_be_added)
@@ -129,13 +124,9 @@ class CapSpam(commands.Cog):
 
         msg = ""
         if can_be_added:
-            msg += "**Added roles:**\n\n{roles}\n\n".format(
-                roles="\n".join([f"- {i}" for i in can_be_added])
-            )
+            msg += "**Added roles:**\n\n{roles}\n\n".format(roles='\n'.join([f"- {i}" for i in can_be_added]))
         if not_added:
-            msg += "**Roles already added:**\n\n{roles}".format(
-                roles="\n".join([f"- {i}" for i in not_added])
-            )
+            msg += "**Roles already added:**\n\n{roles}".format(roles='\n'.join([f"- {i}" for i in not_added]))
         await ctx.send(msg)
 
     @capspam_ignore.command("removeroles")
@@ -159,21 +150,15 @@ class CapSpam(commands.Cog):
         can_be_removed = [role_id for role_id in roles_ids if role_id in ignored_roles]
         not_removed = [role_id for role_id in roles_ids if role_id not in ignored_roles]
 
-        new_ignored_roles = [
-            role for role in ignored_roles if role not in can_be_removed
-        ]
+        new_ignored_roles = [role for role in ignored_roles if role not in can_be_removed]
         await self.config.guild(ctx.guild).ignored_roles.set(new_ignored_roles)
         self._ignored_objects["roles"][ctx.guild.id] = new_ignored_roles
 
         msg = ""
         if can_be_removed:
-            msg += "**Roles removed:**\n\n{roles}\n\n".format(
-                roles="\n".join([f"- {i}" for i in can_be_removed])
-            )
+            msg += "**Roles removed:**\n\n{roles}\n\n".format(roles='\n'.join([f"- {i}" for i in can_be_removed]))
         if not_removed:
-            msg += "**Roles already not ignored:**\n\n{roles}".format(
-                roles="\n".join([f"- {i}" for i in not_removed])
-            )
+            msg += "**Roles already not ignored:**\n\n{roles}".format(roles='\n'.join([f"- {i}" for i in not_removed]))
         await ctx.send(msg)
 
     @capspam_ignore.command("addchannels")
@@ -196,14 +181,8 @@ class CapSpam(commands.Cog):
         channels_ids = [channel.id for channel in channels]
         ignored_channels = await self.config.guild(ctx.guild).ignored_channels()
 
-        can_be_added = [
-            channel_id
-            for channel_id in channels_ids
-            if channel_id not in ignored_channels
-        ]
-        not_added = [
-            channel_id for channel_id in channels_ids if channel_id in ignored_channels
-        ]
+        can_be_added = [channel_id for channel_id in channels_ids if channel_id not in ignored_channels]
+        not_added = [channel_id for channel_id in channels_ids if channel_id in ignored_channels]
 
         ignored_channels.extend(can_be_added)
         await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
@@ -211,13 +190,9 @@ class CapSpam(commands.Cog):
 
         msg = ""
         if can_be_added:
-            msg += "**Added channels:**\n\n{channels}\n\n".format(
-                channels="\n".join([f"- {i}" for i in can_be_added])
-            )
+            msg += "**Added channels:**\n\n{channels}\n\n".format(channels='\n'.join([f"- {i}" for i in can_be_added]))
         if not_added:
-            msg += "**Channels already added:**\n\n{channels}".format(
-                channels="\n".join([f"- {i}" for i in not_added])
-            )
+            msg += "**Channels already added:**\n\n{channels}".format(channels='\n'.join([f"- {i}" for i in not_added]))
         await ctx.send(msg)
 
     @capspam_ignore.command("removechannels")
@@ -238,30 +213,18 @@ class CapSpam(commands.Cog):
         channels_ids = [channel.id for channel in channels]
         ignored_channels = await self.config.guild(ctx.guild).ignored_channels()
 
-        can_be_removed = [
-            channel_id for channel_id in channels_ids if channel_id in ignored_channels
-        ]
-        not_removed = [
-            channel_id
-            for channel_id in channels_ids
-            if channel_id not in ignored_channels
-        ]
+        can_be_removed = [channel_id for channel_id in channels_ids if channel_id in ignored_channels]
+        not_removed = [channel_id for channel_id in channels_ids if channel_id not in ignored_channels]
 
-        new_ignored_channels = [
-            channel for channel in ignored_channels if channel not in can_be_removed
-        ]
+        new_ignored_channels = [channel for channel in ignored_channels if channel not in can_be_removed]
         await self.config.guild(ctx.guild).ignored_channels.set(new_ignored_channels)
         self._ignored_objects["channels"][ctx.guild.id] = new_ignored_channels
 
         msg = ""
         if can_be_removed:
-            msg += "**Channels removed:**\n\n{channels}\n\n".format(
-                channels="\n".join([f"- {i}" for i in can_be_removed])
-            )
+            msg += "**Channels removed:**\n\n{channels}\n\n".format(channels='\n'.join([f"- {i}" for i in can_be_removed]))
         if not_removed:
-            msg += "**Channels already not ignored:**\n\n{channels}".format(
-                channels="\n".join([f"- {i}" for i in not_removed])
-            )
+            msg += "**Channels already not ignored:**\n\n{channels}".format(channels='\n'.join([f"- {i}" for i in not_removed]))
         await ctx.send(msg)
 
     @capspam.command("info", aliases=["settings", "setting"])
@@ -303,10 +266,11 @@ class CapSpam(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+
         # Basic checks
         if not self.__ready:
             return
-
+        
         ctx: commands.Context = await self.bot.get_context(message)
         if not ctx.guild:
             return
@@ -356,9 +320,7 @@ class CapSpam(commands.Cog):
                 self._enabled_guilds_ids.append(guild_id)
 
             if channels_ids := guild_data["ignored_channels"]:
-                LOG.info(
-                    f"Ignoring channels {', '.join([str(i) for i in channels_ids])}"
-                )
+                LOG.info(f"Ignoring channels {', '.join([str(i) for i in channels_ids])}")
                 self._ignored_objects["channels"][guild_id] = channels_ids
 
             if roles_ids := guild_data["ignored_roles"]:
