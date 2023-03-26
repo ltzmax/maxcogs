@@ -137,7 +137,9 @@ class CapSpam(commands.Cog):
             )
         await ctx.send(msg)
 
-    @capspam_ignore.command(name="removeroles", aliases=["removerole", "remrole", "rmrole"])
+    @capspam_ignore.command(
+        name="removeroles", aliases=["removerole", "remrole", "rmrole"]
+    )
     async def capspam_ignore_removeroles(
         self, ctx: commands.GuildContext, *roles: discord.Role
     ):
