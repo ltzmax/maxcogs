@@ -59,7 +59,7 @@ class CapSpam(commands.Cog):
     async def capspam(self, _: commands.GuildContext):
         """CapSpam settings"""
 
-    @capspam.command("enable")
+    @capspam.command(name="enable", aliases=["toggle"])
     async def capspam_enable(self, ctx: commands.GuildContext, *, toggle: bool):
         """
         Enable CapSpam in your server.
@@ -89,7 +89,7 @@ class CapSpam(commands.Cog):
 
         await ctx.send(f"CapSpam has set your server to `{toggle}`.")
 
-    @capspam.group("ignore")
+    @capspam.group(name="ignore")
     async def capspam_ignore(self, _: commands.GuildContext):
         """
         Manage the roles/channels ignore settings.
@@ -97,7 +97,7 @@ class CapSpam(commands.Cog):
         See `[p]capspam info` for a list of ignored roles/channels.
         """
 
-    @capspam_ignore.command("addroles")
+    @capspam_ignore.command(name="addroles", aliases=["roles", "role"])
     async def capspam_ignore_addroles(
         self, ctx: commands.GuildContext, *roles: discord.Role
     ):
@@ -137,7 +137,7 @@ class CapSpam(commands.Cog):
             )
         await ctx.send(msg)
 
-    @capspam_ignore.command("removeroles")
+    @capspam_ignore.command(name="removeroles", aliases=["removerole", "remrole", "rmrole"])
     async def capspam_ignore_removeroles(
         self, ctx: commands.GuildContext, *roles: discord.Role
     ):
@@ -175,7 +175,7 @@ class CapSpam(commands.Cog):
             )
         await ctx.send(msg)
 
-    @capspam_ignore.command("addchannels")
+    @capspam_ignore.command(name="addchannels", aliases=["channels", "channel"])
     async def capspam_ignore_addchannels(
         self, ctx: commands.GuildContext, *channels: discord.TextChannel
     ):
@@ -219,7 +219,7 @@ class CapSpam(commands.Cog):
             )
         await ctx.send(msg)
 
-    @capspam_ignore.command("removechannels")
+    @capspam_ignore.command(name="removechannels", aliases=["remchannel", "rmchannel"])
     async def capspam_ignore_removechannels(
         self, ctx: commands.GuildContext, *channels: discord.TextChannel
     ):
@@ -289,7 +289,7 @@ class CapSpam(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @capspam.command("export")
+    @capspam.command(name="export", hidden=True)
     async def capspam_export(self, ctx: commands.GuildContext):
         """
         Export the CapSpam settings.
@@ -299,6 +299,21 @@ class CapSpam(commands.Cog):
         data = await self.config.guild(ctx.guild).all()
         file = discord.File(io.StringIO(str(data)), f"capspam-{ctx.guild.id}.json")
         await ctx.send(f"Report for guild ID: {ctx.guild.id}", file=file)
+
+    @capspam.command(name="version")
+    async def capspam_version(self, ctx: commands.Context):
+        """Shows the version of the cog"""
+        if await ctx.embed_requested():
+            em = discord.Embed(
+                title="Cog Version:",
+                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+                colour=await ctx.embed_color(),
+            )
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(
+                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
