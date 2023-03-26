@@ -341,8 +341,11 @@ class CapSpam(commands.Cog):
         # Ignore roles/channels
         if ctx.channel.id in self._ignored_objects["channels"].get(ctx.guild.id, []):  # type: ignore
             return
-        roles_ids = await self.config.guild(message.guild).ignored_roles()
-        if any(role.id in roles_ids for role in message.author.roles):
+        roles_ids = [role.id for role in ctx.author.roles]
+        if any(
+            role_id in self._ignored_objects["roles"].get(ctx.guild.id, [])
+            for role_id in roles_ids
+        ):  # type: ignore
             return
 
         # Pre-checks (Automod immunity/Is bot)
