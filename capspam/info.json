@@ -1,0 +1,23 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
+    "name": "CapSpam",
+    "author": [
+        "ScarletRav3n",
+        "Predeactor",
+        "MAX#1000"
+    ],
+    "tags": [
+        "spam",
+        "censor",
+        "filter",
+        "moderation"
+    ],
+    "short": "Censor spammy messages.",
+    "description": "CapSpam cog.",
+    "install_msg": "Thanks for installing. Please use the following command to set up the cog [p]capspam",
+    "min_bot_version": "3.5.0",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG",
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users."
+}

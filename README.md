@@ -21,6 +21,7 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | Away | Set yourself as afk | 2.0.4 | ltzmax, dia ♡#0666, TheDiscordHistorian (kato#0666) | ✅ |
+| CapSpam | Prevent spamming in caps | 0.1.0 | MAX, ScarletRav3n, Predeactor | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.1.17| ltzmax | ✅ |
