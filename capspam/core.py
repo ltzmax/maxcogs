@@ -343,7 +343,6 @@ class CapSpam(commands.Cog):
             return
         if any(
             role.id in self._ignored_objects["roles"].get(ctx.guild.id, [])
-            for role in ctx.author.roles
         ):
             return
 
