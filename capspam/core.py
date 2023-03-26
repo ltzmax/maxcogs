@@ -227,9 +227,9 @@ class CapSpam(commands.Cog):
             msg += "**Channels already not ignored:**\n\n{channels}".format(channels='\n'.join([f"- {i}" for i in not_removed]))
         await ctx.send(msg)
 
-    @capspam.command("info", aliases=["settings", "setting"])
+    @capspam.command("view", aliases=["settings", "setting"])
     @commands.has_permissions(embed_links=True)
-    async def capspam_info(self, ctx: commands.GuildContext):
+    async def capspam_view(self, ctx: commands.GuildContext):
         """
         Show the informations about CapSpam in your server.
         """
