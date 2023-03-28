@@ -29,8 +29,7 @@ import logging
 from typing import Literal
 
 import discord
-from redbot.core import app_commands
-from redbot.core import Config, commands
+from redbot.core import Config, commands, app_commands
 
 log = logging.getLogger("red.maxcogs.away")
 
