@@ -29,9 +29,9 @@ from typing import List, Optional
 
 import aiohttp
 import discord
-from discord import Colour, Embed, File, app_commands
+from discord import Colour, Embed, File
 from PIL import Image
-from redbot.core import commands
+from redbot.core import commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.commands import Context
 from redbot.core.data_manager import bundled_data_path
