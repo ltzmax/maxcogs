@@ -16,6 +16,7 @@ body:
       description: What cog are you getting issue from?
       options:
         - away
+        - nospoiler
         - nekosbest
         - tcgcard
         - RolePlayCog
