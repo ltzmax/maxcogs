@@ -30,6 +30,7 @@ class NoSpoiler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        author = message.author
         if not message.guild:
             return
         if message.author.bot:
