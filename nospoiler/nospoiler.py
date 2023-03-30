@@ -1,6 +1,7 @@
 import discord
 from redbot.core import Config, commands, app_commands
 
+
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
@@ -9,7 +10,9 @@ class NoSpoiler(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=1234567890, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=1234567890, force_registration=True
+        )
         default_guild = {"enabled": False, "ignored_channels": [], "ignored_roles": []}
         self.config.register_guild(**default_guild)
 
@@ -28,9 +31,17 @@ class NoSpoiler(commands.Cog):
             return
         if message.author.bot:
             return
-        if message.channel.id in await self.config.guild(message.guild).ignored_channels():
+        if (
+            message.channel.id
+            in await self.config.guild(message.guild).ignored_channels()
+        ):
             return
-        if any([role.id in await self.config.guild(message.guild).ignored_roles() for role in message.author.roles]):
+        if any(
+            [
+                role.id in await self.config.guild(message.guild).ignored_roles()
+                for role in message.author.roles
+            ]
+        ):
             return
         if not await self.config.guild(message.guild).enabled():
             return
@@ -48,7 +59,9 @@ class NoSpoiler(commands.Cog):
         """Toggle the spoiler filter."""
         if permission := ctx.channel.permissions_for(ctx.author).manage_messages:
             if not permission:
-                return await ctx.send("You don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages.")
+                return await ctx.send(
+                    "You don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages."
+                )
         if await self.config.guild(ctx.guild).enabled():
             await self.config.guild(ctx.guild).enabled.set(False)
             await ctx.send("Spoiler filter disabled.")
@@ -62,10 +75,16 @@ class NoSpoiler(commands.Cog):
         """Add or remove Ignore a channel."""
         if permission := channel.permissions_for(ctx.author).manage_messages:
             if not permission:
-                return await ctx.send("You don't have permission to `manage_messages` to remove spoiler there.")
+                return await ctx.send(
+                    "You don't have permission to `manage_messages` to remove spoiler there."
+                )
         if channel.id in await self.config.guild(ctx.guild).ignored_channels():
             await self.config.guild(ctx.guild).ignored_channels.set(
-                [c for c in await self.config.guild(ctx.guild).ignored_channels() if c != channel.id]
+                [
+                    c
+                    for c in await self.config.guild(ctx.guild).ignored_channels()
+                    if c != channel.id
+                ]
             )
             await ctx.send(f"{channel.mention} is no longer ignored.")
         else:
@@ -80,7 +99,11 @@ class NoSpoiler(commands.Cog):
         """Add or remove ignore a role."""
         if role.id in await self.config.guild(ctx.guild).ignored_roles():
             await self.config.guild(ctx.guild).ignored_roles.set(
-                [r for r in await self.config.guild(ctx.guild).ignored_roles() if r != role.id]
+                [
+                    r
+                    for r in await self.config.guild(ctx.guild).ignored_roles()
+                    if r != role.id
+                ]
             )
             await ctx.send(f"{role.mention} is no longer ignored.")
         else:
