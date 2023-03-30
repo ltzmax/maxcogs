@@ -5,6 +5,7 @@ from redbot.core import Config, commands, app_commands
 
 SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
 
+
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
