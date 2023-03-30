@@ -51,7 +51,7 @@ class NoSpoiler(commands.Cog):
             return
         if not await self.config.guild(guild).enabled():
             return
-        if any([word in message.content for word in SPOILER_REGEX):
+        if any([word in message.content for word in SPOILER_REGEX]):
             await message.delete()
 
     @commands.hybrid_group()
