@@ -91,9 +91,10 @@ class NoSpoiler(commands.Cog):
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def nospoiler(self, ctx):
-        """No spoiler in this server."""
+        """Manage the spoiler filter settings."""
 
     @nospoiler.command()
+    @commands.bot_has_permissions(manage_messages=True)
     async def toggle(self, ctx):
         """Toggle the spoiler filter."""
         guild = ctx.guild
@@ -126,6 +127,12 @@ class NoSpoiler(commands.Cog):
                 await self.config.guild(ctx.guild).ignored_channels() + [channel.id]
             )
             await ctx.send(f"{channel.mention} is now ignored.")
+
+    @nospoiler.command(aliases=["reset"])
+    async def clear(self, ctx):
+        """Reset all settings back to default."""
+        await self.config.guild(ctx.guild).clear()
+        await ctx.send("Settings reset to default.")
 
     @nospoiler.command()
     @commands.bot_has_permissions(embed_links=True)
