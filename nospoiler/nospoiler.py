@@ -3,7 +3,7 @@ import re
 
 from redbot.core import Config, commands, app_commands
 
-# SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
+SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
 
 
 class NoSpoiler(commands.Cog):
@@ -17,7 +17,7 @@ class NoSpoiler(commands.Cog):
         self.config = Config.get_conf(
             self, identifier=1234567890, force_registration=True
         )
-        default_guild = {"enabled": False, "ignored_channels": [], "ignored_roles": []}
+        default_guild = {"enabled": False, "ignored_channels": []}
         self.config.register_guild(**default_guild)
 
     def format_help_for_context(self, ctx):
@@ -33,6 +33,7 @@ class NoSpoiler(commands.Cog):
     async def on_message(self, message):
         member = message.author
         guild = message.guild
+        is_automod_immune = await self.bot.is_automod_immune(member)
         if not message.guild:
             return
         if message.author.bot:
@@ -42,18 +43,13 @@ class NoSpoiler(commands.Cog):
             in await self.config.guild(message.guild).ignored_channels()
         ):
             return
-        if any(
-            [
-                role.id in await self.config.guild(message.guild).ignored_roles()
-                for role in message.author.roles
-            ]
-        ):
-            return
-        if self.bot.is_automod_immune(member):
-            return
         if not await self.config.guild(guild).enabled():
             return
-        if any([word in message.content for word in ["||", "||"]]):
+        if not guild.me.guild_permissions.manage_messages:
+            return
+        if is_automod_immune:
+            return
+        if SPOILER_REGEX.search(message.content):
             await message.delete()
 
     @commands.hybrid_group()
@@ -100,25 +96,6 @@ class NoSpoiler(commands.Cog):
                 await self.config.guild(ctx.guild).ignored_channels() + [channel.id]
             )
             await ctx.send(f"{channel.mention} is now ignored.")
-
-    @nospoiler.command()
-    @app_commands.describe(role="The role to ignore or remove from the ignore list.")
-    async def ignorerole(self, ctx, role: discord.Role):
-        """Add or remove ignore a role."""
-        if role.id in await self.config.guild(ctx.guild).ignored_roles():
-            await self.config.guild(ctx.guild).ignored_roles.set(
-                [
-                    r
-                    for r in await self.config.guild(ctx.guild).ignored_roles()
-                    if r != role.id
-                ]
-            )
-            await ctx.send(f"{role.mention} is no longer ignored.")
-        else:
-            await self.config.guild(ctx.guild).ignored_roles.set(
-                await self.config.guild(ctx.guild).ignored_roles() + [role.id]
-            )
-            await ctx.send(f"{role.mention} is now ignored.")
 
     @nospoiler.command()
     @commands.bot_has_permissions(embed_links=True)
