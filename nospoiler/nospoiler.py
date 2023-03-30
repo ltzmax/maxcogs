@@ -64,28 +64,27 @@ class NoSpoiler(commands.Cog):
                     await message.delete()
 
     @commands.Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+    async def on_raw_message_edit(self, payload):
         """handle edits"""
-        member = after.author
-        guild = after.guild
-        is_automod_immune = await self.bot.is_automod_immune(member)
-        if not after.guild:
-            return
-        if member.bot:
-            return
-        if await self.bot.cog_disabled_in_guild(self, after.guild):
-            return
-        if after.channel.id in await self.config.guild(after.guild).ignored_channels():
+        is_automod_immune = await self.bot.is_automod_immune(payload.cached_message.author)
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
             return
         if not await self.config.guild(guild).enabled():
             return
         if not guild.me.guild_permissions.manage_messages:
             log.info("I don't have permission to manage_messages to remove spoiler.")
             return
+        channel = guild.get_channel(payload.channel_id)
+        if channel.id in await self.config.guild(guild).ignored_channels():
+            return
+        message = await channel.fetch_message(payload.message_id)
+        if message.author.bot:
+            return
         if is_automod_immune:
             return
-        if SPOILER_REGEX.search(after.content):
-            await after.delete()
+        if SPOILER_REGEX.search(message.content):
+            await message.delete()
 
     @commands.hybrid_group()
     @commands.guild_only()
