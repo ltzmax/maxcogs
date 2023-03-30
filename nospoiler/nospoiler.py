@@ -48,8 +48,6 @@ class NoSpoiler(commands.Cog):
             ]
         ):
             return
-        if self.bot.is_automod_immune(member):
-            return
         if not await self.config.guild(guild).enabled():
             return
         if any([word in message.content for word in SPOILER_REGEX]):
@@ -101,11 +99,33 @@ class NoSpoiler(commands.Cog):
             await ctx.send(f"{channel.mention} is now ignored.")
 
     @nospoiler.command()
+    @app_commands.describe(role="The role to ignore or remove from the ignore list.")
+    async def ignorerole(self, ctx, role: discord.Role):
+        """Add or remove ignore a role."""
+        if role.id in await self.config.guild(ctx.guild).ignored_roles():
+            await self.config.guild(ctx.guild).ignored_roles.set(
+                [
+                    r
+                    for r in await self.config.guild(ctx.guild).ignored_roles()
+                    if r != role.id
+                ]
+            )
+            await ctx.send(f"{role.mention} is no longer ignored.")
+        else:
+            await self.config.guild(ctx.guild).ignored_roles.set(
+                await self.config.guild(ctx.guild).ignored_roles() + [role.id]
+            )
+            await ctx.send(f"{role.mention} is now ignored.")
+
+    @nospoiler.command()
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
+        ignored_roles = ", ".join([f"<@&{r}>" for r in config["ignored_roles"]])
+        if not ignored_roles:
+            ignored_roles = "None"
         ignored_channels = ", ".join([f"<#{c}>" for c in config["ignored_channels"]])
         if not ignored_channels:
             ignored_channels = "None"
