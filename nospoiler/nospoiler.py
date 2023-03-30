@@ -14,6 +14,7 @@ class NoSpoiler(commands.Cog):
 
     __author__ = "MAX"
     __version__ = "0.1.0"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
         self.bot = bot
@@ -26,11 +27,13 @@ class NoSpoiler(commands.Cog):
     def format_help_for_context(self, ctx):
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
-        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
         return
+
+# TODO: catch edited message and delete if it contains spoiler.
 
     @commands.Cog.listener()
     async def on_message(self, message):
