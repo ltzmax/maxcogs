@@ -66,7 +66,9 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
         """handle edits"""
-        is_automod_immune = await self.bot.is_automod_immune(payload.cached_message.author)
+        is_automod_immune = await self.bot.is_automod_immune(
+            payload.cached_message.author
+        )
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
             return
