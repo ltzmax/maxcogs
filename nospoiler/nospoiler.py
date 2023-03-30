@@ -47,7 +47,7 @@ class NoSpoiler(commands.Cog):
             ]
         ):
             return
-        if self.bot.is_automod_immune(author):
+        if self.bot.is_automod_immune(member) is True:
             return
         if not await self.config.guild(message.guild).enabled():
             return
