@@ -60,7 +60,7 @@ class NoSpoiler(commands.Cog):
         if permission := ctx.channel.permissions_for(ctx.author).manage_messages:
             if not permission:
                 return await ctx.send(
-                    "You don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages."
+                    "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages."
                 )
         if await self.config.guild(ctx.guild).enabled():
             await self.config.guild(ctx.guild).enabled.set(False)
@@ -76,7 +76,7 @@ class NoSpoiler(commands.Cog):
         if permission := channel.permissions_for(ctx.author).manage_messages:
             if not permission:
                 return await ctx.send(
-                    "You don't have permission to `manage_messages` to remove spoiler there."
+                    "I don't have permission to `manage_messages` to remove spoiler there."
                 )
         if channel.id in await self.config.guild(ctx.guild).ignored_channels():
             await self.config.guild(ctx.guild).ignored_channels.set(
