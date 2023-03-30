@@ -2,6 +2,7 @@ import discord
 
 from redbot.core import Config, commands, app_commands
 
+SPOILER_REGEX = r"\|\|(.+?)\|\|"
 
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
@@ -50,7 +51,7 @@ class NoSpoiler(commands.Cog):
             return
         if not await self.config.guild(guild).enabled():
             return
-        if any([word in message.content for word in ["||", "||"]]):
+        if any([word in message.content for word in SPOILER_REGEX):
             await message.delete()
 
     @commands.hybrid_group()
