@@ -1,10 +1,12 @@
 import discord
 import re
+import logging
 
 from redbot.core import Config, commands, app_commands
 
 SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
 
+log = logging.getLogger("red.maxcogs.nospoiler")
 
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
@@ -48,6 +50,7 @@ class NoSpoiler(commands.Cog):
         if not await self.config.guild(guild).enabled():
             return
         if not guild.me.guild_permissions.manage_messages:
+            log.info("I don't have permission to manage_messages to remove spoiler.")
             return
         if is_automod_immune:
             return
