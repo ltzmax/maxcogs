@@ -75,10 +75,7 @@ class NoSpoiler(commands.Cog):
             return
         if member.bot:
             return
-        if (
-            after.channel.id
-            in await self.config.guild(after.guild).ignored_channels()
-        ):
+        if after.channel.id in await self.config.guild(after.guild).ignored_channels():
             return
         if not await self.config.guild(guild).enabled():
             return
