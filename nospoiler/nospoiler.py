@@ -2,8 +2,6 @@ import discord
 
 from redbot.core import Config, commands, app_commands
 
-SPOILER_REGEX = r"||(.+?)||"
-
 
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
@@ -48,9 +46,11 @@ class NoSpoiler(commands.Cog):
             ]
         ):
             return
+        if self.bot.is_mod_or_superior(member):
+            return
         if not await self.config.guild(guild).enabled():
             return
-        if any([word in message.content for word in SPOILER_REGEX]):
+        if any([word in message.content for word in ["||", "||"]]):
             await message.delete()
 
     @commands.hybrid_group()
@@ -123,9 +123,6 @@ class NoSpoiler(commands.Cog):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
-        ignored_roles = ", ".join([f"<@&{r}>" for r in config["ignored_roles"]])
-        if not ignored_roles:
-            ignored_roles = "None"
         ignored_channels = ", ".join([f"<#{c}>" for c in config["ignored_channels"]])
         if not ignored_channels:
             ignored_channels = "None"
