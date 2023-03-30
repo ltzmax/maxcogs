@@ -2,7 +2,7 @@ import discord
 
 from redbot.core import Config, commands, app_commands
 
-REGEX = r"^(?P<spoiler>||)(?P<text>.+)(?P=spoiler)$"
+SPOILER_REGEX = r"||(.+?)||"
 
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
@@ -45,9 +45,11 @@ class NoSpoiler(commands.Cog):
             ]
         ):
             return
+        if self.bot.is_automod_immune(author):
+            return
         if not await self.config.guild(message.guild).enabled():
             return
-        if any([word in message.content for word in REGEX]):
+        if any([word in message.content for word in SPOILER_REGEX]):
             await message.delete()
 
     @commands.hybrid_group()
@@ -96,34 +98,15 @@ class NoSpoiler(commands.Cog):
             await ctx.send(f"{channel.mention} is now ignored.")
 
     @nospoiler.command()
-    @app_commands.describe(role="The role to ignore or remove from the ignore list.")
-    async def ignorerole(self, ctx, role: discord.Role):
-        """Add or remove ignore a role."""
-        if role.id in await self.config.guild(ctx.guild).ignored_roles():
-            await self.config.guild(ctx.guild).ignored_roles.set(
-                [
-                    r
-                    for r in await self.config.guild(ctx.guild).ignored_roles()
-                    if r != role.id
-                ]
-            )
-            await ctx.send(f"{role.mention} is no longer ignored.")
-        else:
-            await self.config.guild(ctx.guild).ignored_roles.set(
-                await self.config.guild(ctx.guild).ignored_roles() + [role.id]
-            )
-            await ctx.send(f"{role.mention} is now ignored.")
-
-    @nospoiler.command()
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         ignored_channels = ", ".join([f"<#{c}>" for c in config["ignored_channels"]])
-        ignored_roles = ", ".join([f"<@&{r}>" for r in config["ignored_roles"]])
+        if not ignored_channels:
+            ignored_channels = "None"
         embed = discord.Embed(title="NoSpoiler settings", color=await ctx.embed_color())
         embed.add_field(name="Enabled", value=enabled)
         embed.add_field(name="Ignored channels", value=ignored_channels)
-        embed.add_field(name="Ignored roles", value=ignored_roles)
         await ctx.send(embed=embed)
