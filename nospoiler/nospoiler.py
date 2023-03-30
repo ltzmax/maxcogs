@@ -94,7 +94,6 @@ class NoSpoiler(commands.Cog):
         """Manage the spoiler filter settings."""
 
     @nospoiler.command()
-    @commands.bot_has_permissions(manage_messages=True)
     async def toggle(self, ctx):
         """Toggle the spoiler filter."""
         guild = ctx.guild
