@@ -63,11 +63,11 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command()
     async def toggle(self, ctx):
         """Toggle the spoiler filter."""
-        if permission := ctx.channel.permissions_for(ctx.author).manage_messages:
-            if not permission:
-                return await ctx.send(
-                    "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages."
-                )
+        channel = ctx.channel
+        if channel.permissions_for(ctx.guild.me).manage_messages is False:
+            return await ctx.send(
+                "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages."
+            )
         if await self.config.guild(ctx.guild).enabled():
             await self.config.guild(ctx.guild).enabled.set(False)
             await ctx.send("Spoiler filter disabled.")
@@ -79,11 +79,11 @@ class NoSpoiler(commands.Cog):
     @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
     async def ignorechannel(self, ctx, channel: discord.TextChannel):
         """Add or remove Ignore a channel."""
-        if permission := channel.permissions_for(ctx.author).manage_messages:
-            if not permission:
-                return await ctx.send(
-                    "I don't have permission to `manage_messages` to remove spoiler there."
-                )
+        channel = ctx.channel
+        if channel.permissions_for(ctx.guild.me).manage_messages is False:
+            return await ctx.send(
+                "I don't have permission to `manage_messages` to remove spoiler there."
+            )
         if channel.id in await self.config.guild(ctx.guild).ignored_channels():
             await self.config.guild(ctx.guild).ignored_channels.set(
                 [
