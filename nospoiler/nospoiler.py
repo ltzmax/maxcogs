@@ -33,7 +33,7 @@ class NoSpoiler(commands.Cog):
         """Nothing to delete."""
         return
 
-# TODO: catch edited message and delete if it contains spoiler.
+    # TODO: catch edited message and delete if it contains spoiler.
 
     @commands.Cog.listener()
     async def on_message(self, message):
