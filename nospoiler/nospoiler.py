@@ -33,8 +33,6 @@ class NoSpoiler(commands.Cog):
         """Nothing to delete."""
         return
 
-# TODO: catch edited message and delete if it contains spoiler.
-
     @commands.Cog.listener()
     async def on_message(self, message):
         member = message.author
@@ -65,6 +63,32 @@ class NoSpoiler(commands.Cog):
             for attachment in attachments:
                 if attachment.is_spoiler():
                     await message.delete()
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, after):
+        member = after.author
+        guild = after.guild
+        is_automod_immune = await self.bot.is_automod_immune(member)
+        if not after.guild:
+            return
+        if after.author.bot:
+            return
+        if member.bot:
+            return
+        if (
+            after.channel.id
+            in await self.config.guild(after.guild).ignored_channels()
+        ):
+            return
+        if not await self.config.guild(guild).enabled():
+            return
+        if not guild.me.guild_permissions.manage_messages:
+            log.info("I don't have permission to manage_messages to remove spoiler.")
+            return
+        if is_automod_immune:
+            return
+        if SPOILER_REGEX.search(after.content):
+            await after.delete()
 
     @commands.hybrid_group()
     @commands.guild_only()
