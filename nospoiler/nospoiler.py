@@ -115,11 +115,6 @@ class NoSpoiler(commands.Cog):
     @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
     async def ignorechannel(self, ctx, channel: discord.TextChannel):
         """Add or remove Ignore a channel."""
-        channel = ctx.channel
-        if channel.permissions_for(ctx.guild.me).manage_messages is False:
-            return await ctx.send(
-                "I don't have permission to `manage_messages` to remove spoiler there."
-            )
         if channel.id in await self.config.guild(ctx.guild).ignored_channels():
             await self.config.guild(ctx.guild).ignored_channels.set(
                 [
