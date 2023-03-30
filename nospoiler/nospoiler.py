@@ -1,8 +1,9 @@
 import discord
+import re
 
 from redbot.core import Config, commands, app_commands
 
-SPOILER_REGEX = r"\|\|(.+?)\|\|"
+SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
 
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
@@ -47,7 +48,7 @@ class NoSpoiler(commands.Cog):
             ]
         ):
             return
-        if self.bot.is_mod_or_superior(member):
+        if self.bot.is_automod_immune(member):
             return
         if not await self.config.guild(guild).enabled():
             return
