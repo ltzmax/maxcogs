@@ -3,7 +3,7 @@ import re
 
 from redbot.core import Config, commands, app_commands
 
-SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
+# SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
 
 
 class NoSpoiler(commands.Cog):
@@ -53,7 +53,7 @@ class NoSpoiler(commands.Cog):
             return
         if not await self.config.guild(guild).enabled():
             return
-        if any([word in message.content for word in SPOILER_REGEX]):
+        if any([word in message.content for word in ["||", "||"]]):
             await message.delete()
 
     @commands.hybrid_group()
