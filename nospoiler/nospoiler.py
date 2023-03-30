@@ -30,7 +30,8 @@ class NoSpoiler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        author = message.author
+        member = message.author
+        guild = message.guild
         if not message.guild:
             return
         if message.author.bot:
@@ -49,7 +50,7 @@ class NoSpoiler(commands.Cog):
             return
         if self.bot.is_automod_immune(member) is True:
             return
-        if not await self.config.guild(message.guild).enabled():
+        if not await self.config.guild(guild).enabled():
             return
         if any([word in message.content for word in SPOILER_REGEX]):
             await message.delete()
