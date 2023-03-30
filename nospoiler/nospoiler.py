@@ -53,6 +53,11 @@ class NoSpoiler(commands.Cog):
             return
         if SPOILER_REGEX.search(message.content):
             await message.delete()
+            return
+        if attachments := message.attachments:
+            for attachment in attachments:
+                if attachment.is_spoiler():
+                    await message.delete()
 
     @commands.hybrid_group()
     @commands.guild_only()
