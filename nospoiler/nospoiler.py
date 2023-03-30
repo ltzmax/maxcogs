@@ -8,6 +8,7 @@ SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
 
 log = logging.getLogger("red.maxcogs.nospoiler")
 
+
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
