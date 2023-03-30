@@ -38,6 +38,8 @@ class NoSpoiler(commands.Cog):
             return
         if message.author.bot:
             return
+        if member.bot:
+            return
         if (
             message.channel.id
             in await self.config.guild(message.guild).ignored_channels()
