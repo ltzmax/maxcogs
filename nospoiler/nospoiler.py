@@ -63,8 +63,8 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command()
     async def toggle(self, ctx):
         """Toggle the spoiler filter."""
-        channel = ctx.channel
-        if channel.permissions_for(ctx.guild.me).manage_messages is False:
+        guild = ctx.guild
+        if guild.me.guild_permissions.manage_messages is False:
             return await ctx.send(
                 "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages."
             )
