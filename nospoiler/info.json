@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "NoSpoiler",
-    "install_msg": "Thanks for installing.",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any spoiler filter without setting up autoimmune.",
     "description": "Disallow spoilers in your server.",
     "short": "Disallow spoilers in your server.",
     "hidden": false,
