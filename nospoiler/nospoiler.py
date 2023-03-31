@@ -37,9 +37,10 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         """handle spoiler messages"""
-        if message.author.bot:
+        guild = message.guild
+        if not guild:
             return
-        if message.guild is None:
+        if message.author.bot:
             return
         if not await self.config.guild(message.guild).enabled():
             return
