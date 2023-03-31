@@ -39,21 +39,15 @@ class NoSpoiler(commands.Cog):
         member = message.author
         guild = message.guild
         is_automod_immune = await self.bot.is_automod_immune(member)
-        if not message.guild:
-            return
-        if member.bot:
-            return
-        if await self.bot.cog_disabled_in_guild(self, message.guild):
-            return
-        if (
-            message.channel.id
-            in await self.config.guild(message.guild).ignored_channels()
-        ):
-            return
-        if not await self.config.guild(message.guild).enabled():
+        config = await self.config.guild(guild).all()
+        if not config["enabled"]:
             return
         if not guild.me.guild_permissions.manage_messages:
             log.info("I don't have permission to manage_messages to remove spoiler.")
+            return
+        if message.channel.id in config["ignored_channels"]:
+            return
+        if member.bot:
             return
         if is_automod_immune:
             return
