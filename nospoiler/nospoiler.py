@@ -3,6 +3,7 @@ import re
 import logging
 
 from redbot.core import Config, commands, app_commands
+from .views import ResetSpoilerFilterConfirm
 
 SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
 
@@ -129,12 +130,40 @@ class NoSpoiler(commands.Cog):
             )
             await ctx.send(f"Ignoring <#{channel.id}>.")
 
-    # todo: add confirmation.
     @nospoiler.command(aliases=["reset"])
+    @commands.bot_has_permissions(embed_links=True)
     async def clear(self, ctx):
         """Reset all settings back to default."""
-        await self.config.guild(ctx.guild).clear()
-        await ctx.send("Settings reset to default.")
+        config = await self.config.guild(ctx.guild).all()
+        enabled = config["enabled"]
+        ignored_channels = config["ignored_channels"]
+        if not enabled and not ignored_channels:
+            embed = discord.Embed(
+                title="There are no settings to reset.",
+                colour=discord.Colour.red(),
+            )
+            return await ctx.send(embed=embed, ephemeral=True)
+        embed = discord.Embed(
+            title="Are you sure you want to reset?",
+            description="This will reset all settings back to default.",
+            colour=discord.Colour.red(),
+        )
+        view = ResetSpoilerFilterConfirm(ctx)
+        view.message = await ctx.send(embed=embed, view=view)
+        await view.wait()
+        if view.value is True:
+            await self.config.guild(ctx.guild).clear()
+            embed = discord.Embed(
+                title="Settings reset.",
+                colour=discord.Colour.green(),
+            )
+            await view.message.edit(embed=embed, view=None)
+        else:
+            embed = discord.Embed(
+                title="Reset cancelled.",
+                colour=discord.Colour.red(),
+            )
+            await view.message.edit(embed=embed, view=None)
 
     @nospoiler.command()
     @commands.bot_has_permissions(embed_links=True)
