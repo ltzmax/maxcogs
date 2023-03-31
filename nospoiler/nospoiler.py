@@ -96,7 +96,8 @@ class NoSpoiler(commands.Cog):
         guild = ctx.guild
         if guild.me.guild_permissions.manage_messages is False:
             return await ctx.send(
-                "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages.", ephemeral=True
+                "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages.",
+                ephemeral=True,
             )
         if await self.config.guild(ctx.guild).enabled():
             await self.config.guild(ctx.guild).enabled.set(False)
@@ -113,15 +114,19 @@ class NoSpoiler(commands.Cog):
         if not enabled:
             return await ctx.send("Spoiler filter is disabled.", ephemeral=True)
         if channel.id in await self.config.guild(ctx.guild).ignored_channels():
-            async with self.config.guild(ctx.guild).ignored_channels() as ignored_channels:
+            async with self.config.guild(
+                ctx.guild
+            ).ignored_channels() as ignored_channels:
                 ignored_channels.remove(channel.id)
             await ctx.send(f"Removed <#{channel.id}> from ignore list.")
         else:
-            async with self.config.guild(ctx.guild).ignored_channels() as ignored_channels:
+            async with self.config.guild(
+                ctx.guild
+            ).ignored_channels() as ignored_channels:
                 ignored_channels.append(channel.id)
             await ctx.send(f"Ignoring <#{channel.id}>.")
 
-    #todo: add confirmation.
+    # todo: add confirmation.
     @nospoiler.command(aliases=["reset"])
     async def clear(self, ctx):
         """Reset all settings back to default."""
@@ -136,7 +141,9 @@ class NoSpoiler(commands.Cog):
         enabled = config["enabled"]
         ignored_channels = config["ignored_channels"]
         if ignored_channels:
-            ignored_channels = ", ".join(f"<#{channel}>" for channel in ignored_channels)
+            ignored_channels = ", ".join(
+                f"<#{channel}>" for channel in ignored_channels
+            )
         else:
             ignored_channels = "None"
         embed = discord.Embed(
