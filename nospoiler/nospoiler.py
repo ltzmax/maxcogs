@@ -38,7 +38,6 @@ class NoSpoiler(commands.Cog):
         """handle spoiler messages"""
         member = message.author
         guild = message.guild
-        is_automod_immune = await self.bot.is_automod_immune(member)
         config = await self.config.guild(guild).all()
         if not config["enabled"]:
             return
@@ -47,9 +46,11 @@ class NoSpoiler(commands.Cog):
             return
         if message.channel.id in config["ignored_channels"]:
             return
+        if await self.bot.cog_disabled_in_guild(self, guild):
+            return
         if member.bot:
             return
-        if is_automod_immune:
+        if await self.bot.is_automod_immune(member):
             return
         if SPOILER_REGEX.search(message.content):
             await message.delete()
@@ -62,13 +63,12 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
         """handle edits"""
-        is_automod_immune = await self.bot.is_automod_immune(
-            payload.cached_message.author
-        )
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
             return
         if not await self.config.guild(guild).enabled():
+            return
+        if await self.bot.cog_disabled_in_guild(self, guild):
             return
         if not guild.me.guild_permissions.manage_messages:
             log.info("I don't have permission to manage_messages to remove spoiler.")
@@ -79,7 +79,7 @@ class NoSpoiler(commands.Cog):
         message = await channel.fetch_message(payload.message_id)
         if message.author.bot:
             return
-        if is_automod_immune:
+        if await self.bot.is_automod_immune(payload.cached_message.author):
             return
         if SPOILER_REGEX.search(message.content):
             await message.delete()
