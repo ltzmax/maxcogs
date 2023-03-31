@@ -50,7 +50,7 @@ class NoSpoiler(commands.Cog):
             return
         if message.channel.id in await self.config.guild(message.guild).ignored_channels():
             return
-        if await self.bot.is_automod_immune(member):
+        if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
             await message.delete()
