@@ -110,20 +110,23 @@ class NoSpoiler(commands.Cog):
     @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
     async def ignorechannel(self, ctx, channel: discord.TextChannel):
         """Add or remove ignore a channel from the spoiler filter."""
-        enabled = await self.config.guild(ctx.guild).enabled()
+        config = await self.config.guild(ctx.guild).all()
+        enabled = config["enabled"]
         if not enabled:
-            return await ctx.send("Spoiler filter is disabled.", ephemeral=True)
-        if channel.id in await self.config.guild(ctx.guild).ignored_channels():
-            async with self.config.guild(
-                ctx.guild
-            ).ignored_channels() as ignored_channels:
-                ignored_channels.remove(channel.id)
+            return await ctx.send(
+                "Spoiler filter is disabled. Enable it with `[p]nospoiler toggle`.",
+                ephemeral=True,
+            )
+        ignored_channels = config["ignored_channels"]
+        if channel.id in ignored_channels:
+            await self.config.guild(ctx.guild).ignored_channels.set(
+                [c for c in ignored_channels if c != channel.id]
+            )
             await ctx.send(f"Removed <#{channel.id}> from ignore list.")
         else:
-            async with self.config.guild(
-                ctx.guild
-            ).ignored_channels() as ignored_channels:
-                ignored_channels.append(channel.id)
+            await self.config.guild(ctx.guild).ignored_channels.set(
+                ignored_channels + [channel.id]
+            )
             await ctx.send(f"Ignoring <#{channel.id}>.")
 
     # todo: add confirmation.
