@@ -92,11 +92,11 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     async def toggle(self, ctx):
-        """Toggle the spoiler filter."""
+        """Toggle spoiler filter on or off."""
         guild = ctx.guild
         if guild.me.guild_permissions.manage_messages is False:
             return await ctx.send(
-                "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages."
+                "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages.", ephemeral=True
             )
         if await self.config.guild(ctx.guild).enabled():
             await self.config.guild(ctx.guild).enabled.set(False)
@@ -108,25 +108,20 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command()
     @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
     async def ignorechannel(self, ctx, channel: discord.TextChannel):
-        """Add or remove Ignore a channel."""
+        """Add or remove ignore a channel from the spoiler filter."""
         enabled = await self.config.guild(ctx.guild).enabled()
         if not enabled:
-            return await ctx.send("Spoiler filter is disabled. Please enable it first.")
+            return await ctx.send("Spoiler filter is disabled.", ephemeral=True)
         if channel.id in await self.config.guild(ctx.guild).ignored_channels():
-            await self.config.guild(ctx.guild).ignored_channels.set(
-                [
-                    c
-                    for c in await self.config.guild(ctx.guild).ignored_channels()
-                    if c != channel.id
-                ]
-            )
-            await ctx.send(f"{channel.mention} is no longer ignored.")
+            async with self.config.guild(ctx.guild).ignored_channels() as ignored_channels:
+                ignored_channels.remove(channel.id)
+            await ctx.send(f"Removed <#{channel.id}> from ignore list.")
         else:
-            await self.config.guild(ctx.guild).ignored_channels.set(
-                await self.config.guild(ctx.guild).ignored_channels() + [channel.id]
-            )
-            await ctx.send(f"{channel.mention} is now ignored.")
+            async with self.config.guild(ctx.guild).ignored_channels() as ignored_channels:
+                ignored_channels.append(channel.id)
+            await ctx.send(f"Ignoring <#{channel.id}>.")
 
+    #todo: add confirmation.
     @nospoiler.command(aliases=["reset"])
     async def clear(self, ctx):
         """Reset all settings back to default."""
@@ -139,10 +134,13 @@ class NoSpoiler(commands.Cog):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
-        ignored_channels = ", ".join([f"<#{c}>" for c in config["ignored_channels"]])
-        if not ignored_channels:
+        ignored_channels = config["ignored_channels"]
+        if ignored_channels:
+            ignored_channels = ", ".join(f"<#{channel}>" for channel in ignored_channels)
+        else:
             ignored_channels = "None"
-        embed = discord.Embed(title="NoSpoiler settings", color=await ctx.embed_color())
-        embed.add_field(name="Enabled", value=enabled)
-        embed.add_field(name="Ignored channels", value=ignored_channels)
+        embed = discord.Embed(
+            title="Spoiler Filter Settings",
+            description=f"Enabled: {enabled}\nIgnored Channels: {ignored_channels}",
+        )
         await ctx.send(embed=embed)
