@@ -36,18 +36,18 @@ class ResetSpoilerFilterConfirm(discord.ui.View):
             item.disabled = True
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(
-        label="Yes", style=discord.ButtonStyle.green
-    )
-    async def yes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.green)
+    async def yes_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         self.value = True
         await self.disable_items(interaction)
         self.stop()
 
-    @discord.ui.button(
-        label="No", style=discord.ButtonStyle.red
-    )
-    async def no_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(label="No", style=discord.ButtonStyle.red)
+    async def no_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         self.value = False
         await self.disable_items(interaction)
         self.stop()
