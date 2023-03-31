@@ -96,19 +96,20 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     async def toggle(self, ctx):
-        """Toggle spoiler filter on or off."""
+        """Toggle the spoiler filter on or off."""
         guild = ctx.guild
-        if guild.me.guild_permissions.manage_messages is False:
+        if not guild.me.guild_permissions.manage_messages:
             return await ctx.send(
-                "I don't have permission to `manage_messages` to toggle spoiler filter.\ni need this permission to be able to remove spoiler messages.",
+                "I don't have permission to manage_messages to remove spoiler.",
                 ephemeral=True,
             )
-        if await self.config.guild(ctx.guild).enabled():
-            await self.config.guild(ctx.guild).enabled.set(False)
-            await ctx.send("Spoiler filter disabled.")
+        enabled = await self.config.guild(guild).enabled()
+        if enabled:
+            await self.config.guild(guild).enabled.set(False)
+            await ctx.send("Spoiler filter is now disabled.")
         else:
-            await self.config.guild(ctx.guild).enabled.set(True)
-            await ctx.send("Spoiler filter enabled.")
+            await self.config.guild(guild).enabled.set(True)
+            await ctx.send("Spoiler filter is now enabled.")
 
     @nospoiler.command()
     @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
@@ -186,3 +187,18 @@ class NoSpoiler(commands.Cog):
             description=f"Enabled: {enabled}\nIgnored Channels: {ignored_channels}",
         )
         await ctx.send(embed=embed)
+
+    @nospoiler.command()
+    async def version(self, ctx: commands.Context):
+        """Shows the version of the cog."""
+        if await ctx.embed_requested():
+            em = discord.Embed(
+                title="Cog Version:",
+                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
+                colour=await ctx.embed_color(),
+            )
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(
+                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
+            )
