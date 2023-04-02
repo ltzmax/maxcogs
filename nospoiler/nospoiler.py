@@ -131,9 +131,9 @@ class NoSpoiler(commands.Cog):
         enabled = config["enabled"]
         if not enabled:
             return await ctx.send(
-                "Spoiler filter is disabled. Enable it with `{prefix}nospoiler toggle` before you can ignore a channel.",
+                "Spoiler filter is disabled. Enable it with `{ctx.clean_prefix}nospoiler toggle` before you can ignore a channel.",
                 ephemeral=True,
-            ).format(prefix=ctx.clean_prefix)
+            )
         ignored_channels = config["ignored_channels"]
         if channel.id in ignored_channels:
             ignored_channels.remove(channel.id)
