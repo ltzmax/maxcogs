@@ -74,13 +74,17 @@ class NoSpoiler(commands.Cog):
         if not guild.me.guild_permissions.manage_messages:
             log.info("I don't have permission to manage_messages to remove spoiler.")
             return
+        if await self.config.guild(guild).ignored_channels():
+            return
         channel = guild.get_channel(payload.channel_id)
-        if channel.id in await self.config.guild(guild).ignored_channels():
+        if not channel:
             return
         message = await channel.fetch_message(payload.message_id)
+        if not message:
+            return
         if message.author.bot:
             return
-        if await self.bot.is_automod_immune(payload.cached_message.author):
+        if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
             await message.delete()
