@@ -38,6 +38,7 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         """handle spoiler messages"""
+        channel = message.channel
         guild = message.guild
         if not guild:
             return
@@ -47,8 +48,8 @@ class NoSpoiler(commands.Cog):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
-        if not message.guild.me.guild_permissions.manage_messages:
-            log.info("I don't have permission to manage_messages to remove spoiler.")
+        if not channel.permissions_for(guild.me).manage_messages:
+            log.info(f"I dont have permission to manage messages in {message.guild.name} in channel {message.channel.name}.")
             return
         if await self.config.guild(message.guild).ignored_channels():
             return
@@ -72,8 +73,8 @@ class NoSpoiler(commands.Cog):
             return
         if await self.bot.cog_disabled_in_guild(self, guild):
             return
-        if not guild.me.guild_permissions.manage_messages:
-            log.info("I don't have permission to manage_messages to remove spoiler.")
+        if not channel.permissions_for(guild).manage_messages:
+            log.info(f"I dont have permission to manage messages in {message.guild.name} in channel {message.channel.name}.")
             return
         if await self.config.guild(guild).ignored_channels():
             return
@@ -100,11 +101,12 @@ class NoSpoiler(commands.Cog):
     async def toggle(self, ctx):
         """Toggle the spoiler filter on or off."""
         guild = ctx.guild
-        if not guild.me.guild_permissions.manage_messages:
-            return await ctx.send(
-                "I don't have permission to manage_messages to remove spoiler.",
-                ephemeral=True,
+        if not ctx.bot_permissions.manage_messages:
+            msg = (
+                "I don't have permission to manage_messages to remove spoiler.\n"
+                "I need this permission before i can enable the spoiler filter."
             )
+            return await ctx.send(msg, ephemeral=True)
         enabled = await self.config.guild(guild).enabled()
         if enabled:
             await self.config.guild(guild).enabled.set(False)
