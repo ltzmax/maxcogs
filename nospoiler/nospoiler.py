@@ -1,6 +1,7 @@
 import discord
 import re
 import logging
+from typing import Union
 
 from redbot.core import Config, commands, app_commands
 from .views import ResetSpoilerFilterConfirm
@@ -114,26 +115,24 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
-    async def ignorechannel(self, ctx, channel: discord.TextChannel):
+    async def ignorechannel(self, ctx: commands.Context, channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel]):
         """Add or remove ignore a channel from the spoiler filter."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         if not enabled:
             return await ctx.send(
-                "Spoiler filter is disabled. Enable it with `[p]nospoiler toggle`.",
+                "Spoiler filter is disabled. Enable it with `{prefix}nospoiler toggle` before you can ignore a channel.",
                 ephemeral=True,
-            )
+            ).format(prefix=ctx.clean_prefix)
         ignored_channels = config["ignored_channels"]
         if channel.id in ignored_channels:
-            await self.config.guild(ctx.guild).ignored_channels.set(
-                [c for c in ignored_channels if c != channel.id]
-            )
-            await ctx.send(f"Removed <#{channel.id}> from ignore list.")
+            ignored_channels.remove(channel.id)
+            await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
+            await ctx.send(f"{channel.mention} is no longer ignored.")
         else:
-            await self.config.guild(ctx.guild).ignored_channels.set(
-                ignored_channels + [channel.id]
-            )
-            await ctx.send(f"Ignoring <#{channel.id}>.")
+            ignored_channels.append(channel.id)
+            await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
+            await ctx.send(f"{channel.mention} is now ignored.")
 
     @nospoiler.command(aliases=["reset"])
     @commands.bot_has_permissions(embed_links=True)
