@@ -115,7 +115,11 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
-    async def ignorechannel(self, ctx: commands.Context, channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel]):
+    async def ignorechannel(
+        self,
+        ctx: commands.Context,
+        channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel],
+    ):
         """Add or remove ignore a channel from the spoiler filter."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
