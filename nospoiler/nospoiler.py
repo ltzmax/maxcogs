@@ -49,7 +49,9 @@ class NoSpoiler(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if not channel.permissions_for(guild.me).manage_messages:
-            log.info(f"I dont have permission to manage messages in {message.guild.name} in channel {message.channel.name}.")
+            log.info(
+                f"I dont have permission to manage messages in {message.guild.name} in channel {message.channel.name}."
+            )
             return
         if await self.config.guild(message.guild).ignored_channels():
             return
@@ -74,7 +76,9 @@ class NoSpoiler(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, guild):
             return
         if not channel.permissions_for(guild).manage_messages:
-            log.info(f"I dont have permission to manage messages in {message.guild.name} in channel {message.channel.name}.")
+            log.info(
+                f"I dont have permission to manage messages in {message.guild.name} in channel {message.channel.name}."
+            )
             return
         if await self.config.guild(guild).ignored_channels():
             return
