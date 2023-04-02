@@ -23,7 +23,12 @@ class NoSpoiler(commands.Cog):
         self.config = Config.get_conf(
             self, identifier=1234567890, force_registration=True
         )
-        default_guild = {"enabled": False, "ignored_channels": [], "warn": False, "warn_message": "You cannot send spoiler messages here."}
+        default_guild = {
+            "enabled": False,
+            "ignored_channels": [],
+            "warn": False,
+            "warn_message": "You cannot send spoiler messages here.",
+        }
         self.config.register_guild(**default_guild)
 
     def format_help_for_context(self, ctx):
