@@ -23,7 +23,7 @@ class NoSpoiler(commands.Cog):
         self.config = Config.get_conf(
             self, identifier=1234567890, force_registration=True
         )
-        default_guild = {"enabled": False, "ignored_channels": []}
+        default_guild = {"enabled": False, "ignored_channels": [], "warn": False, "warn_message": "You cannot send spoiler messages here."}
         self.config.register_guild(**default_guild)
 
     def format_help_for_context(self, ctx):
@@ -41,6 +41,7 @@ class NoSpoiler(commands.Cog):
         message = message
         channel = message.channel
         guild = message.guild
+        warn_message = await self.config.guild(message.guild).warn_message()
         if not guild:
             return
         if message.author.bot:
@@ -59,12 +60,20 @@ class NoSpoiler(commands.Cog):
         if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
-            await message.delete()
+            if await self.config.guild(message.guild).warn():
+                await message.channel.send(warn_message, delete_after=10)
+                await message.delete()
+            else:
+                await message.delete()
             return
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
-                    await message.delete()
+                    if await self.config.guild(message.guild).warn():
+                        await message.channel.send(warn_message, delete_after=10)
+                        await message.delete()
+                    else:
+                        await message.delete()
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
@@ -145,6 +154,48 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
             await ctx.send(f"{channel.mention} is now ignored.")
 
+    @nospoiler.command()
+    async def warn(self, ctx):
+        """Toggle the warning message on or off."""
+        guild = ctx.guild
+        enabled = await self.config.guild(guild).enabled()
+        if not enabled:
+            return await ctx.send(
+                f"Spoiler filter is disabled. Enable it with `{ctx.clean_prefix}nospoiler toggle` before you can toggle the warning message.",
+                ephemeral=True,
+            )
+        warn = await self.config.guild(guild).warn()
+        if warn:
+            await self.config.guild(guild).warn.set(False)
+            await ctx.send("Warning message is now disabled.")
+        else:
+            await self.config.guild(guild).warn.set(True)
+            await ctx.send("Warning message is now enabled.")
+
+    @nospoiler.command(aliases=["warnmsg"])
+    async def warnmessage(self, ctx, *, message: str):
+        """Set the warning message."""
+        guild = ctx.guild
+        warn = await self.config.guild(guild).warn()
+        if not warn:
+            return await ctx.send(
+                f"Warning message is disabled. Enable it with `{ctx.clean_prefix}nospoiler warn` before you can set a warning message.",
+                ephemeral=True,
+            )
+        if len(message) > 1000:
+            return await ctx.send("Warning message must be under 1000 characters.")
+        await self.config.guild(guild).warn_message.set(message)
+        await ctx.send(f"Warning message is now set to: {message}")
+
+    @nospoiler.command(aliases=["resetmsg", "resetwarnmessage"])
+    async def resetwarnmsg(self, ctx):
+        """Reset the warning message back to default."""
+        warn_message = await self.config.guild(ctx.guild).warn_message()
+        if not warn_message:
+            return await ctx.send("There is no warning message to reset.")
+        await self.config.guild(ctx.guild).warn_message.clear()
+        await ctx.send("Warning message has been reset.")
+
     @nospoiler.command(aliases=["reset"])
     @commands.bot_has_permissions(embed_links=True)
     async def clear(self, ctx):
@@ -180,7 +231,7 @@ class NoSpoiler(commands.Cog):
             )
             await view.message.edit(embed=embed, view=None)
 
-    @nospoiler.command()
+    @nospoiler.command(aliases=["view", "views"])
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
@@ -195,7 +246,27 @@ class NoSpoiler(commands.Cog):
             ignored_channels = "None"
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description=f"Enabled: {enabled}\nIgnored Channels: {ignored_channels}",
+            description="These are the current settings for the spoiler filter.",
+        )
+        embed.add_field(
+            name="Enabled",
+            value=enabled,
+            inline=False,
+        )
+        embed.add_field(
+            name="Ignored Channels",
+            value=ignored_channels,
+            inline=False,
+        )
+        embed.add_field(
+            name="Warning Message",
+            value=config["warn_message"],
+            inline=False,
+        )
+        embed.add_field(
+            name="Warning Message Enabled",
+            value=config["warn"] or "None",
+            inline=False,
         )
         await ctx.send(embed=embed)
 
