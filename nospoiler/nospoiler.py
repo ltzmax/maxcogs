@@ -171,7 +171,7 @@ class NoSpoiler(commands.Cog):
         """Toggle the warning message on or off.
         
         If enabled, the bot will send a warning message and delete the message.
-        If disabled, the bot will just delete the message.
+        If disabled, the bot will just delete the message that contains a spoiler.
 
         This setting is disabled by default.
 
