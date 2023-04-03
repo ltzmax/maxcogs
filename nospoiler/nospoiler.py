@@ -119,7 +119,7 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command()
     async def toggle(self, ctx):
         """Toggle the spoiler filter on or off.
-        
+
         Spoiler filter is disabled by default.
         """
         guild = ctx.guild
@@ -145,7 +145,7 @@ class NoSpoiler(commands.Cog):
         channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel],
     ):
         """Add or remove ignore a channel from the spoiler filter.
-        
+
         If a channel is ignored, spoiler messages will not be deleted.
         Note: you cannot ignore a voice chat channel.
         """
@@ -169,7 +169,7 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command()
     async def warn(self, ctx):
         """Toggle the warning message on or off.
-        
+
         If enabled, the bot will send a warning message and delete the message.
         If disabled, the bot will just delete the message.
 
@@ -224,7 +224,7 @@ class NoSpoiler(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def clear(self, ctx):
         """Reset all settings back to default.
-        
+
         This will disable the spoiler filter and remove all ignored channels and your warn message.
         """
         config = await self.config.guild(ctx.guild).all()
