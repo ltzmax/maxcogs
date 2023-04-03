@@ -118,7 +118,10 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     async def toggle(self, ctx):
-        """Toggle the spoiler filter on or off."""
+        """Toggle the spoiler filter on or off.
+        
+        Spoiler filter is disabled by default.
+        """
         guild = ctx.guild
         if not ctx.bot_permissions.manage_messages:
             msg = (
@@ -141,7 +144,11 @@ class NoSpoiler(commands.Cog):
         ctx: commands.Context,
         channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel],
     ):
-        """Add or remove ignore a channel from the spoiler filter."""
+        """Add or remove ignore a channel from the spoiler filter.
+        
+        If a channel is ignored, spoiler messages will not be deleted.
+        Note: you cannot ignore a voice chat channel.
+        """
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         if not enabled:
@@ -161,7 +168,15 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     async def warn(self, ctx):
-        """Toggle the warning message on or off."""
+        """Toggle the warning message on or off.
+        
+        If enabled, the bot will send a warning message and delete the message.
+        If disabled, the bot will just delete the message.
+
+        This setting is disabled by default.
+
+        Note: any warn message set will be deleted after 10 seconds.
+        """
         guild = ctx.guild
         enabled = await self.config.guild(guild).enabled()
         if not enabled:
@@ -178,8 +193,12 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Warning message is now enabled.")
 
     @nospoiler.command(aliases=["warnmsg"])
+    @app_commands.describe(message="The message to send when a spoiler is detected.")
     async def warnmessage(self, ctx, *, message: str):
-        """Set the warning message."""
+        """Set the warning message.
+
+        Message must be under 1000 characters.
+        """
         guild = ctx.guild
         warn = await self.config.guild(guild).warn()
         if not warn:
@@ -204,7 +223,10 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command(aliases=["reset"])
     @commands.bot_has_permissions(embed_links=True)
     async def clear(self, ctx):
-        """Reset all settings back to default."""
+        """Reset all settings back to default.
+        
+        This will disable the spoiler filter and remove all ignored channels and your warn message.
+        """
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         ignored_channels = config["ignored_channels"]
