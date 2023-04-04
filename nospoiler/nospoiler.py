@@ -247,16 +247,16 @@ class NoSpoiler(commands.Cog):
         if view.value is True:
             await self.config.guild(ctx.guild).clear()
             embed = discord.Embed(
-                title="Settings reset.",
+                title="Spoiler filter settings have been reset.",
                 colour=discord.Colour.green(),
             )
-            await view.message.edit(embed=embed, view=None)
+            await view.message.edit(embed=embed)
         else:
             embed = discord.Embed(
-                title="Reset cancelled.",
+                title="Spoiler filter settings have not been reset.",
                 colour=discord.Colour.red(),
             )
-            await view.message.edit(embed=embed, view=None)
+            await view.message.edit(embed=embed)
 
     @nospoiler.command(aliases=["view", "views"])
     @commands.bot_has_permissions(embed_links=True)
