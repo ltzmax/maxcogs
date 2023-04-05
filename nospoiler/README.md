@@ -44,7 +44,7 @@ Set the warning message.
 Extended Arg Info
 > ### message: str
 > ```
-> A single word, if not using slash and multiple words are necessary use a quote e.g "Hello world".
+> A single word or something that you want the bot to tell on warn.
 > ```
 ## nospoiler toggle (Hybrid Command)
  - Usage: `[p]nospoiler toggle `

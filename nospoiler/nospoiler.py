@@ -230,7 +230,10 @@ class NoSpoiler(commands.Cog):
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         ignored_channels = config["ignored_channels"]
-        if not enabled and not ignored_channels:
+        warn = config["warn"]
+        # if all settings are already default, return.
+        # this is to prevent clearing the config if no settings are set.
+        if not enabled and not ignored_channels and not warn:
             embed = discord.Embed(
                 title="There are no settings to reset.",
                 colour=discord.Colour.red(),
@@ -253,7 +256,7 @@ class NoSpoiler(commands.Cog):
             await view.message.edit(embed=embed)
         else:
             embed = discord.Embed(
-                title="Spoiler filter settings have not been reset.",
+                title="Alright. I will not reset.",
                 colour=discord.Colour.red(),
             )
             await view.message.edit(embed=embed)
