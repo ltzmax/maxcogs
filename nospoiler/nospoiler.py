@@ -222,6 +222,7 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command(aliases=["reset"])
     @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(2, 120, commands.BucketType.guild)
     async def clear(self, ctx):
         """Reset all settings back to default.
 
