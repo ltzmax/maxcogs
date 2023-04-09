@@ -209,6 +209,10 @@ class NoSpoiler(commands.Cog):
             )
         else:
             ignored_channels = "None"
+        # handle if there are too many ignored channels to show
+        # due to embed field limits
+        if len(ignored_channels) > 1024:
+            ignored_channels = "Too many to show."
         embed = discord.Embed(
             title="Spoiler Filter Settings",
             description="These are the current settings for the spoiler filter.",
