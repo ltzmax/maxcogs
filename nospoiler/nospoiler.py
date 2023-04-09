@@ -161,7 +161,7 @@ class NoSpoiler(commands.Cog):
     async def clear(self, ctx):
         """Reset all settings back to default.
 
-        This will disable the spoiler filter and remove all ignored channels and your warn message.
+        This will disable the spoiler filter and remove all ignored channels.
         """
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
