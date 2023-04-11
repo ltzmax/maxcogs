@@ -41,23 +41,18 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         """handle spoiler messages"""
-        message = message
-        channel = message.channel
-        guild = message.guild
-        if not guild:
-            return
-        if message.author.bot:
+        if not message.guild:
             return
         if not await self.config.guild(message.guild).enabled():
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
-        if not channel.permissions_for(guild).manage_messages:
-            log.info(
-                f"I dont have permission to manage messages in {message.guild.name} in channel {message.channel.name}."
-            )
-            return
         if await self.config.guild(message.guild).ignored_channels():
+            return
+        if not message.guild.me.guild_permissions.manage_messages:
+            log.info("I don't have permission to manage_messages to remove spoiler.")
+            return
+        if message.author.bot:
             return
         if await self.bot.is_automod_immune(message.author):
             return
@@ -82,15 +77,14 @@ class NoSpoiler(commands.Cog):
         if await self.config.guild(guild).ignored_channels():
             return
         if not guild.me.guild_permissions.manage_messages:
-            log.info(
-                f"I dont have permission to manage messages in {guild.name} in channel {payload.channel_id}."
-            )
             return
-        channel = guild.get_channel(payload.channel_id)
+        channel = self.bot.get_channel(payload.channel_id)
         if not channel:
             return
-        message = await channel.fetch_message(payload.message_id)
-        if not message:
+        try:
+            message = await channel.fetch_message(payload.message_id)
+        except discord.NotFound:
+            log.error("There was an error fetching the message.")
             return
         if message.author.bot:
             return
