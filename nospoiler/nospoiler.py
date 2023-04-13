@@ -38,7 +38,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "0.1.0"
+    __version__ = "0.1.5"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
@@ -64,14 +64,15 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         """handle spoiler messages"""
-        if not message.guild:
-            return
-        if not await self.config.guild(message.guild).enabled():
+        data = await self.config.guild(message.guild).all()
+        enabled = data["enabled"]
+        if not enabled:
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
-        if await self.config.guild(message.guild).ignored_channels():
-            return
+        for channel in data["ignored_channels"]:
+            if message.channel.id == channel:
+                return
         if not message.guild.me.guild_permissions.manage_messages:
             log.info("I don't have permission to manage_messages to remove spoiler.")
             return
