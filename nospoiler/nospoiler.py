@@ -26,7 +26,7 @@ import re
 import logging
 from typing import Union
 
-from redbot.core import Config, commands
+from redbot.core import Config, commands, app_commands
 from .views import ResetSpoilerFilterConfirm
 
 SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
@@ -117,7 +117,7 @@ class NoSpoiler(commands.Cog):
         if SPOILER_REGEX.search(message.content):
             await message.delete()
 
-    @commands.group()
+    @commands.hybrid_group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def nospoiler(self, ctx):
@@ -135,7 +135,7 @@ class NoSpoiler(commands.Cog):
                 "I don't have permission to manage_messages to remove spoiler.\n"
                 "I need this permission before i can enable the spoiler filter."
             )
-            return await ctx.send(msg)
+            return await ctx.send(msg, ephemeral=True)
         enabled = await self.config.guild(guild).enabled()
         if enabled:
             await self.config.guild(guild).enabled.set(False)
@@ -144,7 +144,8 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(guild).enabled.set(True)
             await ctx.send("Spoiler filter is now enabled.")
 
-    @nospoiler.command(aliases=["unignorechannel", "unignore"])
+    @nospoiler.command()
+    @app_commands.describe(channel="The channel to ignore or remove from ignore list.")
     async def ignorechannel(
         self,
         ctx: commands.Context,
@@ -160,6 +161,7 @@ class NoSpoiler(commands.Cog):
         if not enabled:
             return await ctx.send(
                 f"Spoiler filter is disabled. Enable it with `{ctx.clean_prefix}nospoiler toggle` before you can ignore a channel.",
+                ephemeral=True,
             )
         ignored_channels = config["ignored_channels"]
         if channel.id in ignored_channels:
@@ -171,12 +173,13 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
             await ctx.send(f"{channel.mention} is now ignored.")
 
+<<<<<<< HEAD
     @nospoiler.command(hidden=True)
     # This is hidden because it's not really useful as you see.
     # You should be useing the `[p]autoimmune` command instead.
     async def roles(self, ctx: commands.Context):
         """[HIDDEN COMMAND] Manage ignored roles for the spoiler filter.
-        
+
         You should be using the `[p]autoimmune` command instead of this command.
         """
         msg = (
@@ -186,9 +189,12 @@ class NoSpoiler(commands.Cog):
         await ctx.send(msg)
 
     @nospoiler.command(aliases=["clear"])
+=======
+    @nospoiler.command(aliases=["reset"])
+>>>>>>> parent of 7c4865b (Dont use slash with this cog.)
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(2, 120, commands.BucketType.guild)
-    async def reset(self, ctx):
+    async def clear(self, ctx):
         """Reset all settings back to default.
 
         This will disable the spoiler filter and remove all ignored channels.
@@ -203,7 +209,7 @@ class NoSpoiler(commands.Cog):
                 title="There are no settings to reset.",
                 colour=discord.Colour.red(),
             )
-            return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, ephemeral=True)
         embed = discord.Embed(
             title="Are you sure you want to reset?",
             description="This will reset all settings back to default.",
@@ -226,7 +232,13 @@ class NoSpoiler(commands.Cog):
             )
             await view.message.edit(embed=embed)
 
-    @nospoiler.command(aliases=["view", "views", "setting", "showsettings", "showsetting"])
+<<<<<<< HEAD
+    @nospoiler.command(
+        aliases=["view", "views", "setting", "showsettings", "showsetting"]
+    )
+=======
+    @nospoiler.command(aliases=["view", "views"])
+>>>>>>> parent of 7c4865b (Dont use slash with this cog.)
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
