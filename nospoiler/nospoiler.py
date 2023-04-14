@@ -176,7 +176,7 @@ class NoSpoiler(commands.Cog):
     # You should be useing the `[p]autoimmune` command instead.
     async def roles(self, ctx: commands.Context):
         """[HIDDEN COMMAND] Manage ignored roles for the spoiler filter.
-        
+
         You should be using the `[p]autoimmune` command instead of this command.
         """
         msg = (
@@ -226,7 +226,9 @@ class NoSpoiler(commands.Cog):
             )
             await view.message.edit(embed=embed)
 
-    @nospoiler.command(aliases=["view", "views", "setting", "showsettings", "showsetting"])
+    @nospoiler.command(
+        aliases=["view", "views", "setting", "showsettings", "showsetting"]
+    )
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
