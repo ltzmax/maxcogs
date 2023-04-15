@@ -173,25 +173,7 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
             await ctx.send(f"{channel.mention} is now ignored.")
 
-<<<<<<< HEAD
-    @nospoiler.command(hidden=True)
-    # This is hidden because it's not really useful as you see.
-    # You should be useing the `[p]autoimmune` command instead.
-    async def roles(self, ctx: commands.Context):
-        """[HIDDEN COMMAND] Manage ignored roles for the spoiler filter.
-
-        You should be using the `[p]autoimmune` command instead of this command.
-        """
-        msg = (
-            "You should be using the `[p]autoimmune` command instead of this command that does nothing.\n"
-            "This command is hidden and will be removed in a future update."
-        )
-        await ctx.send(msg)
-
-    @nospoiler.command(aliases=["clear"])
-=======
     @nospoiler.command(aliases=["reset"])
->>>>>>> parent of 7c4865b (Dont use slash with this cog.)
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(2, 120, commands.BucketType.guild)
     async def clear(self, ctx):
@@ -232,13 +214,9 @@ class NoSpoiler(commands.Cog):
             )
             await view.message.edit(embed=embed)
 
-<<<<<<< HEAD
     @nospoiler.command(
         aliases=["view", "views", "setting", "showsettings", "showsetting"]
     )
-=======
-    @nospoiler.command(aliases=["view", "views"])
->>>>>>> parent of 7c4865b (Dont use slash with this cog.)
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
