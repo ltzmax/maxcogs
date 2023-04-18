@@ -108,6 +108,7 @@ class NoSpoiler(commands.Cog):
         try:
             message = await channel.fetch_message(payload.message_id)
         except discord.NotFound:
+            # due to some discord issues this can happen causing the message is too old to fetch.
             log.error("There was an error fetching the message.")
             return
         if message.author.bot:
@@ -132,8 +133,9 @@ class NoSpoiler(commands.Cog):
         guild = ctx.guild
         if not ctx.bot_permissions.manage_messages:
             msg = (
-                "I don't have permission to manage_messages to remove spoiler.\n"
-                "I need this permission before i can enable the spoiler filter."
+                "I don't have permission to `manage_messages` to remove spoiler.\n"
+                "I need this permission before i can enable the spoiler filter. "
+                "Else it will not be able to remove spoiler messages."
             )
             return await ctx.send(msg, ephemeral=True)
         enabled = await self.config.guild(guild).enabled()
@@ -159,10 +161,12 @@ class NoSpoiler(commands.Cog):
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         if not enabled:
-            return await ctx.send(
-                f"Spoiler filter is disabled. Enable it with `{ctx.clean_prefix}nospoiler toggle` before you can ignore a channel.",
-                ephemeral=True,
+            msg = (
+                "Spoiler filter is disabled.\n"
+                f"Enable it with `{ctx.clean_prefix}nospoiler toggle` "
+                "before you can ignore a channel."
             )
+            return await ctx.send(msg ,ephemeral=True)
         ignored_channels = config["ignored_channels"]
         if channel.id in ignored_channels:
             ignored_channels.remove(channel.id)
