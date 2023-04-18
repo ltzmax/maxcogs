@@ -253,7 +253,7 @@ class NoSpoiler(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @nospoiler.command()
+    @nospoiler.command(with_app_command=False)
     async def version(self, ctx: commands.Context):
         """Shows the version of the cog."""
         if await ctx.embed_requested():
