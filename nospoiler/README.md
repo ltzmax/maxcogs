@@ -27,13 +27,13 @@ Add or remove ignore a channel from the spoiler filter.<br/><br/>If a channel is
 
 Extended Arg Info
 > ### channel: Union[discord.channel.TextChannel, discord.threads.Thread, discord.channel.ForumChannel]
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 
 ## nospoiler settings (Hybrid Command)
  - Usage: `[p]nospoiler settings `
