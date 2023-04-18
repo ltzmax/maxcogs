@@ -15,10 +15,7 @@ class ResetSpoilerFilterConfirm(discord.ui.View):
     async def on_timeout(self) -> None:
         for item in self.children:
             item.disabled = True
-        try:
-            await self.message.edit(view=self)
-        except discord.Forbidden:
-            pass
+        await self.message.edit(view=self)
 
     # example taken from core but with a bit modification
     # https://github.com/Cog-Creators/Red-DiscordBot/blob/44e129bc66ef71844676743c99f20560658469da/redbot/core/utils/views.py#LL417-L423C20
@@ -41,13 +38,13 @@ class ResetSpoilerFilterConfirm(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.value = True
-        await self.disable_items(interaction)
         self.stop()
+        await self.disable_items(interaction)
 
     @discord.ui.button(label="No", style=discord.ButtonStyle.red)
     async def no_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         self.value = False
-        await self.disable_items(interaction)
         self.stop()
+        await self.disable_items(interaction)
