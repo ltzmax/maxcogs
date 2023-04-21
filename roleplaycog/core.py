@@ -32,7 +32,7 @@ ACTIONS = {
     "feed": "feeds",
     "hug": "hugs",
     "kiss": "just kissed",
-    "laugh": "laughs",
+    "laugh": "laugh at",
     "pat": "pats",
     "poke": "pokes",
     "slap": "just slapped",
