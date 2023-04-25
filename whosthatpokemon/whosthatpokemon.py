@@ -1,26 +1,6 @@
-"""
-MIT License
-
-Copyright (c) 2022-present ltzmax
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
+# This cog did not have a license.
+# This cog was created by owocado and is now continued by ltzmax.
+# This cog was transfered via a pr from the author of the code https://github.com/ltzmax/maxcogs/pull/46
 import asyncio
 from contextlib import suppress
 from io import BytesIO
@@ -29,7 +9,7 @@ from typing import List, Optional
 
 import aiohttp
 import discord
-from discord import Colour, Embed, File
+from discord import File
 from PIL import Image
 from redbot.core import commands, app_commands
 from redbot.core.bot import Red
@@ -207,13 +187,13 @@ class WhosThatPokemon(commands.Cog):
                 with suppress(discord.NotFound, discord.HTTPException):
                     await inital_img.delete()
                     await message.delete()
-                emb = Embed(description=f"It was ... **{english_name}**")
+                emb = discord.Embed(description=f"It was ... **{english_name}**")
                 if if_guessed_right:
                     emb.title = "🎉 You guessed it right!! 🎉"
-                    emb.colour = Colour(0x00FF00)
+                    emb.colour = 0x00FF00
                 else:
                     emb.title = "You took too many attempts! 😔 😮\u200d💨"
-                    emb.colour = Colour(0xFF0000)
+                    emb.colour = 0xFF0000
                 emb.set_image(url="attachment://whosthatpokemon.png")
                 emb.set_footer(
                     text=f"Requested by {ctx.author}",
