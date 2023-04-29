@@ -159,14 +159,6 @@ class NoSpoiler(commands.Cog):
         Note: you cannot ignore a voice chat channel.
         """
         config = await self.config.guild(ctx.guild).all()
-        enabled = config["enabled"]
-        if not enabled:
-            msg = (
-                "Spoiler filter is disabled.\n"
-                f"Enable it with `{ctx.clean_prefix}nospoiler toggle` "
-                "before you can ignore a channel."
-            )
-            return await ctx.send(msg, ephemeral=True)
         ignored_channels = config["ignored_channels"]
         if channel.id in ignored_channels:
             ignored_channels.remove(channel.id)
