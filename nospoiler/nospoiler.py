@@ -64,6 +64,9 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """handle spoiler messages"""
+        if message.guild is None:
+            return
+
         data = await self.config.guild(message.guild).all()
         enabled = data["enabled"]
         if not enabled:
