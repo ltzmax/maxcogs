@@ -38,7 +38,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "0.1.5"
+    __version__ = "0.2.20"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
@@ -64,6 +64,9 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """handle spoiler messages"""
+        if message.guild is None:
+            return
+
         data = await self.config.guild(message.guild).all()
         enabled = data["enabled"]
         if not enabled:
