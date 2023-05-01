@@ -55,3 +55,18 @@ Reset all settings back to default.<br/><br/>This will disable the spoiler filte
  - Slash Usage: `/nospoiler version `
 
 Shows the version of the cog.
+
+## Owner command
+ - Usage: `[p]nospoiler cleanup `
+ - Cooldown: `1 per 300.0 seconds`
+
+Cleanup data for a specific guild.
+
+This will delete all the data for the guild.
+
+This is not meant to be used by anyone other than owner.
+If a guild wants their data deleted from this cog, the owner can use this command to do so.
+
+:: Note
+
+    They can also use `[p]spoiler reset` to reset all settings back to default.
