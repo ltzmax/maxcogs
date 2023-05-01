@@ -162,15 +162,15 @@ class NoSpoiler(commands.Cog):
         If a channel is ignored, spoiler messages will not be deleted.
         Note: you cannot ignore a voice chat channel.
         """
-        config = await self.config.guild(ctx.guild).all()
-        ignored_channels = config["ignored_channels"]
+        guild = ctx.guild
+        ignored_channels = await self.config.guild(guild).ignored_channels()
         if channel.id in ignored_channels:
             ignored_channels.remove(channel.id)
-            await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
+            await self.config.guild(guild).ignored_channels.set(ignored_channels)
             await ctx.send(f"{channel.mention} is no longer ignored.")
         else:
             ignored_channels.append(channel.id)
-            await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
+            await self.config.guild(guild).ignored_channels.set(ignored_channels)
             await ctx.send(f"{channel.mention} is now ignored.")
 
     @nospoiler.command(aliases=["clear"])
