@@ -19,13 +19,9 @@ class Tcgcard(commands.Cog):
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad."""
-        return (
-            f"{super().format_help_for_context(ctx)}\n\n"
-            f"Authors:  {', '.join(self.__authors__)}\n"
-            f"Cog version:  v{self.__version__}\n"
-            f"Docs: {self.__docs__}"
-        )
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     def __init__(self, bot):
         self.bot = bot

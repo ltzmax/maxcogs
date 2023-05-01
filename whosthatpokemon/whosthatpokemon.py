@@ -29,14 +29,10 @@ class WhosThatPokemon(commands.Cog):
     __version__ = "1.2.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
 
-    def format_help_for_context(self, ctx: Context) -> str:
-        """Thanks Sinbad."""
-        return (
-            f"{super().format_help_for_context(ctx)}\n\n"
-            f"Authors: {', '.join(self.__authors__)}\n"
-            f"Cog version:  v{self.__version__}\n"
-            f"Docs: {self.__docs__}"
-        )
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     def __init__(self, bot: Red):
         self.bot = bot
