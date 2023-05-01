@@ -162,6 +162,8 @@ class NoSpoiler(commands.Cog):
         If a channel is ignored, spoiler messages will not be deleted.
         Note: you cannot ignore a voice chat channel.
         """
+        # TODO: add support to ignore a category with all channels in it.
+        # TODO: add support to ignore multiple channels at once.
         guild = ctx.guild
         ignored_channels = await self.config.guild(guild).ignored_channels()
         if channel.id in ignored_channels:
