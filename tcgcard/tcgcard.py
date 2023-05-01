@@ -14,7 +14,7 @@ from redbot.core.utils.views import SimpleMenu
 class Tcgcard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
-    __authors__ = ["<@306810730055729152>", "MAX#1000"]
+    __author__ = ["<@306810730055729152>", "MAX#1000"]
     __version__ = "1.3.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
 
@@ -38,7 +38,7 @@ class Tcgcard(commands.Cog):
     async def tcgcard_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         version = self.__version__
-        author = self.__author__
+        authors = self.__author__
         await ctx.send(
             box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
         )
