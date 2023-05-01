@@ -38,7 +38,7 @@ class Tcgcard(commands.Cog):
     async def tcgcard_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         version = self.__version__
-        authors = self.__author__
+        author = self.__author__
         await ctx.send(
             box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
         )
