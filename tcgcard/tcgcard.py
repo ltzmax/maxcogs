@@ -6,6 +6,7 @@ from datetime import datetime
 
 import aiohttp
 import discord
+from redbot.core.utils.chat_formatting import box
 from redbot.core import commands, app_commands
 from redbot.core.utils.views import SimpleMenu
 
@@ -36,6 +37,13 @@ class Tcgcard(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs) -> None:
         """Nothing to delete."""
         return
+
+    @commands.command(name="tcgversion", hidden=True)
+    async def tcgcard_version(self, ctx: commands.Context):
+        """Shows the version of the cog"""
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml"))
 
     @commands.hybrid_command()
     @app_commands.describe(query=("The Pokémon you want to search a card for."))

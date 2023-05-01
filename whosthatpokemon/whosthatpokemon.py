@@ -14,6 +14,7 @@ from PIL import Image
 from redbot.core import commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.commands import Context
+from redbot.core.utils.chat_formatting import box
 from redbot.core.data_manager import bundled_data_path
 
 from .converter import Generation
@@ -100,6 +101,13 @@ class WhosThatPokemon(commands.Cog):
         base_image.close()
         poke_image.close()
         return temp
+
+    @commands.command(name="wtpversion", hidden=True)
+    async def whosthatpokemon_version(self, ctx: commands.Context):
+        """Shows the version of the cog"""
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml"))
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(

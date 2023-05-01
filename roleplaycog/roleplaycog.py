@@ -28,7 +28,7 @@ from collections import Counter
 import aiohttp
 import discord
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import humanize_number
+from redbot.core.utils.chat_formatting import humanize_number, box
 
 from .core import ACTIONS, ICON, NEKOS
 
@@ -90,6 +90,13 @@ class RolePlayCog(commands.Cog):
         )
         emb.set_image(url=data["results"][0]["url"])
         await ctx.send(embed=emb)
+
+    @commands.command(hidden=True)
+    async def rpcversion(self, ctx):
+        """Shows the version of the cog."""
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml"))
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

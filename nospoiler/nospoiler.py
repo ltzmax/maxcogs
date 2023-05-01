@@ -26,6 +26,7 @@ import re
 import logging
 from typing import Union
 
+from redbot.core.utils.chat_formatting import box
 from redbot.core import Config, commands, app_commands
 from .views import ResetSpoilerFilterConfirm
 
@@ -251,14 +252,6 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command(with_app_command=False)
     async def version(self, ctx: commands.Context):
         """Shows the version of the cog."""
-        if await ctx.embed_requested():
-            em = discord.Embed(
-                title="Cog Version:",
-                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-                colour=await ctx.embed_color(),
-            )
-            await ctx.send(embed=em)
-        else:
-            await ctx.send(
-                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
-            )
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml"))

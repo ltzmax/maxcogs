@@ -29,6 +29,7 @@ import logging
 from typing import Literal
 
 import discord
+from redbot.core.utils.chat_formatting import box
 from redbot.core import Config, commands, app_commands
 
 log = logging.getLogger("red.maxcogs.away")
@@ -367,14 +368,6 @@ class Away(commands.Cog):
     @awayset.command(name="version")
     async def awayset_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
-        if await ctx.embed_requested():
-            em = discord.Embed(
-                title="Cog Version:",
-                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-                colour=await ctx.embed_color(),
-            )
-            await ctx.send(embed=em)
-        else:
-            await ctx.send(
-                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
-            )
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml"))

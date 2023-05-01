@@ -26,7 +26,7 @@ import asyncio
 import aiohttp
 import discord
 from redbot.core import commands
-
+from redbot.core.utils.chat_formatting import box
 from .embed import api_call, embedgen
 
 
@@ -56,17 +56,10 @@ class NekosBest(commands.Cog):
     @commands.command(name="nekostversion", aliases=["nekosbestv"], hidden=True)
     async def nekosbest_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
-        if await ctx.embed_requested():
-            em = discord.Embed(
-                title="Cog Version:",
-                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-                colour=await ctx.embed_color(),
-            )
-            await ctx.send(embed=em)
-        else:
-            await ctx.send(
-                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
-            )
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml"))
+
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
