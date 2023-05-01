@@ -229,7 +229,8 @@ class NoSpoiler(commands.Cog):
         else:
             ignored_channels = "None"
         await ctx.send(
-            f"`{'Enabled':<16}`: {enabled}\n`{'Ignored channels':<12}`: {ignored_channels}")
+            f"`{'Enabled':<16}`: {enabled}\n`{'Ignored channels':<12}`: {ignored_channels}"
+        )
 
     @nospoiler.command(with_app_command=False)
     async def version(self, ctx: commands.Context):
