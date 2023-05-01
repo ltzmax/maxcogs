@@ -30,7 +30,7 @@ from redbot.core.utils.chat_formatting import box
 from redbot.core import Config, commands, app_commands
 from .views import ResetSpoilerFilterConfirm
 
-SPOILER_REGEX = re.compile(r"\|\|(.+?)\|\|")
+SPOILER_REGEX = re.compile(r"(?s)\|\|(.+?)\|\|")
 
 log = logging.getLogger("red.maxcogs.nospoiler")
 
