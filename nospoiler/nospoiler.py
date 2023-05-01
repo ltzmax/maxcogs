@@ -217,7 +217,6 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command(
         aliases=["view", "views", "setting", "showsettings", "showsetting"]
     )
-    @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
@@ -229,25 +228,8 @@ class NoSpoiler(commands.Cog):
             )
         else:
             ignored_channels = "None"
-        # handle if there are too many ignored channels to show
-        # due to embed field limits
-        if len(ignored_channels) > 1024:
-            ignored_channels = "Too many to show."
-        embed = discord.Embed(
-            title="Spoiler Filter Settings",
-            description="These are the current settings for the spoiler filter.",
-        )
-        embed.add_field(
-            name="Enabled",
-            value=enabled,
-            inline=False,
-        )
-        embed.add_field(
-            name="Ignored Channels",
-            value=ignored_channels,
-            inline=False,
-        )
-        await ctx.send(embed=embed)
+        await ctx.send(
+            f"`{'Enabled':<16}`: {enabled}\n`{'Ignored channels':<12}`: {ignored_channels}")
 
     @nospoiler.command(with_app_command=False)
     async def version(self, ctx: commands.Context):
