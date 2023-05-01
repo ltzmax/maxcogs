@@ -67,6 +67,5 @@ This will delete all the data for the guild.
 This is not meant to be used by anyone other than owner.
 If a guild wants their data deleted from this cog, the owner can use this command to do so.
 
-:: Note
 
     They can also use `[p]spoiler reset` to reset all settings back to default.
