@@ -249,7 +249,7 @@ class NoSpoiler(commands.Cog):
     @commands.is_owner()
     async def cleanup(self, ctx: commands.Context, guild_id: int):
         """Cleanup data for a specific guild.
-        
+
         This will delete all the data for the guild.
 
         This is not meant to be used by anyone other than owner.
