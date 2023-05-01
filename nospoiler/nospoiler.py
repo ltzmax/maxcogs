@@ -254,4 +254,6 @@ class NoSpoiler(commands.Cog):
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
-        await ctx.send(box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml"))
+        await ctx.send(
+            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        )
