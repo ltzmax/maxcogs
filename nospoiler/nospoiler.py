@@ -192,8 +192,8 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.group(name="set")
     async def _set(self, ctx):
-        """Settings to manage custom messages sent. 
-        
+        """Settings to manage custom messages sent.
+
         This is when spoiler message(s) is deleted, it will send a custom message telling users they're not allowed to.
         """
 
