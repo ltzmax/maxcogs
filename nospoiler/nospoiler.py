@@ -50,6 +50,8 @@ class NoSpoiler(commands.Cog):
         default_guild = {
             "enabled": False,
             "ignored_channels": [],
+            "message_toggle": False,
+            "message": "You cannot send spoiler in this server.",
         }
         self.config.register_guild(**default_guild)
 
@@ -62,41 +64,56 @@ class NoSpoiler(commands.Cog):
         """Nothing to delete."""
         return
 
+    # TODO:
+    # - Clear channels when deleted.
+    # - Clear togglemessage when missing permissions.
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """handle spoiler messages"""
         if message.guild is None:
             return
-
-        data = await self.config.guild(message.guild).all()
-        enabled = data["enabled"]
-        if not enabled:
+        if not await self.config.guild(message.guild).enabled():
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
-        for channel in data["ignored_channels"]:
-            if message.channel.id == channel:
-                return
+        if await self.config.guild(message.guild).ignored_channels():
+            return
         if not message.guild.me.guild_permissions.manage_messages:
-            log.info("I don't have permission to manage_messages to remove spoiler.")
             return
         if message.author.bot:
             return
         if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
-            await message.delete()
-            return
+            if await self.config.guild(message.guild).message_toggle():
+                await message.channel.send(
+                    f"{message.author.mention} {await self.config.guild(message.guild).message()}",
+                    delete_after=10,
+                )
+                await message.delete()
+            else:
+                await message.delete()
+                return
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
-                    await message.delete()
+                    if await self.config.guild(message.guild).message_toggle():
+                        await message.channel.send(
+                            f"{message.author.mention} {await self.config.guild(message.guild).message()}",
+                            delete_after=10,
+                        )
+                        await message.delete()
+                    else:
+                        await message.delete()
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
         """handle edits"""
+        if payload.guild_id is None:
+            return
         guild = self.bot.get_guild(payload.guild_id)
-        if not guild:
+        if guild is None:
             return
         if not await self.config.guild(guild).enabled():
             return
@@ -106,14 +123,14 @@ class NoSpoiler(commands.Cog):
             return
         if not guild.me.guild_permissions.manage_messages:
             return
-        channel = self.bot.get_channel(payload.channel_id)
-        if not channel:
+        if await self.bot.is_automod_immune(guild.me):
+            return
+        channel = guild.get_channel(payload.channel_id)
+        if channel is None:
             return
         try:
             message = await channel.fetch_message(payload.message_id)
         except discord.NotFound:
-            # due to some discord issues this can happen causing the message is too old to fetch.
-            log.error("There was an error fetching the message.")
             return
         if message.author.bot:
             return
@@ -162,7 +179,6 @@ class NoSpoiler(commands.Cog):
         If a channel is ignored, spoiler messages will not be deleted.
         Note: you cannot ignore a voice chat channel.
         """
-        # TODO: add support to ignore multiple channels at once.
         guild = ctx.guild
         ignored_channels = await self.config.guild(guild).ignored_channels()
         if channel.id in ignored_channels:
@@ -173,6 +189,50 @@ class NoSpoiler(commands.Cog):
             ignored_channels.append(channel.id)
             await self.config.guild(guild).ignored_channels.set(ignored_channels)
             await ctx.send(f"{channel.mention} is now ignored.")
+
+    @nospoiler.group(name="set")
+    async def _set(self, ctx):
+        """Settings to manage custom messages sent. 
+        
+        This is when spoiler message(s) is deleted, it will send a custom message telling users they're not allowed to.
+        """
+
+    @_set.command(name="togglemessage")
+    async def _set_togglemessage(self, ctx):
+        """Enable or disable the message to send when a user sends a spoiler message.
+
+        If the message is disabled, the bot will delete the spoiler message without sending a message.
+        """
+        guild = ctx.guild
+        message_toggle = await self.config.guild(guild).message_toggle()
+        if message_toggle:
+            await self.config.guild(guild).message_toggle.set(False)
+            await ctx.send("Message is now disabled.")
+        else:
+            await self.config.guild(guild).message_toggle.set(True)
+            await ctx.send("Message is now enabled.")
+
+    @_set.command(name="message")
+    async def _set_message(self, ctx, *, message: str = None):
+        """Set the message to send when a user sends a spoiler message.
+
+        If no message is provided, the default message will be sent.
+        If you want to disable the message, use `[p]nospoiler set togglemessage`.
+        """
+        if len(message) > 1024:
+            return await ctx.send("Message cannot be longer than 1024 characters.")
+        if message is None:
+            await self.config.guild(ctx.guild).message.set(None)
+            await ctx.send("The message has been reset to default.")
+        else:
+            await self.config.guild(ctx.guild).message.set(message)
+            await ctx.send("The message has been set.")
+
+    @_set.command(name="reset")
+    async def _set_reset(self, ctx):
+        """Reset spoiler message back to default"""
+        await self.config.guild(ctx.guild).message.set(None)
+        await ctx.send("The message has been reset to default.")
 
     @nospoiler.command(aliases=["clear"])
     @commands.bot_has_permissions(embed_links=True)
@@ -229,8 +289,19 @@ class NoSpoiler(commands.Cog):
             )
         else:
             ignored_channels = "None"
+        message = config["message"]
+        togglemessage = config["message_toggle"]
+        if message is None:
+            message = "Default Message"
+        else:
+            message = f"{message}"
+        if togglemessage:
+            message_toggle = "Enabled"
+        else:
+            message_toggle = "Disabled"
+
         await ctx.send(
-            f"`{'Enabled':<16}`: {enabled}\n`{'Ignored channels':<12}`: {ignored_channels}"
+            f"`{'Enabled':<16}`: {enabled}\n`{'Ignored channels':<12}`: {ignored_channels}\n`{'Toggle message':<16}`: {message_toggle}\n`{'Message':<16}`: {message}"
         )
 
     @nospoiler.command(with_app_command=False)
