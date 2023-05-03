@@ -298,7 +298,7 @@ class Away(commands.Cog):
 
         Arguments:
         - `<delete>` - set to true or false.
-        True to enable, false to disable.
+        Pass `True` to enable, `False` to disable.
         """
         await self.config.guild(ctx.guild).delete.set(delete)
         await self.update_guild_cache(ctx.guild)
@@ -320,8 +320,9 @@ class Away(commands.Cog):
     async def autoback(self, ctx: commands.Context, toggle: bool):
         """Toggle whether to automatically stop autoback or enabled them.
 
-        Autoback is default enabled.
+        This will automatically remove your afk status whenever you say a word in the chat.
 
+        Autoback is default enabled.
         Pass `True` to enable, `False` to disable.
         """
         await self.config.member(ctx.author).autoback.set(toggle)
