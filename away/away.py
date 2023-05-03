@@ -257,6 +257,7 @@ class Away(commands.Cog):
         embed.set_footer(text=f"You're now back.")
         await ctx.send(embed=embed)
 
+    @commands.guild_only()
     @commands.group(aliases=["afkset"])
     async def awayset(self, ctx: commands.Context):
         """Manage away settings."""
