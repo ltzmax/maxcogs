@@ -162,7 +162,6 @@ class NoSpoiler(commands.Cog):
         If a channel is ignored, spoiler messages will not be deleted.
         Note: you cannot ignore a voice chat channel.
         """
-        # TODO: add support to ignore a category with all channels in it.
         # TODO: add support to ignore multiple channels at once.
         guild = ctx.guild
         ignored_channels = await self.config.guild(guild).ignored_channels()
@@ -242,27 +241,3 @@ class NoSpoiler(commands.Cog):
         await ctx.send(
             box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
         )
-
-    # This is a hidden command and is not meant to be used by anyone other than owner.
-    @nospoiler.command(with_app_commands=False, hidden=True)
-    @commands.cooldown(1, 300, commands.BucketType.guild)
-    @commands.is_owner()
-    async def cleanup(self, ctx: commands.Context, guild_id: int):
-        """Cleanup data for a specific guild.
-
-        This will delete all the data for the guild.
-
-        This is not meant to be used by anyone other than owner.
-        If a guild wants their data deleted from this cog, the owner can use this command to do so.
-
-        **NOTE**
-        - They can also use `[p]spoiler reset` to reset all settings back to default.
-        """
-        if not guild_id == ctx.guild.id:
-            return await ctx.send("You need to provide the guild id bro.")
-        conf = await self.config.guild(ctx.guild).all()
-        if not conf["enabled"] and not conf["ignored_channels"]:
-            return await ctx.send("There is no data to delete for this guild.")
-        config = self.config.guild_from_id(guild_id)
-        await config.clear()
-        await ctx.send("Alright done, i have deleted all data for that guild.")
