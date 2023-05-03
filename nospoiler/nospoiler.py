@@ -64,10 +64,6 @@ class NoSpoiler(commands.Cog):
         """Nothing to delete."""
         return
 
-    # TODO:
-    # - Clear channels when deleted.
-    # - Clear togglemessage when missing permissions.
-
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """handle spoiler messages"""
@@ -78,7 +74,13 @@ class NoSpoiler(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if await self.config.guild(message.guild).ignored_channels():
-            return
+            if (
+                message.channel.id
+                not in await self.config.guild(message.guild).ignored_channels()
+            ):
+                await self.config.guild(message.guild).ignored_channels.clear()
+                log.info("Cleared ignored channels.")
+                return
         if not message.guild.me.guild_permissions.manage_messages:
             return
         if message.author.bot:
@@ -87,6 +89,11 @@ class NoSpoiler(commands.Cog):
             return
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(message.guild).message_toggle():
+                if not message.channel.permissions_for(message.guild.me).send_messages:
+                    await self.config.guild(message.guild).message_toggle.set(False)
+                    log.info(
+                        "Missing permissions to send messages so i disabled it for you."
+                    )
                 await message.channel.send(
                     f"{message.author.mention} {await self.config.guild(message.guild).message()}",
                     delete_after=10,
@@ -99,6 +106,15 @@ class NoSpoiler(commands.Cog):
             for attachment in attachments:
                 if attachment.is_spoiler():
                     if await self.config.guild(message.guild).message_toggle():
+                        if not message.channel.permissions_for(
+                            message.guild.me
+                        ).send_messages:
+                            await self.config.guild(message.guild).message_toggle.set(
+                                False
+                            )
+                            log.info(
+                                "Missing permissions to send messages so i disabled it for you."
+                            )
                         await message.channel.send(
                             f"{message.author.mention} {await self.config.guild(message.guild).message()}",
                             delete_after=10,
@@ -120,7 +136,13 @@ class NoSpoiler(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, guild):
             return
         if await self.config.guild(guild).ignored_channels():
-            return
+            if payload.channel_id in await self.config.guild(guild).ignored_channels():
+                await self.config.guild(guild).ignored_channels.remove(
+                    payload.channel_id
+                )
+                log.info("Cleared ignored channels.")
+                # Just in case channel is deleted.
+                return
         if not guild.me.guild_permissions.manage_messages:
             return
         if await self.bot.is_automod_immune(guild.me):
@@ -231,7 +253,9 @@ class NoSpoiler(commands.Cog):
     @_set.command(name="reset")
     async def _set_reset(self, ctx):
         """Reset spoiler message back to default"""
-        await self.config.guild(ctx.guild).message.set(None)
+        await self.config.guild(ctx.guild).message.set(
+            "You cannot send spoiler in this server."
+        )
         await ctx.send("The message has been reset to default.")
 
     @nospoiler.command(aliases=["clear"])
@@ -283,12 +307,19 @@ class NoSpoiler(commands.Cog):
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         ignored_channels = config["ignored_channels"]
-        if ignored_channels:
-            ignored_channels = ", ".join(
-                f"<#{channel}>" for channel in ignored_channels
-            )
+        channels = []
+        deleted = []
+        for chan in ignored_channels:
+            channel = self.bot.get_channel(chan)
+            if channel:
+                channels.append(channel)
+            else:
+                deleted.append(chan)
+        if channels:
+            ignored_channels = ", ".join([chan.mention for chan in channels])
         else:
             ignored_channels = "None"
+
         message = config["message"]
         togglemessage = config["message_toggle"]
         if message is None:
