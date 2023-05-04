@@ -7,7 +7,7 @@
     "description": "Disallow spoilers in your server.",
     "short": "Disallow spoilers in your server.",
     "hidden": false,
-    "min_bot_version": "3.5.0.dev1",
+    "min_bot_version": "3.5.0",
     "tags": [
         "spoiler",
         "nospoiler"
