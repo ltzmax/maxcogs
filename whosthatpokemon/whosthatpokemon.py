@@ -6,6 +6,7 @@ from contextlib import suppress
 from io import BytesIO
 from random import randint
 from typing import List, Optional
+from datetime import datetime, timezone, timedelta
 
 import aiohttp
 import discord
@@ -25,8 +26,8 @@ API_URL = "https://pokeapi.co/api/v2"
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __author__ = ["<@306810730055729152>", "MAX#1000"]
-    __version__ = "1.2.0"
+    __author__ = "<@306810730055729152>", "MAX#1000"
+    __version__ = "1.2.1"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -139,8 +140,13 @@ class WhosThatPokemon(commands.Cog):
         if temp is None:
             return await ctx.send("Failed to generate whosthatpokemon card image.")
 
+        # Took this from Core's event file.
+        # https://github.com/Cog-Creators/Red-DiscordBot/blob/41d89c7b54a1f231a01f79655c20d4acf1799633/redbot/core/_events.py#L424-L426
+        img_timeout = discord.utils.format_dt(
+            datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
+        )
         inital_img = await ctx.send(
-            "You have **30 seconds** to answer. Who's that Pokémon?",
+            f"This will timeout {img_timeout}. Who's that Pokémon?",
             file=File(temp, "guessthatpokemon.png"),
         )
         message = await ctx.send("You have **3**/3 attempts left to guess it right.")
