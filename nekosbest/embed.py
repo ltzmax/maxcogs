@@ -21,25 +21,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
-
 import discord
 
-log = logging.getLogger("red.maxcogs.nekosbest")
-
 NEKOS_API = "https://nekos.best/api/v2/"
-ICON = "https://cdn.discordapp.com/icons/850825316766842881/070d7465948cdcf9004630fa8629627b.webp?size=1024"
+ICON = "https://nekos.best/logo_short.png"
 
 
 async def api_call(self, ctx, endpoint: str):
-    async with ctx.typing():
-        async with self.session.get(NEKOS_API + endpoint) as response:
-            if response.status != 200:
-                return await ctx.send(
-                    "Something went wrong while trying to contact API."
-                )
-            url = await response.json()
-            return url
+    await ctx.typing()
+    async with self.session.get(NEKOS_API + endpoint) as response:
+        if response.status != 200:
+            return await ctx.send("Something went wrong while trying to contact API.")
+        url = await response.json()
+        return url
 
 
 async def embedgen(self, ctx, url, endpoint: str):
@@ -49,10 +43,30 @@ async def embedgen(self, ctx, url, endpoint: str):
     image = url["results"][0]["url"]
 
     emb = discord.Embed(
-        title=f"Here's a pic of {endpoint}",
+        title=f"Here's a picture of a {endpoint}",
         description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
     )
     emb.colour = await ctx.embed_color()
     emb.set_image(url=image)
     emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
-    await ctx.send(embed=emb)
+    view = discord.ui.View()
+    style = discord.ButtonStyle.gray
+    artist = discord.ui.Button(
+        style=style,
+        label="Artist",
+        url=artist_href,
+    )
+    source = discord.ui.Button(
+        style=style,
+        label="Source",
+        url=source_url,
+    )
+    image = discord.ui.Button(
+        style=style,
+        label="Open Image",
+        url=image,
+    )
+    view.add_item(item=artist)
+    view.add_item(item=source)
+    view.add_item(item=image)
+    await ctx.send(embed=emb, view=view)

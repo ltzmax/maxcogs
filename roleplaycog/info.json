@@ -2,19 +2,14 @@
     "author": [
         "max"
     ],
-    "name": "NekosBest",
+    "name": "RolePlayCog",
     "install_msg": "Thanks for installing.",
-    "description": "Cog that sends random nekos, kitsune, husbando and waifu images from nekos.best",
-    "short": "Sending random kitsune, waifue, husbando and nekos images.",
+    "description": "Roleplay cog with alot of fun to have with your members. This is with help of nekos.best.",
+    "short": "Roleplay cog. With help of nekos.best.",
     "hidden": false,
     "min_bot_version": "3.5.0",
     "tags": [
-        "images",
-        "waifu",
-        "nekos",
-        "anime",
-        "kitsune",
-        "husbando"
+        "roleplay"
     ],
     "permissions": [
         "embed_links"
@@ -22,7 +17,7 @@
     "min_python_version": [
         3,
         8,
-        5
+        1
     ],
     "end_user_data_statement": "This cog does not store any End User Data.",
     "type": "COG"

@@ -8,17 +8,26 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for taking the time to fill out this bug report. Before you report, make sure that the cog is up to date.
   - type: dropdown
     id: Cog
     attributes:
       label: Cog
       description: What cog are you getting issue from?
       options:
-        - embeduptime
-        - onconnect
-        - veryfun
+        - away
+        - nospoiler
         - nekosbest
+        - tcgcard
+        - RolePlayCog
+        - whosthatpokemon
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: "What is the version of the cog?"
+      placeholder: e.g 0.4.5 (You find versions in [p]help <CogName>.)
     validations:
       required: true
   - type: input
@@ -26,16 +35,15 @@ body:
     attributes:
       label: Discord username
       description: Can you tell me your discord username so i can get in touch with you if i need more info?
-      placeholder: ex. discord#1234
+      placeholder: e.g discord#1234 (This is Optional)
     validations:
       required: false
   - type: textarea
     id: what-happened
     attributes:
       label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
-      value: "A bug happened but what exactly happened?"
+      description: Tell me, what did you expect to happen and what actually happened?
+      placeholder: Tell me what happened and what you expected to happen.
     validations:
       required: true
   - type: textarea

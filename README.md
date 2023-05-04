@@ -5,7 +5,7 @@
 
 `[p]` is your prefix.
 
-To add this repo: 
+To add this repo:
 
 ```yaml
 [p]repo add maxcogs https://github.com/ltzmax/maxcogs
@@ -17,36 +17,25 @@ To install any cog you want:
 [p]cog install maxcogs <cog name you want>
 ```
 ---------------------------------------------------------------
-## Cogs on this repo: 
-<table>
-<thead>
-<tr>
-<th>Cog name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>nekos</td>
-<td>Sending random nekos images. This is for you weebs. Powered with help of nekos.best api.</td>
-</tr>
-<td>embeduptime</td>
-<td>This will reply with your uptime of your bot, this is an embed version.</td>
-</tr>
-<td>veryfun</td>
-<td>Just any other fun roleplay cog where alot of those commands are. Powered with help of nekos.best api.</td>
-</tbody>
-</table>
+## Cogs on this repo: <br>
+| Cogs list | Description | Version | Author | Stable |
+|:---:|---|:---:|:---:|:---:|
+| Away | Set yourself as afk | 2.0.4 | ltzmax, dia ♡#0666, TheDiscordHistorian (kato#0666) | ✅ |
+| NoSpoiler | Prevent using spoiler messages | 0.2.20 | MAX | ✅ |
+| NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
+| Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
+| RolePlayCog | Roleplay cog to interact with other users. | 0.1.17| ltzmax | ✅ |
+| WhosThatPokemon | Guess whos that pokemon? | 1.2.0 | ltzmax, o-wo | ✅ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
 
-- [fixator10](https://github.com/fixator10) For help with coding at most parts.
+- [fixator10](https://github.com/fixator10) For helping doing alot of help.
 
-- [Preda](https://github.com/PredaaA/predacogs) For help alot more.
+- [Preda](https://github.com/PredaaA/predacogs) For help.
 
 ## Support
-- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogts or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
+- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogs or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
 
 ## License
-This repo is under (c) MIT License.
+This repo is under MIT LICENSE. Please see [`LICENSE file`](https://github.com/ltzmax/maxcogs/blob/master/LICENSE).

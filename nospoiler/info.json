@@ -1,0 +1,26 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "NoSpoiler",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any spoiler filter without setting up autoimmune.",
+    "description": "Disallow spoilers in your server.",
+    "short": "Disallow spoilers in your server.",
+    "hidden": false,
+    "min_bot_version": "3.5.0",
+    "tags": [
+        "spoiler",
+        "nospoiler"
+    ],
+    "permissions": [
+        "embed_links",
+        "manage_messages"
+    ],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}

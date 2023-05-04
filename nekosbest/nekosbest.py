@@ -26,7 +26,7 @@ import asyncio
 import aiohttp
 import discord
 from redbot.core import commands
-
+from redbot.core.utils.chat_formatting import box
 from .embed import api_call, embedgen
 
 
@@ -37,16 +37,17 @@ class NekosBest(commands.Cog):
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-    def cog_unload(self):
-        asyncio.create_task(self.session.close())
+    async def cog_unload(self):
+        await self.session.close()
 
-    __version__ = "0.1.18"
+    __version__ = "0.1.20"
     __author__ = "MAX"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nekosbest/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete."""
@@ -55,40 +56,34 @@ class NekosBest(commands.Cog):
     @commands.command(name="nekostversion", aliases=["nekosbestv"], hidden=True)
     async def nekosbest_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
-        if await ctx.embed_requested():
-            em = discord.Embed(
-                title="Cog Version:",
-                description=f"Author: {self.__author__}\nVersion: {self.__version__}",
-                colour=await ctx.embed_color(),
-            )
-            await ctx.send(embed=em)
-        else:
-            await ctx.send(
-                f"Cog Version: {self.__version__}\nAuthor: {self.__author__}"
-            )
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(
+            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        )
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def waifu(self, ctx):
         """Send a random waifu image."""
         url = await api_call(self, ctx, "waifu")
         await embedgen(self, ctx, url, "waifu")
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def nekos(self, ctx):
         """Send a random neko image."""
         url = await api_call(self, ctx, "neko")
         await embedgen(self, ctx, url, "nekos")
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx):
         """Send a random kitsune image."""
         url = await api_call(self, ctx, "kitsune")
         await embedgen(self, ctx, url, "kitsune")
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def husbando(self, ctx):
         """Send a random husbando image."""

@@ -1,21 +1,40 @@
-## PR is always welcome at anytime.
-
-- feel free to do bug fixes when you see something that aren't working or are missing.
+## PR infomation
+- Feel free to do bug fixes when you see something that aren't working or are missing.
+    - If you're unsure of how to do something, ask for help with the code you're trying to fix.
+    - If you're unable to ask for help with the issue you found in a source code, create an issue.
+- If you wanna do more than just bug fixes, i kindly ask you to talk with me on discord first. MAX#1000
+    - If you are unable to talk with me on discord, create an issue and we'll discuss it there.
+- If you have a good idea for a new feature, please create an issue or talk with me on discord.
+    - I do love new good ideas, but I'm not sure if I'll accept them or not therefore an issue or talk with me on discord first to see if this is something i can do.
 
 ## When you do PR's you need to remember two things:
 always use following:
-- black
-
-I will explain it simple and not a wall of text on how to install and use to make it easy, for question please ask me on discord MAX#1000.
+- Black
+- Isort
 
 ## How to use black?
+- Black are automatically fixed on pr by pre commits if you haven't done it yourself.
 
-it's simple first you need to install black:
-- `pip install black`
+- First you will have to install it
+```yaml
+[p]pip install black
+```
+- Then run
+```yaml
+black <source_file_or_directory>
+```
 
-When that is done you run:
+## How to use isort?
+- Isort are automatically fixed on pr by pre commits if you haven't done it yourself.
 
-- `black {source_file_or_directory}`
-
-
-Version `21.11b1` of black is what this repo is using.
+- First you will have to install it
+```yaml
+[p]pip install isort
+```
+- Then run
+```yaml
+isort <source_file_or_directory>
+```
+## Versions:
+- Version `22.10.0` of black.
+- Version `5.10.1` of isort.

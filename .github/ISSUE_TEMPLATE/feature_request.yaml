@@ -15,10 +15,12 @@ body:
       label: Cog
       description: What cog are you feature requesting to?
       options:
-        - embeduptime
-        - onconnect
-        - veryfun
+        - away
+        - nospoiler
         - nekosbest
+        - tcgcard
+        - RolePlayCog
+        - whosthatpokemon
     validations:
       required: true
   - type: input
@@ -26,15 +28,14 @@ body:
     attributes:
       label: Discord username
       description: Can you tell me your discord username so i can get in touch with you if i need more info?
-      placeholder: ex. discord#1234
+      placeholder: ex. discord#1234 (This is Optional)
     validations:
       required: false
   - type: textarea
     id: what-you-want
     attributes:
       label: What feature do you want?
-      description: Tell us, what do you want to see.
-      placeholder: Tell us what you see!
-      value: "I want to see a new feature but what exactly?"
+      description: Tell me, what do you want to see.
+      placeholder: I want to see a new feature but what exactly is the feature and what does it do?
     validations:
       required: true

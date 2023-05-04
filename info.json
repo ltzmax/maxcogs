@@ -1,14 +1,14 @@
 {
-    "author": ["MAX"],
+    "author": [
+        "MAX"
+    ],
     "name": "maxcogs",
     "short": "Cogs for Red-DiscordBot V3.",
     "description": "Cogs for Red-DiscordBot V3.",
-    "install_msg": "Thanks for installing my repo, Feel free to check the docs too <https://maxbooiii.gitbook.io/maxcogs/>. If you have to ask any questions ask them in Cog support discord.gg/GET4DVk in channel #support_othercogs.",
+    "install_msg": "Thanks for installing my repo. If you have to ask any questions ask them in Cog support discord.gg/GET4DVk in channel #support_othercogs.",
     "tags": [
-        "uptime",
-        "roleplay",
-        "neko",
-        "fun",
-        "stats"
+        "general",
+        "utility",
+        "fun"
     ]
 }

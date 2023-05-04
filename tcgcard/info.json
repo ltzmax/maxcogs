@@ -1,0 +1,20 @@
+{
+    "name": "Tcgcard",
+    "short": "Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game.",
+    "description": "Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game (a.k.a Pok\u00e9mon TCG)",
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
+    "install_msg": "Thanks for installing Pokebase cog. Hope you will find it useful.",
+    "author": [
+        "<@306810730055729152>",
+        "ltzmax (MAX#1000)"
+    ],
+    "tags": [
+        "pokemon",
+        "pokemontcg",
+        "tcgcard"
+    ],
+    "min_bot_version": "3.5.0",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG"
+}
