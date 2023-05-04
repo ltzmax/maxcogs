@@ -39,7 +39,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "0.2.20"
+    __version__ = "0.2.21"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
@@ -51,7 +51,7 @@ class NoSpoiler(commands.Cog):
             "enabled": False,
             "ignored_channels": [],
             "message_toggle": False,
-            "message": "You cannot send spoiler in this server.",
+            "message": [],
         }
         self.config.register_guild(**default_guild)
 
@@ -219,7 +219,7 @@ class NoSpoiler(commands.Cog):
         This is when spoiler message(s) is deleted, it will send a custom message telling users they're not allowed to.
         """
 
-    @_set.command(name="togglemessage")
+    @_set.command(name="togglemessage", aliases=["togglemsg"])
     async def _set_togglemessage(self, ctx):
         """Enable or disable the message to send when a user sends a spoiler message.
 
@@ -241,22 +241,16 @@ class NoSpoiler(commands.Cog):
         If no message is provided, the default message will be sent.
         If you want to disable the message, use `[p]nospoiler set togglemessage`.
         """
-        if len(message) > 1024:
+        if message is not None and len(message) > 1024:
             return await ctx.send("Message cannot be longer than 1024 characters.")
         if message is None:
-            await self.config.guild(ctx.guild).message.set(None)
+            await self.config.guild(ctx.guild).message.set(
+                "You cannot send spoiler in this server."
+            )
             await ctx.send("The message has been reset to default.")
         else:
             await self.config.guild(ctx.guild).message.set(message)
             await ctx.send("The message has been set.")
-
-    @_set.command(name="reset")
-    async def _set_reset(self, ctx):
-        """Reset spoiler message back to default"""
-        await self.config.guild(ctx.guild).message.set(
-            "You cannot send spoiler in this server."
-        )
-        await ctx.send("The message has been reset to default.")
 
     @nospoiler.command(aliases=["clear"])
     @commands.bot_has_permissions(embed_links=True)

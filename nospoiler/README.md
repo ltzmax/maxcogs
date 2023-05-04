@@ -69,14 +69,10 @@ Extended Arg Info
 > ```
 > Something like: hello you cant do this stuff
 > ```
-### nospoiler set reset (Hybrid Command)
- - Usage: `[p]nospoiler set reset `
- - Slash Usage: `/nospoiler set reset `
-
-Reset spoiler message back to default
 
 ### nospoiler set togglemessage (Hybrid Command)
  - Usage: `[p]nospoiler set togglemessage `
+  - Aliases: `togglemsg`
  - Slash Usage: `/nospoiler set togglemessage `
 
 Enable or disable the message to send when a user sends a spoiler message.<br/><br/>If the message is disabled, the bot will delete the spoiler message without sending a message.
