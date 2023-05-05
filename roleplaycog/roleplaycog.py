@@ -21,12 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import asyncio
 import logging
 
 import aiohttp
 import discord
-from redbot.core import commands
+from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_number, box
 
 from .core import ACTIONS, ICON, NEKOS
@@ -44,6 +43,15 @@ class RolePlayCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.config = Config.get_conf(
+            self, 0x345628097929936899, force_registration=True
+        )
+        default_global = {
+            "schema_version": 2,
+        }
+        default_user = {key: 0 for key in ACTIONS}
+        self.config.register_global(**default_global)
+        self.config.register_user(**default_user)
 
     async def cog_unload(self):
         await self.session.close()
@@ -65,12 +73,25 @@ class RolePlayCog(commands.Cog):
                 )
             data = await response.json()
 
+        # Removing "#" will cause KeyError so enjoy if you do that.
+        # If you want this to work, feel free to pr. i have absolutely no idea how to fix this.
+        # if have tried everything i can think of and it still wont work. so i just leave it like this.
+        #    .______      ___       __  .__   __.
+        #    |   _  \    /   \     |  | |  \ |  |
+        #    |  |_)  |  /  ^  \    |  | |   \|  |
+        #    |   ___/  /  /_\  \   |  | |  . `  |
+        #    |  |     /  _____  \  |  | |  |\   |
+        #    | _|    /__/     \__\ |__| |__| \__|
+        async with self.config.user(ctx.author).all() as config:
+            config[action] += 1
+
         action_fmt = ACTIONS.get(action, action)
         anime_name = data["results"][0]["anime_name"]
         emb = discord.Embed(
             colour=await ctx.embed_color(),
             description=(
                 f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member else 'themselves!'}\n"
+                f"Received {action} count: {humanize_number(config[action])}"
             ),
         )
         emb.set_footer(

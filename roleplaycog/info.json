@@ -7,7 +7,7 @@
     "description": "Roleplay cog with alot of fun to have with your members. This is with help of nekos.best.",
     "short": "Roleplay cog. With help of nekos.best.",
     "hidden": false,
-    "min_bot_version": "3.5.0",
+    "min_bot_version": "3.4.19",
     "tags": [
         "roleplay"
     ],
