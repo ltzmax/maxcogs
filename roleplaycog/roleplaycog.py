@@ -24,8 +24,6 @@ SOFTWARE.
 import asyncio
 import logging
 
-# from collections import Counter
-
 import aiohttp
 import discord
 from redbot.core import commands
@@ -46,10 +44,6 @@ class RolePlayCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        # self.config = Config.get_conf(
-        #    self, 0x345628097929936899, force_registration=True
-        # )
-        # self.config.register_user(counter=Counter())
 
     async def cog_unload(self):
         await self.session.close()
@@ -71,25 +65,12 @@ class RolePlayCog(commands.Cog):
                 )
             data = await response.json()
 
-        # Removing "#" will cause KeyError so enjoy if you do that.
-        # If you want this to work, feel free to pr. i have absolutely no idea how to fix this.
-        # if have tried everything i can think of and it still wont work. so i just leave it like this.
-        #    .______      ___       __  .__   __.
-        #    |   _  \    /   \     |  | |  \ |  |
-        #    |  |_)  |  /  ^  \    |  | |   \|  |
-        #    |   ___/  /  /_\  \   |  | |  . `  |
-        #    |  |     /  _____  \  |  | |  |\   |
-        #    | _|    /__/     \__\ |__| |__| \__|
-        # async with self.config.member(member or ctx.author).all() as config:
-        #    config["counter"][action] += 1
-
         action_fmt = ACTIONS.get(action, action)
         anime_name = data["results"][0]["anime_name"]
         emb = discord.Embed(
             colour=await ctx.embed_color(),
             description=(
                 f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member else 'themselves!'}\n"
-                #        f"Received {action} count: {humanize_number(config['counter'][action])}"
             ),
         )
         emb.set_footer(
