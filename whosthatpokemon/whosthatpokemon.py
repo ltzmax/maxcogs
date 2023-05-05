@@ -112,6 +112,16 @@ class WhosThatPokemon(commands.Cog):
     @app_commands.describe(
         generation=("Optionally choose generation from gen1 to gen8.")
     )
+    @app_commands.choices(generation=[
+        app_commands.Choice(name="Generation 1", value="gen1"),
+        app_commands.Choice(name="Generation 2", value="gen2"),
+        app_commands.Choice(name="Generation 3", value="gen3"),
+        app_commands.Choice(name="Generation 4", value="gen4"),
+        app_commands.Choice(name="Generation 5", value="gen5"),
+        app_commands.Choice(name="Generation 6", value="gen6"),
+        app_commands.Choice(name="Generation 7", value="gen7"),
+        app_commands.Choice(name="Generation 8", value="gen8"),
+    ])
     @commands.cooldown(1, 30, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
