@@ -73,15 +73,6 @@ class RolePlayCog(commands.Cog):
                 )
             data = await response.json()
 
-        # Removing "#" will cause KeyError so enjoy if you do that.
-        # If you want this to work, feel free to pr. i have absolutely no idea how to fix this.
-        # if have tried everything i can think of and it still wont work. so i just leave it like this.
-        #    .______      ___       __  .__   __.
-        #    |   _  \    /   \     |  | |  \ |  |
-        #    |  |_)  |  /  ^  \    |  | |   \|  |
-        #    |   ___/  /  /_\  \   |  | |  . `  |
-        #    |  |     /  _____  \  |  | |  |\   |
-        #    | _|    /__/     \__\ |__| |__| \__|
         async with self.config.user(ctx.author).all() as config:
             config[action] += 1
 
