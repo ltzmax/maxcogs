@@ -269,7 +269,7 @@ class NoSpoiler(commands.Cog):
             message_toggle = "Disabled"
 
         await ctx.send(
-            f"`{'Enabled':<16}`: {enabled}\n`{'Ignored channels':<12}`: {ignored_channels}\n`{'Toggle message':<16}`: {message_toggle}\n`{'Message':<16}`: {message}"
+            f"`{'Enabled':<16}`: {enabled}\n`{'Toggle message':<16}`: {message_toggle}\n`{'Message':<16}`: {message}"
         )
 
     @nospoiler.command(with_app_command=False)
