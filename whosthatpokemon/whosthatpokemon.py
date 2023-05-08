@@ -22,6 +22,51 @@ from .converter import Generation
 
 API_URL = "https://pokeapi.co/api/v2"
 
+# All credited to flame for doing the view and modal.
+# https://discord.com/channels/133049272517001216/133251234164375552/1104515319604723762
+class WhosPokemonModal(discord.ui.Modal, title='Whos That Pokemon?'):
+    poke = discord.ui.TextInput(
+        label='Pokemon',
+        placeholder='Enter the pokemon here...',
+        max_length="30",
+        required=True,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.send_message(
+            f"You guessed {self.poke.value}!",
+            ephemeral=True,
+        )
+
+class GuessButton(discord.ui.View):
+    def __init__(self, eligible_names, timeout: float = 30.0):
+        super().__init__(timeout=timeout)
+        self.eligible_names = eligible_names
+        self.winner = None
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item.disabled = True
+        await self.message.edit(view=self)
+
+    async def disable_items(self, interaction: discord.Interaction):
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
+    async def guess(self, interaction, button):
+        modal = WhosPokemonModal()
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+        if modal.poke.value.casefold() in self.eligible_names and self.winner is None:
+            self.winner = interaction.user
+            self.stop()
+            button.disabled = True
+            await interaction.response.edit_message(view=self)
+
+    async def on_error(self, interaction, error, item):
+        await ctx.send(error)
 
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
@@ -124,7 +169,7 @@ class WhosThatPokemon(commands.Cog):
             app_commands.Choice(name="Generation 8", value="gen8"),
         ]
     )
-    @commands.cooldown(1, 30, commands.BucketType.user)
+    @commands.cooldown(1, 40, commands.BucketType.user)
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     async def whosthatpokemon(
@@ -146,7 +191,6 @@ class WhosThatPokemon(commands.Cog):
         """
         await ctx.typing()
         poke_id = generation or randint(1, 898)
-        if_guessed_right = False
 
         temp = await self.generate_image(f"{poke_id:>03}", hide=True)
         if temp is None:
@@ -157,11 +201,6 @@ class WhosThatPokemon(commands.Cog):
         img_timeout = discord.utils.format_dt(
             datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
         )
-        inital_img = await ctx.send(
-            f"This will timeout {img_timeout}. Who's that Pokémon?",
-            file=File(temp, "guessthatpokemon.png"),
-        )
-        message = await ctx.send("You have **3**/3 attempts left to guess it right.")
         species_data = await self.get_data(f"{API_URL}/pokemon-species/{poke_id}")
         if species_data.get("http_code"):
             return await ctx.send("Failed to get species data from PokeAPI.")
@@ -171,56 +210,25 @@ class WhosThatPokemon(commands.Cog):
             0
         ]
 
-        def check(msg: discord.Message) -> bool:
-            return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
-
         revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
         revealed_img = File(revealed, "whosthatpokemon.png")
 
-        attempts = 0
-        while attempts != 3:
-            try:
-                guess = await ctx.bot.wait_for("message", timeout=30.0, check=check)
-            except asyncio.TimeoutError:
-                attempts = 3
-                with suppress(discord.NotFound, discord.HTTPException):
-                    await inital_img.delete()
-                    await message.delete()
-                return await ctx.send(
-                    f"Time over, **{ctx.author}**! You could not guess the Pokémon in 30 seconds."
-                )
+        view = GuessButton(eligible_names)
 
-            if guess.content.lower() in eligible_names:
-                attempts = 3
-                if_guessed_right = True
-                with suppress(discord.NotFound, discord.HTTPException):
-                    await inital_img.delete()
-                    await message.delete()
-            else:
-                attempts += 1
-                if_guessed_right = False
-                to_send = (
-                    f"❌ Your guess is wrong! **{3 - attempts}**/3 attempts remaining."
-                )
-                try:
-                    await message.edit(content=to_send)
-                except (discord.NotFound, discord.HTTPException):
-                    await ctx.send(to_send)
+        view.message = await ctx.send(
+            f"**Who's that Pokémon?**\nThis will timeout {img_timeout}.",
+            file=File(temp, "guessthatpokemon.png"), view=view,
+        )
 
-            if attempts == 3:
-                with suppress(discord.NotFound, discord.HTTPException):
-                    await inital_img.delete()
-                    await message.delete()
-                emb = discord.Embed(description=f"It was ... **{english_name}**")
-                if if_guessed_right:
-                    emb.title = "🎉 You guessed it right!! 🎉"
-                    emb.colour = 0x00FF00
-                else:
-                    emb.title = "You took too many attempts! 😔 😮\u200d💨"
-                    emb.colour = 0xFF0000
-                emb.set_image(url="attachment://whosthatpokemon.png")
-                emb.set_footer(
-                    text=f"Requested by {ctx.author}",
-                    icon_url=ctx.author.display_avatar.url,
-                )
-                await ctx.send(embed=emb, file=revealed_img)
+        emb = discord.Embed(description=f"It was ... **{english_name}**")
+        emb.title = "🎉 You guessed it right!! 🎉"
+        emb.colour = 0x00FF00
+        emb.set_image(url="attachment://whosthatpokemon.png")
+        emb.set_footer(
+            text=f"Requested by {ctx.author}",
+            icon_url=ctx.author.display_avatar.url,
+        )
+        timeout = await view.wait()
+        if timeout:
+            return await ctx.send(f"This has timedout, it was... **{english_name}**", file=revealed_img, view=None)
+        await ctx.send(embed=emb, file=revealed_img)
