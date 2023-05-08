@@ -256,10 +256,7 @@ class NoSpoiler(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(2, 120, commands.BucketType.guild)
     async def reset(self, ctx):
-        """Reset all settings back to default.
-
-        This will disable the spoiler filter and remove all ignored channels.
-        """
+        """Reset all settings back to default."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         ignored_channels = config["ignored_channels"]

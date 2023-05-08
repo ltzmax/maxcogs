@@ -44,7 +44,7 @@ Extended Arg Info
  - Aliases: `clear`
  - Cooldown: `2 per 120.0 seconds`
 
-Reset all settings back to default.<br/><br/>This will disable the spoiler filter and remove all ignored channels.
+Reset all settings back to default.
 
 ## nospoiler version (Hybrid Command)
  - Usage: `[p]nospoiler version `
