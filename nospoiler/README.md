@@ -1,7 +1,3 @@
-# INFORMATION
-
-This cog relies on red's `[p]autoimmune` command from core, to ignore a role or and a user, please do use that command from core. I will not make a copy of core's immune command for this cog as it already exist in core to make it much easier for moderation purposes as this cog is to moderate away spoilered messages / spoilered images.
-
 # NoSpoiler Help
 
 No spoiler in this server.
@@ -27,6 +23,21 @@ Show the settings.
 
 Toggle the spoiler filter on or off.<br/><br/>Spoiler filter is disabled by default.
 
+## nospoiler ignorechannel (Hybrid Command)
+ - Usage: `[p]nospoiler ignorechannel <channel> `
+ - Slash Usage: `/nospoiler ignorechannel <channel> `
+
+Add or remove ignore a channel from the spoiler filter.<br/><br/>If a channel is ignored, spoiler messages will not be deleted.<br/>Note: you cannot ignore a voice chat channel.
+
+Extended Arg Info
+> ### channel: Union[discord.channel.TextChannel, discord.threads.Thread, discord.channel.ForumChannel]
+>
+>
+>     1. Lookup by ID.
+>     2. Lookup by mention.
+>     3. Lookup by name
+>
+>
 ## nospoiler reset (Hybrid Command)
  - Usage: `[p]nospoiler reset `
  - Slash Usage: `/nospoiler reset `
