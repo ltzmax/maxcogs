@@ -158,7 +158,7 @@ class WhosThatPokemon(commands.Cog):
             datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
         )
         inital_img = await ctx.send(
-            f"This will timeout {img_timeout}. Who's that Pokémon?",
+            f"**Who's that Pokémon?**\nThis will timeout {img_timeout}.",
             file=File(temp, "guessthatpokemon.png"),
         )
         message = await ctx.send("You have **3**/3 attempts left to guess it right.")
