@@ -23,11 +23,9 @@ SOFTWARE.
 """
 import discord
 import re
-import asyncio
 import logging
 from typing import Union
 
-from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.chat_formatting import box
 from redbot.core import Config, commands, app_commands
 
@@ -40,7 +38,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "0.2.22"
+    __version__ = "0.2.23"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
@@ -173,15 +171,8 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(guild).enabled.set(True)
             await ctx.send("Spoiler filter is now enabled.")
 
-    @nospoiler.group(name="set")
-    async def _set(self, ctx):
-        """Settings to manage custom messages sent.
-
-        This is when spoiler message(s) is deleted, it will send a custom message telling users they're not allowed to.
-        """
-
-    @_set.command(name="togglemessage", aliases=["togglemsg"])
-    async def _set_togglemessage(self, ctx):
+    @nospoiler.command(aliases=["togglemsg"])
+    async def togglemessage(self, ctx):
         """Enable or disable the message to send when a user sends a spoiler message.
 
         If the message is disabled, the bot will delete the spoiler message without sending a message.
@@ -195,7 +186,7 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(guild).message_toggle.set(True)
             await ctx.send("Message is now enabled.")
 
-    @_set.command(name="message")
+    @nospoiler.command(name="message")
     async def _set_message(self, ctx, *, message: str = None):
         """Set the message to send when a user sends a spoiler message.
 
@@ -213,62 +204,7 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).message.set(message)
             await ctx.send("The message has been set.")
 
-    @nospoiler.command(aliases=["clear"])
-    @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(2, 120, commands.BucketType.guild)
-    async def reset(self, ctx):
-        """Reset all settings back to default."""
-        config = await self.config.guild(ctx.guild).all()
-        enabled = config["enabled"]
-        togglemessage = config["message_toggle"]
-        # if all settings are already default, return.
-        # this is to prevent clearing the config if no settings are set.
-        if not enabled and not togglemessage:
-            embed = discord.Embed(
-                title="There are no settings to reset.",
-                colour=discord.Colour.red(),
-            )
-            return await ctx.send(embed=embed, ephemeral=True)
-
-        msg = (
-            "This will reset all settings back to default.\n"
-            "Type `yes` to confirm, Type `no` to cancel."
-        )
-        embed = discord.Embed(
-            title="Are you sure you want to reset all settings?",
-            description=msg,
-            colour=discord.Colour.red(),
-        )
-        embed.set_footer(text="This will time out in 30 seconds.")
-        await ctx.send(embed=embed)
-        try:
-            predicate = MessagePredicate.yes_or_no(ctx, user=ctx.author)
-            msg = await ctx.bot.wait_for("message", check=predicate, timeout=30)
-        except asyncio.TimeoutError:
-            embed = discord.Embed(
-                title="Reset settings timed out.",
-                description="You have taken too long to respond.",
-                colour=discord.Colour.red(),
-            )
-            return await ctx.send(embed=embed)
-        if predicate.result:
-            await self.config.guild(ctx.guild).clear()
-            embed = discord.Embed(
-                title="Settings have been reset.",
-                colour=discord.Colour.green(),
-            )
-            await ctx.send(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="Settings have not been reset.",
-                description="You have chosen not to reset the settings.",
-                colour=discord.Colour.red(),
-            )
-            await ctx.send(embed=embed)
-
-    @nospoiler.command(
-        aliases=["view", "views", "setting", "showsettings", "showsetting"]
-    )
+    @nospoiler.command(aliases=["view", "views"])
     async def settings(self, ctx):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
