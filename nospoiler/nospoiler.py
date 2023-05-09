@@ -186,8 +186,11 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(guild).message_toggle.set(True)
             await ctx.send("Message is now enabled.")
 
-    @nospoiler.command(name="message")
-    async def _set_message(self, ctx, *, message: str = None):
+    @nospoiler.command(aliases=["msg"])
+    @app_commands.describe(
+        message="Set the message to send when a user sends a spoiler message."
+    )
+    async def message(self, ctx, *, message: str = None):
         """Set the message to send when a user sends a spoiler message.
 
         If no message is provided, the default message will be sent.
