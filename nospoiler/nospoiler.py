@@ -26,9 +26,9 @@ import re
 import logging
 from typing import Union
 
+from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.chat_formatting import box
 from redbot.core import Config, commands, app_commands
-from .views import ResetSpoilerFilterConfirm
 
 SPOILER_REGEX = re.compile(r"(?s)\|\|(.+?)\|\|")
 
@@ -228,27 +228,42 @@ class NoSpoiler(commands.Cog):
                 colour=discord.Colour.red(),
             )
             return await ctx.send(embed=embed, ephemeral=True)
+
+        msg = (
+            "This will reset all settings back to default.\n"
+            "Type `yes` to confirm, Type `no` to cancel."
+        )
         embed = discord.Embed(
-            title="Are you sure you want to reset?",
-            description="This will reset all settings back to default.",
+            title="Are you sure you want to reset all settings?",
+            description=msg,
             colour=discord.Colour.red(),
         )
-        view = ResetSpoilerFilterConfirm(ctx)
-        view.message = await ctx.send(embed=embed, view=view)
-        await view.wait()
-        if view.value is True:
-            await self.config.guild(ctx.guild).clear()
+        embed.set_footer(text="This will time out in 30 seconds.")
+        await ctx.send(embed=embed)
+        try:
+            predicate = MessagePredicate.yes_or_no(ctx, user=ctx.author)
+            msg = await ctx.bot.wait_for("message", check=predicate, timeout=30)
+        except asyncio.TimeoutError:
             embed = discord.Embed(
-                title="Spoiler filter settings have been reset.",
-                colour=discord.Colour.green(),
-            )
-            await view.message.edit(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="Alright. I will not reset.",
+                title="Reset settings timed out.",
+                description="You have taken too long to respond.",
                 colour=discord.Colour.red(),
             )
-            await view.message.edit(embed=embed)
+            return await ctx.send(embed=embed)
+        if predicate.result:
+            await self.config.guild(ctx.guild).clear()
+            embed = discord.Embed(
+                title="Settings have been reset.",
+                colour=discord.Colour.green(),
+            )
+            await ctx.send(embed=embed)
+        else:
+            embed = discord.Embed(
+                title="Settings have not been reset.",
+                description="You have chosen not to reset the settings.",
+                colour=discord.Colour.red(),
+            )
+            await ctx.send(embed=embed)
 
     @nospoiler.command(
         aliases=["view", "views", "setting", "showsettings", "showsetting"]
