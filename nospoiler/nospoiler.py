@@ -23,6 +23,7 @@ SOFTWARE.
 """
 import discord
 import re
+import asyncio
 import logging
 from typing import Union
 
@@ -39,7 +40,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "0.2.21"
+    __version__ = "0.2.22"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
