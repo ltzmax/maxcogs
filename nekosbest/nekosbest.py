@@ -74,7 +74,7 @@ class NekosBest(commands.Cog):
     async def nekos(self, ctx):
         """Send a random neko image."""
         url = await api_call(self, ctx, "neko")
-        await embedgen(self, ctx, url, "nekos")
+        await embedgen(self, ctx, url, "neko")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
