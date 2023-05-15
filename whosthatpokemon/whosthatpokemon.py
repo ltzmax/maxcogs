@@ -2,7 +2,6 @@
 # This cog was created by owocado and is now continued by ltzmax.
 # This cog was transfered via a pr from the author of the code https://github.com/ltzmax/maxcogs/pull/46
 import asyncio
-from contextlib import suppress
 from io import BytesIO
 from random import randint
 from typing import List, Optional
@@ -14,7 +13,6 @@ from discord import File
 from PIL import Image
 from redbot.core import commands, app_commands
 from redbot.core.bot import Red
-from redbot.core.commands import Context
 from redbot.core.utils.chat_formatting import box
 from redbot.core.data_manager import bundled_data_path
 
@@ -129,7 +127,7 @@ class WhosThatPokemon(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     async def whosthatpokemon(
-        self, ctx: Context, generation: Optional[Generation] = None
+        self, ctx: commands.Context, generation: Optional[Generation] = None
     ):
         """Guess Who's that Pokémon in 30 seconds!
 
