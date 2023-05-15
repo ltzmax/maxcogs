@@ -20,6 +20,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
+| AutoPublisyher | Automatically push news channel messages. | 0.1.0 | ltzmax | ✅ |
 | Away | Set yourself as afk | 2.0.4 | ltzmax, dia ♡#0666, TheDiscordHistorian (kato#0666) | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 0.2.23 | MAX | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
