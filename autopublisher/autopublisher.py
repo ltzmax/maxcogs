@@ -68,7 +68,6 @@ class AutoPublisher(commands.Cog):
     @commands.group(aliases=["aph"])
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
-    @commands.bot_has_permissions(manage_messages=True)
     async def autopublisher(self, ctx):
         """Manage AutoPublisher setting."""
 
@@ -87,11 +86,11 @@ class AutoPublisher(commands.Cog):
                 "This server doesn't have News Channel feature to use this cog."
             )
         if (
-            not ctx.bot_permissions.manage_messages
-            and not ctx.bot_permissions.view_channel
+            not guild.me.guild_permissions.manage_messages
+            or not guild.me.guild_permissions.view_channel
         ):
             return await ctx.send(
-                "I don't have permissions to `manage_messages` or `view_channel` to toggle autopublisher."
+                "I don't have `manage_messages` or `view_channel` permission to use this cog."
             )
         await self.config.guild(ctx.guild).toggle.set(toggle)
         if toggle:
