@@ -25,7 +25,7 @@ API_URL = "https://pokeapi.co/api/v2"
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __author__ = "<@306810730055729152>", "MAX#1000"
+    __author__ = "<@306810730055729152>", "MAX#1000, Flame (Flame#2941)"
     __version__ = "1.2.1"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
 
