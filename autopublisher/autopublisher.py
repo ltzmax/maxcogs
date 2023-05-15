@@ -21,7 +21,7 @@ class AutoPublisher(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
-    __version__ = "0.1.1"
+    __version__ = "0.1.2"
     __author__ = "MAX"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
 
@@ -36,6 +36,7 @@ class AutoPublisher(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
+        guild = message.guild
         if message.guild is None:
             return
         if not await self.config.guild(message.guild).toggle():
@@ -50,6 +51,13 @@ class AutoPublisher(commands.Cog):
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
                     f"AutoPublisher has been disabled in {message.guild.name} ({message.guild.id}) due to missing permissions."
+                )
+            return
+        if "NEWS" not in guild.features:
+            if await self.config.guild(message.guild).toggle():
+                await self.config.guild(message.guild).toggle.set(False)
+                log.info(
+                    "I have disabled autopublisher since the server doesn't have community server feature enabled anymore."
                 )
             return
         if not message.channel.is_news():
@@ -76,7 +84,7 @@ class AutoPublisher(commands.Cog):
     @autopublisher.command()
     async def toggle(self, ctx: commands.Context, toggle: bool):
         """Toggle AutoPublisher enable or disable.
-        
+
         There is a 3 secoud delay on each messages you post in a news channel to be sent to the channel’s users are following.
 
         It's disabled by default.
@@ -86,9 +94,10 @@ class AutoPublisher(commands.Cog):
         Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
         """
         guild = ctx.guild
-        if guild.features is None or "NEWS" not in guild.features:
+        if "NEWS" not in guild.features:
             return await ctx.send(
-                "This server doesn't have News Channel feature to use this cog."
+                "This server doesn't have News Channel feature to use this cog. "
+                "Learn more here on how to enable:\n<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
             )
         if (
             not guild.me.guild_permissions.manage_messages
