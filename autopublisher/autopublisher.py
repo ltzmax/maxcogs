@@ -3,6 +3,7 @@ import logging
 import asyncio
 
 from redbot.core import commands, Config
+from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.autopublisher")
 
@@ -98,3 +99,12 @@ class AutoPublisher(commands.Cog):
             color=0xE91E63,
         )
         await ctx.send(embed=embed)
+
+    @autopublisher.command()
+    async def version(self, ctx):
+        """Shows the version of the cog."""
+        version = self.__version__
+        author = self.__author__
+        await ctx.send(
+            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        )
