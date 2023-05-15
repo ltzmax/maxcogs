@@ -52,7 +52,7 @@ class AutoPublisher(commands.Cog):
                     f"AutoPublisher has been disabled in {message.guild.name} ({message.guild.id}) due to missing permissions."
                 )
             return
-        if getattr(message.channel, "is_news", None) is None:
+        if not message.channel.is_news():
             return
         if message.channel.is_news():
             try:
