@@ -56,12 +56,13 @@ class AutoPublisher(commands.Cog):
             return
         if message.channel.is_news():
             try:
-                await asyncio.sleep(3) # delay it 3 seconds to publish.
+                await asyncio.sleep(3)  # delay it 3 seconds to publish.
                 await asyncio.wait_for(message.publish(), timeout=60)
-                log.info(
-                    f"Published message {message.id} in {message.guild.name} ({message.guild.id}) #{message.channel.name} ({message.channel.id})"
-                )
-            except (discord.HTTPException, discord.Forbidden, asyncio.TimeoutError) as e:
+            except (
+                discord.HTTPException,
+                discord.Forbidden,
+                asyncio.TimeoutError,
+            ) as e:
                 log.error(
                     f"Failed to publish message {message.channel.name} in {message.guild.name}: {e}"
                 )
