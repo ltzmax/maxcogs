@@ -18,6 +18,7 @@ from redbot.core.commands import Context
 from redbot.core.utils.chat_formatting import box
 from redbot.core.data_manager import bundled_data_path
 
+from .view import WhosThatPokemonView
 from .converter import Generation
 
 API_URL = "https://pokeapi.co/api/v2"
@@ -157,11 +158,6 @@ class WhosThatPokemon(commands.Cog):
         img_timeout = discord.utils.format_dt(
             datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
         )
-        inital_img = await ctx.send(
-            f"**Who's that Pokémon?**\nThis will timeout {img_timeout}.",
-            file=File(temp, "guessthatpokemon.png"),
-        )
-        message = await ctx.send("You have **3**/3 attempts left to guess it right.")
         species_data = await self.get_data(f"{API_URL}/pokemon-species/{poke_id}")
         if species_data.get("http_code"):
             return await ctx.send("Failed to get species data from PokeAPI.")
@@ -171,56 +167,27 @@ class WhosThatPokemon(commands.Cog):
             0
         ]
 
-        def check(msg: discord.Message) -> bool:
-            return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
-
         revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
         revealed_img = File(revealed, "whosthatpokemon.png")
 
-        attempts = 0
-        while attempts != 3:
-            try:
-                guess = await ctx.bot.wait_for("message", timeout=30.0, check=check)
-            except asyncio.TimeoutError:
-                attempts = 3
-                with suppress(discord.NotFound, discord.HTTPException):
-                    await inital_img.delete()
-                    await message.delete()
-                return await ctx.send(
-                    f"Time over, **{ctx.author}**! You could not guess the Pokémon in 30 seconds."
-                )
+        view = WhosThatPokemonView(eligible_names)
+        view.message = await ctx.send(
+            f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}.",
+            file=File(temp, "guessthatpokemon.png"), view=view
+        )
 
-            if guess.content.lower() in eligible_names:
-                attempts = 3
-                if_guessed_right = True
-                with suppress(discord.NotFound, discord.HTTPException):
-                    await inital_img.delete()
-                    await message.delete()
-            else:
-                attempts += 1
-                if_guessed_right = False
-                to_send = (
-                    f"❌ Your guess is wrong! **{3 - attempts}**/3 attempts remaining."
-                )
-                try:
-                    await message.edit(content=to_send)
-                except (discord.NotFound, discord.HTTPException):
-                    await ctx.send(to_send)
-
-            if attempts == 3:
-                with suppress(discord.NotFound, discord.HTTPException):
-                    await inital_img.delete()
-                    await message.delete()
-                emb = discord.Embed(description=f"It was ... **{english_name}**")
-                if if_guessed_right:
-                    emb.title = "🎉 You guessed it right!! 🎉"
-                    emb.colour = 0x00FF00
-                else:
-                    emb.title = "You took too many attempts! 😔 😮\u200d💨"
-                    emb.colour = 0xFF0000
-                emb.set_image(url="attachment://whosthatpokemon.png")
-                emb.set_footer(
-                    text=f"Requested by {ctx.author}",
-                    icon_url=ctx.author.display_avatar.url,
-                )
-                await ctx.send(embed=emb, file=revealed_img)
+        embed = discord.Embed(
+            title=":tada: You got it right! :tada:",
+            description=f"The Pokemon was... **{english_name}**.",
+            color=await ctx.embed_color(),
+        )
+        embed.set_image(url="attachment://whosthatpokemon.png")
+        embed.set_footer(text=f"Author: {ctx.author}", icon_url=ctx.author.avatar.url)
+        # because we want it to timeout and not tell the user that they got it right.
+        # This is probably not the best way to do it, but it works perfectly fine.
+        timeout = await view.wait()
+        if timeout:
+            return await ctx.send(
+                f"{ctx.author.mention} Time's up! You could not guess the pokemon in right time.",
+            )
+        await ctx.send(file=revealed_img, embed=embed)
