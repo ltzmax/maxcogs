@@ -28,7 +28,6 @@ from typing import Union
 
 from redbot.core.utils.chat_formatting import box
 from redbot.core import Config, commands, app_commands
-from .views import ResetSpoilerFilterConfirm
 
 SPOILER_REGEX = re.compile(r"(?s)\|\|(.+?)\|\|")
 
@@ -39,7 +38,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "0.2.21"
+    __version__ = "0.2.23"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
@@ -172,15 +171,8 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(guild).enabled.set(True)
             await ctx.send("Spoiler filter is now enabled.")
 
-    @nospoiler.group(name="set")
-    async def _set(self, ctx):
-        """Settings to manage custom messages sent.
-
-        This is when spoiler message(s) is deleted, it will send a custom message telling users they're not allowed to.
-        """
-
-    @_set.command(name="togglemessage", aliases=["togglemsg"])
-    async def _set_togglemessage(self, ctx):
+    @nospoiler.command(aliases=["togglemsg"])
+    async def togglemessage(self, ctx):
         """Enable or disable the message to send when a user sends a spoiler message.
 
         If the message is disabled, the bot will delete the spoiler message without sending a message.
@@ -194,8 +186,11 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(guild).message_toggle.set(True)
             await ctx.send("Message is now enabled.")
 
-    @_set.command(name="message")
-    async def _set_message(self, ctx, *, message: str = None):
+    @nospoiler.command(aliases=["msg"])
+    @app_commands.describe(
+        message="Set the message to send when a user sends a spoiler message."
+    )
+    async def message(self, ctx, *, message: str = None):
         """Set the message to send when a user sends a spoiler message.
 
         If no message is provided, the default message will be sent.
@@ -212,47 +207,7 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).message.set(message)
             await ctx.send("The message has been set.")
 
-    @nospoiler.command(aliases=["clear"])
-    @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(2, 120, commands.BucketType.guild)
-    async def reset(self, ctx):
-        """Reset all settings back to default."""
-        config = await self.config.guild(ctx.guild).all()
-        enabled = config["enabled"]
-        togglemessage = config["message_toggle"]
-        # if all settings are already default, return.
-        # this is to prevent clearing the config if no settings are set.
-        if not enabled and not togglemessage:
-            embed = discord.Embed(
-                title="There are no settings to reset.",
-                colour=discord.Colour.red(),
-            )
-            return await ctx.send(embed=embed, ephemeral=True)
-        embed = discord.Embed(
-            title="Are you sure you want to reset?",
-            description="This will reset all settings back to default.",
-            colour=discord.Colour.red(),
-        )
-        view = ResetSpoilerFilterConfirm(ctx)
-        view.message = await ctx.send(embed=embed, view=view)
-        await view.wait()
-        if view.value is True:
-            await self.config.guild(ctx.guild).clear()
-            embed = discord.Embed(
-                title="Spoiler filter settings have been reset.",
-                colour=discord.Colour.green(),
-            )
-            await view.message.edit(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="Alright. I will not reset.",
-                colour=discord.Colour.red(),
-            )
-            await view.message.edit(embed=embed)
-
-    @nospoiler.command(
-        aliases=["view", "views", "setting", "showsettings", "showsetting"]
-    )
+    @nospoiler.command(aliases=["view", "views"])
     async def settings(self, ctx):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
