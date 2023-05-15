@@ -80,7 +80,7 @@ class AutoPublisher(commands.Cog):
         It's disabled by default.
 
         Note: This cog requires News Channel. If you don't have it, you can't use this cog.
-        Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server).
+        Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
         """
         guild = ctx.guild
         if guild.features is None or "NEWS" not in guild.features:
