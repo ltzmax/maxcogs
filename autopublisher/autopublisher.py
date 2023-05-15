@@ -35,7 +35,7 @@ class AutoPublisher(commands.Cog):
         return
 
     @commands.Cog.listener()
-    async def on_message_without_command(self, message):
+    async def on_message_without_command(self, message: discord.Message):
         if message.guild is None:
             return
         if not await self.config.guild(message.guild).toggle():
