@@ -21,7 +21,7 @@ class AutoPublisher(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
-    __version__ = "0.1.0"
+    __version__ = "0.1.1"
     __author__ = "MAX"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
 
@@ -42,10 +42,13 @@ class AutoPublisher(commands.Cog):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
-        if not message.guild.me.guild_permissions.manage_messages:
+        if (
+            not message.guild.me.guild_permissions.manage_messages
+            or not message.guild.me.guild_permissions.view_channel
+        ):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                log.error(
+                log.info(
                     f"AutoPublisher has been disabled in {message.guild.name} ({message.guild.id}) due to missing permissions."
                 )
             return
@@ -82,6 +85,13 @@ class AutoPublisher(commands.Cog):
         if guild.features is None or "NEWS" not in guild.features:
             return await ctx.send(
                 "This server doesn't have News Channel feature to use this cog."
+            )
+        if (
+            not ctx.bot_permissions.manage_messages
+            and not ctx.bot_permissions.view_channel
+        ):
+            return await ctx.send(
+                "I don't have permissions to `manage_messages` or `view_channel` to toggle autopublisher."
             )
         await self.config.guild(ctx.guild).toggle.set(toggle)
         if toggle:
