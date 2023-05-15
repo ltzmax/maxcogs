@@ -68,7 +68,6 @@ class AutoPublisher(commands.Cog):
     @commands.group(aliases=["aph"])
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
-    @commands.bot_has_permissions(manage_messages=True)
     async def autopublisher(self, ctx):
         """Manage AutoPublisher setting."""
 
