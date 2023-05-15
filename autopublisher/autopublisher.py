@@ -76,8 +76,11 @@ class AutoPublisher(commands.Cog):
     @autopublisher.command()
     async def toggle(self, ctx: commands.Context, toggle: bool):
         """Toggle AutoPublisher enable or disable.
+        
+        There is a 3 secoud delay on each messages you post in a news channel to be sent to the channel’s users are following.
 
         It's disabled by default.
+        Please ensure that the bot has access to `view_channel` in your news channels. it also need `manage_messages` to be able to publish.
 
         Note: This cog requires News Channel. If you don't have it, you can't use this cog.
         Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
