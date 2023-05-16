@@ -208,7 +208,7 @@ class WhosThatPokemon(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def whosthatpokemon_leaderboard(self, ctx: commands.Context):
         """Shows the leaderboard for whosthatpokemon game.
-        
+
         This leaderboard is based on the score of the user who guessed the pokemon correctly.
         Your score will show on all servers that you have played whosthatpokemon on current bot.
         """
@@ -224,7 +224,7 @@ class WhosThatPokemon(commands.Cog):
         embed = discord.Embed(
             title="Leaderboard",
             description=f"{i}. {user}  -  Score: {user_data['score']}",
-            color=0xe91e63,
+            color=0xE91E63,
         )
         pages.append(embed)
         await SimpleMenu(
@@ -237,7 +237,7 @@ class WhosThatPokemon(commands.Cog):
     @commands.command(name="wtpreset", hidden=True)
     async def whosthatpokemon_reset(self, ctx: commands.Context):
         """Resets the whosthatpokemon game.
-        
+
         **WARNING**
             - This will reset the score of all users who have played whosthatpokemon game.
         """
