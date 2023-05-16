@@ -1,3 +1,6 @@
+# NOTE
+This cog requires News Channel. If you don't have it, you can't use this cog. Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
+
 # AutoPublisher Help
 
 Automatically push news channel messages.

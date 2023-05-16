@@ -1,3 +1,6 @@
+# NOTE
+This cog relies on autoimmune feature from core itself. you are not immune from any spoiler filter without setting up trusted roles to bypass any deletions. not even admin, mod or guild owners bypasses this filter.
+
 # NoSpoiler Help
 
 No spoiler in this server.
