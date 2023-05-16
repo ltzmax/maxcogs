@@ -217,14 +217,12 @@ class WhosThatPokemon(commands.Cog):
             return await ctx.send("No one has played whosthatpokemon yet.")
         pages = []
         data = sorted(data.items(), key=lambda x: x[1]["score"], reverse=True)
-        for i, (user_id, user_data) in enumerate(data, start=1):
-            user = ctx.guild.get_member(user_id)
-            if user is None:
-                continue
+        description = "\n".join(
+            f"{i}. {ctx.guild.get_member(user_id)} - Score: {user_data['score']}"
+            for i, (user_id, user_data) in enumerate(data, start=1)
+        )
         embed = discord.Embed(
-            title="Leaderboard",
-            description=f"{i}. {user}  -  Score: {user_data['score']}",
-            color=0xE91E63,
+            title="Leaderboard", description=description, color=0xE91E63
         )
         pages.append(embed)
         await SimpleMenu(
