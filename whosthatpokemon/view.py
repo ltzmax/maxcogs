@@ -3,7 +3,7 @@ import logging
 
 log = logging.getLogger("red.maxcogs.whosthatpokemon.view")
 
-# Mainly flame who build this view. All credits goes to flame for the work.
+# Mainly flame who build this view and modal. All credits goes to flame for that work.
 # https://discord.com/channels/133049272517001216/133251234164375552/1104515319604723762
 class WhosThatPokemonModal(discord.ui.Modal, title='Whos That Pokémon?'):
     poke = discord.ui.TextInput(

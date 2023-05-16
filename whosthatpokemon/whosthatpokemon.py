@@ -26,7 +26,7 @@ class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
     __author__ = "<@306810730055729152>", "MAX#1000, Flame (Flame#2941)"
-    __version__ = "1.2.1"
+    __version__ = "1.2.5"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
