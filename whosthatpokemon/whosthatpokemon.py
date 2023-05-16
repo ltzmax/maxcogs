@@ -11,7 +11,7 @@ import aiohttp
 import discord
 from discord import File
 from PIL import Image
-from redbot.core import commands, app_commands, Config
+from redbot.core import commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from redbot.core.data_manager import bundled_data_path
@@ -39,13 +39,6 @@ class WhosThatPokemon(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(
-            self, identifier=1234567890, force_registration=True
-        )
-        default_user = {
-            "score": 0,
-        }
-        self.config.register_user(**default_user)
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -198,65 +191,8 @@ class WhosThatPokemon(commands.Cog):
             return await ctx.send(
                 f"{ctx.author.mention} Time's up! You could not guess the pokemon in right time.",
             )
-        data = await self.config.user(ctx.author).all()
-        if data:
-            data["score"] += 1
-            await self.config.user(ctx.author).set(data)
         await ctx.send(file=revealed_img, embed=embed)
 
-    @commands.command(name="wtplb")
-    @commands.bot_has_permissions(embed_links=True)
-    async def whosthatpokemon_leaderboard(self, ctx: commands.Context):
-        """Shows the leaderboard for whosthatpokemon game.
-
-        This leaderboard is based on the score of the user who guessed the pokemon correctly.
-        Your score will show on all servers that you have played whosthatpokemon on current bot.
-        """
-        data = await self.config.all_users()
-        if not data:
-            return await ctx.send("No one has played whosthatpokemon yet.")
-        pages = []
-        data = sorted(data.items(), key=lambda x: x[1]["score"], reverse=True)
-        description = "\n".join(
-            f"{i}. {ctx.guild.get_member(user_id)} - Score: {user_data['score']}"
-            for i, (user_id, user_data) in enumerate(data, start=1)
-        )
-        embed = discord.Embed(
-            title="Leaderboard", description=description, color=0xE91E63
-        )
-        pages.append(embed)
-        await SimpleMenu(
-            pages,
-            disable_after_timeout=True,
-            timeout=60,
-        ).start(ctx)
-
-    @commands.is_owner()
-    @commands.command(name="wtpreset", hidden=True)
-    async def whosthatpokemon_reset(self, ctx: commands.Context):
-        """Resets the whosthatpokemon game.
-
-        **WARNING**
-            - This will reset the score of all users who have played whosthatpokemon game.
-        """
-        data = await self.config.all_users()
-        if not data:
-            return await ctx.send("No one has played whosthatpokemon yet.")
-        msg = (
-            "⚠️**WARNING**⚠️\n"
-            "This will reset the score of all users who have played whosthatpokemon game.\n"
-            "Are you sure you want to continue?\n"
-            "Type `yes` to continue or `no` to cancel. - You have 30 seconds to respond."
-        )
-        message = await ctx.send(msg)
-        try:
-            pred = MessagePredicate.yes_or_no(ctx)
-            await ctx.bot.wait_for("message", check=pred, timeout=30)
-        except asyncio.TimeoutError:
-            await message.edit(content="You took too long to respond.")
-            return
-        if pred.result is True:
-            await self.config.clear_all_users()
-            await message.edit(content="All users score has been reset.")
-        else:
-            await message.edit(content="Reset cancelled.")
+    ## TODO: Add a command to show socre leaderboard for whosthatpokemon (guild)
+    ## TODO: Add a command to reset score for whosthatpokemon.
+    ## TODO: Add a command to see your own score for whosthatpokemon.
