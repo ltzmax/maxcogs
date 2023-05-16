@@ -26,7 +26,7 @@ To install any cog you want:
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.1.17| ltzmax | ✅ |
-| WhosThatPokemon | Guess whos that pokemon? | 1.2.1 | ltzmax, o-wo | ✅ |
+| WhosThatPokemon | Guess whos that pokemon? | 1.2.5 | ltzmax, o-wo | ✅ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
