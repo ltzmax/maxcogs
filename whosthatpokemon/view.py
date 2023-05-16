@@ -3,18 +3,22 @@ import logging
 
 log = logging.getLogger("red.maxcogs.whosthatpokemon.view")
 
+
 # Mainly flame who build this view and modal. All credits goes to flame for that work.
 # https://discord.com/channels/133049272517001216/133251234164375552/1104515319604723762
-class WhosThatPokemonModal(discord.ui.Modal, title='Whos That Pokémon?'):
+class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
     poke = discord.ui.TextInput(
-        label='Pokémon',
-        placeholder='Enter the pokémon here...',
+        label="Pokémon",
+        placeholder="Enter the pokémon here...",
         max_length=14,
-        required=True
+        required=True,
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'You entered: {self.poke.value}', ephemeral=True)
+        await interaction.response.send_message(
+            f"You entered: {self.poke.value}", ephemeral=True
+        )
+
 
 class WhosThatPokemonView(discord.ui.View):
     def __init__(self, eligible_names):
@@ -43,5 +47,7 @@ class WhosThatPokemonView(discord.ui.View):
             await self.message.edit(view=self)
 
     async def on_error(self, interaction, error, item):
-        await interaction.response.send_message(f'An error occured: {error}', ephemeral=True)
+        await interaction.response.send_message(
+            f"An error occured: {error}", ephemeral=True
+        )
         log.error("Error in WhosThatPokemonView: %s", error, exc_info=True)

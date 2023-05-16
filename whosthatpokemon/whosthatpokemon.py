@@ -171,7 +171,8 @@ class WhosThatPokemon(commands.Cog):
         view = WhosThatPokemonView(eligible_names)
         view.message = await ctx.send(
             f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}.",
-            file=File(temp, "guessthatpokemon.png"), view=view
+            file=File(temp, "guessthatpokemon.png"),
+            view=view,
         )
 
         embed = discord.Embed(
