@@ -9,13 +9,10 @@ class WhosThatPokemonModal(discord.ui.Modal, title='Whos That Pokémon?'):
     poke = discord.ui.TextInput(
         label='Pokémon',
         placeholder='Enter the pokémon here...',
-        max_length=20,
+        max_length=14,
         required=True
     )
 
-    # Button won't disable on "correct response" on submit.
-    # It will only show "This interaction failed" after but this can be ignored
-    # This won't really show any error message to the user or to the bot owner
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'You entered: {self.poke.value}', ephemeral=True)
 
@@ -38,6 +35,12 @@ class WhosThatPokemonView(discord.ui.View):
         if modal.poke.value.casefold() in self.eligible_names and self.winner is None:
             self.winner = interaction.user
             self.stop()
+
+            # Disable the button after a correct response
+            button.disabled = True
+            button.label = "Correct Pokémon Guessed"
+            button.style = discord.ButtonStyle.success
+            await self.message.edit(view=self)
 
     async def on_error(self, interaction, error, item):
         await interaction.response.send_message(f'An error occured: {error}', ephemeral=True)
