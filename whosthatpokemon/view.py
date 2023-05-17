@@ -45,6 +45,8 @@ class WhosThatPokemonView(discord.ui.View):
             button.label = "Correct Pokémon Guessed"
             button.style = discord.ButtonStyle.success
             await self.message.edit(view=self)
+            # Send a message indicating who guessed the Pokémon
+            await interaction.followup.send(f"{self.winner.display_name} Guessed the Pokémon correctly!")
 
     async def on_error(self, interaction, error, item):
         await interaction.response.send_message(
