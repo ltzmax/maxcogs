@@ -41,7 +41,7 @@ class Tcgcard(commands.Cog):
         version = self.__version__
         author = self.__author__
         embed = discord.Embed(
-            title="Version",
+            title="Cog Information",
             description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
             color=await ctx.embed_color(),
         )
