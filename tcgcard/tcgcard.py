@@ -34,14 +34,18 @@ class Tcgcard(commands.Cog):
         """Nothing to delete."""
         return
 
+    @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="tcgversion", hidden=True)
     async def tcgcard_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         version = self.__version__
         author = self.__author__
-        await ctx.send(
-            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        embed = discord.Embed(
+            title="Version",
+            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)
 
     @commands.hybrid_command()
     @app_commands.describe(query=("The Pokémon you want to search a card for."))

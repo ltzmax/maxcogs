@@ -227,11 +227,15 @@ class NoSpoiler(commands.Cog):
             f"`{'Enabled':<16}`: {enabled}\n`{'Toggle message':<16}`: {message_toggle}\n`{'Message':<16}`: {message}"
         )
 
+    @commands.bot_has_permissions(embed_links=True)
     @nospoiler.command(with_app_command=False)
     async def version(self, ctx: commands.Context):
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
-        await ctx.send(
-            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        embed = discord.Embed(
+            title="Version",
+            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)

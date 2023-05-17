@@ -114,13 +114,17 @@ class WhosThatPokemon(commands.Cog):
     # | \__/\ \_/ / |  | || |  | || | | || |\  | |/ / /\__/ /
     # \____/\___/\_|  |_/\_|  |_/\_| |_/\_| \_/___/  \____/
     @commands.command(name="wtpversion", hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
     async def whosthatpokemon_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         version = self.__version__
         author = self.__author__
-        await ctx.send(
-            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        embed = discord.Embed(
+            title="Version",
+            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(

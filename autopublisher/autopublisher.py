@@ -123,11 +123,15 @@ class AutoPublisher(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command()
     async def version(self, ctx):
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
-        await ctx.send(
-            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        embed = discord.Embed(
+            title="Version",
+            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)

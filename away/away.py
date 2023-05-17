@@ -367,11 +367,15 @@ class Away(commands.Cog):
         embed.add_field(name="Nick:", value=_userdata["nick"])
         await ctx.send(embed=embed)
 
+    @commands.bot_has_permissions(embed_links=True)
     @awayset.command(name="version")
     async def awayset_version(self, ctx: commands.Context):
         """Shows the version of the cog"""
         version = self.__version__
         author = self.__author__
-        await ctx.send(
-            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        embed = discord.Embed(
+            title="Version",
+            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)

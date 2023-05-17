@@ -91,14 +91,18 @@ class RolePlayCog(commands.Cog):
         emb.set_image(url=data["results"][0]["url"])
         await ctx.send(embed=emb)
 
+    @commands.bot_has_permissions(embed_links=True)
     @commands.command(hidden=True)
     async def rpcversion(self, ctx):
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
-        await ctx.send(
-            box(f"{'Author':<10}: {author}\n{'Version':<10}: {version}", lang="yaml")
+        embed = discord.Embed(
+            title="Version",
+            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
