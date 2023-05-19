@@ -2,7 +2,7 @@ import discord
 import logging
 import asyncio
 
-from redbot.core import commands, Config
+from redbot.core import commands, Config, app_commands
 from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.autopublisher")
@@ -21,7 +21,7 @@ class AutoPublisher(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
-    __version__ = "0.1.2"
+    __version__ = "0.1.5"
     __author__ = "MAX"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
 
@@ -78,13 +78,14 @@ class AutoPublisher(commands.Cog):
                     f"Failed to publish message {message.channel.name} in {message.guild.name}: {e}"
                 )
 
-    @commands.group(aliases=["aph"])
+    @commands.hybrid_group(aliases=["aph"])
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def autopublisher(self, ctx):
         """Manage AutoPublisher setting."""
 
     @autopublisher.command()
+    @app_commands.describe(toggle="Enable or disable AutoPublisher.")
     async def toggle(self, ctx: commands.Context, toggle: bool):
         """Toggle AutoPublisher enable or disable.
 
@@ -100,15 +101,14 @@ class AutoPublisher(commands.Cog):
         guild = ctx.guild
         if "NEWS" not in guild.features:
             return await ctx.send(
-                "This server doesn't have News Channel feature to use this cog. "
-                "Learn more here on how to enable:\n<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
+                "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>", ephemeral=True
             )
         if (
             not guild.me.guild_permissions.manage_messages
             or not guild.me.guild_permissions.view_channel
         ):
             return await ctx.send(
-                "I don't have `manage_messages` or `view_channel` permission to use this cog."
+                "I don't have `manage_messages` or `view_channel` permission to use this cog.", ephemeral=True
             )
         await self.config.guild(ctx.guild).toggle.set(toggle)
         if toggle:
@@ -116,7 +116,7 @@ class AutoPublisher(commands.Cog):
         else:
             await ctx.send("AutoPublisher is now disabled.")
 
-    @autopublisher.command(aliases=["view"])
+    @autopublisher.command(aliases=["view"], with_app_command=False)
     async def settings(self, ctx: commands.Context):
         """Show AutoPublisher setting."""
         config = await self.config.guild(ctx.guild).toggle()
@@ -128,7 +128,7 @@ class AutoPublisher(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
-    @autopublisher.command()
+    @autopublisher.command(with_app_command=False)
     async def version(self, ctx):
         """Shows the version of the cog."""
         version = self.__version__

@@ -4,8 +4,8 @@
     ],
     "name": "AutoPublisher",
     "install_msg": "Thanks for installing. To get started, check `[p]help AutoPublisher`.",
-    "description": "Automatically publish messages from a new channel.",
-    "short": "Automatically publish messages from a new channel.",
+    "description": "Automatically publish messages from a news channel.",
+    "short": "Automatically publish messages from a news channel.",
     "hidden": false,
     "min_bot_version": "3.5.0",
     "tags": [
