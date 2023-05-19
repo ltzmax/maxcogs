@@ -64,7 +64,7 @@ class AutoPublisher(commands.Cog):
             return
         if message.channel.is_news():
             try:
-                await asyncio.sleep(3)  # delay it 3 seconds to publish.
+                await asyncio.sleep(5)  # delay it 5 seconds to publish.
                 await asyncio.wait_for(message.publish(), timeout=60)
             except (
                 discord.HTTPException,
@@ -85,7 +85,7 @@ class AutoPublisher(commands.Cog):
     async def toggle(self, ctx: commands.Context, toggle: bool):
         """Toggle AutoPublisher enable or disable.
 
-        There is a 3 secoud delay on each messages you post in a news channel to be sent to the channel’s users are following.
+        There is a 5 secoud delay on each messages you post in a news channel to be sent to the channel’s users are following. (this is to prevent other bots and or features which the exact same thing to conflicting)
 
         It's disabled by default.
         Please ensure that the bot has access to `view_channel` in your news channels. it also need `manage_messages` to be able to publish.
