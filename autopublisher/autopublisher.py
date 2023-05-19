@@ -94,21 +94,23 @@ class AutoPublisher(commands.Cog):
         - It's disabled by default.
         - Please ensure that the bot has access to `view_channel` in your news channels. it also need `manage_messages` to be able to publish.
 
-        **Note:** 
+        **Note:**
         - This cog requires News Channel. If you don't have it, you can't use this cog.
         - Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
         """
         guild = ctx.guild
         if "NEWS" not in guild.features:
             return await ctx.send(
-                "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>", ephemeral=True
+                "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>",
+                ephemeral=True,
             )
         if (
             not guild.me.guild_permissions.manage_messages
             or not guild.me.guild_permissions.view_channel
         ):
             return await ctx.send(
-                "I don't have `manage_messages` or `view_channel` permission to use this cog.", ephemeral=True
+                "I don't have `manage_messages` or `view_channel` permission to use this cog.",
+                ephemeral=True,
             )
         await self.config.guild(ctx.guild).toggle.set(toggle)
         if toggle:
@@ -135,7 +137,10 @@ class AutoPublisher(commands.Cog):
         author = self.__author__
         embed = discord.Embed(
             title="Cog Information",
-            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            description=box(
+                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
+                lang="yaml",
+            ),
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
