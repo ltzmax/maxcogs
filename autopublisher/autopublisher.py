@@ -57,7 +57,7 @@ class AutoPublisher(commands.Cog):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
-                    "I have disabled autopublisher since the server doesn't have community server feature enabled anymore."
+                    f"AutoPublisher has been disabled in {message.guild.name} ({message.guild.id}) due to missing News Channel feature."
                 )
             return
         if not message.channel.is_news():
