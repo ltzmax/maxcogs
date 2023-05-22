@@ -19,41 +19,6 @@ Manage the spoiler filter settings.
 
 Toggle the spoiler filter on or off.<br/><br/>Spoiler filter is disabled by default.
 
-## nospoiler ignorechannel (Hybrid Command)
- - Usage: `[p]nospoiler ignorechannel <channel> `
- - Slash Usage: `/nospoiler ignorechannel <channel> `
-
-Add or remove ignore a channel from the spoiler filter.<br/><br/>If a channel is ignored, spoiler messages will not be deleted.<br/>Note: you cannot ignore a voice chat channel.
-
-Extended Arg Info
-> ### channel: Union[discord.channel.TextChannel, discord.threads.Thread, discord.channel.ForumChannel]
->
->
->     1. Lookup by ID.
->     2. Lookup by mention.
->     3. Lookup by name
->
->
-
-### nospoiler message (Hybrid Command)
- - Usage: `[p]nospoiler message [message] `
- - Slash Usage: `/nospoiler message [message] `
-
-Set the message to send when a user sends a spoiler message.<br/><br/>If no message is provided, the default message will be sent.<br/>If you want to disable the message, use [p]nospoiler togglemessage.
-
-Extended Arg Info
-> ### message: str = None
-> ```
-> Something like: hello you cant do this stuff
-> ```
-
-### nospoiler togglemessage (Hybrid Command)
- - Usage: `[p]nospoiler togglemessage `
-  - Aliases: `togglemsg`
- - Slash Usage: `/nospoiler togglemessage `
-
-Enable or disable the message to send when a user sends a spoiler message.<br/><br/>If the message is disabled, the bot will delete the spoiler message without sending a message.
-
 ## nospoiler settings (Hybrid Command)
  - Usage: `[p]nospoiler settings `
  - Slash Usage: `/nospoiler settings `
