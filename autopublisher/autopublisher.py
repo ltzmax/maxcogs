@@ -67,16 +67,13 @@ class AutoPublisher(commands.Cog):
             try:
                 await asyncio.sleep(5)  # delay it 5 seconds to publish.
                 await asyncio.wait_for(message.publish(), timeout=60)
-                #log.debug(
-                #    f"Published message {message.channel.name} in {message.guild.name}"
-                #)  # Only for debugging purpose for my development.
             except (
                 discord.HTTPException,
                 discord.Forbidden,
                 asyncio.TimeoutError,
             ) as e:
                 log.error(
-                    f"Failed to publish message {message.channel.name} in {message.guild.name}: {e}"
+                    f"Failed to publish message in {message.guild.name} ({message.guild.id})\n{e}"
                 )
 
     @commands.hybrid_group(aliases=["aph"])
