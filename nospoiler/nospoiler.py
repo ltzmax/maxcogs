@@ -48,8 +48,6 @@ class NoSpoiler(commands.Cog):
         )
         default_guild = {
             "enabled": False,
-            "message_toggle": False,
-            "message": [],
         }
         self.config.register_guild(**default_guild)
 
@@ -65,53 +63,24 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """handle spoiler messages"""
+        guild = message.guild
         if message.guild is None:
             return
         if not await self.config.guild(message.guild).enabled():
             return
-        if await self.bot.cog_disabled_in_guild(self, message.guild):
-            return
         if not message.guild.me.guild_permissions.manage_messages:
+            return
+        if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if message.author.bot:
             return
-        if await self.bot.is_automod_immune(message.author):
-            return
         if SPOILER_REGEX.search(message.content):
-            if await self.config.guild(message.guild).message_toggle():
-                if not message.channel.permissions_for(message.guild.me).send_messages:
-                    await self.config.guild(message.guild).message_toggle.set(False)
-                    log.info(
-                        "Missing permissions to send messages so i disabled it for you."
-                    )
-                await message.channel.send(
-                    f"{message.author.mention} {await self.config.guild(message.guild).message()}",
-                    delete_after=10,
-                )
-                await message.delete()
-            else:
-                await message.delete()
-                return
+            await message.delete()
+            return
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
-                    if await self.config.guild(message.guild).message_toggle():
-                        if not message.channel.permissions_for(
-                            message.guild.me
-                        ).send_messages:
-                            await self.config.guild(message.guild).message_toggle.set(
-                                False
-                            )
-                            log.info(
-                                "Missing permissions to send messages so i disabled it for you."
-                            )
-                        await message.channel.send(
-                            f"{message.author.mention} {await self.config.guild(message.guild).message()}",
-                            delete_after=10,
-                        )
-                        await message.delete()
-                    else:
-                        await message.delete()
+                    await message.delete()
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
@@ -123,11 +92,9 @@ class NoSpoiler(commands.Cog):
             return
         if not await self.config.guild(guild).enabled():
             return
-        if await self.bot.cog_disabled_in_guild(self, guild):
-            return
         if not guild.me.guild_permissions.manage_messages:
             return
-        if await self.bot.is_automod_immune(guild.me):
+        if await self.bot.cog_disabled_in_guild(self, guild):
             return
         channel = guild.get_channel(payload.channel_id)
         if channel is None:
@@ -137,8 +104,6 @@ class NoSpoiler(commands.Cog):
         except discord.NotFound:
             return
         if message.author.bot:
-            return
-        if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
             await message.delete()
@@ -171,61 +136,18 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(guild).enabled.set(True)
             await ctx.send("Spoiler filter is now enabled.")
 
-    @nospoiler.command(aliases=["togglemsg"])
-    async def togglemessage(self, ctx):
-        """Enable or disable the message to send when a user sends a spoiler message.
-
-        If the message is disabled, the bot will delete the spoiler message without sending a message.
-        """
-        guild = ctx.guild
-        message_toggle = await self.config.guild(guild).message_toggle()
-        if message_toggle:
-            await self.config.guild(guild).message_toggle.set(False)
-            await ctx.send("Message is now disabled.")
-        else:
-            await self.config.guild(guild).message_toggle.set(True)
-            await ctx.send("Message is now enabled.")
-
-    @nospoiler.command(aliases=["msg"])
-    @app_commands.describe(
-        message="Set the message to send when a user sends a spoiler message."
-    )
-    async def message(self, ctx, *, message: str = None):
-        """Set the message to send when a user sends a spoiler message.
-
-        If no message is provided, the default message will be sent.
-        If you want to disable the message, use `[p]nospoiler set togglemessage`.
-        """
-        if message is not None and len(message) > 1024:
-            return await ctx.send("Message cannot be longer than 1024 characters.")
-        if message is None:
-            await self.config.guild(ctx.guild).message.set(
-                "You cannot send spoiler in this server."
-            )
-            await ctx.send("The message has been reset to default.")
-        else:
-            await self.config.guild(ctx.guild).message.set(message)
-            await ctx.send("The message has been set.")
-
     @nospoiler.command(aliases=["view", "views"])
+    @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
-        message = config["message"]
-        togglemessage = config["message_toggle"]
-        if message is None:
-            message = "Default Message"
-        else:
-            message = f"{message}"
-        if togglemessage:
-            message_toggle = "Enabled"
-        else:
-            message_toggle = "Disabled"
-
-        await ctx.send(
-            f"`{'Enabled':<16}`: {enabled}\n`{'Toggle message':<16}`: {message_toggle}\n`{'Message':<16}`: {message}"
+        embed = discord.Embed(
+            title="Spoiler Filter Settings",
+            description=box(f"{'Enabled':<5}: {enabled}", lang="yaml"),
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
     @nospoiler.command(with_app_command=False)
