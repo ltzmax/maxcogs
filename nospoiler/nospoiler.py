@@ -144,7 +144,7 @@ class NoSpoiler(commands.Cog):
         enabled = config["enabled"]
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description=box(f"{'Enabled':<5}: {enabled}", lang="yaml"),
+            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**.}"
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
@@ -157,7 +157,10 @@ class NoSpoiler(commands.Cog):
         author = self.__author__
         embed = discord.Embed(
             title="Cog Information",
-            description=box(f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}", lang="yaml"),
+            description=box(
+                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
+                lang="yaml",
+            ),
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)

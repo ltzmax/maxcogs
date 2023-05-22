@@ -36,12 +36,13 @@ class AutoPublisher(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
+        """Publish message to news channel."""
         guild = message.guild
         if message.guild is None:
             return
-        if not await self.config.guild(message.guild).toggle():
+        if not await self.config.guild(guild).toggle():
             return
-        if await self.bot.cog_disabled_in_guild(self, message.guild):
+        if await self.bot.cog_disabled_in_guild(self, guild):
             return
         if (
             not message.guild.me.guild_permissions.manage_messages
@@ -68,7 +69,7 @@ class AutoPublisher(commands.Cog):
                 await asyncio.wait_for(message.publish(), timeout=60)
                 #log.debug(
                 #    f"Published message {message.channel.name} in {message.guild.name}"
-                #) Only for debugging purpose for my development.
+                #)  # Only for debugging purpose for my development.
             except (
                 discord.HTTPException,
                 discord.Forbidden,
