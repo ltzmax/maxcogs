@@ -144,7 +144,7 @@ class NoSpoiler(commands.Cog):
         enabled = config["enabled"]
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**."
+            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**.",
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
