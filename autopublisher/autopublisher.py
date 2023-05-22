@@ -66,6 +66,9 @@ class AutoPublisher(commands.Cog):
             try:
                 await asyncio.sleep(5)  # delay it 5 seconds to publish.
                 await asyncio.wait_for(message.publish(), timeout=60)
+                #log.debug(
+                #    f"Published message {message.channel.name} in {message.guild.name}"
+                #) Only for debugging purpose for my development.
             except (
                 discord.HTTPException,
                 discord.Forbidden,
@@ -115,6 +118,7 @@ class AutoPublisher(commands.Cog):
         else:
             await ctx.send("AutoPublisher is now disabled.")
 
+    @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"], with_app_command=False)
     async def settings(self, ctx: commands.Context):
         """Show AutoPublisher setting."""
