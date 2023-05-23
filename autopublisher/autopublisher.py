@@ -7,6 +7,7 @@ from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.autopublisher")
 
+DISCORD_INFO = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
 
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
@@ -21,7 +22,7 @@ class AutoPublisher(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
-    __version__ = "0.1.5"
+    __version__ = "0.1.10"
     __author__ = "MAX"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
 
@@ -51,14 +52,14 @@ class AutoPublisher(commands.Cog):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
-                    f"AutoPublisher has been disabled in {message.guild.name} ({message.guild.id}) due to missing permissions."
+                    "AutoPublisher has been disabled in %s (%s) due to missing permissions.", guild.name, guild.id
                 )
             return
         if "NEWS" not in guild.features:
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
-                    f"AutoPublisher has been disabled in {message.guild.name} ({message.guild.id}) due to missing News Channel feature."
+                    "AutoPublisher has been disabled in %s (%s) due to missing News Channel feature.", guild.name, guild.id
                 )
             return
         if not message.channel.is_news():
@@ -73,10 +74,10 @@ class AutoPublisher(commands.Cog):
                 asyncio.TimeoutError,
             ) as e:
                 log.error(
-                    f"Failed to publish message in {message.guild.name} ({message.guild.id})\n{e}"
+                    "Failed to publish message in %s (%s)\n%s", guild.name, guild.id, e
                 )
 
-    @commands.hybrid_group(aliases=["aph"])
+    @commands.hybrid_group(aliases=["aph", "autopub"])
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def autopublisher(self, ctx):
@@ -99,7 +100,9 @@ class AutoPublisher(commands.Cog):
         guild = ctx.guild
         if "NEWS" not in guild.features:
             return await ctx.send(
-                "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>",
+                "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n{DISCORD_INFO}".format(
+                    DISCORD_INFO=DISCORD_INFO
+                ),
                 ephemeral=True,
             )
         if (

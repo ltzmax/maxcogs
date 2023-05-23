@@ -9,7 +9,7 @@ Automatically push news channel messages.
  - Usage: `[p]autopublisher `
  - Slash Usage: `/autopublisher `
  - Restricted to: `ADMIN`
- - Aliases: `aph`
+ - Aliases: `aph` and `autopub`
  - Checks: `server_only`
 
 Manage AutoPublisher setting.
