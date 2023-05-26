@@ -79,6 +79,8 @@ class NoSpoiler(commands.Cog):
             return
         if message.author.bot:
             return
+        if await self.bot.is_automod_immune(message.author):
+            return
         if SPOILER_REGEX.search(message.content):
             await message.delete()
             return
