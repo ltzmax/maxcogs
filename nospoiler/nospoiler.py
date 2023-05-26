@@ -115,6 +115,8 @@ class NoSpoiler(commands.Cog):
             message = await channel.fetch_message(payload.message_id)
         except discord.NotFound:
             return
+        if await self.bot.is_automod_immune(message.author):
+            return
         if message.author.bot:
             return
         if SPOILER_REGEX.search(message.content):
