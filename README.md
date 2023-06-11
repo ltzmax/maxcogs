@@ -35,7 +35,7 @@ To install any cog you want:
 - [Preda](https://github.com/PredaaA/predacogs) For help.
 
 ## Support
-- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #support_othercogs or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX#1000 (345628097929936898)
+- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #forum_othercogs then go to #maxcogs channel or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX (username: imaxburger) (345628097929936898)
 
 ## License
 This repo is under MIT LICENSE. Please see [`LICENSE file`](https://github.com/ltzmax/maxcogs/blob/master/LICENSE).
