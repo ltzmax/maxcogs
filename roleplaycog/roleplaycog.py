@@ -27,6 +27,7 @@ import aiohttp
 import discord
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_number, box
+from redbot.core.utils.views import SimpleMenu
 
 from .core import ACTIONS, ICON, NEKOS
 
@@ -56,7 +57,7 @@ class RolePlayCog(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
 
-    __version__ = "0.1.17"
+    __version__ = "0.2.0"
     __author__ = "MAX"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/roleplaycog/README.md"
 
@@ -73,6 +74,10 @@ class RolePlayCog(commands.Cog):
                 )
             data = await response.json()
 
+        # Yes this is dublicated code from rpc stats.
+        # i dont care, it needs to get the amount of times the user has used the command.
+        # Removing it would just cause the stats command not even working lol so please
+        # Dont do it, keep it and ignore this comment and code. we good? good.
         async with self.config.user(ctx.author).all() as config:
             config[action] += 1
 
@@ -82,7 +87,6 @@ class RolePlayCog(commands.Cog):
             colour=await ctx.embed_color(),
             description=(
                 f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member else 'themselves!'}\n"
-                f"Received {action} count: {humanize_number(config[action])}"
             ),
         )
         emb.set_footer(
@@ -91,9 +95,42 @@ class RolePlayCog(commands.Cog):
         emb.set_image(url=data["results"][0]["url"])
         await ctx.send(embed=emb)
 
+    @commands.group()
+    async def rpc(self, ctx):
+        """Roleplay commands."""
+
+    @rpc.command()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command(hidden=True)
-    async def rpcversion(self, ctx):
+    async def stats(self, ctx):
+        """Shows your roleplay stats.
+        
+        This includes the amount of times you have used each action.
+        This will only show author stats, not global stats, just author stats. :)
+        """
+        pages = []
+        async with self.config.user(ctx.author).all() as config:
+            emb = discord.Embed(
+                title="Roleplay Stats",
+                description=box(
+                    "\n".join(
+                        f"{ACTIONS.get(key, key):<16}: {humanize_number(value)}"
+                        for key, value in config.items()
+                    ),
+                    lang="yaml",
+                ),
+                color=await ctx.embed_color(),
+            )
+            emb.set_footer(text="Powered by nekos.best\nStats for {user}".format(user=ctx.author), icon_url=ICON)
+            pages.append(emb)
+            await SimpleMenu(
+                pages,
+                disable_after_timeout=True,
+                timeout=60,
+            ).start(ctx)
+
+    @commands.bot_has_permissions(embed_links=True)
+    @rpc.command()
+    async def version(self, ctx):
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
