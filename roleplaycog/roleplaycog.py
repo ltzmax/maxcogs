@@ -25,7 +25,7 @@ import logging
 
 import aiohttp
 import discord
-from redbot.core import commands, Config
+from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_number, box
 from redbot.core.utils.views import SimpleMenu
 
@@ -44,20 +44,11 @@ class RolePlayCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(
-            self, 0x345628097929936899, force_registration=True
-        )
-        default_global = {
-            "schema_version": 2,
-        }
-        default_user = {key: 0 for key in ACTIONS}
-        self.config.register_global(**default_global)
-        self.config.register_user(**default_user)
 
     async def cog_unload(self):
         await self.session.close()
 
-    __version__ = "0.2.0"
+    __version__ = "0.2.1"
     __author__ = "MAX"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/roleplaycog/README.md"
 
@@ -74,13 +65,6 @@ class RolePlayCog(commands.Cog):
                 )
             data = await response.json()
 
-        # Yes this is dublicated code from rpc stats.
-        # i dont care, it needs to get the amount of times the user has used the command.
-        # Removing it would just cause the stats command not even working lol so please
-        # Dont do it, keep it and ignore this comment and code. we good? good.
-        async with self.config.user(ctx.author).all() as config:
-            config[action] += 1
-
         action_fmt = ACTIONS.get(action, action)
         anime_name = data["results"][0]["anime_name"]
         emb = discord.Embed(
@@ -95,42 +79,9 @@ class RolePlayCog(commands.Cog):
         emb.set_image(url=data["results"][0]["url"])
         await ctx.send(embed=emb)
 
-    @commands.group()
-    async def rpc(self, ctx):
-        """Roleplay commands."""
-
-    @rpc.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def stats(self, ctx):
-        """Shows your roleplay stats.
-        
-        This includes the amount of times you have used each action.
-        This will only show author stats, not global stats, just author stats. :)
-        """
-        pages = []
-        async with self.config.user(ctx.author).all() as config:
-            emb = discord.Embed(
-                title="Roleplay Stats",
-                description=box(
-                    "\n".join(
-                        f"{ACTIONS.get(key, key):<16}: {humanize_number(value)}"
-                        for key, value in config.items()
-                    ),
-                    lang="yaml",
-                ),
-                color=await ctx.embed_color(),
-            )
-            emb.set_footer(text="Powered by nekos.best\nStats for {user}".format(user=ctx.author), icon_url=ICON)
-            pages.append(emb)
-            await SimpleMenu(
-                pages,
-                disable_after_timeout=True,
-                timeout=60,
-            ).start(ctx)
-
-    @commands.bot_has_permissions(embed_links=True)
-    @rpc.command()
-    async def version(self, ctx):
+    @commands.command(name="rpcversion", hidden=True)
+    async def roleplaycog_version(self, ctx):
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
@@ -200,7 +151,9 @@ class RolePlayCog(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def poke(self, ctx, member: discord.Member):
+    async def pokes(self, ctx, member: discord.Member):
+        # Due to conflict with pokecord cog, it has to be pokes.
+        # Feel free to use alias cog if you want poke only.
         """Poke a user!"""
         await self.embedgen(ctx, member, "poke")
 

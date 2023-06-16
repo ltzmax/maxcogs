@@ -147,7 +147,7 @@ Extended Arg Info
 >
 >
 # poke
- - Usage: `[p]poke <member> `
+ - Usage: `[p]pokes <member> `
 
 Poke a user!
 
