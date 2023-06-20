@@ -29,7 +29,10 @@ class ThreadManager(commands.Cog):
         
     @thread.command()
     async def close(self, ctx):
-        """Close a thread."""
+        """Close a thread.
+        
+        Note this does both lock and close.
+        """
         if not isinstance(ctx.channel, discord.Thread):
             return await ctx.send("This isn't a thread.")
         # So it doesn't reopen the thread.
@@ -54,7 +57,10 @@ class ThreadManager(commands.Cog):
 
     @thread.command()
     async def open(self, ctx):
-        """Open a thread."""
+        """Open a thread.
+        
+        Note this does both unlock and open.
+        """
         if not isinstance(ctx.channel, discord.Thread):
             return await ctx.send("This isn't a thread.")
         await ctx.channel.edit(locked=False, archived=False)
