@@ -32,6 +32,7 @@ log = logging.getLogger("red.maxcogs.autopublisher")
 
 DISCORD_INFO = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
 
+
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
@@ -75,14 +76,18 @@ class AutoPublisher(commands.Cog):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
-                    "AutoPublisher has been disabled in %s (%s) due to missing permissions.", guild.name, guild.id
+                    "AutoPublisher has been disabled in %s (%s) due to missing permissions.",
+                    guild.name,
+                    guild.id,
                 )
             return
         if "NEWS" not in guild.features:
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
-                    "AutoPublisher has been disabled in %s (%s) due to missing News Channel feature.", guild.name, guild.id
+                    "AutoPublisher has been disabled in %s (%s) due to missing News Channel feature.",
+                    guild.name,
+                    guild.id,
                 )
             return
         if not message.channel.is_news():

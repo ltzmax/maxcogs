@@ -1,6 +1,7 @@
 import discord
 from redbot.core import commands
 
+
 class ThreadManager(commands.Cog):
     """close, lock, open and unlock threads."""
 
@@ -26,11 +27,11 @@ class ThreadManager(commands.Cog):
     @commands.bot_has_permissions(manage_threads=True, manage_messages=True)
     async def thread(self, ctx):
         """Manage close, lock, open and unlock threads."""
-        
+
     @thread.command()
     async def close(self, ctx):
         """Close a thread.
-        
+
         Note this does both lock and close.
         """
         audit_reason = f"Thread closed by {ctx.author} (ID: {ctx.author.id})"
@@ -49,7 +50,7 @@ class ThreadManager(commands.Cog):
         await ctx.channel.edit(locked=True, reason=audit_reason)
         await ctx.send(f"Locked thread.")
 
-    @thread.command(with_app_command=False) # Chant use slash in archived threads.
+    @thread.command(with_app_command=False)  # Chant use slash in archived threads.
     async def unlock(self, ctx):
         """Unlock a thread."""
         audit_reason = f"Thread unlocked by {ctx.author} (ID: {ctx.author.id})"
@@ -58,10 +59,10 @@ class ThreadManager(commands.Cog):
         await ctx.channel.edit(locked=False, reason=audit_reason)
         await ctx.send(f"Unlocked thread.")
 
-    @thread.command(with_app_command=False) # Chant use slash in archived threads.
+    @thread.command(with_app_command=False)  # Chant use slash in archived threads.
     async def open(self, ctx):
         """Open a thread.
-        
+
         Note this does both unlock and open.
         """
         audit_reason = f"Thread opened by {ctx.author} (ID: {ctx.author.id})"
