@@ -3,10 +3,10 @@ from redbot.core import commands
 
 
 class ThreadManager(commands.Cog):
-    """close, lock, open and unlock threads."""
+    """close, lock, open and unlock threads. You are also able to create threads."""
 
     __author__ = "MAX"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/threadmanager/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -26,7 +26,7 @@ class ThreadManager(commands.Cog):
     @commands.has_permissions(manage_threads=True, manage_messages=True)
     @commands.bot_has_permissions(manage_threads=True, manage_messages=True)
     async def thread(self, ctx):
-        """Manage close, lock, open and unlock threads."""
+        """Manage close, lock, open and unlock threads and also create threads."""
 
     @thread.command()
     async def close(self, ctx):
@@ -70,3 +70,18 @@ class ThreadManager(commands.Cog):
             return await ctx.send("This isn't a thread.")
         await ctx.channel.edit(locked=False, archived=False, reason=audit_reason)
         await ctx.send(f"Opened thread.")
+
+    @thread.command()
+    @commands.bot_has_permissions(manage_channels=True, manage_threads=True)
+    async def create(self, ctx, name: str):
+        """Create a thread.
+
+        Note: This will create a thread in the category under same channel you run the command in.
+        (You will not be automatic joined to the thread, you will have to look in the thread list.)
+        """
+        if not isinstance(ctx.channel, discord.TextChannel):
+            return await ctx.send("This isn't a text channel.")
+        if len(name) > 100:
+            return await ctx.send("Thread name can't be longer than 100 characters.")
+        await ctx.channel.create_thread(name=name, auto_archive_duration=1440)
+        await ctx.send("Thread created.")

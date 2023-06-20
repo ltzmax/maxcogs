@@ -7,7 +7,7 @@ close, lock, open and unlock threads.
  - Aliases: `threads`
  - Checks: `server_only`
 
-Manage close, lock, open and unlock threads.
+Manage close, lock, open and unlock threads and also create threads.
 
 ## thread close
  - Usage: `[p]thread close `
@@ -28,3 +28,8 @@ Unlock a thread.
  - Usage: `[p]thread open `
 
 Open a thread.
+
+## thread create
+ - Usage: `[p]thread create `
+
+Create a thread.
