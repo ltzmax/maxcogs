@@ -19,6 +19,7 @@ body:
         - nospoiler
         - nekosbest
         - tcgcard
+        - threadmanager
         - RolePlayCog
         - whosthatpokemon
     validations:
