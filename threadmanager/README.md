@@ -1,35 +1,67 @@
 # ThreadManager Help
 
-close, lock, open and unlock threads.
+close, lock, open, unlock and more!
 
-# thread
+# thread (Hybrid Command)
  - Usage: `[p]thread `
+ - Slash Usage: `/thread `
  - Aliases: `threads`
  - Checks: `server_only`
 
-Manage close, lock, open and unlock threads and also create threads.
+Manage your threads in your server.
 
-## thread close
- - Usage: `[p]thread close `
+## thread create (Hybrid Command)
+ - Usage: `[p]thread create <name> `
+ - Slash Usage: `/thread create <name> `
 
-Close a thread.
+Create a thread.<br/><br/>Note: This will create a thread in the category under same channel you run the command in.<br/>(You will not be automatic joined to the thread, you will have to look in the thread list.)
 
-## thread lock
+## thread lock (Hybrid Command)
  - Usage: `[p]thread lock `
+ - Slash Usage: `/thread lock `
 
 Lock a thread.
 
-## thread unlock
+## thread rename (Hybrid Command)
+ - Usage: `[p]thread rename <name> `
+ - Slash Usage: `/thread rename <name> `
+
+Rename a thread.
+
+## thread removeuser (Hybrid Command)
+ - Usage: `[p]thread removeuser <user> `
+ - Slash Usage: `/thread removeuser <user> `
+ - Aliases: `rmuser`
+
+Remove a user from a thread.
+
+## thread unlock (Hybrid Command)
  - Usage: `[p]thread unlock `
+ - Slash Usage: `/thread unlock `
 
 Unlock a thread.
 
-## thread open
+## thread deletethread (Hybrid Command)
+ - Usage: `[p]thread deletethread `
+ - Slash Usage: `/thread deletethread `
+ - Aliases: `rmthread`
+
+Delete a thread.
+
+## thread adduser (Hybrid Command)
+ - Usage: `[p]thread adduser <user> `
+ - Slash Usage: `/thread adduser <user> `
+
+Add a user to a thread.
+
+## thread open (Hybrid Command)
  - Usage: `[p]thread open `
+ - Slash Usage: `/thread open `
 
-Open a thread.
+Open a thread.<br/><br/>Note this does both unlock and open.
 
-## thread create
- - Usage: `[p]thread create `
+## thread close (Hybrid Command)
+ - Usage: `[p]thread close `
+ - Slash Usage: `/thread close `
 
-Create a thread.
+Close a thread.<br/><br/>Note this does both lock and close.

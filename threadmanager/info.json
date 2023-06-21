@@ -4,8 +4,8 @@
     ],
     "name": "ThreadManager",
     "install_msg": "Thanks for installing.",
-    "description": "A cog to close, lock, open and unlock threads. + create threads",
-    "short": "close, lock, open and unlock threads and create threads.",
+    "description": "A cog to close, lock, open, unlock and more!.",
+    "short": "close, lock, open, unlock and more!",
     "hidden": false,
     "min_bot_version": "3.5.0",
     "tags": [

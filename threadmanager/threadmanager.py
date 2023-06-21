@@ -3,10 +3,10 @@ from redbot.core import commands
 
 
 class ThreadManager(commands.Cog):
-    """close, lock, open and unlock threads. You are also able to create threads."""
+    """close, lock, open, unlock and more!"""
 
     __author__ = "MAX"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/threadmanager/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -23,10 +23,10 @@ class ThreadManager(commands.Cog):
 
     @commands.guild_only()
     @commands.hybrid_group(aliases=["threads"])
-    @commands.has_permissions(manage_threads=True, manage_messages=True)
     @commands.bot_has_permissions(manage_threads=True, manage_messages=True)
+    @commands.has_permissions(manage_threads=True, manage_messages=True, send_messages_in_threads=True)
     async def thread(self, ctx):
-        """Manage close, lock, open and unlock threads and also create threads."""
+        """Manage your threads in your server."""
 
     @thread.command()
     async def close(self, ctx):
@@ -72,16 +72,60 @@ class ThreadManager(commands.Cog):
         await ctx.send(f"Opened thread.")
 
     @thread.command()
-    @commands.bot_has_permissions(manage_channels=True, manage_threads=True)
     async def create(self, ctx, name: str):
         """Create a thread.
 
         Note: This will create a thread in the category under same channel you run the command in.
         (You will not be automatic joined to the thread, you will have to look in the thread list.)
+
+        **Threads Discovery Button**
+        - Navigate to the Threads Discovery button at the top of the channel. 
+        - Once you press the Thread Discovery button, you can now browse all threads in the channel.
+
+        **Channel Sidebar**
+        - Additionally, on the desktop and browser app, you can hover over the channel name in the sidebar with your mouse to view and discover active threads and then click the See All option to view all other threads. 
+
+        Check this image here: https://support.discord.com/hc/article_attachments/4403200760471/Thread_discover.png if you're confused to where the thread is.
         """
+        # Todo for the future: Add a way to add users to the thread when created.
         if not isinstance(ctx.channel, discord.TextChannel):
             return await ctx.send("This isn't a text channel.")
         if len(name) > 100:
             return await ctx.send("Thread name can't be longer than 100 characters.")
-        await ctx.channel.create_thread(name=name, auto_archive_duration=1440)
-        await ctx.send("Thread created.")
+        await ctx.channel.create_thread(name=name, auto_archive_duration=1440, reason=f"Thread created by {ctx.author} (ID: {ctx.author.id})")
+        await ctx.send(f"Thread created.")
+
+    @thread.command(aliases=["rmthread"])
+    async def deletethread(self, ctx):
+        """Delete a thread."""
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This isn't a thread.")
+        await ctx.channel.delete()
+        await ctx.send(f"Deleted thread.")
+
+    @thread.command()
+    async def rename(self, ctx, name: str):
+        """Rename a thread."""
+        audit_reason = f"Thread renamed by {ctx.author} (ID: {ctx.author.id})"
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This isn't a thread.")
+        if len(name) > 100:
+            return await ctx.send("Thread name can't be longer than 100 characters.")
+        await ctx.channel.edit(name=name, reason=audit_reason)
+        await ctx.send(f"Renamed thread.")
+
+    @thread.command(aliases=["rmuser"])
+    async def removeuser(self, ctx, user: discord.Member):
+        """Remove a user from a thread."""
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This isn't a thread.")
+        await ctx.channel.remove_user(user)
+        await ctx.send(f"Removed {user} from the thread.")
+
+    @thread.command()
+    async def adduser(self, ctx, user: discord.Member):
+        """Add a user to a thread."""
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This isn't a thread.")
+        await ctx.channel.add_user(user)
+        await ctx.send(f"Added {user} to the thread.")
