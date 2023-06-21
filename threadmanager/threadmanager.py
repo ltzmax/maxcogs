@@ -113,19 +113,3 @@ class ThreadManager(commands.Cog):
             return await ctx.send("Thread name can't be longer than 100 characters.")
         await ctx.channel.edit(name=name, reason=audit_reason)
         await ctx.send(f"Renamed thread.")
-
-    @thread.command(aliases=["rmuser"])
-    async def removeuser(self, ctx, user: discord.Member):
-        """Remove a user from a thread."""
-        if not isinstance(ctx.channel, discord.Thread):
-            return await ctx.send("This isn't a thread.")
-        await ctx.channel.remove_user(user)
-        await ctx.send(f"Removed {user} from the thread.")
-
-    @thread.command()
-    async def adduser(self, ctx, user: discord.Member):
-        """Add a user to a thread."""
-        if not isinstance(ctx.channel, discord.Thread):
-            return await ctx.send("This isn't a thread.")
-        await ctx.channel.add_user(user)
-        await ctx.send(f"Added {user} to the thread.")

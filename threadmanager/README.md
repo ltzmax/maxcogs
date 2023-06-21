@@ -28,13 +28,6 @@ Lock a thread.
 
 Rename a thread.
 
-## thread removeuser (Hybrid Command)
- - Usage: `[p]thread removeuser <user> `
- - Slash Usage: `/thread removeuser <user> `
- - Aliases: `rmuser`
-
-Remove a user from a thread.
-
 ## thread unlock (Hybrid Command)
  - Usage: `[p]thread unlock `
  - Slash Usage: `/thread unlock `
@@ -47,12 +40,6 @@ Unlock a thread.
  - Aliases: `rmthread`
 
 Delete a thread.
-
-## thread adduser (Hybrid Command)
- - Usage: `[p]thread adduser <user> `
- - Slash Usage: `/thread adduser <user> `
-
-Add a user to a thread.
 
 ## thread open (Hybrid Command)
  - Usage: `[p]thread open `
