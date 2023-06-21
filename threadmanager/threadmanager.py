@@ -50,7 +50,7 @@ class ThreadManager(commands.Cog):
         await ctx.channel.edit(locked=True, reason=audit_reason)
         await ctx.send(f"Locked thread.")
 
-    @thread.command(with_app_command=False)  # Chant use slash in archived threads.
+    @thread.command(with_app_command=False)  # Cant use slash in archived threads.
     async def unlock(self, ctx):
         """Unlock a thread."""
         audit_reason = f"Thread unlocked by {ctx.author} (ID: {ctx.author.id})"
@@ -59,7 +59,7 @@ class ThreadManager(commands.Cog):
         await ctx.channel.edit(locked=False, reason=audit_reason)
         await ctx.send(f"Unlocked thread.")
 
-    @thread.command(with_app_command=False)  # Chant use slash in archived threads.
+    @thread.command(with_app_command=False)  # Cant use slash in archived threads.
     async def open(self, ctx):
         """Open a thread.
 
