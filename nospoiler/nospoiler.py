@@ -63,14 +63,13 @@ class NoSpoiler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """handle spoiler messages"""
-        guild = message.guild
         if message.guild is None:
             return
         if not await self.config.guild(message.guild).enabled():
             return
         if not message.guild.me.guild_permissions.manage_messages:
-            if await self.config.guild(guild).enabled():
-                await self.config.guild(guild).enabled.set(False)
+            if await self.config.guild(message.guild).enabled():
+                await self.config.guild(message.guild).enabled.set(False)
                 log.info(
                     "Spoiler filter is now disabled in %s because I don't have manage_messages permission.",
                     guild.name,

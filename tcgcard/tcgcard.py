@@ -34,7 +34,7 @@ from redbot.core import commands, app_commands
 from redbot.core.utils.views import SimpleMenu
 
 
-class Tcgcard(commands.Cog):
+class TCGCard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
     __author__ = ["<@306810730055729152>", "MAX#1000"]

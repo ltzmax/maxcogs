@@ -27,7 +27,55 @@ import aiohttp
 import discord
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box
-from .embed import api_call, embedgen
+
+NEKOS_API = "https://nekos.best/api/v2/"
+ICON = "https://nekos.best/logo_short.png"
+
+
+async def api_call(self, ctx, endpoint: str):
+    await ctx.typing()
+    async with self.session.get(NEKOS_API + endpoint) as response:
+        if response.status != 200:
+            return await ctx.send("Something went wrong while trying to contact API.")
+        url = await response.json()
+        return url
+
+
+async def embedgen(self, ctx, url, endpoint: str):
+    result = url["results"][0]
+    artist_name = result["artist_name"]
+    source_url = result["source_url"]
+    artist_href = result["artist_href"]
+    image = result["url"]
+
+    emb = discord.Embed(
+        title=f"Here's a picture of a {endpoint}",
+        description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
+    )
+    emb.colour = await ctx.embed_color()
+    emb.set_image(url=image)
+    emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
+    view = discord.ui.View()
+    style = discord.ButtonStyle.gray
+    artist = discord.ui.Button(
+        style=style,
+        label="Artist",
+        url=artist_href,
+    )
+    source = discord.ui.Button(
+        style=style,
+        label="Source",
+        url=source_url,
+    )
+    image = discord.ui.Button(
+        style=style,
+        label="Open Image",
+        url=image,
+    )
+    view.add_item(item=artist)
+    view.add_item(item=source)
+    view.add_item(item=image)
+    await ctx.send(embed=emb, view=view)
 
 
 class NekosBest(commands.Cog):

@@ -181,6 +181,8 @@ class WhosThatPokemon(commands.Cog):
         **Arguments:**
         - `[generation]` - Where you choose any generation from gen 1 to gen 8.
         """
+        if generation is None:
+            return await ctx.send("Please specify generation from gen1 to gen8.")
         await ctx.typing()
         poke_id = generation or randint(1, 898)
         if_guessed_right = False

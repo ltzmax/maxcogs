@@ -31,7 +31,7 @@ from redbot.core.utils.views import SimpleMenu
 
 from .core import ACTIONS, ICON, NEKOS
 
-log = logging.getLogger("red.maxcogs.veryfun")
+log = logging.getLogger("red.maxcogs.roleplaycog")
 
 
 class RolePlayCog(commands.Cog):
@@ -125,7 +125,7 @@ class RolePlayCog(commands.Cog):
         """Feeds a user!"""
         await self.embedgen(ctx, member, "feed")
 
-    @commands.command()  # i want `hug` as alias. but i can't cause of core have their own hug command.
+    @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def hugs(self, ctx, member: discord.Member):
         """Hugs a user!"""
@@ -154,7 +154,7 @@ class RolePlayCog(commands.Cog):
     async def pokes(self, ctx, member: discord.Member):
         # Due to conflict with pokecord cog, it has to be pokes.
         # Feel free to use alias cog if you want poke only.
-        """Poke a user!"""
+        """Pokes at a user!"""
         await self.embedgen(ctx, member, "poke")
 
     @commands.command()
@@ -196,7 +196,7 @@ class RolePlayCog(commands.Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def blush(self, ctx, member: discord.Member):
-        """blushs!"""
+        """blushes!"""
         await self.embedgen(ctx, member, "blush")
 
     @commands.command()
@@ -208,7 +208,7 @@ class RolePlayCog(commands.Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def facepalm(self, ctx, member: discord.Member):
-        """Facepalm a user!"""
+        """Facepalm at a user!"""
         await self.embedgen(ctx, member, "facepalm")
 
     @commands.command()

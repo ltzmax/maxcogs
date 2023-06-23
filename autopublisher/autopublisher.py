@@ -62,12 +62,11 @@ class AutoPublisher(commands.Cog):
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
         """Publish message to news channel."""
-        guild = message.guild
         if message.guild is None:
             return
-        if not await self.config.guild(guild).toggle():
+        if not await self.config.guild(message.guild).toggle():
             return
-        if await self.bot.cog_disabled_in_guild(self, guild):
+        if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if (
             not message.guild.me.guild_permissions.manage_messages
