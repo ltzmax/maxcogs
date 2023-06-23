@@ -227,6 +227,6 @@ class WhosThatPokemon(commands.Cog):
         timeout = await view.wait()
         if timeout:
             return await ctx.send(
-                f"{ctx.author.mention} Time's up! You could not guess the pokemon in right time.",
+                f"{ctx.author.mention} Time's up! you could not guess the pokemon in time.\nThe pokemon was... **{english_name}**.",
             )
         await ctx.send(file=revealed_img, embed=embed)
