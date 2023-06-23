@@ -78,7 +78,7 @@ class AutoPublisher(commands.Cog):
                     "AutoPublisher has been disabled due to missing permissions."
                 )
             return
-        if "NEWS" not in guild.features:
+        if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
@@ -97,7 +97,9 @@ class AutoPublisher(commands.Cog):
                 asyncio.TimeoutError,
             ) as e:
                 log.error(
-                    "Failed to publish message in %s (%s)\n%s", guild.name, guild.id, e
+                    "Failed to publish message in {channel} due to {error}".format(
+                        channel=message.channel.mention, error=e
+                    )
                 )
 
     @commands.hybrid_group(aliases=["aph", "autopub"])
