@@ -71,8 +71,7 @@ class NoSpoiler(commands.Cog):
             if await self.config.guild(message.guild).enabled():
                 await self.config.guild(message.guild).enabled.set(False)
                 log.info(
-                    "Spoiler filter is now disabled in %s because I don't have manage_messages permission.",
-                    guild.name,
+                    f"Spoiler filter is now disabled because I don't have manage_messages permission."
                 )
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
@@ -103,8 +102,7 @@ class NoSpoiler(commands.Cog):
             if await self.config.guild(guild).enabled():
                 await self.config.guild(guild).enabled.set(False)
                 log.info(
-                    "Spoiler filter is now disabled in %s because I don't have manage_messages permission.",
-                    guild.name,
+                    f"Spoiler filter is now disabled because I don't have manage_messages permission."
                 )
             return
         if await self.bot.cog_disabled_in_guild(self, guild):
