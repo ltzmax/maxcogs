@@ -165,7 +165,7 @@ class WhosThatPokemon(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     async def whosthatpokemon(
-        self, ctx: commands.Context, generation: Optional[Generation] = None,
+        self, ctx: commands.Context, generation: Generation = None,
     ) -> None:
         """Guess Who's that Pokémon in 30 seconds!
 
@@ -178,8 +178,6 @@ class WhosThatPokemon(commands.Cog):
         **Arguments:**
         - `[generation]` - Where you choose any generation from gen 1 to gen 8.
         """
-        if generation is None:
-            return await ctx.send("Please specify generation from gen1 to gen8.")
         await ctx.typing()
         poke_id = generation or randint(1, 898)
         if_guessed_right = False
