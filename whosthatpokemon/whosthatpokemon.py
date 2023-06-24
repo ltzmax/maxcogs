@@ -165,14 +165,11 @@ class WhosThatPokemon(commands.Cog):
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(attach_files=True, embed_links=True)
     async def whosthatpokemon(
-        self, ctx: commands.Context, generation: Optional[Generation] = None
-    ):
+        self, ctx: commands.Context, generation: Optional[Generation] = None,
+    ) -> None:
         """Guess Who's that Pokémon in 30 seconds!
 
-        You can optionally specify generation from `gen1` to `gen8` only,
-        to restrict this guessing game to specific Pokemon generation.
-
-        Otherwise, it will default to pulling random pokemon from gen 1 to gen 8.
+        You can optionally specify generation from `gen1` to `gen8` only.
 
         **Example:**
         - `[p]whosthatpokemon` - This will start a new Generation.

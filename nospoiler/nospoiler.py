@@ -140,12 +140,12 @@ class NoSpoiler(commands.Cog):
                 f"Else {self.bot.user.name} will not be able to remove any spoiler messages."
             )
             return await ctx.send(msg, ephemeral=True)
-        enabled = await self.config.guild(guild).enabled()
+        enabled = await self.config.guild(ctx.guild).enabled()
         if enabled:
-            await self.config.guild(guild).enabled.set(False)
+            await self.config.guild(ctx.guild).enabled.set(False)
             await ctx.send("Spoiler filter is now disabled.")
         else:
-            await self.config.guild(guild).enabled.set(True)
+            await self.config.guild(ctx.guild).enabled.set(True)
             await ctx.send("Spoiler filter is now enabled.")
 
     @nospoiler.command(aliases=["view", "views"])
