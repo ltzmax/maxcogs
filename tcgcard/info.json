@@ -1,5 +1,5 @@
 {
-    "name": "Tcgcard",
+    "name": "TCGCard",
     "short": "Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game.",
     "description": "Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game (a.k.a Pok\u00e9mon TCG)",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
