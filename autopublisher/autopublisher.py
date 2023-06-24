@@ -21,11 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import discord
-import logging
 import asyncio
+import logging
 
-from redbot.core import commands, Config, app_commands
+import discord
+from redbot.core import Config, app_commands, commands
 from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.autopublisher")
@@ -74,9 +74,7 @@ class AutoPublisher(commands.Cog):
         ):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                log.info(
-                    "AutoPublisher has been disabled due to missing permissions."
-                )
+                log.info("AutoPublisher has been disabled due to missing permissions.")
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():

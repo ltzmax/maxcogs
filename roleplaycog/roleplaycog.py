@@ -26,7 +26,7 @@ import logging
 import aiohttp
 import discord
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import humanize_number, box
+from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import SimpleMenu
 
 from .core import ACTIONS, ICON, NEKOS
