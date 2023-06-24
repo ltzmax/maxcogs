@@ -128,8 +128,8 @@ class AutoPublisher(commands.Cog):
                 ephemeral=True,
             )
         if (
-            not guild.me.guild_permissions.manage_messages
-            or not guild.me.guild_permissions.view_channel
+            not ctx.guild.me.guild_permissions.manage_messages
+            or not ctx.guild.me.guild_permissions.view_channel
         ):
             return await ctx.send(
                 "I don't have `manage_messages` or `view_channel` permission to use this cog.",

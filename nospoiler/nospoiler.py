@@ -133,7 +133,6 @@ class NoSpoiler(commands.Cog):
 
         Spoiler filter is disabled by default.
         """
-        guild = ctx.guild
         if not ctx.bot_permissions.manage_messages:
             msg = (
                 f"{self.bot.user.name} does not have permission to `manage_messages` to remove spoiler.\n"
