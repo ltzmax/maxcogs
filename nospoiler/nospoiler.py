@@ -21,13 +21,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import discord
-import re
 import logging
+import re
 from typing import Union
 
+import discord
+from redbot.core import Config, app_commands, commands
 from redbot.core.utils.chat_formatting import box
-from redbot.core import Config, commands, app_commands
 
 SPOILER_REGEX = re.compile(r"(?s)\|\|(.+?)\|\|")
 
