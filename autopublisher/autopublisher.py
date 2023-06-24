@@ -122,8 +122,7 @@ class AutoPublisher(commands.Cog):
         - This cog requires News Channel. If you don't have it, you can't use this cog.
             - Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
         """
-        guild = ctx.guild
-        if "NEWS" not in guild.features:
+        if "NEWS" not in ctx.guild.features:
             return await ctx.send(
                 "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n{DISCORD_INFO}".format(
                     DISCORD_INFO=DISCORD_INFO
