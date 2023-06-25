@@ -32,6 +32,4 @@ black <source_file_or_directory>
 ```yaml
 isort <source_file_or_directory>
 ```
-## Versions:
-- Version `22.23.0` of black.
-- Version `5.10.1` of isort.
+
