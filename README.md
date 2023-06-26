@@ -1,7 +1,7 @@
 <h1 align="center">MAXCOGS</h1>
 
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/maxbooiii/maxcogs/master.svg)](https://results.pre-commit.ci/latest/github/maxbooiii/maxcogs/master)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+## Contact
+- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #forum_othercogs then go to #maxcogs channel or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX (username: ltzmax) (345628097929936898)
 
 `[p]` is your prefix.
 
@@ -34,8 +34,7 @@ To install any cog you want:
 
 - [Preda](https://github.com/PredaaA/predacogs) For help.
 
-## Support
-- You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #forum_othercogs then go to #maxcogs channel or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX (username: imaxburger) (345628097929936898)
-
 ## License
-This repo is under MIT LICENSE. Please see [`LICENSE file`](https://github.com/ltzmax/maxcogs/blob/master/LICENSE).
+My cogs are under the MIT License. Please see [`LICENSE file`](https://github.com/ltzmax/maxcogs/blob/master/LICENSE) for more information.
+
+Copyright (c) 2022 ltzmax
