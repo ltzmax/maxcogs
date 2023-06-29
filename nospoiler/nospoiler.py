@@ -121,7 +121,7 @@ class NoSpoiler(commands.Cog):
         if SPOILER_REGEX.search(message.content):
             await message.delete()
 
-    @commands.hybrid_group()
+    @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def nospoiler(self, ctx):
@@ -162,7 +162,7 @@ class NoSpoiler(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
-    @nospoiler.command(with_app_command=False)
+    @nospoiler.command()
     async def version(self, ctx: commands.Context):
         """Shows the version of the cog."""
         version = self.__version__
