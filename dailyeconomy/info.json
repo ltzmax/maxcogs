@@ -1,0 +1,27 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "DailyEconomy",
+    "install_msg": "Thanks for installing.",
+    "description": "Receive a daily amount of economy credits.",
+    "short": "Receive a daily amount of economy credits.",
+    "hidden": false,
+    "min_bot_version": "3.5.0",
+    "tags": [
+        "economy",
+        "daily",
+        "bank",
+        "credits"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "min_python_version": [
+        3,
+        8,
+        1
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
