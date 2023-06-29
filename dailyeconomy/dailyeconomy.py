@@ -91,13 +91,12 @@ class DailyEconomy(commands.Cog):
         await ctx.send(embed=embed)
 
     @dailyset.command()
-    @bank.is_owner_if_bank_global()
     async def view(self, ctx: commands.Context):
-        """View the maximum amount of credits you can receive from daily"""
+        """View the current daily limit."""
         daily = await self.config.daily()
         embed = discord.Embed(
             title="Daily Economy Settings",
-            description=f"Daily limit set to `{daily}`",
+            description=f"Daily limit is set to `{daily}`",
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
