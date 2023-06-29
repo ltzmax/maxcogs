@@ -17,7 +17,7 @@ Daily Economy Settings
  - Usage: `[p]dailyset view `
  - Checks: `server_only and is_owner_if_bank_global`
 
-View the maximum amount of credits you can receive from daily
+View the current daily limit.
 
 ## dailyset amount
  - Usage: `[p]dailyset amount <amount> `
