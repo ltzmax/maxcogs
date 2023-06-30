@@ -69,7 +69,7 @@ class DailyEconomy(commands.Cog):
 
     @commands.group()
     @commands.bot_has_permissions(embed_links=True)
-    @commands.guildowner_or_permissions(administrator=True)
+    @commands.admin_or_permissions(administrator=True)
     async def dailyset(self, ctx: commands.Context):
         """Daily Economy Settings"""
 
