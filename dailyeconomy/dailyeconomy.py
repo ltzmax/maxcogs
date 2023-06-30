@@ -11,7 +11,7 @@ class DailyEconomy(commands.Cog):
     """Receive a daily amount of economy credits"""
 
     __author__ = "MAX"
-    __version__ = "1.0.0"
+    __version__ = "1.1.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/dailyeconomy/README.md"
 
     def __init__(self, bot: Red):
@@ -37,7 +37,8 @@ class DailyEconomy(commands.Cog):
     async def embed(self, ctx: commands.Context):
         """Returns a embed with the daily cooldown"""
         await ctx.typing()
-        daily = await self.config.daily()
+        data = await self.config.guild(ctx.guild).all()
+        daily = data["daily"]
         currency_name = await bank.get_currency_name(ctx.guild)
         amount_to_deposit = random.randrange(daily)
         try:
@@ -82,7 +83,9 @@ class DailyEconomy(commands.Cog):
         """
         if amount < 0 or amount > 30000:
             return await ctx.send("The amount must be between 0 and 30000.")
-        await self.config.daily.set(amount)
+        data = await self.config.guild(ctx.guild).all()
+        data["daily"] = amount
+        await self.config.guild(ctx.guild).set(data)
         embed = discord.Embed(
             title="Successfully set!",
             description=f"Daily limit set to `{amount}`",
@@ -93,10 +96,11 @@ class DailyEconomy(commands.Cog):
     @dailyset.command()
     async def view(self, ctx: commands.Context):
         """View the current daily limit."""
-        daily = await self.config.daily()
+        data = await self.config.guild(ctx.guild).all()
+        daily = data["daily"]
         embed = discord.Embed(
-            title="Daily Economy Settings",
-            description=f"Daily limit is set to `{daily}`",
+            title="Daily Limit",
+            description=f"The current daily limit is `{daily}`",
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
