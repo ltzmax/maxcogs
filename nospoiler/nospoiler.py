@@ -38,7 +38,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "0.2.24"
+    __version__ = "1.5.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
@@ -48,6 +48,7 @@ class NoSpoiler(commands.Cog):
         )
         default_guild = {
             "enabled": False,
+            "log_channel": None,
         }
         self.config.register_guild(**default_guild)
 
@@ -81,11 +82,31 @@ class NoSpoiler(commands.Cog):
         if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
+            log_channel = await self.config.guild(message.guild).log_channel()
+            if log_channel:
+                log_channel = message.guild.get_channel(log_channel)
+                if log_channel:
+                    embed = discord.Embed(
+                        title="Spoiler message deleted",
+                        description=f"**Author:** {message.author.mention} ({message.author.id}) \n**Channel:** {message.channel.mention}\n**Message:** {message.content}",
+                        color=await self.bot.get_embed_color(log_channel),
+                    )
+                    await log_channel.send(embed=embed)
             await message.delete()
             return
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
+                    log_channel = await self.config.guild(message.guild).log_channel()
+                    if log_channel:
+                        log_channel = message.guild.get_channel(log_channel)
+                        if log_channel:
+                            embed = discord.Embed(
+                                title="Spoiler attachment deleted",
+                                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}\n**Attachment:** {attachment.url}",
+                                color=await self.bot.get_embed_color(log_channel),
+                            )
+                            await log_channel.send(embed=embed)
                     await message.delete()
 
     @commands.Cog.listener()
@@ -119,6 +140,16 @@ class NoSpoiler(commands.Cog):
         if message.author.bot:
             return
         if SPOILER_REGEX.search(message.content):
+            log_channel = await self.config.guild(guild).log_channel()
+            if log_channel:
+                log_channel = guild.get_channel(log_channel)
+                if log_channel:
+                    embed = discord.Embed(
+                        title="Spoiler message edited",
+                        description=f"**Author:** {message.author.mention}\n**Channel:** {message.channel.mention}\n**Message:** {message.content}",
+                        color=await self.bot.get_embed_color(log_channel),
+                    )
+                    await log_channel.send(embed=embed)
             await message.delete()
 
     @commands.group()
@@ -148,15 +179,29 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).enabled.set(True)
             await ctx.send("Spoiler filter is now enabled.")
 
+    @nospoiler.command()
+    async def logchannel(self, ctx, channel: discord.TextChannel = None):
+        """Set the channel where the bot will log the deleted spoiler messages.
+
+        If the channel is not set, the bot will not log the deleted spoiler messages.
+        """
+        if channel is None:
+            await self.config.guild(ctx.guild).log_channel.set(None)
+            await ctx.send("Log channel has been reset.")
+        else:
+            await self.config.guild(ctx.guild).log_channel.set(channel.id)
+            await ctx.send(f"Log channel has been set to {channel.mention}.")
+
     @nospoiler.command(aliases=["view", "views"])
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx):
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
+        log_channel = config["log_channel"]
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**.",
+            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**\nLog Channel: {log_channel}.",
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
