@@ -185,6 +185,16 @@ class NoSpoiler(commands.Cog):
 
         If the channel is not set, the bot will not log the deleted spoiler messages.
         """
+        if (
+            not channel.permissions_for(ctx.me).send_messages
+            or not channel.permissions_for(ctx.me).embed_links
+        ):
+            msg = (
+                f"{self.bot.user.name} does not have permission to `send_messages` or `embed_links` to send log messages.\n"
+                "It need this permission before you can set the log channel. "
+                f"Else {self.bot.user.name} will not be able to send any log messages."
+            )
+            return await ctx.send(msg)
         if channel is None:
             await self.config.guild(ctx.guild).log_channel.set(None)
             await ctx.send("Log channel has been reset.")
