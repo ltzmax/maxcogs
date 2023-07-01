@@ -88,7 +88,7 @@ class NoSpoiler(commands.Cog):
                 if log_channel:
                     embed = discord.Embed(
                         title="Spoiler message deleted",
-                        description=f"**Author:** {message.author.mention} ({message.author.id}) \n**Channel:** {message.channel.mention}\n**Message:** {message.content}",
+                        description=f"**Author:** {message.author.mention} ({message.author.id}) \n**Channel:** {message.channel.mention}\n**Message:**\n{message.content}",
                         color=await self.bot.get_embed_color(log_channel),
                     )
                     await log_channel.send(embed=embed)
@@ -103,7 +103,7 @@ class NoSpoiler(commands.Cog):
                         if log_channel:
                             embed = discord.Embed(
                                 title="Spoiler attachment deleted",
-                                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}\n**Attachment:** {attachment.url}",
+                                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}\n**Attachment:**\n{message.content} {attachment.url}",
                                 color=await self.bot.get_embed_color(log_channel),
                             )
                             await log_channel.send(embed=embed)
