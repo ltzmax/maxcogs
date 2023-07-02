@@ -11,7 +11,7 @@ class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
     poke = discord.ui.TextInput(
         label="Pokémon",
         placeholder="Enter the pokémon here...",
-        max_length=14,
+        max_length=12,
         required=True,
     )
 
