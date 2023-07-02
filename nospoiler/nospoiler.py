@@ -38,7 +38,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__ = "MAX"
-    __version__ = "1.5.0"
+    __version__ = "1.5.2"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot):
@@ -61,6 +61,46 @@ class NoSpoiler(commands.Cog):
         """Nothing to delete."""
         return
 
+    async def log_channel_embed(self, guild: discord.Guild, message: discord.Message, attachment: Union[discord.Attachment, None] = None):
+        """Send embed to log channel."""
+        log_channel = await self.config.guild(guild).log_channel()
+        if log_channel is None:
+            return
+        log_channel = guild.get_channel(log_channel)
+        if log_channel is None:
+            return
+        if not log_channel.permissions_for(guild.me).send_messages or not log_channel.permissions_for(guild.me).embed_links:
+            await self.config.guild(guild).log_channel.set(None)
+            log.info(
+                f"Spoiler filter is now disabled because I don't have send_messages permission in {log_channel.mention}."
+            )
+            return
+        if message.content:
+            embed = discord.Embed(
+                title="Spoiler Message Deleted",
+                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}\n**Message:** {box(message.content)}",
+                color=await self.bot.get_embed_color(log_channel),
+            )
+        else:
+            embed = discord.Embed(
+                title="Spoiler Message Deleted",
+                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}",
+                color=await self.bot.get_embed_color(log_channel),
+            )
+        if attachment is not None:
+            embed.add_field(name="Attachment:", value=attachment.url)
+            view = discord.ui.View()
+            style = discord.ButtonStyle.gray
+            attachment = discord.ui.Button(
+                style=style, 
+                label="Attachment URL", 
+                url=attachment.url
+            )
+            view.add_item(item=attachment)
+            await log_channel.send(embed=embed, view=view)
+        else:
+            await log_channel.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """handle spoiler messages"""
@@ -82,31 +122,13 @@ class NoSpoiler(commands.Cog):
         if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
-            log_channel = await self.config.guild(message.guild).log_channel()
-            if log_channel:
-                log_channel = message.guild.get_channel(log_channel)
-                if log_channel:
-                    embed = discord.Embed(
-                        title="Spoiler message deleted",
-                        description=f"**Author:** {message.author.mention} ({message.author.id}) \n**Channel:** {message.channel.mention}\n**Message:**\n{message.content}",
-                        color=await self.bot.get_embed_color(log_channel),
-                    )
-                    await log_channel.send(embed=embed)
+            await self.log_channel_embed(message.guild, message)
             await message.delete()
             return
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
-                    log_channel = await self.config.guild(message.guild).log_channel()
-                    if log_channel:
-                        log_channel = message.guild.get_channel(log_channel)
-                        if log_channel:
-                            embed = discord.Embed(
-                                title="Spoiler attachment deleted",
-                                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}\n**Attachment:**\n{message.content} {attachment.url}",
-                                color=await self.bot.get_embed_color(log_channel),
-                            )
-                            await log_channel.send(embed=embed)
+                    await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
 
     @commands.Cog.listener()
@@ -140,16 +162,7 @@ class NoSpoiler(commands.Cog):
         if message.author.bot:
             return
         if SPOILER_REGEX.search(message.content):
-            log_channel = await self.config.guild(guild).log_channel()
-            if log_channel:
-                log_channel = guild.get_channel(log_channel)
-                if log_channel:
-                    embed = discord.Embed(
-                        title="Spoiler message edited",
-                        description=f"**Author:** {message.author.mention}\n**Channel:** {message.channel.mention}\n**Message:** {message.content}",
-                        color=await self.bot.get_embed_color(log_channel),
-                    )
-                    await log_channel.send(embed=embed)
+            await self.log_channel_embed(guild, message)
             await message.delete()
 
     @commands.group()
@@ -185,10 +198,7 @@ class NoSpoiler(commands.Cog):
 
         If the channel is not set, the bot will not log the deleted spoiler messages.
         """
-        if (
-            not channel.permissions_for(ctx.me).send_messages
-            or not channel.permissions_for(ctx.me).embed_links
-        ):
+        if not ctx.bot_permissions.send_messages or not ctx.bot_permissions.embed_links:
             msg = (
                 f"{self.bot.user.name} does not have permission to `send_messages` or `embed_links` to send log messages.\n"
                 "It need this permission before you can set the log channel. "
