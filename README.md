@@ -21,7 +21,6 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 0.1.10 | ltzmax | ✅ |
-| DailyEconomy | Receive a daily amount of economy credits | 1.1.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.2 | MAX | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |

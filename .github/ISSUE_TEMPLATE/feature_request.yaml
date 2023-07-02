@@ -16,7 +16,6 @@ body:
       description: What cog are you feature requesting to?
       options:
         - autopublisher
-        - dailyeconomy
         - nospoiler
         - nekosbest
         - tcgcard
