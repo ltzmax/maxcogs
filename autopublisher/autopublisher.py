@@ -74,14 +74,18 @@ class AutoPublisher(commands.Cog):
         ):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                log.info("AutoPublisher has been disabled due to missing permissions.")
+                log.info("AutoPublisher has been disabled due to missing permissions in {guild}.".format(guild=message.guild.name))
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
-                    "AutoPublisher has been disabled due to missing News Channel feature."
+                    "AutoPublisher has been disabled due to missing News Channel feature in {guild}.".format(
+                        guild=message.guild.name
+                    )
                 )
+            return
+        if message.author.bot:
             return
         if not message.channel.is_news():
             return
