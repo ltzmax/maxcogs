@@ -23,41 +23,42 @@ SOFTWARE.
 """
 import logging
 import re
-from typing import Union
+from typing import Union, Final, Pattern, Dict, Optional, Any
 
 import discord
-from redbot.core import Config, app_commands, commands
+from redbot.core.bot import Red
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 
-SPOILER_REGEX = re.compile(r"(?s)\|\|(.+?)\|\|")
+SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 
-log = logging.getLogger("red.maxcogs.nospoiler")
+log: logging.Logger = logging.getLogger("red.maxcogs.nospoiler")
 
 
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
-    __author__ = "MAX"
-    __version__ = "1.5.2"
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
+    __author__: Final[str] = "MAX"
+    __version__: Final[str] = "1.5.2"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.config = Config.get_conf(
+    def __init__(self, bot: Red) -> None:
+        self.bot: Red = bot
+        self.config: Config = Config.get_conf(
             self, identifier=1234567890, force_registration=True
         )
-        default_guild = {
+        default_guild: Dict[str, Union[bool, Optional[int]]] = {
             "enabled": False,
             "log_channel": None,
         }
         self.config.register_guild(**default_guild)
 
-    def format_help_for_context(self, ctx):
+    def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
         return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
 
@@ -66,7 +67,7 @@ class NoSpoiler(commands.Cog):
         guild: discord.Guild,
         message: discord.Message,
         attachment: Union[discord.Attachment, None] = None,
-    ):
+    ) -> None:
         """Send embed to log channel."""
         log_channel = await self.config.guild(guild).log_channel()
         log_channel = guild.get_channel(log_channel)
@@ -106,7 +107,7 @@ class NoSpoiler(commands.Cog):
             await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         """handle spoiler messages"""
         if message.guild is None:
             return
@@ -136,7 +137,7 @@ class NoSpoiler(commands.Cog):
                     await message.delete()
 
     @commands.Cog.listener()
-    async def on_raw_message_edit(self, payload):
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
         """handle edits"""
         if payload.guild_id is None:
             return
@@ -172,11 +173,11 @@ class NoSpoiler(commands.Cog):
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
-    async def nospoiler(self, ctx):
+    async def nospoiler(self, ctx: commands.Context) -> None:
         """Manage the spoiler filter settings."""
 
     @nospoiler.command()
-    async def toggle(self, ctx):
+    async def toggle(self, ctx: commands.Context) -> None:
         """Toggle the spoiler filter on or off.
 
         Spoiler filter is disabled by default.
@@ -187,7 +188,8 @@ class NoSpoiler(commands.Cog):
                 "It need this permission before you can enable the spoiler filter. "
                 f"Else {self.bot.user.name} will not be able to remove any spoiler messages."
             )
-            return await ctx.send(msg, ephemeral=True)
+            await ctx.send(msg, ephemeral=True)
+            return
         enabled = await self.config.guild(ctx.guild).enabled()
         if enabled:
             await self.config.guild(ctx.guild).enabled.set(False)
@@ -197,7 +199,7 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Spoiler filter is now enabled.")
 
     @nospoiler.command()
-    async def logchannel(self, ctx, channel: discord.TextChannel = None):
+    async def logchannel(self, ctx: commands.Context, channel: discord.TextChannel = None) -> None:
         """Set the channel where the bot will log the deleted spoiler messages.
 
         If the channel is not set, the bot will not log the deleted spoiler messages.
@@ -208,7 +210,8 @@ class NoSpoiler(commands.Cog):
                 "It need this permission before you can set the log channel. "
                 f"Else {self.bot.user.name} will not be able to send any log messages."
             )
-            return await ctx.send(msg)
+            await ctx.send(msg)
+            return
         if channel is None:
             await self.config.guild(ctx.guild).log_channel.set(None)
             await ctx.send("Log channel has been reset.")
@@ -218,7 +221,7 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command(aliases=["view", "views"])
     @commands.bot_has_permissions(embed_links=True)
-    async def settings(self, ctx):
+    async def settings(self, ctx: commands.Context) -> None:
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
@@ -232,7 +235,7 @@ class NoSpoiler(commands.Cog):
 
     @commands.bot_has_permissions(embed_links=True)
     @nospoiler.command()
-    async def version(self, ctx: commands.Context):
+    async def version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
