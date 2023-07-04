@@ -85,8 +85,6 @@ class AutoPublisher(commands.Cog):
                     )
                 )
             return
-        if message.author.bot:
-            return
         if not message.channel.is_news():
             return
         if message.channel.is_news():
