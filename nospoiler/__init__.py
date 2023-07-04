@@ -1,3 +1,5 @@
+from redbot.core.bot import Red
+
 from .nospoiler import NoSpoiler
 
 __red_end_user_data_statement__ = (
@@ -5,5 +7,6 @@ __red_end_user_data_statement__ = (
 )
 
 
-async def setup(bot):
-    await bot.add_cog(NoSpoiler(bot))
+async def setup(bot: Red) -> None:
+    cog = NoSpoiler(bot)
+    await bot.add_cog(cog)

@@ -7,5 +7,6 @@ __red_end_user_data_statement__ = (
 )
 
 
-async def setup(bot: Red):
-    await bot.add_cog(TCGCard(bot))
+async def setup(bot: Red) -> None:
+    cog = TCGCard(bot)
+    await bot.add_cog(cog)

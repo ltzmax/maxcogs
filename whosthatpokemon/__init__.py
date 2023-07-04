@@ -4,4 +4,5 @@ from .whosthatpokemon import WhosThatPokemon
 
 
 async def setup(bot: Red):
-    await bot.add_cog(WhosThatPokemon(bot))
+    cog = WhosThatPokemon(bot)
+    await bot.add_cog(cog)

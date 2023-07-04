@@ -1,4 +1,5 @@
 import random
+from typing import Dict, Final, Any, Optional
 
 import discord
 from redbot.core import Config, bank, commands
@@ -10,31 +11,32 @@ from redbot.core.utils.chat_formatting import box, humanize_number
 class DailyEconomy(commands.Cog):
     """Receive a daily amount of economy credits"""
 
-    __author__ = "MAX"
-    __version__ = "1.1.0"
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/dailyeconomy/README.md"
+    __author__: Final[str] = "MAX"
+    __version__: Final[str] = "1.1.0"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/dailyeconomy/README.md"
 
     def __init__(self, bot: Red):
-        self.bot = bot
-        self.config = Config.get_conf(
+        self.bot: Red = bot
+        self.config: Config = Config.get_conf(
             self, identifier=345628097929936898, force_registration=True
         )
-        default_guild = {"daily": 3000}
+        default_guild: Dict[str, int] = {"daily": 3000}
         self.config.register_guild(**default_guild)
 
-    def format_help_for_context(self, ctx):
+    def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
         return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs: Any):
         """Nothing to delete."""
         return
 
-    def cooldown(ctx):
+    @staticmethod
+    def cooldown(ctx: commands.Context) -> commands.Cooldown:
         return commands.Cooldown(1, 86400)
 
-    async def embed(self, ctx: commands.Context):
+    async def embed(self, ctx: commands.Context) -> Optional[discord.Message]:
         """Returns a embed with the daily cooldown"""
         await ctx.typing()
         data = await self.config.guild(ctx.guild).all()
@@ -45,9 +47,10 @@ class DailyEconomy(commands.Cog):
             await bank.deposit_credits(ctx.author, amount_to_deposit)
         except BalanceTooHigh as e:
             await bank.set_balance(ctx.author, e.max_balance)
-            return await ctx.send(
+            await ctx.send(
                 f"{ctx.author.mention} Your balance is too high to receive a daily."
             )
+            return
 
         embed = discord.Embed(
             title="Daily Credits",
@@ -59,7 +62,7 @@ class DailyEconomy(commands.Cog):
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.dynamic_cooldown(cooldown, type=commands.BucketType.user)
-    async def daily(self, ctx: commands.Context):
+    async def daily(self, ctx: commands.Context) -> None:
         """Claim your daily credits
 
         You can claim your daily credits once every 24 hours.
@@ -70,19 +73,17 @@ class DailyEconomy(commands.Cog):
     @commands.group()
     @commands.bot_has_permissions(embed_links=True)
     @commands.admin_or_permissions(administrator=True)
-    async def dailyset(self, ctx: commands.Context):
+    async def dailyset(self, ctx: commands.Context) -> None:
         """Daily Economy Settings"""
 
     @dailyset.command()
     @bank.is_owner_if_bank_global()
-    async def amount(self, ctx: commands.Context, amount: int):
+    async def amount(self, ctx: commands.Context, amount: commands.Range[int, 0, 30000]) -> None:
         """Set the maximum amount of credits you can receive from daily
 
         The default amount is 3000.
         The amount must be between 0 and 30000.
         """
-        if amount < 0 or amount > 30000:
-            return await ctx.send("The amount must be between 0 and 30000.")
         data = await self.config.guild(ctx.guild).all()
         data["daily"] = amount
         await self.config.guild(ctx.guild).set(data)
@@ -94,7 +95,7 @@ class DailyEconomy(commands.Cog):
         await ctx.send(embed=embed)
 
     @dailyset.command()
-    async def view(self, ctx: commands.Context):
+    async def view(self, ctx: commands.Context) -> None:
         """View the current daily limit."""
         data = await self.config.guild(ctx.guild).all()
         daily = data["daily"]
@@ -106,7 +107,7 @@ class DailyEconomy(commands.Cog):
         await ctx.send(embed=embed)
 
     @dailyset.command()
-    async def dailyversion(self, ctx: commands.Context):
+    async def dailyversion(self, ctx: commands.Context) -> None:
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
