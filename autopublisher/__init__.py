@@ -1,3 +1,5 @@
+from redbot.core.bot import Red
+
 from .autopublisher import AutoPublisher
 
 __red_end_user_data_statement__ = (
@@ -5,5 +7,6 @@ __red_end_user_data_statement__ = (
 )
 
 
-async def setup(bot):
-    await bot.add_cog(AutoPublisher(bot))
+async def setup(bot: Red) -> None:
+    cog = AutoPublisher(bot)
+    await bot.add_cog(cog)
