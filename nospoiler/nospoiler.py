@@ -61,18 +61,24 @@ class NoSpoiler(commands.Cog):
         """Nothing to delete."""
         return
 
-    async def log_channel_embed(self, guild: discord.Guild, message: discord.Message, attachment: Union[discord.Attachment, None] = None):
+    async def log_channel_embed(
+        self,
+        guild: discord.Guild,
+        message: discord.Message,
+        attachment: Union[discord.Attachment, None] = None,
+    ):
         """Send embed to log channel."""
         log_channel = await self.config.guild(guild).log_channel()
-        if log_channel is None:
-            return
         log_channel = guild.get_channel(log_channel)
         if log_channel is None:
             return
-        if not log_channel.permissions_for(guild.me).send_messages or not log_channel.permissions_for(guild.me).embed_links:
+        if (
+            not log_channel.permissions_for(guild.me).send_messages
+            or not log_channel.permissions_for(guild.me).embed_links
+        ):
             await self.config.guild(guild).log_channel.set(None)
             log.info(
-                f"Spoiler filter is now disabled because I don't have send_messages permission in {log_channel.mention}."
+                f"Spoiler filter is now disabled because I don't have send_messages or embed_links permission in {log_channel.mention}."
             )
             return
         if message.content:
@@ -92,9 +98,7 @@ class NoSpoiler(commands.Cog):
             view = discord.ui.View()
             style = discord.ButtonStyle.gray
             attachment = discord.ui.Button(
-                style=style, 
-                label="Attachment URL", 
-                url=attachment.url
+                style=style, label="Attachment URL", url=attachment.url
             )
             view.add_item(item=attachment)
             await log_channel.send(embed=embed, view=view)
