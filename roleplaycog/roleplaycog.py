@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from logging import LoggerAdapter
 from typing import Final, Any
 
 import aiohttp
@@ -45,6 +46,8 @@ class RolePlayCog(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
+        
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
 
     async def cog_unload(self):
         await self.session.close()

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import re
+from logging import LoggerAdapter
 from typing import Union, Final, Pattern, Dict, Optional, Any
 
 import discord
@@ -52,6 +53,8 @@ class NoSpoiler(commands.Cog):
             "log_channel": None,
         }
         self.config.register_guild(**default_guild)
+        
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -78,7 +81,7 @@ class NoSpoiler(commands.Cog):
             or not log_channel.permissions_for(guild.me).embed_links
         ):
             await self.config.guild(guild).log_channel.set(None)
-            log.info(
+            self.log.info(
                 f"Spoiler filter is now disabled because I don't have send_messages or embed_links permission in {log_channel.mention}."
             )
             return
@@ -116,7 +119,7 @@ class NoSpoiler(commands.Cog):
         if not message.guild.me.guild_permissions.manage_messages:
             if await self.config.guild(message.guild).enabled():
                 await self.config.guild(message.guild).enabled.set(False)
-                log.info(
+                self.log.info(
                     f"Spoiler filter is now disabled because I don't have manage_messages permission."
                 )
             return
@@ -149,7 +152,7 @@ class NoSpoiler(commands.Cog):
         if not guild.me.guild_permissions.manage_messages:
             if await self.config.guild(guild).enabled():
                 await self.config.guild(guild).enabled.set(False)
-                log.info(
+                self.log.info(
                     f"Spoiler filter is now disabled because I don't have manage_messages permission."
                 )
             return

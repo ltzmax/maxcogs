@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
+from logging import LoggerAdapter
 from typing import Dict, Final, Any
 
 import discord
@@ -51,6 +52,8 @@ class AutoPublisher(commands.Cog):
             "toggle": False,
         }
         self.config.register_guild(**default_guild)
+        
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -76,12 +79,12 @@ class AutoPublisher(commands.Cog):
         ):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                log.info("AutoPublisher has been disabled due to missing permissions in {guild}.".format(guild=message.guild.name))
+                self.log.info("AutoPublisher has been disabled due to missing permissions in {guild}.".format(guild=message.guild.name))
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                log.info(
+                self.log.info(
                     "AutoPublisher has been disabled due to missing News Channel feature in {guild}.".format(
                         guild=message.guild.name
                     )
@@ -97,7 +100,7 @@ class AutoPublisher(commands.Cog):
                 discord.Forbidden,
                 asyncio.TimeoutError,
             ) as e:
-                log.error(
+                self.log.error(
                     "Failed to publish message in {channel} due to {error}".format(
                         channel=message.channel.mention, error=e
                     )

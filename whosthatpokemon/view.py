@@ -1,9 +1,10 @@
-import logging
 from typing import List, Any
+from logging import LoggerAdapter
 
 import discord
+from red_commons.logging import RedTraceLogger, getLogger
 
-log: logging.Logger = logging.getLogger("red.maxcogs.whosthatpokemon.view")
+log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon.view")
 
 
 # Mainly flame who build this view and modal. All credits goes to flame for that work.
