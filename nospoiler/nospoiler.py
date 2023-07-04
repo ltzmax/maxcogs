@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
 import re
 from typing import Union, Final, Pattern, Dict, Optional, Any
 
@@ -29,10 +28,11 @@ import discord
 from redbot.core.bot import Red
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
+from red_commons.logging import RedTraceLogger, getLogger
 
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 
-log: logging.Logger = logging.getLogger("red.maxcogs.nospoiler")
+log: RedTraceLogger = getLogger("red.maxcogs.nospoiler")
 
 
 class NoSpoiler(commands.Cog):

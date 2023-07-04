@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
 from typing import Final, Any
 
 import aiohttp
@@ -29,10 +28,11 @@ import discord
 from redbot.core.bot import Red
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box
+from red_commons.logging import RedTraceLogger, getLogger
 
 from .core import ACTIONS, ICON, NEKOS
 
-log: logging.Logger = logging.getLogger("red.maxcogs.roleplaycog")
+log: RedTraceLogger = getLogger("red.maxcogs.roleplaycog")
 
 
 class RolePlayCog(commands.Cog):

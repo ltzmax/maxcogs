@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
-import logging
 from typing import Dict, Final, Any
 
 import discord
 from redbot.core.bot import Red
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
+from red_commons.logging import RedTraceLogger, getLogger
 
-log: logging.Logger = logging.getLogger("red.maxcogs.autopublisher")
+log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
 DISCORD_INFO: Final[str] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
 
