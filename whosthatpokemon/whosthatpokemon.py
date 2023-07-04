@@ -56,6 +56,13 @@ class WhosThatPokemon(commands.Cog):
     def __init__(self, bot: Red):
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self.config = Config.get_conf(
+            self, identifier=1234567890, force_registration=True
+        )
+        default_user = {
+            "total_correct_guesses": 0,
+        }
+        self.config.register_user(**default_user)
 
     async def cog_unload(self) -> None:
         await self.session.close()
