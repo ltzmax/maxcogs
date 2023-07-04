@@ -27,7 +27,6 @@ class WhosThatPokemonView(discord.ui.View):
     def __init__(self, eligible_names: List[Any]) -> None:
         self.eligible_names = eligible_names
         self.winner = None
-        self.message: discord.Message = None
         super().__init__(timeout=30.0)
 
     async def on_timeout(self) -> None:
