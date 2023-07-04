@@ -28,7 +28,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from random import randint
-from typing import List, Optional
+from typing import List, Optional, Final, Any, Dict
 
 import aiohttp
 import discord
@@ -38,46 +38,38 @@ from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import bundled_data_path
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
-from redbot.core.utils.predicates import MessagePredicate
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 from .converter import Generation
 from .view import WhosThatPokemonView
 
-API_URL = "https://pokeapi.co/api/v2"
+API_URL: Final[str] = "https://pokeapi.co/api/v2"
 
 
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __author__ = humanize_list(["<@306810730055729152>", "MAX", "flame442"])
-    __version__ = "1.3.0"
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
-
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad!"""
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+    __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000", "Flame (Flame#2941)"]
+    __version__ : Final[str]= "1.2.7"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
 
     def __init__(self, bot: Red):
-        self.bot = bot
-        self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(
-            self, identifier=1234567890, force_registration=True
-        )
-        default_user = {
-            "total_correct_guesses": 0,
-        }
-        self.config.register_user(**default_user)
+        self.bot: Red = bot
+        self.session: aiohttp.ClientSession = aiohttp.ClientSession()
 
     async def cog_unload(self) -> None:
         await self.session.close()
 
-    async def red_delete_data_for_user(self, **kwargs) -> None:
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {humanize_list(self.__author__)}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
 
-    async def get_data(self, url: str):
+    async def get_data(self, url: str) -> Dict[str, Any]:
         try:
             async with self.session.get(url) as response:
                 if response.status != 200:
@@ -86,7 +78,7 @@ class WhosThatPokemon(commands.Cog):
         except asyncio.TimeoutError:
             return {"http_code": 408}
 
-    async def generate_image(self, poke_id: str, *, hide: bool):
+    async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
         base_image = Image.open(bundled_data_path(self) / "template.webp").convert(
             "RGBA"
         )
@@ -138,7 +130,7 @@ class WhosThatPokemon(commands.Cog):
     # \____/\___/\_|  |_/\_|  |_/\_| |_/\_| \_/___/  \____/
     @commands.command(name="wtpversion", hidden=True)
     @commands.bot_has_permissions(embed_links=True)
-    async def whosthatpokemon_version(self, ctx: commands.Context):
+    async def whosthatpokemon_version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog"""
         version = self.__version__
         author = self.__author__
@@ -241,6 +233,7 @@ class WhosThatPokemon(commands.Cog):
             await self.config.user(ctx.author).total_correct_guesses.set(
                 await self.config.user(ctx.author).total_correct_guesses() + 1
             )
+            return
         await ctx.send(file=revealed_img, embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)

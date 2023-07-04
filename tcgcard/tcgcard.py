@@ -26,9 +26,11 @@ SOFTWARE.
 """
 import asyncio
 from datetime import datetime
+from typing import Final, List, Any
 
 import aiohttp
 import discord
+from redbot.core.bot import Red
 from redbot.core import app_commands, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
@@ -37,29 +39,29 @@ from redbot.core.utils.views import SimpleMenu
 class TCGCard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
-    __author__ = ["<@306810730055729152>", "MAX#1000"]
-    __version__ = "1.3.0"
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
+    __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000"]
+    __version__: Final[str] = "1.3.0"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
+
+    def __init__(self, bot: Red) -> None:
+        self.bot: Red = bot
+        self.session: aiohttp.ClientSession = aiohttp.ClientSession()
+
+    async def cog_unload(self) -> None:
+        await self.session.close()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.session = aiohttp.ClientSession()
-
-    async def cog_unload(self) -> None:
-        await self.session.close()
-
-    async def red_delete_data_for_user(self, **kwargs) -> None:
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="tcgversion", hidden=True)
-    async def tcgcard_version(self, ctx: commands.Context):
+    async def tcgcard_version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog"""
         version = self.__version__
         author = self.__author__
@@ -77,7 +79,7 @@ class TCGCard(commands.Cog):
     @app_commands.describe(query=("The Pokémon you want to search a card for."))
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 5, commands.BucketType.member)
-    async def tcgcard(self, ctx: commands.Context, *, query: str):
+    async def tcgcard(self, ctx: commands.Context, *, query: str) -> None:
         """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).
 
         **Example:**
@@ -97,10 +99,12 @@ class TCGCard(commands.Cog):
                     return
                 output = await response.json()
         except asyncio.TimeoutError:
-            return await ctx.send("Operation timed out.")
+            await ctx.send("Operation timed out.")
+            return
 
         if not output["data"]:
-            return await ctx.send("There is no results for that search.")
+            await ctx.send("There is no results for that search.")
+            return
 
         pages = []
         for i, data in enumerate(output["data"], 1):

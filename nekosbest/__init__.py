@@ -1,3 +1,5 @@
+from redbot.core.bot import Red
+
 from .nekosbest import NekosBest
 
 __red_end_user_data_statement__ = (
@@ -5,5 +7,6 @@ __red_end_user_data_statement__ = (
 )
 
 
-async def setup(bot):
-    await bot.add_cog(NekosBest(bot))
+async def setup(bot: Red) -> None:
+    cog = NekosBest(bot)
+    await bot.add_cog(cog)

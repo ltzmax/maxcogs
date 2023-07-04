@@ -22,9 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-NEKOS = "https://nekos.best/api/v2/"
-ICON = "https://nekos.best/logo_short.png"
-ACTIONS = {
+from typing import Final, Dict
+
+
+NEKOS: Final[str] = "https://nekos.best/api/v2/"
+ICON: Final[str] = "https://nekos.best/logo_short.png"
+ACTIONS: Dict[str, str] = {
     "baka": "baka",
     "cry": "cries at",
     "cuddle": "cuddles",

@@ -21,27 +21,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import asyncio
+from typing import Final, Optional, Dict, Any
 
 import aiohttp
 import discord
+from redbot.core.bot import Red
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box
 
-NEKOS_API = "https://nekos.best/api/v2/"
-ICON = "https://nekos.best/logo_short.png"
+NEKOS_API: Final[str] = "https://nekos.best/api/v2/"
+ICON: Final[str] = "https://nekos.best/logo_short.png"
 
 
-async def api_call(self, ctx, endpoint: str):
+async def api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
     await ctx.typing()
     async with self.session.get(NEKOS_API + endpoint) as response:
         if response.status != 200:
-            return await ctx.send("Something went wrong while trying to contact API.")
+            await ctx.send("Something went wrong while trying to contact API.")
+            return
         url = await response.json()
         return url
 
 
-async def embedgen(self, ctx, url, endpoint: str):
+async def embedgen(ctx: commands.Context, url: Dict[str, Any], endpoint: str) -> None:
     result = url["results"][0]
     artist_name = result["artist_name"]
     source_url = result["source_url"]
@@ -80,30 +82,30 @@ async def embedgen(self, ctx, url, endpoint: str):
 
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best."""
+    
+    __version__: Final[str] = "0.1.20"
+    __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/nekosbest/README.md"
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.session = aiohttp.ClientSession()
+    def __init__(self, bot: Red) -> None:
+        self.bot: Red = bot
+        self.session: aiohttp.ClientSession = aiohttp.ClientSession()
 
-    async def cog_unload(self):
+    async def cog_unload(self) -> None:
         await self.session.close()
-
-    __version__ = "0.1.20"
-    __author__ = "MAX"
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/nekosbest/README.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="nekostversion", aliases=["nekosbestv"], hidden=True)
-    async def nekosbest_version(self, ctx: commands.Context):
+    async def nekosbest_version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog"""
         version = self.__version__
         author = self.__author__
@@ -119,28 +121,28 @@ class NekosBest(commands.Cog):
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def waifu(self, ctx):
+    async def waifu(self, ctx: commands.Context) -> None:
         """Send a random waifu image."""
         url = await api_call(self, ctx, "waifu")
-        await embedgen(self, ctx, url, "waifu")
+        await embedgen(ctx, url, "waifu")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def nekos(self, ctx):
+    async def nekos(self, ctx: commands.Context) -> None:
         """Send a random neko image."""
         url = await api_call(self, ctx, "neko")
-        await embedgen(self, ctx, url, "neko")
+        await embedgen(ctx, url, "neko")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def kitsune(self, ctx):
+    async def kitsune(self, ctx: commands.Context) -> None:
         """Send a random kitsune image."""
         url = await api_call(self, ctx, "kitsune")
-        await embedgen(self, ctx, url, "kitsune")
+        await embedgen(ctx, url, "kitsune")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def husbando(self, ctx):
+    async def husbando(self, ctx: commands.Context) -> None:
         """Send a random husbando image."""
         url = await api_call(self, ctx, "husbando")
-        await embedgen(self, ctx, url, "husbando")
+        await embedgen(ctx, url, "husbando")

@@ -1,39 +1,42 @@
-import logging
+from typing import List, Any
+from logging import LoggerAdapter
 
 import discord
+from red_commons.logging import RedTraceLogger, getLogger
 
-log = logging.getLogger("red.maxcogs.whosthatpokemon.view")
+log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon.view")
 
 
 # Mainly flame who build this view and modal. All credits goes to flame for that work.
 # https://discord.com/channels/133049272517001216/133251234164375552/1104515319604723762
 class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
-    poke = discord.ui.TextInput(
+    poke: discord.ui.TextInput = discord.ui.TextInput(
         label="Pokémon",
         placeholder="Enter the pokémon here...",
         max_length=12,
         required=True,
     )
 
-    async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
             f"You entered: {self.poke.value}", ephemeral=True
         )
 
 
 class WhosThatPokemonView(discord.ui.View):
-    def __init__(self, eligible_names):
+    def __init__(self, eligible_names: List[Any]) -> None:
         self.eligible_names = eligible_names
         self.winner = None
         super().__init__(timeout=30.0)
 
     async def on_timeout(self) -> None:
         for item in self.children:
+            item: discord.ui.Item
             item.disabled = True
         await self.message.edit(view=self)
 
     @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
-    async def guess_the_pokemon(self, interaction: discord.Interaction, button):
+    async def guess_the_pokemon(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = WhosThatPokemonModal()
         await interaction.response.send_modal(modal)
         await modal.wait()
@@ -51,7 +54,12 @@ class WhosThatPokemonView(discord.ui.View):
                 f"{self.winner.display_name} guessed the Pokémon correctly!"
             )
 
-    async def on_error(self, interaction, error, item):
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,
+    ) -> None:
         await interaction.response.send_message(
             f"An error occured: {error}", ephemeral=True
         )

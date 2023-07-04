@@ -22,45 +22,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
-import logging
+from logging import LoggerAdapter
+from typing import Dict, Final, Any
 
 import discord
-from redbot.core import Config, app_commands, commands
+from redbot.core.bot import Red
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
+from red_commons.logging import RedTraceLogger, getLogger
 
-log = logging.getLogger("red.maxcogs.autopublisher")
+log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
-DISCORD_INFO = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
+DISCORD_INFO: Final[str] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
 
 
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
+    
+    __version__: Final[str] = "0.1.10"
+    __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.config = Config.get_conf(
+    def __init__(self, bot: Red) -> None:
+        self.bot: Red = bot
+        self.config: Config = Config.get_conf(
             self, identifier=15786223, force_registration=True
         )
-        default_guild = {
+        default_guild: Dict[str, bool] = {
             "toggle": False,
         }
         self.config.register_guild(**default_guild)
-
-    __version__ = "0.1.10"
-    __author__ = "MAX"
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
+        
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs):
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
 
     @commands.Cog.listener()
-    async def on_message_without_command(self, message: discord.Message):
+    async def on_message_without_command(self, message: discord.Message) -> None:
         """Publish message to news channel."""
         if message.guild is None:
             return
@@ -74,16 +79,12 @@ class AutoPublisher(commands.Cog):
         ):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                log.info(
-                    "AutoPublisher has been disabled due to missing permissions in {guild}.".format(
-                        guild=message.guild.name
-                    )
-                )
+                self.log.info("AutoPublisher has been disabled due to missing permissions in {guild}.".format(guild=message.guild.name))
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                log.info(
+                self.log.info(
                     "AutoPublisher has been disabled due to missing News Channel feature in {guild}.".format(
                         guild=message.guild.name
                     )
@@ -99,7 +100,7 @@ class AutoPublisher(commands.Cog):
                 discord.Forbidden,
                 asyncio.TimeoutError,
             ) as e:
-                log.error(
+                self.log.error(
                     "Failed to publish message in {channel} due to {error}".format(
                         channel=message.channel.mention, error=e
                     )
@@ -108,11 +109,11 @@ class AutoPublisher(commands.Cog):
     @commands.group(aliases=["aph", "autopub"])
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
-    async def autopublisher(self, ctx):
+    async def autopublisher(self, ctx: commands.Context) -> None:
         """Manage AutoPublisher setting."""
 
     @autopublisher.command()
-    async def toggle(self, ctx: commands.Context, toggle: bool):
+    async def toggle(self, ctx: commands.Context, toggle: bool) -> None:
         """Toggle AutoPublisher enable or disable.
 
         - It's disabled by default.
@@ -123,20 +124,22 @@ class AutoPublisher(commands.Cog):
             - Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
         """
         if "NEWS" not in ctx.guild.features:
-            return await ctx.send(
+            await ctx.send(
                 "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n{DISCORD_INFO}".format(
                     DISCORD_INFO=DISCORD_INFO
                 ),
                 ephemeral=True,
             )
+            return
         if (
             not ctx.guild.me.guild_permissions.manage_messages
             or not ctx.guild.me.guild_permissions.view_channel
         ):
-            return await ctx.send(
+            await ctx.send(
                 "I don't have `manage_messages` or `view_channel` permission to use this cog.",
                 ephemeral=True,
             )
+            return
         await self.config.guild(ctx.guild).toggle.set(toggle)
         if toggle:
             await ctx.send("AutoPublisher is now enabled.")
@@ -145,7 +148,7 @@ class AutoPublisher(commands.Cog):
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
-    async def settings(self, ctx: commands.Context):
+    async def settings(self, ctx: commands.Context) -> None:
         """Show AutoPublisher setting."""
         config = await self.config.guild(ctx.guild).toggle()
         embed = discord.Embed(
@@ -157,7 +160,7 @@ class AutoPublisher(commands.Cog):
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command()
-    async def version(self, ctx):
+    async def version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog."""
         version = self.__version__
         author = self.__author__
