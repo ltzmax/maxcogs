@@ -23,25 +23,29 @@ SOFTWARE.
 """
 import asyncio
 from logging import LoggerAdapter
-from typing import Dict, Final, Any
+from typing import Any, Dict, Final
 
 import discord
-from redbot.core.bot import Red
-from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import box
 from red_commons.logging import RedTraceLogger, getLogger
+from redbot.core import Config, commands
+from redbot.core.bot import Red
+from redbot.core.utils.chat_formatting import box
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
-DISCORD_INFO: Final[str] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
+DISCORD_INFO: Final[
+    str
+] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
 
 
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
-    
+
     __version__: Final[str] = "0.1.10"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
@@ -52,8 +56,10 @@ class AutoPublisher(commands.Cog):
             "toggle": False,
         }
         self.config.register_guild(**default_guild)
-        
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
+
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -79,7 +85,11 @@ class AutoPublisher(commands.Cog):
         ):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                self.log.info("AutoPublisher has been disabled due to missing permissions in {guild}.".format(guild=message.guild.name))
+                self.log.info(
+                    "AutoPublisher has been disabled due to missing permissions in {guild}.".format(
+                        guild=message.guild.name
+                    )
+                )
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():

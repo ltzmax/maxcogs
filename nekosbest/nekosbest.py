@@ -21,19 +21,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Final, Optional, Dict, Any
+from typing import Any, Dict, Final, Optional
 
 import aiohttp
 import discord
-from redbot.core.bot import Red
 from redbot.core import commands
+from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 
 NEKOS_API: Final[str] = "https://nekos.best/api/v2/"
 ICON: Final[str] = "https://nekos.best/logo_short.png"
 
 
-async def api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
+async def api_call(
+    self, ctx: commands.Context, endpoint: str
+) -> Optional[Dict[str, Any]]:
     await ctx.typing()
     async with self.session.get(NEKOS_API + endpoint) as response:
         if response.status != 200:
@@ -82,10 +84,12 @@ async def embedgen(ctx: commands.Context, url: Dict[str, Any], endpoint: str) ->
 
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best."""
-    
+
     __version__: Final[str] = "0.1.20"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/nekosbest/README.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/nekosbest/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

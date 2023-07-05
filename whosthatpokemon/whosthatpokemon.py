@@ -28,7 +28,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from random import randint
-from typing import List, Optional, Final, Any, Dict
+from typing import Any, Dict, Final, List, Optional
 
 import aiohttp
 import discord
@@ -49,9 +49,15 @@ API_URL: Final[str] = "https://pokeapi.co/api/v2"
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000", "Flame (Flame#2941)"]
-    __version__ : Final[str]= "1.2.7"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
+    __author__: Final[List[str]] = [
+        "<@306810730055729152>",
+        "MAX#1000",
+        "Flame (Flame#2941)",
+    ]
+    __version__: Final[str] = "1.2.7"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/whosthatpokemon/README.md"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot
@@ -210,12 +216,11 @@ class WhosThatPokemon(commands.Cog):
 
         revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
         revealed_img = File(revealed, "whosthatpokemon.png")
-        guess_that_pokemon = File(temp, "guessthatpokemon.png")
 
         view = WhosThatPokemonView(eligible_names)
         view.message = await ctx.send(
             f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}.",
-            file=guess_that_pokemon,
+            file=File(temp, "guessthatpokemon.png"),
             view=view,
         )
 
@@ -240,7 +245,6 @@ class WhosThatPokemon(commands.Cog):
             await self.config.user(ctx.author).total_correct_guesses.set(
                 await self.config.user(ctx.author).total_correct_guesses() + 1
             )
-            return
         await ctx.send(file=revealed_img, embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
@@ -254,23 +258,29 @@ class WhosThatPokemon(commands.Cog):
         """
         pages = []
         users = await self.config.all_users()
-        if not users:
-            return await ctx.send("No one has played whosthatpokemon yet.")
-        total_correct_guesses = sorted(
-            users.items(), key=lambda x: x[1]["total_correct_guesses"], reverse=True
-        )
+        sorted_users = sorted(users.items(), key=lambda x: x[1]["total_correct_guesses"])
+        sorted_users.reverse()
+        if not sorted_users:
+            return await ctx.send(
+                "No one has played whosthatpokemon yet. Use `[p]whosthatpokemon` to start!"
+            )
         embed = discord.Embed(
             title="WhosThatPokemon Leaderboard",
             description="Top 10 users with most correct guesses.",
             color=await ctx.embed_color(),
         )
-        for index, (user_id, data) in enumerate(total_correct_guesses[:10]):
-            user = ctx.guild.get_member(int(user_id))
-            if user is None:
+        for index, user in enumerate(sorted_users[:10], start=1):
+            user_id = int(user[0])
+            total_correct_guesses = await self.config.user_from_id(
+                user_id
+            ).total_correct_guesses()
+            total = humanize_number(total_correct_guesses)
+            user_obj = self.bot.get_user(user_id)
+            if user_obj is None:
                 continue
             embed.add_field(
-                name=f"{index + 1}. {user}",
-                value=f"Total Correct Guesses: {data['total_correct_guesses']}",
+                name=f"{index}. {user_obj}",
+                value=f"Total correct guesses: **{total}**",
                 inline=False,
             )
         pages.append(embed)
@@ -298,7 +308,7 @@ class WhosThatPokemon(commands.Cog):
         human = humanize_number(total_correct_guesses)
         embed = discord.Embed(
             title=f"{ctx.author.display_name}'s WhosThatPokemon Stats",
-            description=f"Total Correct Guesses: {human}",
+            description=f"Total Correct Guesses: **{human}**",
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)

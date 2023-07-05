@@ -22,14 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from logging import LoggerAdapter
-from typing import Final, Any
+from typing import Any, Final
 
 import aiohttp
 import discord
-from redbot.core.bot import Red
-from redbot.core import commands
-from redbot.core.utils.chat_formatting import box
 from red_commons.logging import RedTraceLogger, getLogger
+from redbot.core import commands
+from redbot.core.bot import Red
+from redbot.core.utils.chat_formatting import box
 
 from .core import ACTIONS, ICON, NEKOS
 
@@ -41,13 +41,17 @@ class RolePlayCog(commands.Cog):
 
     __version__: Final[str] = "0.2.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/roleplaycog/README.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/roleplaycog/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
-        
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
+
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
 
     async def cog_unload(self):
         await self.session.close()
@@ -56,17 +60,17 @@ class RolePlayCog(commands.Cog):
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
-    
+
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
 
-    async def embedgen(self, ctx: commands.Context, member: discord.Member, action: str) -> None:
+    async def embedgen(
+        self, ctx: commands.Context, member: discord.Member, action: str
+    ) -> None:
         async with self.session.get(NEKOS + action) as response:
             if response.status != 200:
-                await ctx.send(
-                    "Something went wrong while trying to contact API."
-                )
+                await ctx.send("Something went wrong while trying to contact API.")
                 return
             data = await response.json()
 

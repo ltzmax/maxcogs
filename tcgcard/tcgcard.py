@@ -26,12 +26,12 @@ SOFTWARE.
 """
 import asyncio
 from datetime import datetime
-from typing import Final, List, Any
+from typing import Any, Final, List
 
 import aiohttp
 import discord
-from redbot.core.bot import Red
 from redbot.core import app_commands, commands
+from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
 
@@ -41,7 +41,9 @@ class TCGCard(commands.Cog):
 
     __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000"]
     __version__: Final[str] = "1.3.0"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
