@@ -33,15 +33,19 @@ from red_commons.logging import RedTraceLogger, getLogger
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
-DISCORD_INFO: Final[str] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
+DISCORD_INFO: Final[
+    str
+] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
 
 
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
-    
+
     __version__: Final[str] = "0.1.10"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/autopublisher/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
@@ -53,8 +57,10 @@ class AutoPublisher(commands.Cog):
             "channels": [],
         }
         self.config.register_guild(**default_guild)
-        
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
+
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -72,7 +78,9 @@ class AutoPublisher(commands.Cog):
             return
         if not await self.config.guild(message.guild).toggle():
             return
-        if message.channel.id not in (await self.config.guild(message.guild).channels()):
+        if message.channel.id not in (
+            await self.config.guild(message.guild).channels()
+        ):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
@@ -82,7 +90,11 @@ class AutoPublisher(commands.Cog):
         ):
             if await self.config.guild(message.guild).toggle():
                 await self.config.guild(message.guild).toggle.set(False)
-                self.log.info("AutoPublisher has been disabled due to missing permissions in {guild}.".format(guild=message.guild.name))
+                self.log.info(
+                    "AutoPublisher has been disabled due to missing permissions in {guild}.".format(
+                        guild=message.guild.name
+                    )
+                )
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():
@@ -148,7 +160,7 @@ class AutoPublisher(commands.Cog):
             await ctx.send("AutoPublisher is now enabled.")
         else:
             await ctx.send("AutoPublisher is now disabled.")
-            
+
     @autopublisher.command(aliases=["channels"])
     async def channel(
         self,
@@ -157,25 +169,25 @@ class AutoPublisher(commands.Cog):
         channels: commands.Greedy[discord.TextChannel] = None,
     ) -> None:
         """Add or remove channels for your guild.
-        
+
         `<add_or_remove>` should be either `add` to add channels or `remove` to remove channels.
         """
         if channels is None:
             await ctx.send("`Channels` is a required argument.")
             return
-        
+
         async with self.config.guild(ctx.guild).channels() as c:
             for channel in channels:
                 if add_or_remove.lower() == "add":
                     if not channel.id in c:
                         c.append(channel.id)
-                        
+
                 elif add_or_remove.lower() == "remove":
                     if channel.id in c:
                         c.remove(channel.id)
-        
-        ids = len(list(channels))                
-        
+
+        ids = len(list(channels))
+
         await ctx.send(
             f"Successfully {'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}."
         )
