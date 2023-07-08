@@ -54,7 +54,7 @@ class AutoPublisher(commands.Cog):
         )
         default_guild: Dict[str, Union[bool, List[int]]] = {
             "toggle": False,
-            "channels": [],
+            "ignored_channels": [],
         }
         self.config.register_guild(**default_guild)
 
@@ -78,8 +78,8 @@ class AutoPublisher(commands.Cog):
             return
         if not await self.config.guild(message.guild).toggle():
             return
-        if message.channel.id not in (
-            await self.config.guild(message.guild).channels()
+        if message.channel.id in (
+            await self.config.guild(message.guild).ignored_channels()
         ):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
@@ -161,8 +161,8 @@ class AutoPublisher(commands.Cog):
         else:
             await ctx.send("AutoPublisher is now disabled.")
 
-    @autopublisher.command(aliases=["channels"])
-    async def channel(
+    @autopublisher.command(aliases=["ignorechannels"])
+    async def ignore(
         self,
         ctx: commands.Context,
         add_or_remove: Literal["add", "remove"],
@@ -176,7 +176,7 @@ class AutoPublisher(commands.Cog):
             await ctx.send("`Channels` is a required argument.")
             return
 
-        async with self.config.guild(ctx.guild).channels() as c:
+        async with self.config.guild(ctx.guild).ignored_channels() as c:
             for channel in channels:
                 if add_or_remove.lower() == "add":
                     if not channel.id in c:
