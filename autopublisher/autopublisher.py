@@ -23,7 +23,7 @@ SOFTWARE.
 """
 import asyncio
 from logging import LoggerAdapter
-from typing import Dict, Final, Any
+from typing import Dict, Final, Any, List, Union, Literal
 
 import discord
 from redbot.core.bot import Red
@@ -48,8 +48,9 @@ class AutoPublisher(commands.Cog):
         self.config: Config = Config.get_conf(
             self, identifier=15786223, force_registration=True
         )
-        default_guild: Dict[str, bool] = {
+        default_guild: Dict[str, Union[bool, List[int]]] = {
             "toggle": False,
+            "channels": [],
         }
         self.config.register_guild(**default_guild)
         
@@ -70,6 +71,8 @@ class AutoPublisher(commands.Cog):
         if message.guild is None:
             return
         if not await self.config.guild(message.guild).toggle():
+            return
+        if message.channel.id not in (await self.config.guild(message.guild).channels()):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
@@ -145,6 +148,37 @@ class AutoPublisher(commands.Cog):
             await ctx.send("AutoPublisher is now enabled.")
         else:
             await ctx.send("AutoPublisher is now disabled.")
+            
+    @autopublisher.command(aliases=["channels"])
+    async def channel(
+        self,
+        ctx: commands.Context,
+        add_or_remove: Literal["add", "remove"],
+        channels: commands.Greedy[discord.TextChannel] = None,
+    ) -> None:
+        """Add or remove channels for your guild.
+        
+        `<add_or_remove>` should be either `add` to add channels or `remove` to remove channels.
+        """
+        if channels is None:
+            await ctx.send("`Channels` is a required argument.")
+            return
+        
+        async with self.config.guild(ctx.guild).channels() as c:
+            for channel in channels:
+                if add_or_remove.lower() == "add":
+                    if not channel.id in c:
+                        c.append(channel.id)
+                        
+                elif add_or_remove.lower() == "remove":
+                    if channel.id in c:
+                        c.remove(channel.id)
+        
+        ids = len(list(channels))                
+        
+        await ctx.send(
+            f"Successfully {'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}."
+        )
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
