@@ -28,7 +28,7 @@ from typing import Dict, Final, Any, List, Union, Literal
 import discord
 from redbot.core.bot import Red
 from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import box, humanize_list
 from red_commons.logging import RedTraceLogger, getLogger
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
@@ -161,7 +161,7 @@ class AutoPublisher(commands.Cog):
         else:
             await ctx.send("AutoPublisher is now disabled.")
 
-    @autopublisher.command(aliases=["ignorechannels"])
+    @autopublisher.command(aliases=["ignorechannels"], usage="<add_or_remove> <channels>")
     async def ignore(
         self,
         ctx: commands.Context,
@@ -196,11 +196,16 @@ class AutoPublisher(commands.Cog):
     @autopublisher.command(aliases=["view"])
     async def settings(self, ctx: commands.Context) -> None:
         """Show AutoPublisher setting."""
-        config = await self.config.guild(ctx.guild).toggle()
+        ignored_channels = await self.config.guild(ctx.guild).ignored_channels()
+        toggle = await self.config.guild(ctx.guild).toggle()
         embed = discord.Embed(
             title="AutoPublisher Setting",
-            description=f"AutoPublisher is currently **{'enabled' if config else 'disabled'}**.",
+            description=f"AutoPublisher is currently **{'enabled' if toggle else 'disabled'}**.",
             color=0xE91E63,
+        )
+        embed.add_field(
+            name="Blacklisted Channels:",
+            value=humanize_list(ignored_channels),
         )
         await ctx.send(embed=embed)
 
