@@ -25,6 +25,12 @@ Extended Arg Info
 > ```
 > Can be 1, 0, true, false, t, f
 > ```
+
+## autopublisher ignore
+ - Usage: `[p]autopublisher ignore <add_or_remove> <channels>`
+
+Ignores sepecific news channels from getting triggered by the autopublisher system.
+
 ## autopublisher settings (Hybrid Command)
  - Usage: `[p]autopublisher settings `
  - Slash Usage: `/autopublisher settings `
