@@ -41,7 +41,7 @@ DISCORD_INFO: Final[
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "0.1.10"
+    __version__: Final[str] = "0.1.11"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -196,8 +196,12 @@ class AutoPublisher(commands.Cog):
     @autopublisher.command(aliases=["view"])
     async def settings(self, ctx: commands.Context) -> None:
         """Show AutoPublisher setting."""
-        ignored_channels = await self.config.guild(ctx.guild).ignored_channels()
         toggle = await self.config.guild(ctx.guild).toggle()
+        channels = await self.config.guild(ctx.guild).ignored_channels()
+        ignored_channels: List[str] = []
+        for channel in channels:
+            channel = ctx.guild.get_channel(channel)
+            ignored_channels.append(channel.mention)
         embed = discord.Embed(
             title="AutoPublisher Setting",
             description=f"AutoPublisher is currently **{'enabled' if toggle else 'disabled'}**.",
