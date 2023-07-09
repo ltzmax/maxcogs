@@ -28,6 +28,7 @@ Extended Arg Info
 
 ## autopublisher ignore
  - Usage: `[p]autopublisher ignore <add_or_remove> <channels>`
+ - Aliases: `ignorechannels`
 
 Ignores sepecific news channels from getting triggered by the autopublisher system.
 
