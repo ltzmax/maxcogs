@@ -187,7 +187,6 @@ class AutoPublisher(commands.Cog):
                         c.remove(channel.id)
 
         ids = len(list(channels))
-
         await ctx.send(
             f"Successfully {'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}."
         )
@@ -196,8 +195,9 @@ class AutoPublisher(commands.Cog):
     @autopublisher.command(aliases=["view"])
     async def settings(self, ctx: commands.Context) -> None:
         """Show AutoPublisher setting."""
-        toggle = await self.config.guild(ctx.guild).toggle()
-        channels = await self.config.guild(ctx.guild).ignored_channels()
+        data = await self.config.guild(ctx.guild).all()
+        toggle = data["toggle"]
+        channels = data["ignored_channels"]
         ignored_channels: List[str] = []
         for channel in channels:
             channel = ctx.guild.get_channel(channel)
@@ -207,10 +207,11 @@ class AutoPublisher(commands.Cog):
             description=f"AutoPublisher is currently **{'enabled' if toggle else 'disabled'}**.",
             color=0xE91E63,
         )
-        embed.add_field(
-            name="Blacklisted Channels:",
-            value=humanize_list(ignored_channels),
-        )
+        if ignored_channels:
+            embed.add_field(
+                name="Blacklisted Channels:",
+                value=humanize_list(ignored_channels),
+            )
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
