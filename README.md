@@ -20,7 +20,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
-| AutoPublisyher | Automatically push news channel messages. | 0.1.10 | ltzmax | ✅ |
+| AutoPublisyher | Automatically push news channel messages. | 0.1.11 | ltzmax | ✅ |
 | DailyEconomy | Receive a daily amount of economy credits | 1.1.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.2 | MAX | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
