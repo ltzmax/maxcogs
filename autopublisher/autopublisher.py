@@ -23,9 +23,12 @@ SOFTWARE.
 """
 import asyncio
 from logging import LoggerAdapter
-from typing import Any, Dict, Final
+from typing import Dict, Final, Any, List, Union, Literal
 
 import discord
+from redbot.core.bot import Red
+from redbot.core import Config, commands
+from redbot.core.utils.chat_formatting import box, humanize_list
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -41,7 +44,7 @@ DISCORD_INFO: Final[
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "0.1.10"
+    __version__: Final[str] = "0.1.11"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -52,8 +55,9 @@ class AutoPublisher(commands.Cog):
         self.config: Config = Config.get_conf(
             self, identifier=15786223, force_registration=True
         )
-        default_guild: Dict[str, bool] = {
+        default_guild: Dict[str, Union[bool, List[int]]] = {
             "toggle": False,
+            "ignored_channels": [],
         }
         self.config.register_guild(**default_guild)
 
@@ -76,6 +80,10 @@ class AutoPublisher(commands.Cog):
         if message.guild is None:
             return
         if not await self.config.guild(message.guild).toggle():
+            return
+        if message.channel.id in (
+            await self.config.guild(message.guild).ignored_channels()
+        ):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
@@ -156,16 +164,57 @@ class AutoPublisher(commands.Cog):
         else:
             await ctx.send("AutoPublisher is now disabled.")
 
+    @autopublisher.command(aliases=["ignorechannels"], usage="<add_or_remove> <channels>")
+    async def ignore(
+        self,
+        ctx: commands.Context,
+        add_or_remove: Literal["add", "remove"],
+        channels: commands.Greedy[discord.TextChannel] = None,
+    ) -> None:
+        """Add or remove channels for your guild.
+
+        `<add_or_remove>` should be either `add` to add channels or `remove` to remove channels.
+        """
+        if channels is None:
+            await ctx.send("`Channels` is a required argument.")
+            return
+
+        async with self.config.guild(ctx.guild).ignored_channels() as c:
+            for channel in channels:
+                if add_or_remove.lower() == "add":
+                    if not channel.id in c:
+                        c.append(channel.id)
+
+                elif add_or_remove.lower() == "remove":
+                    if channel.id in c:
+                        c.remove(channel.id)
+
+        ids = len(list(channels))
+        await ctx.send(
+            f"Successfully {'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}."
+        )
+
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
     async def settings(self, ctx: commands.Context) -> None:
         """Show AutoPublisher setting."""
-        config = await self.config.guild(ctx.guild).toggle()
+        data = await self.config.guild(ctx.guild).all()
+        toggle = data["toggle"]
+        channels = data["ignored_channels"]
+        ignored_channels: List[str] = []
+        for channel in channels:
+            channel = ctx.guild.get_channel(channel)
+            ignored_channels.append(channel.mention)
         embed = discord.Embed(
             title="AutoPublisher Setting",
-            description=f"AutoPublisher is currently **{'enabled' if config else 'disabled'}**.",
+            description=f"AutoPublisher is currently **{'enabled' if toggle else 'disabled'}**.",
             color=0xE91E63,
         )
+        if ignored_channels:
+            embed.add_field(
+                name="Blacklisted Channels:",
+                value=humanize_list(ignored_channels),
+            )
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
