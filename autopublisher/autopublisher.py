@@ -128,6 +128,7 @@ class AutoPublisher(commands.Cog):
         """Manage AutoPublisher setting."""
 
     @autopublisher.command()
+    @commands.bot_has_permissions(embed_links=True, manage_messages=True, view_channel=True)
     async def toggle(self, ctx: commands.Context, toggle: bool) -> None:
         """Toggle AutoPublisher enable or disable.
 
@@ -139,28 +140,39 @@ class AutoPublisher(commands.Cog):
             - Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
         """
         if "NEWS" not in ctx.guild.features:
-            await ctx.send(
-                "This server doesn't have News Channel feature to use this cog.\nLearn more here on how to enable:\n{DISCORD_INFO}".format(
-                    DISCORD_INFO=DISCORD_INFO
-                ),
-                ephemeral=True,
+            embed = discord.Embed(
+                title="News Channel is not enabled.",
+                description=f"Please enable News Channel feature in your server. [Learn more]({DISCORD_INFO})",
+                color=await ctx.embed_color(),
             )
-            return
+            return await ctx.send(embed=embed)
         if (
             not ctx.guild.me.guild_permissions.manage_messages
             or not ctx.guild.me.guild_permissions.view_channel
         ):
-            await ctx.send(
-                "I don't have `manage_messages` or `view_channel` permission to use this cog.",
-                ephemeral=True,
+            embed = discord.Embed(
+                title="Missing permissions.",
+                description=f"I need `manage_messages` and `view_channel` permissions to be able to publish messages. Please ensure that I have those permissions.",
+                color=await ctx.embed_color(),
             )
-            return
+            return await ctx.send(embed=embed)
         await self.config.guild(ctx.guild).toggle.set(toggle)
         if toggle:
-            await ctx.send("AutoPublisher is now enabled.")
+            embed = discord.Embed(
+                title="AutoPublisher is now enabled.",
+                description=f"AutoPublisher will now publish messages from news channels.",
+                color=await ctx.embed_color(),
+            )
+            await ctx.send(embed=embed)
         else:
-            await ctx.send("AutoPublisher is now disabled.")
+            embed = discord.Embed(
+                title="AutoPublisher is now disabled.",
+                description=f"AutoPublisher will no longer publish messages from news channels.",
+                color=await ctx.embed_color(),
+            )
+            await ctx.send(embed=embed)
 
+    @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["ignorechannels"], usage="<add_or_remove> <channels>")
     async def ignore(
         self,
@@ -187,9 +199,16 @@ class AutoPublisher(commands.Cog):
                         c.remove(channel.id)
 
         ids = len(list(channels))
-        await ctx.send(
-            f"Successfully {'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}."
+        embed = discord.Embed(
+            title="Success!",
+            description=f"{'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}.",
+            color=0xE91E63,
         )
+        embed.add_field(
+            name=f"{'channel:' if ids == 1 else 'channels:'}",
+            value=humanize_list([channel.mention for channel in channels]),
+        ) # This needs menus to be able to show all channels if there are more than 25 channels.
+        await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
@@ -211,7 +230,7 @@ class AutoPublisher(commands.Cog):
             embed.add_field(
                 name="Blacklisted Channels:",
                 value=humanize_list(ignored_channels),
-            )
+            ) # This needs menus to be able to show all channels if there are more than 25 channels.
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
