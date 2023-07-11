@@ -23,13 +23,13 @@ SOFTWARE.
 """
 import re
 from logging import LoggerAdapter
-from typing import Union, Final, Pattern, Dict, Optional, Any
+from typing import Any, Dict, Final, Optional, Pattern, Union
 
 import discord
-from redbot.core.bot import Red
-from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import box
 from red_commons.logging import RedTraceLogger, getLogger
+from redbot.core import Config, commands
+from redbot.core.bot import Red
+from redbot.core.utils.chat_formatting import box
 
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 
@@ -41,7 +41,9 @@ class NoSpoiler(commands.Cog):
 
     __author__: Final[str] = "MAX"
     __version__: Final[str] = "1.5.2"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
@@ -53,8 +55,10 @@ class NoSpoiler(commands.Cog):
             "log_channel": None,
         }
         self.config.register_guild(**default_guild)
-        
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(log, {"version": self.__version__})
+
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -202,7 +206,9 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Spoiler filter is now enabled.")
 
     @nospoiler.command()
-    async def logchannel(self, ctx: commands.Context, channel: discord.TextChannel = None) -> None:
+    async def logchannel(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ) -> None:
         """Set the channel where the bot will log the deleted spoiler messages.
 
         If the channel is not set, the bot will not log the deleted spoiler messages.

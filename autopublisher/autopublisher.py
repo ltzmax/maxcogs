@@ -23,13 +23,13 @@ SOFTWARE.
 """
 import asyncio
 from logging import LoggerAdapter
-from typing import Dict, Final, Any, List, Union, Literal
+from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
-from redbot.core.bot import Red
-from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import box, humanize_list
 from red_commons.logging import RedTraceLogger, getLogger
+from redbot.core import Config, commands
+from redbot.core.bot import Red
+from redbot.core.utils.chat_formatting import box, humanize_list
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
@@ -128,7 +128,9 @@ class AutoPublisher(commands.Cog):
         """Manage AutoPublisher setting."""
 
     @autopublisher.command()
-    @commands.bot_has_permissions(embed_links=True, manage_messages=True, view_channel=True)
+    @commands.bot_has_permissions(
+        embed_links=True, manage_messages=True, view_channel=True
+    )
     async def toggle(self, ctx: commands.Context, toggle: bool) -> None:
         """Toggle AutoPublisher enable or disable.
 
@@ -173,7 +175,9 @@ class AutoPublisher(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
-    @autopublisher.command(aliases=["ignorechannels"], usage="<add_or_remove> <channels>")
+    @autopublisher.command(
+        aliases=["ignorechannels"], usage="<add_or_remove> <channels>"
+    )
     async def ignore(
         self,
         ctx: commands.Context,
@@ -207,7 +211,7 @@ class AutoPublisher(commands.Cog):
         embed.add_field(
             name=f"{'channel:' if ids == 1 else 'channels:'}",
             value=humanize_list([channel.mention for channel in channels]),
-        ) # This needs menus to be able to show all channels if there are more than 25 channels.
+        )  # This needs menus to be able to show all channels if there are more than 25 channels.
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
@@ -230,7 +234,7 @@ class AutoPublisher(commands.Cog):
             embed.add_field(
                 name="Blacklisted Channels:",
                 value=humanize_list(ignored_channels),
-            ) # This needs menus to be able to show all channels if there are more than 25 channels.
+            )  # This needs menus to be able to show all channels if there are more than 25 channels.
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)

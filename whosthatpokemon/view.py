@@ -1,5 +1,5 @@
-from typing import List, Any
 from logging import LoggerAdapter
+from typing import Any, List
 
 import discord
 from red_commons.logging import RedTraceLogger, getLogger
@@ -36,7 +36,9 @@ class WhosThatPokemonView(discord.ui.View):
         await self.message.edit(view=self)
 
     @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
-    async def guess_the_pokemon(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def guess_the_pokemon(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         modal = WhosThatPokemonModal()
         await interaction.response.send_modal(modal)
         await modal.wait()

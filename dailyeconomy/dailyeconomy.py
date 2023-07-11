@@ -1,5 +1,5 @@
 import random
-from typing import Dict, Final, Any, Optional
+from typing import Any, Dict, Final, Optional
 
 import discord
 from redbot.core import Config, bank, commands
@@ -13,7 +13,9 @@ class DailyEconomy(commands.Cog):
 
     __author__: Final[str] = "MAX"
     __version__: Final[str] = "1.1.0"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/dailyeconomy/README.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/dailyeconomy/README.md"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot
@@ -78,7 +80,9 @@ class DailyEconomy(commands.Cog):
 
     @dailyset.command()
     @bank.is_owner_if_bank_global()
-    async def amount(self, ctx: commands.Context, amount: commands.Range[int, 0, 30000]) -> None:
+    async def amount(
+        self, ctx: commands.Context, amount: commands.Range[int, 0, 30000]
+    ) -> None:
         """Set the maximum amount of credits you can receive from daily
 
         The default amount is 3000.
