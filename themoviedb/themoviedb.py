@@ -238,7 +238,6 @@ class TheMovieDB(commands.Cog):
                 title=data["name"],
                 url=f"https://www.themoviedb.org/tv/{tv_id}",
                 description=data["overview"][:1048] or "No description available.",
-                or "No description available.",
                 colour=await ctx.embed_colour(),
             )
             embed.set_thumbnail(
