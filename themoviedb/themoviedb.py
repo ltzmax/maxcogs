@@ -2,10 +2,13 @@ from datetime import datetime
 
 import aiohttp
 import discord
+from logging import LoggerAdapter
+from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import app_commands, commands
 from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
+log: RedTraceLogger = getLogger("red.maxcogs.themoviedb")
 
 # Taken from flare's Dank memer cog.
 # https://github.com/flaree/flare-cogs/blob/1cc1ef9734f40daf2878f2c9dfe68a61e8767eab/dankmemer/dankmemer.py#L16-L19
@@ -108,9 +111,11 @@ class TheMovieDB(commands.Cog):
                     "Something went wrong with TMDB. Please try again later."
                 )
                 return
+                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
             data = await resp.json()
         if not data["results"]:
-            await ctx.send("No results found.")
+            await ctx.send(f"No results found for {query}")
+            log.info(f"No results found for {query}")
             return
 
         pages = []
@@ -124,7 +129,7 @@ class TheMovieDB(commands.Cog):
                 data = await resp.json()
 
             if len(data["title"]) > 256:
-                data["title"] = data["title"][:256] + "..."
+                data["title"] = data["title"][:256] or "No title available."
 
             embed = discord.Embed(
                 title=data["title"],
@@ -226,9 +231,11 @@ class TheMovieDB(commands.Cog):
                     "Something went wrong with TMDB. Please try again later."
                 )
                 return
+                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
             data = await resp.json()
         if not data["results"]:
-            await ctx.send("No results found.")
+            await ctx.send(f"No results found for {query}")
+            log.info(f"No results found for {query}")
             return
 
         pages = []
@@ -240,7 +247,7 @@ class TheMovieDB(commands.Cog):
                 data = await resp.json()
 
             if len(data["name"]) > 256:
-                data["name"] = data["name"][:256] + "..."
+                data["name"] = data["name"][:256] or "No name available."
 
             embed = discord.Embed(
                 title=data["name"],
