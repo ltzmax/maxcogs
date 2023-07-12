@@ -135,6 +135,8 @@ class TheMovieDB(commands.Cog):
             embed.set_thumbnail(
                 url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
             )
+            if data["original_title"]:
+                embed.add_field(name="Original Title:", value=data["original_title"])
             if data["release_date"]:
                 embed.add_field(
                     name="Release Date:",
@@ -144,25 +146,6 @@ class TheMovieDB(commands.Cog):
                 embed.add_field(name="Runtime:", value=f"{data['runtime']} minutes")
             if data["status"]:
                 embed.add_field(name="Status:", value=data["status"])
-            if data["revenue"]:
-                embed.add_field(
-                    name="Revenue:", value=f"${humanize_number(data['revenue'])}"
-                )
-            if data["budget"]:
-                embed.add_field(
-                    name="Budget:", value=f"${humanize_number(data['budget'])}"
-                )
-            if data["popularity"]:
-                embed.add_field(
-                    name="Popularity:", value=humanize_number(data["popularity"])
-                )
-            if data["vote_average"]:
-                embed.add_field(name="Vote Average:", value=data["vote_average"])
-            if data["vote_count"]:
-                embed.add_field(
-                    name="Vote Count:", value=humanize_number(data["vote_count"])
-                )
-            embed.add_field(name="Adult content:", value=data["adult"])
             if data["genres"]:
                 embed.add_field(
                     name="Genres:", value=", ".join([i["name"] for i in data["genres"]])
@@ -182,6 +165,31 @@ class TheMovieDB(commands.Cog):
                     name="Spoken Languages:",
                     value=", ".join([i["name"] for i in data["spoken_languages"]]),
                 )
+            if data["original_language"]:
+                embed.add_field(
+                    name="Original Language:", value=data["original_language"]
+                )
+            embed.add_field(name="Adult content:", value=data["adult"])
+            if data["revenue"]:
+                embed.add_field(
+                    name="Revenue:", value=f"${humanize_number(data['revenue'])}"
+                )
+            if data["budget"]:
+                embed.add_field(
+                    name="Budget:", value=f"${humanize_number(data['budget'])}"
+                )
+            if data["popularity"]:
+                embed.add_field(
+                    name="Popularity:", value=humanize_number(data["popularity"])
+                )
+            if data["vote_average"]:
+                embed.add_field(name="Vote Average:", value=data["vote_average"])
+            if data["vote_count"]:
+                embed.add_field(
+                    name="Vote Count:", value=humanize_number(data["vote_count"])
+                )
+            if data["homepage"]:
+                embed.add_field(name="Homepage:", value=data["homepage"])
             embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
             pages.append(embed)
         await SimpleMenu(
@@ -243,6 +251,8 @@ class TheMovieDB(commands.Cog):
             embed.set_thumbnail(
                 url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
             )
+            if data["original_name"]:
+                embed.add_field(name="Original Name:", value=data["original_name"])
             if data["first_air_date"]:
                 embed.add_field(
                     name="First Air Date:",
@@ -258,36 +268,28 @@ class TheMovieDB(commands.Cog):
                     name="Next Episode Air Date:",
                     value=f"<t:{int(datetime.strptime(data['next_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>",
                 )
-            if data["original_name"]:
-                embed.add_field(name="Original Name:", value=data["original_name"])
-            if data["origin_country"]:
+            if data["number_of_episodes"]:
                 embed.add_field(
-                    name="Origin Country:", value=", ".join(data["origin_country"])
+                    name="Number of Episodes:", value=data["number_of_episodes"]
                 )
-            if data["popularity"]:
+            if data["number_of_seasons"]:
                 embed.add_field(
-                    name="Popularity:", value=humanize_number(data["popularity"])
+                    name="Number of Seasons:", value=data["number_of_seasons"]
                 )
-            if data["vote_average"]:
-                embed.add_field(name="Vote Average:", value=data["vote_average"])
-            if data["vote_count"]:
-                embed.add_field(
-                    name="Vote Count:", value=humanize_number(data["vote_count"])
-                )
-            embed.add_field(name="Adult content:", value=data["adult"])
             if data["status"]:
                 embed.add_field(name="Status:", value=data["status"])
             if data["type"]:
                 embed.add_field(name="Type:", value=data["type"])
+            if data["genres"]:
+                embed.add_field(
+                    name="Genres:", value=", ".join([i["name"] for i in data["genres"]])
+                )
             if data["networks"]:
                 embed.add_field(
                     name="Networks:",
                     value=", ".join([i["name"] for i in data["networks"]]),
                 )
-            if data["genres"]:
-                embed.add_field(
-                    name="Genres:", value=", ".join([i["name"] for i in data["genres"]])
-                )
+            embed.add_field(name="Adult content:", value=data["adult"])
             if data["spoken_languages"]:
                 embed.add_field(
                     name="Spoken Languages:",
@@ -308,14 +310,18 @@ class TheMovieDB(commands.Cog):
                     name="Created By:",
                     value=", ".join([i["name"] for i in data["created_by"]]),
                 )
-            if data["number_of_episodes"]:
+            if data["popularity"]:
                 embed.add_field(
-                    name="Number of Episodes:", value=data["number_of_episodes"]
+                    name="Popularity:", value=humanize_number(data["popularity"])
                 )
-            if data["number_of_seasons"]:
+            if data["vote_average"]:
+                embed.add_field(name="Vote Average:", value=data["vote_average"])
+            if data["vote_count"]:
                 embed.add_field(
-                    name="Number of Seasons:", value=data["number_of_seasons"]
+                    name="Vote Count:", value=humanize_number(data["vote_count"])
                 )
+            if data["homepage"]:
+                embed.add_field(name="Homepage:", value=data["homepage"])
             embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
             pages.append(embed)
         await SimpleMenu(
