@@ -18,7 +18,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.0"
+    __version__ = "1.0.1"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -142,6 +142,8 @@ class TheMovieDB(commands.Cog):
                 )
             if data["runtime"]:
                 embed.add_field(name="Runtime:", value=f"{data['runtime']} minutes")
+            if data["status"]:
+                embed.add_field(name="Status:", value=data["status"])
             if data["revenue"]:
                 embed.add_field(
                     name="Revenue:", value=f"${humanize_number(data['revenue'])}"
