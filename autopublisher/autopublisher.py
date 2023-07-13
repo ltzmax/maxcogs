@@ -116,9 +116,7 @@ class AutoPublisher(commands.Cog):
                 asyncio.TimeoutError,
             ) as e:
                 self.log.error(
-                    "Failed to publish message in {channel} due to {error}".format(
-                        channel=message.channel.mention, error=e
-                    )
+                    f"Failed to publish message in {message.channel.mention} due to {e}"
                 )
 
     @commands.group(aliases=["aph", "autopub"])
