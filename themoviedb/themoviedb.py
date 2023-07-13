@@ -21,7 +21,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.1"
+    __version__ = "1.0.2"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -83,6 +83,14 @@ class TheMovieDB(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    async def get_movie_data(self, movie_id: int) -> dict:
+        """Get data from movies"""
+        api_key = (await self.bot.get_shared_api_tokens("tmdb")).get("api_key")
+        base_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}"
+        async with self.session.get(base_url) as resp:
+            data = await resp.json()
+        return data
+
     @commands.check(apicheck)
     @commands.hybrid_command(aliases=["movies"])
     @app_commands.describe(query="The movie you want to search for.")
@@ -93,8 +101,8 @@ class TheMovieDB(commands.Cog):
         You can write the full name of the movie to get more accurate results.
 
         **Examples:**
-        - `[p]movie The Matrix`
-        - `[p]movie The Matrix 1999`
+        - `[p]movie the matrix`
+        - `[p]movie the hunger games the ballad of songbirds and snakes`
 
         **Arguments:**
         - `<query>` - The movie you want to search for.
@@ -121,12 +129,8 @@ class TheMovieDB(commands.Cog):
         pages = []
         results = data["results"]
         for i in range(len(results)):
+            data = await self.get_movie_data(results[i]["id"])
             movie_id = results[i]["id"]
-            base_url = (
-                f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}"
-            )
-            async with self.session.get(base_url) as resp:
-                data = await resp.json()
 
             if len(data["title"]) > 256:
                 data["title"] = data["title"][:256] or "No title available."
@@ -204,6 +208,14 @@ class TheMovieDB(commands.Cog):
             timeout=120,
         ).start(ctx)
 
+    async def get_tvshow_data(self, tvshow_id: int) -> dict:
+        """Get data from tv shows"""
+        api_key = (await self.bot.get_shared_api_tokens("tmdb")).get("api_key")
+        base_url = f"https://api.themoviedb.org/3/tv/{tvshow_id}?api_key={api_key}"
+        async with self.session.get(base_url) as resp:
+            data = await resp.json()
+        return data
+
     @commands.check(apicheck)
     @commands.hybrid_command(aliases=["tv"])
     @app_commands.describe(query="The serie you want to search for.")
@@ -214,7 +226,8 @@ class TheMovieDB(commands.Cog):
         You can write the full name of the tv show to get more accurate results.
 
         **Examples:**
-        - `[p]tvshow The Simpsons`
+        - `[p]tvshow the simpsons`
+        - `[p]tvshow family guy`
 
         **Arguments:**
         - `<query>` - The serie you want to search for.
@@ -241,13 +254,8 @@ class TheMovieDB(commands.Cog):
         pages = []
         results = data["results"]
         for i in range(len(results)):
-            tv_id = results[i]["id"]
-            base_url = f"https://api.themoviedb.org/3/tv/{tv_id}?api_key={api_key}"
-            async with self.session.get(base_url) as resp:
-                data = await resp.json()
-
-            if len(data["name"]) > 256:
-                data["name"] = data["name"][:256] or "No name available."
+            data = await self.get_tvshow_data(results[i]["id"])
+            tv_id = data["id"]
 
             embed = discord.Embed(
                 title=data["name"],
