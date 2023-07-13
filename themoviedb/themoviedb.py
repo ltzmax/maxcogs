@@ -2,6 +2,7 @@ from datetime import datetime
 
 import aiohttp
 import discord
+from typing import Any, Dict, Optional
 from logging import LoggerAdapter
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import app_commands, commands
@@ -21,7 +22,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -83,17 +84,14 @@ class TheMovieDB(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def get_movie_data(self, movie_id: int) -> dict:
-        """Get data from movies"""
+    async def get_media_data(self, media_id: int, media_type: str) -> Optional[Dict[str, Any]]:
+        """Get data for a movie or TV show from TMDB."""
         api_key = (await self.bot.get_shared_api_tokens("tmdb")).get("api_key")
-        base_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}"
+        base_url = f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={api_key}"
         async with self.session.get(base_url) as resp:
             if resp.status != 200:
-                await ctx.send(
-                    "Something went wrong with TMDB. Please try again later."
-                )
-                return
                 log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
+                return None
             data = await resp.json()
         return data
 
@@ -135,7 +133,7 @@ class TheMovieDB(commands.Cog):
         pages = []
         results = data["results"]
         for i in range(len(results)):
-            data = await self.get_movie_data(results[i]["id"])
+            data = await self.get_media_data(results[i]["id"], "movie")
             movie_id = results[i]["id"]
 
             if len(data["title"]) > 256:
@@ -214,20 +212,6 @@ class TheMovieDB(commands.Cog):
             timeout=120,
         ).start(ctx)
 
-    async def get_tvshow_data(self, tvshow_id: int) -> dict:
-        """Get data from tv shows"""
-        api_key = (await self.bot.get_shared_api_tokens("tmdb")).get("api_key")
-        base_url = f"https://api.themoviedb.org/3/tv/{tvshow_id}?api_key={api_key}"
-        async with self.session.get(base_url) as resp:
-            if resp.status != 200:
-                await ctx.send(
-                    "Something went wrong with TMDB. Please try again later."
-                )
-                return
-                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
-            data = await resp.json()
-        return data
-
     @commands.check(apicheck)
     @commands.hybrid_command(aliases=["tv"])
     @app_commands.describe(query="The serie you want to search for.")
@@ -266,8 +250,8 @@ class TheMovieDB(commands.Cog):
         pages = []
         results = data["results"]
         for i in range(len(results)):
-            data = await self.get_tvshow_data(results[i]["id"])
-            tv_id = data["id"]
+            data = await self.get_media_data(results[i]["id"], "tv")
+            tv_id = results[i]["id"]
 
             embed = discord.Embed(
                 title=data["name"],
