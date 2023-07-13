@@ -88,6 +88,12 @@ class TheMovieDB(commands.Cog):
         api_key = (await self.bot.get_shared_api_tokens("tmdb")).get("api_key")
         base_url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}"
         async with self.session.get(base_url) as resp:
+            if resp.status != 200:
+                await ctx.send(
+                    "Something went wrong with TMDB. Please try again later."
+                )
+                return
+                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
             data = await resp.json()
         return data
 
@@ -213,6 +219,12 @@ class TheMovieDB(commands.Cog):
         api_key = (await self.bot.get_shared_api_tokens("tmdb")).get("api_key")
         base_url = f"https://api.themoviedb.org/3/tv/{tvshow_id}?api_key={api_key}"
         async with self.session.get(base_url) as resp:
+            if resp.status != 200:
+                await ctx.send(
+                    "Something went wrong with TMDB. Please try again later."
+                )
+                return
+                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
             data = await resp.json()
         return data
 
