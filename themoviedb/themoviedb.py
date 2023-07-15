@@ -136,11 +136,8 @@ class TheMovieDB(commands.Cog):
             data = await self.get_media_data(results[i]["id"], "movie")
             movie_id = results[i]["id"]
 
-            if len(data["title"]) > 256:
-                data["title"] = data["title"][:256] or "No title available."
-
             embed = discord.Embed(
-                title=data["title"],
+                title=data["title"][:256] or "No title available.",
                 url=f"https://www.themoviedb.org/movie/{movie_id}",
                 description=data["overview"][:1048] or "No description available.",
                 colour=await ctx.embed_colour(),
@@ -254,7 +251,7 @@ class TheMovieDB(commands.Cog):
             tv_id = results[i]["id"]
 
             embed = discord.Embed(
-                title=data["name"],
+                title=data["name"][:256] or "No title available.",
                 url=f"https://www.themoviedb.org/tv/{tv_id}",
                 description=data["overview"][:1048] or "No description available.",
                 colour=await ctx.embed_colour(),
