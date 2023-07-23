@@ -38,7 +38,7 @@ from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import bundled_data_path
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
-from redbot.core.utils.views import ConfirmView, SimpleMenu
+from redbot.core.utils.views import SimpleMenu
 
 from .converter import Generation
 from .view import WhosThatPokemonView
@@ -313,27 +313,4 @@ class WhosThatPokemon(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.is_owner()
-    @commands.command(name="wtpreset")
-    @commands.cooldown(2, 43200, commands.BucketType.user)
-    async def whosthatpokemon_preset(self, ctx: commands.Context):
-        """Resets the whosthatpokemon leaderboard.
 
-        This will reset the leaderboard globally.
-        This can only be used by the bot owner and 2 times per 12 hours.
-        """
-        if not await self.config.all_users():
-            return await ctx.send(
-                "No one has played whosthatpokemon yet so nothing to reset."
-            )
-        view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(
-            "Are you sure you want to reset the leaderboard?\n**This will reset the leaderboard globally**.",
-            view=view,
-        )
-        await view.wait()
-        if view.result:
-            await self.config.clear_all_users()
-            await ctx.send("✅ WhosThatPokemon leaderboard has been reset.")
-        else:
-            await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")
