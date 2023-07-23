@@ -1,15 +1,16 @@
 from datetime import datetime
+from logging import LoggerAdapter
+from typing import Any, Dict, Optional
 
 import aiohttp
 import discord
-from typing import Any, Dict, Optional
-from logging import LoggerAdapter
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import app_commands, commands
 from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
 log: RedTraceLogger = getLogger("red.maxcogs.themoviedb")
+
 
 # Taken from flare's Dank memer cog.
 # https://github.com/flaree/flare-cogs/blob/1cc1ef9734f40daf2878f2c9dfe68a61e8767eab/dankmemer/dankmemer.py#L16-L19
@@ -22,7 +23,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.3"
+    __version__ = "1.0.6"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -84,10 +85,25 @@ class TheMovieDB(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def get_media_data(self, media_id: int, media_type: str) -> Optional[Dict[str, Any]]:
+    async def search_media(self, ctx, query, media_type):
+        api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
+        base_url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={api_key}&query={query}"
+        params = {"api_key": api_key}
+        async with self.session.get(base_url, params=params) as resp:
+            if resp.status != 200:
+                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
+                return None
+            data = await resp.json()
+            return data
+
+    async def get_media_data(
+        self, media_id: int, media_type: str
+    ) -> Optional[Dict[str, Any]]:
         """Get data for a movie or TV show from TMDB."""
         api_key = (await self.bot.get_shared_api_tokens("tmdb")).get("api_key")
-        base_url = f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={api_key}"
+        base_url = (
+            f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={api_key}"
+        )
         async with self.session.get(base_url) as resp:
             if resp.status != 200:
                 log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
@@ -112,19 +128,11 @@ class TheMovieDB(commands.Cog):
         - `<query>` - The movie you want to search for.
         """
         await ctx.typing()
-        api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
-        base_url = (
-            f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={query}"
-        )
-        params = {"api_key": api_key}
-        async with self.session.get(base_url, params=params) as resp:
-            if resp.status != 200:
-                await ctx.send(
-                    "Something went wrong with TMDB. Please try again later."
-                )
-                return
-                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
-            data = await resp.json()
+        data = await self.search_media(ctx, query, "movie")
+        if data is None:
+            await ctx.send("Something went wrong with TMDB. Please try again later.")
+            return
+
         if not data["results"]:
             await ctx.send(f"No results found for {query}")
             log.info(f"No results found for {query}")
@@ -225,19 +233,11 @@ class TheMovieDB(commands.Cog):
         - `<query>` - The serie you want to search for.
         """
         await ctx.typing()
-        api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
-        base_url = (
-            f"https://api.themoviedb.org/3/search/tv?api_key={api_key}&query={query}"
-        )
-        params = {"api_key": api_key}
-        async with self.session.get(base_url, params=params) as resp:
-            if resp.status != 200:
-                await ctx.send(
-                    "Something went wrong with TMDB. Please try again later."
-                )
-                return
-                log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
-            data = await resp.json()
+        data = await self.search_media(ctx, query, "tv")
+        if data is None:
+            await ctx.send("Something went wrong with TMDB. Please try again later.")
+            return
+
         if not data["results"]:
             await ctx.send(f"No results found for {query}")
             log.info(f"No results found for {query}")

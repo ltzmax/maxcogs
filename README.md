@@ -24,7 +24,7 @@ To install any cog you want:
 | NoSpoiler | Prevent using spoiler messages | 1.5.2 | MAX | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
-| TheMovieDB | Search for informations of movies and TV shows from themoviedb.org. | 1.0.3 | ltzmax | ✅ |
+| TheMovieDB | Search for informations of movies and TV shows from themoviedb.org. | 1.0.6 | ltzmax | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.2.1| ltzmax | ✅ |
 | WhosThatPokemon | Guess whos that pokemon? | 1.3.0 | ltzmax, o-wo | ✅ |
 
