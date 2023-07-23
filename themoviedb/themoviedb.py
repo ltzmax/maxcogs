@@ -277,7 +277,7 @@ class TheMovieDB(commands.Cog):
                 )
             if data["last_air_date"]:
                 embed.add_field(
-                    name="Last Air Date:",
+                    name="Last Episode Air Date:",
                     value=f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>",
                 )
             if data["episode_run_time"]:
