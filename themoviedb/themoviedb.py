@@ -276,6 +276,16 @@ class TheMovieDB(commands.Cog):
                     name="Next Episode Air Date:",
                     value=f"<t:{int(datetime.strptime(data['next_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>",
                 )
+            if data["last_air_date"]:
+                embed.add_field(
+                    name="Last Air Date:",
+                    value=f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>",
+                )
+            if data["episode_run_time"]:
+                embed.add_field(
+                    name="Episode Run Time:",
+                    value=f"{data['episode_run_time'][0]} minutes",
+                )
             if data["number_of_episodes"]:
                 embed.add_field(
                     name="Number of Episodes:", value=data["number_of_episodes"]
