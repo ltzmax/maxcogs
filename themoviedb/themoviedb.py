@@ -179,7 +179,6 @@ class TheMovieDB(commands.Cog):
                 embed.add_field(
                     name="Original Language:", value=data["original_language"]
                 )
-            embed.add_field(name="Adult content:", value=data["adult"])
             if data["revenue"]:
                 embed.add_field(
                     name="Revenue:", value=f"${humanize_number(data['revenue'])}"
@@ -307,7 +306,6 @@ class TheMovieDB(commands.Cog):
                     name="Networks:",
                     value=", ".join([i["name"] for i in data["networks"]]),
                 )
-            embed.add_field(name="Adult content:", value=data["adult"])
             if data["spoken_languages"]:
                 embed.add_field(
                     name="Spoken Languages:",
