@@ -34,10 +34,11 @@ import aiohttp
 import discord
 from discord import File
 from PIL import Image
-from redbot.core import app_commands, commands
+from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import bundled_data_path
-from redbot.core.utils.chat_formatting import box, humanize_list
+from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
+from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 from .converter import Generation
 from .view import WhosThatPokemonView
@@ -61,6 +62,13 @@ class WhosThatPokemon(commands.Cog):
     def __init__(self, bot: Red):
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self.config = Config.get_conf(
+            self, identifier=1234567890, force_registration=True
+        )
+        default_user = {
+            "total_correct_guesses": 0,
+        }
+        self.config.register_user(**default_user)
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -219,7 +227,7 @@ class WhosThatPokemon(commands.Cog):
         embed = discord.Embed(
             title=":tada: You got it right! :tada:",
             description=f"The Pokemon was... **{english_name}**.",
-            color=await ctx.embed_color(),
+            color=0x76EE00,
         )
         embed.set_image(url="attachment://whosthatpokemon.png")
         embed.set_footer(text=f"Author: {ctx.author}", icon_url=ctx.author.avatar.url)
@@ -227,8 +235,105 @@ class WhosThatPokemon(commands.Cog):
         # This is probably not the best way to do it, but it works perfectly fine.
         timeout = await view.wait()
         if timeout:
-            await ctx.send(
-                f"{ctx.author.mention} Time's up! you could not guess the pokemon in time.\nThe pokemon was... **{english_name}**.",
+            embed = discord.Embed(
+                title=":x: You ran out of time! :x:",
+                description=f"You took too long to answer.\nThe Pokemon was... **{english_name}**.",
+                color=0x8B0000,
             )
-            return
+            return await ctx.send(f"{ctx.author.mention}", embed=embed)
+        if await self.config.user(ctx.author).all():
+            await self.config.user(ctx.author).total_correct_guesses.set(
+                await self.config.user(ctx.author).total_correct_guesses() + 1
+            )
         await ctx.send(file=revealed_img, embed=embed)
+
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command(name="wtpleaderboard", aliases=["wtplb"])
+    async def whosthatpokemon_leaderboard(self, ctx: commands.Context):
+        """Shows the leaderboard for whosthatpokemon.
+
+        This is global leaderboard and not per server.
+        This will show the top 10 users with most correct guesses.
+        """
+        pages = []
+        users = await self.config.all_users()
+        sorted_users = sorted(users.items(), key=lambda x: x[1]["total_correct_guesses"])
+        sorted_users.reverse()
+        if not sorted_users:
+            return await ctx.send(
+                "No one has played whosthatpokemon yet. Use `[p]whosthatpokemon` to start!"
+            )
+        embed = discord.Embed(
+            title="WhosThatPokemon Leaderboard",
+            description="Top 10 users with most correct guesses.",
+            color=await ctx.embed_color(),
+        )
+        for index, user in enumerate(sorted_users[:10], start=1):
+            user_id = int(user[0])
+            total_correct_guesses = await self.config.user_from_id(
+                user_id
+            ).total_correct_guesses()
+            total = humanize_number(total_correct_guesses)
+            user_obj = self.bot.get_user(user_id)
+            if user_obj is None:
+                continue
+            embed.add_field(
+                name=f"{index}. {user_obj}",
+                value=f"Total correct guesses: **{total}**",
+                inline=False,
+            )
+        pages.append(embed)
+        await SimpleMenu(
+            pages,
+            disable_after_timeout=True,
+            timeout=60,
+        ).start(ctx)
+
+    @commands.command(name="wtpstats")
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def whosthatpokemon_stats(self, ctx: commands.Context):
+        """Shows your stats for whosthatpokemon.
+
+        This will show your total correct guesses.
+        """
+        total_correct_guesses = await self.config.user(
+            ctx.author
+        ).total_correct_guesses()
+        if not total_correct_guesses:
+            return await ctx.send(
+                f"You have not played whosthatpokemon yet. Use `{ctx.clean_prefix}whosthatpokemon` to start!"
+            )
+        human = humanize_number(total_correct_guesses)
+        embed = discord.Embed(
+            title=f"{ctx.author.display_name}'s WhosThatPokemon Stats",
+            description=f"Total Correct Guesses: **{human}**",
+            color=await ctx.embed_color(),
+        )
+        await ctx.send(embed=embed)
+
+    @commands.is_owner()
+    @commands.command(name="wtpreset")
+    @commands.cooldown(2, 43200, commands.BucketType.user)
+    async def whosthatpokemon_preset(self, ctx: commands.Context):
+        """Resets the whosthatpokemon leaderboard.
+
+        This will reset the leaderboard globally.
+        This can only be used by the bot owner and 2 times per 12 hours.
+        """
+        if not await self.config.all_users():
+            return await ctx.send(
+                "No one has played whosthatpokemon yet so nothing to reset."
+            )
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send(
+            "Are you sure you want to reset the leaderboard?\n**This will reset the leaderboard globally**.",
+            view=view,
+        )
+        await view.wait()
+        if view.result:
+            await self.config.clear_all_users()
+            await ctx.send("✅ WhosThatPokemon leaderboard has been reset.")
+        else:
+            await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")
