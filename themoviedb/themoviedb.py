@@ -191,6 +191,11 @@ class TheMovieDB(commands.Cog):
                 embed.add_field(
                     name="Genres:", value=", ".join([i["name"] for i in data["genres"]])
                 )
+            if data["belongs_to_collection"]:
+                embed.add_field(
+                    name="Belongs to Collection:",
+                    value=data["belongs_to_collection"]["name"],
+                )
             if data["production_companies"]:
                 embed.add_field(
                     name="Production Companies:",
@@ -230,6 +235,8 @@ class TheMovieDB(commands.Cog):
                 )
             if data["homepage"]:
                 embed.add_field(name="Homepage:", value=data["homepage"])
+            if data["tagline"]:
+                embed.add_field(name="Tagline:", value=data["tagline"], inline=False)
             embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
             pages.append(embed)
         await SimpleMenu(
@@ -361,6 +368,8 @@ class TheMovieDB(commands.Cog):
                 )
             if data["homepage"]:
                 embed.add_field(name="Homepage:", value=data["homepage"])
+            if data["tagline"]:
+                embed.add_field(name="Tagline:", value=data["tagline"], inline=False)
             embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
             pages.append(embed)
         await SimpleMenu(
