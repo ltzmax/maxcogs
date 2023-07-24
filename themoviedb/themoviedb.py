@@ -290,17 +290,17 @@ class TheMovieDB(commands.Cog):
                 )
             if data["last_episode_to_air"]:
                 embed.add_field(
-                    name="Last Episode Air Date:",
+                    name="Last Episode Air Date:", # When the last episode aired.
                     value=f"<t:{int(datetime.strptime(data['last_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>",
                 )
             if data["next_episode_to_air"]:
                 embed.add_field(
-                    name="Next Episode Air Date:",
+                    name="Next Episode Air Date:", # When the next episode will air.
                     value=f"<t:{int(datetime.strptime(data['next_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>",
                 )
             if data["last_air_date"]:
                 embed.add_field(
-                    name="Last Episode Air Date:",
+                    name="Last Air Date:", # When the show ended.
                     value=f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>",
                 )
             if data["episode_run_time"]:
