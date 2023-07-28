@@ -46,7 +46,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.6"
+    __version__ = "1.0.7"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -370,6 +370,146 @@ class TheMovieDB(commands.Cog):
                 embed.add_field(name="Homepage:", value=data["homepage"])
             if data["tagline"]:
                 embed.add_field(name="Tagline:", value=data["tagline"], inline=False)
+            embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
+            pages.append(embed)
+        await SimpleMenu(
+            pages,
+            use_select_menu=True,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
+
+    @commands.check(apicheck)
+    @commands.hybrid_command(aliases=["actor"])
+    @app_commands.describe(query="The person you want to search for.")
+    @commands.bot_has_permissions(embed_links=True)
+    async def person(self, ctx: commands.Context, *, query: str):
+        """Search for an actor.
+        
+        **Examples:**
+        - `[p]person Bradley James`
+        - `[p]person Tom Holland`
+
+        **Arguments:**
+        - `<query>` - The actor you want to search for.
+        """
+        await ctx.typing()
+        data = await self.search_media(ctx, query, "person")
+        if not data["results"]:
+            await ctx.send(f"No results found for {query}")
+            log.info(f"No results found for {query}")
+            return  
+        
+        pages = []
+        results = data["results"]
+        for i in range(len(results)):
+            data = await self.get_media_data(results[i]["id"], "person")
+            person_id = results[i]["id"]
+
+            embed = discord.Embed(
+                title=data["name"][:256] or "No title available.",
+                url=f"https://www.themoviedb.org/person/{person_id}",
+                description=data["biography"][:230] or "No description available.",
+                colour=await ctx.embed_colour(),
+            )
+            embed.set_thumbnail(
+                url=f"https://image.tmdb.org/t/p/original{data['profile_path']}"
+            )
+            if data["birthday"]:
+                embed.add_field(
+                    name="Birthday:",
+                    value=f"<t:{int(datetime.strptime(data['birthday'], '%Y-%m-%d').timestamp())}:D>",
+                )
+            if data["deathday"]:
+                embed.add_field(
+                    name="Death Day:",
+                    value=f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D>",
+                )
+            if data["place_of_birth"]:
+                embed.add_field(name="Place of Birth:", value=data["place_of_birth"])
+            if data["popularity"]:
+                embed.add_field(
+                    name="Popularity:", value=humanize_number(data["popularity"])
+                )
+            if data["known_for_department"]:
+                embed.add_field(
+                    name="Known for Department:", value=data["known_for_department"]
+                )
+            if data["homepage"]:
+                embed.add_field(name="Homepage:", value=data["homepage"])
+            if data["also_known_as"]:
+                embed.add_field(
+                    name="Also Known As:",
+                    value=", ".join([i for i in data["also_known_as"]]),
+                    inline=False,
+                )
+            if data["imdb_id"]:
+                embed.add_field(
+                    name="IMDB:",
+                    value=f"https://www.imdb.com/name/{data['imdb_id']}",
+                )
+            embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
+            pages.append(embed)
+        await SimpleMenu(
+            pages,
+            use_select_menu=True,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
+
+    @commands.check(apicheck)
+    @commands.hybrid_command()
+    @app_commands.describe(query="The collection you want to search for.")
+    @commands.bot_has_permissions(embed_links=True)
+    async def collection(self, ctx: commands.Context, *, query: str):
+        """Get a collection of movies.
+        
+        No tv shows collections are available.
+
+        **Examples:**
+        - `[p]collection harry potter`
+        - `[p]collection the hunger games`
+
+        **Arguments:**
+        - `<query>` - The collection you want to search for.
+        """
+        await ctx.typing()
+        data = await self.search_media(ctx, query, "collection")
+        if not data["results"]:
+            await ctx.send(f"No results found for {query}")
+            log.info(f"No results found for {query}")
+            return
+
+        pages = []
+        results = data["results"]
+        for i in range(len(results)):
+            data = await self.get_media_data(results[i]["id"], "collection")
+            collection_id = results[i]["id"]
+
+            embed = discord.Embed(
+                title=data["name"][:256] or "No title available.",
+                url=f"https://www.themoviedb.org/collection/{collection_id}",
+                description=data["overview"][:1048] or "No description available.",
+                colour=await ctx.embed_colour(),
+            )
+            embed.set_thumbnail(
+                url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
+            )
+            if data["backdrop_path"]:
+                embed.set_image(
+                    url=f"https://image.tmdb.org/t/p/original{data['backdrop_path']}"
+                )
+            if data["parts"]:
+                embed.add_field(
+                    name="Parts:",
+                    value=", ".join([i["title"] for i in data["parts"]]),
+                    inline=False,
+                )
+            if data["poster_path"]:
+                embed.add_field(
+                    name="Poster Path:",
+                    value=f"[Click Here](https://image.tmdb.org/t/p/original{data['poster_path']})",
+                )
             embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
             pages.append(embed)
         await SimpleMenu(
