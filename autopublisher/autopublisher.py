@@ -185,6 +185,14 @@ class AutoPublisher(commands.Cog):
         """Add or remove channels for your guild.
 
         `<add_or_remove>` should be either `add` to add channels or `remove` to remove channels.
+
+        **Example:**
+        - `[p]autopublisher ignore add #news`
+        - `[p]autopublisher ignore remove #news`
+
+        **Note:**
+        - You can add or remove multiple channels at once.
+        - You can also use channel ID instead of mentioning the channel.
         """
         if channels is None:
             await ctx.send("`Channels` is a required argument.")
