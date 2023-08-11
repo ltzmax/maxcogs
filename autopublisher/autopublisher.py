@@ -109,6 +109,7 @@ class AutoPublisher(commands.Cog):
             return
         if message.channel.is_news():
             try:
+                await asyncio.sleep(2)
                 await asyncio.wait_for(message.publish(), timeout=60)
             except (
                 discord.HTTPException,
