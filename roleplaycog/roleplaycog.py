@@ -106,6 +106,30 @@ class RolePlayCog(commands.Cog):
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
+    async def yawn(self, ctx: commands.Context, member: discord.Member) -> None:
+        """yawn!"""
+        await self.embedgen(ctx, member, "yawn")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def handshake(self, ctx: commands.Context, member: discord.Member) -> None:
+        """handshake!"""
+        await self.embedgen(ctx, member, "handshake")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def lurk(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Lurks!"""
+        await self.embedgen(ctx, member, "lurk")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def peck(self, ctx: commands.Context, member: discord.Member) -> None:
+        """peck!"""
+        await self.embedgen(ctx, member, "peck")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def baka(self, ctx: commands.Context, member: discord.Member) -> None:
         """Baka baka baka!"""
         await self.embedgen(ctx, member, "baka")

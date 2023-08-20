@@ -63,4 +63,8 @@ ACTIONS: Dict[str, str] = {
     "nod": "nods",
     "nope": "nope",
     "nom": "nom nom",
+    "handshake": "handshakes",
+    "lurk": "lurking at",
+    "peck": "peck",
+    "yawn": "yawns at",
 }
