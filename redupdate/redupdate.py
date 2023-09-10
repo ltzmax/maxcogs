@@ -1,6 +1,7 @@
 import discord
 from redbot.core import commands
 from typing import Any, Final
+from redbot.core.utils.chat_formatting import box
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
