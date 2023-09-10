@@ -18,6 +18,7 @@ body:
         - autopublisher
         - nospoiler
         - nekosbest
+        - redupdate
         - tcgcard
         - RolePlayCog
         - whosthatpokemon
