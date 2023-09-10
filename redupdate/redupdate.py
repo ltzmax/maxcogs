@@ -7,7 +7,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.2.0"
+    __version__: Final[str] = "1.3.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/redupdate/README.md"
@@ -15,8 +15,8 @@ class RedUpdate(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=0x1A108201, force_registration=True)
-        default = {"redupdate_url": "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"}
-        self.config.register_guild(**default)
+        default_global = {"redupdate_url": "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"}
+        self.config.register_global(**default_global)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -43,22 +43,22 @@ class RedUpdate(commands.Cog):
             return await ctx.send("This is not a valid url for your fork.")
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
-        data = await self.config.guild(ctx.guild).redupdate_url()
+        data = await self.config.redupdate_url()
         if data == url:
             return await ctx.send("This url is already set.")
-        await self.config.guild(ctx.guild).redupdate_url.set(url)
+        await self.config.redupdate_url.set(url)
         await ctx.send(f"Successfully set the url to {url}.")
 
     @redupdateset.command(name="reset")
     async def redupdateset_reset(self, ctx: commands.Context):
         """Reset the url for redupdate cog."""
-        await self.config.guild(ctx.guild).redupdate_url.set("git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot")
+        await self.config.redupdate_url.set("git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot")
         await ctx.send("Successfully reset the url.")
 
     @redupdateset.command(name="show", aliases=["showsettings", "settings", "view"])
     async def redupdateset_show(self, ctx: commands.Context):
         """Show the url for redupdate cog."""
-        url = await self.config.guild(ctx.guild).redupdate_url()
+        url = await self.config.redupdate_url()
         await ctx.send(f"The current url is `{url}`.")
 
     @commands.is_owner()
@@ -66,7 +66,9 @@ class RedUpdate(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def redupdate(self, ctx: commands.Context):
         """Update [botname] to latest dev changes."""
-        package = await self.config.guild(ctx.guild).redupdate_url()
+        package = await self.config.redupdate_url()
+        if not package:
+            return await ctx.send("You need to set correct url for your fork first.")
         shell = self.bot.get_cog("Shell")
         try:
             await shell._shell_command(
