@@ -2,6 +2,7 @@ import discord
 from redbot.core import commands, Config
 from typing import Any, Final
 from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.views import ConfirmView
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
@@ -104,38 +105,57 @@ class RedUpdate(commands.Cog):
     @commands.command(aliases=["dpydevupdate"])
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def discordpyupdate(self, ctx: commands.Context):
-        """Update discord.py to latest dev changes."""
+        """Update discord.py to latest dev changes.
+        
+        Do note that this will update discord.py to latest dev changes and not to latest stable release. There may be breaking changes that will break your bot and are not yet on red.
+        """
         package = "git+https://github.com/Rapptz/discord.py@master"
-        shell = self.bot.get_cog("Shell")
-        try:
-            await shell._shell_command(
-                ctx,
-                f"python3 -m pip install -U --force-reinstall {package}",
-                send_message_on_success=False,
-            )
-        except AttributeError:
-            msg = "You need to have Shell from JackCogs loaded and installed to use this command."
-            embed = discord.Embed(
-                title="Error in redupdate",
-                description=msg,
-                color=await ctx.embed_color(),
-            )
-            view = discord.ui.View()
-            style = discord.ButtonStyle.gray
-            jack = discord.ui.Button(
-                style=style,
-                label="JackCogs repo",
-                url="https://github.com/jack1142/JackCogs",
-            )
-            view.add_item(item=jack)
-            return await ctx.send(embed=embed, view=view)
+        view = ConfirmView(ctx.author, disable_buttons=True)
         embed = discord.Embed(
-            title="Discord.py Updated",
-            description="Successfully updated {}.".format(self.bot.user.name),
+            title="Discord.py Update Information",
+            description="This will update discord.py to latest dev changes and not to latest stable release. There may be breaking changes that will break your bot and are not yet on red.\n\nDo you want to continue?",
             color=await ctx.embed_color(),
         )
-        embed.set_footer(text="Restart required to apply changes!")
-        await ctx.send(embed=embed, silent=True)
+        view.message = await ctx.send(embed=embed, view=view)
+        await view.wait()
+        if view.result:
+            shell = self.bot.get_cog("Shell")
+            try:
+                await shell._shell_command(
+                    ctx,
+                    f"pip install -U --force-reinstall {package}",
+                    send_message_on_success=False,
+                )
+            except AttributeError:
+                msg = "You need to have Shell from JackCogs loaded and installed to use this command."
+                embed = discord.Embed(
+                    title="Error in redupdate",
+                    description=msg,
+                    color=await ctx.embed_color(),
+                )
+                view = discord.ui.View()
+                style = discord.ButtonStyle.gray
+                jack = discord.ui.Button(
+                    style=style,
+                    label="JackCogs repo",
+                    url="https://github.com/jack1142/JackCogs",
+                )
+                view.add_item(item=jack)
+                return await ctx.send(embed=embed, view=view)
+            embed = discord.Embed(
+                title="Discord.py Updated",
+                description="Successfully updated {}.".format(self.bot.user.name),
+                color=await ctx.embed_color(),
+            )
+            embed.set_footer(text="Restart required to apply changes!")
+            await ctx.send(embed=embed, silent=True)
+        else:
+            embed = discord.Embed(
+                title="Discord.py Update Cancelled",
+                description="Cancelled updating {}.".format(self.bot.user.name),
+                color=await ctx.embed_color(),
+            )
+            await ctx.send(embed=embed, silent=True)
 
     @commands.command(hidden=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
