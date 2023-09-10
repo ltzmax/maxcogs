@@ -19,7 +19,6 @@ body:
         - nospoiler
         - nekosbest
         - tcgcard
-        - themoviedb
         - RolePlayCog
         - whosthatpokemon
     validations:
