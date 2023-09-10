@@ -9,7 +9,7 @@ Dev version of red is usually not supported, use stable version of red if you wa
 Update [botname] to latest dev changes.
 
 # redupdate
- - Usage: `[p]redupdate ``
+ - Usage: ``[p]redupdate ``
  - Restricted to: `OWNER`
 
 Update [botname] to latest dev changes.
