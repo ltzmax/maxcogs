@@ -7,7 +7,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.2.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/redupdate/README.md"
