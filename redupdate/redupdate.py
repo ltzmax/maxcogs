@@ -8,7 +8,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.4.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/redupdate/README.md"
@@ -29,7 +29,7 @@ class RedUpdate(commands.Cog):
         return
 
     @commands.is_owner()
-    @commands.group(aliases=["setredupdate", "redset", "setred"], hidden=True)
+    @commands.group(aliases=["redset"], hidden=True)
     async def redupdateset(self, ctx: commands.Context):
         """Setting commands for redupdate cog."""
 
@@ -40,7 +40,8 @@ class RedUpdate(commands.Cog):
         Has to be vaild link such as `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot` else it will not work.
         """
         # Cause i'm super lazy and don't want to make a regex for this.
-        if not url.startswith("git+"):
+        # usually forks that are private uses `git+ssh://git@` instead of `https://`.
+        if not url.startswith("git+ssh://git@") and not url.startswith("git+https://"):
             return await ctx.send("This is not a valid url for your fork.")
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
