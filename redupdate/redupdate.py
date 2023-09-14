@@ -95,7 +95,6 @@ class RedUpdate(commands.Cog):
             view.add_item(item=jack)
             return await ctx.send(embed=embed, view=view)
         embed = discord.Embed(
-            title="{}".format(self.bot.user.name),
             description="Successfully updated {}.".format(self.bot.user.name),
             color=await ctx.embed_color(),
         )
