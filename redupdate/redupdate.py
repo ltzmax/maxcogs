@@ -64,7 +64,7 @@ class RedUpdate(commands.Cog):
         await ctx.send(f"The current url is `{url}`.")
 
     @commands.is_owner()
-    @commands.command()
+    @commands.command(aliases=["updatered"])
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def redupdate(self, ctx: commands.Context):
         """Update [botname] to latest dev changes."""
