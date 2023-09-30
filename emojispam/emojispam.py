@@ -52,7 +52,7 @@ class EmojiSpam(commands.Cog):
             return
         log_channel = guild.get_channel(log_channel)
         if not log_channel:
-            return
+            return   
         if (
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
@@ -267,11 +267,15 @@ class EmojiSpam(commands.Cog):
         emoji_limit = all["emoji_limit"]
         emoji_limit_msg = all["emoji_limit_msg"]
         emoji_limit_msg_enabled = all["emoji_limit_msg_enabled"]
+        log_channel = all["log_channel"]
+        if log_channel:
+            log_channel = f"<#{log_channel}>"
+        else:
+            log_channel = "None"
         embed = discord.Embed(
             title="Emoji Spam Filter Settings",
-            description=box(
-                f"{'Enabled':15}: {enabled}\n{'Emoji Limit':<15}: {emoji_limit}\n{'Message':<15}: {emoji_limit_msg}\n{'Message Enabled':<14}: {emoji_limit_msg_enabled}",
-                lang="yaml",
+            description=(
+                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
             ),
             color=await ctx.embed_color(),
         )
