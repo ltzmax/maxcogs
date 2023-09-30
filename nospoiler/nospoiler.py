@@ -195,7 +195,7 @@ class NoSpoiler(commands.Cog):
                 "It need this permission before you can enable the spoiler filter. "
                 f"Else {self.bot.user.name} will not be able to remove any spoiler messages."
             )
-            await ctx.send(msg, ephemeral=True)
+            await ctx.send(msg)
             return
         enabled = await self.config.guild(ctx.guild).enabled()
         if enabled:
