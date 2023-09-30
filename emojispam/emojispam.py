@@ -1,8 +1,8 @@
 import discord
 import re
 import logging
-from typing import Any, Final
-
+from typing import Any, Final, Literal
+from redbot.core.utils.chat_formatting import box
 from redbot.core import commands, Config
 
 log = logging.getLogger("red.maxcogs.emojispam")
@@ -13,7 +13,7 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/emojispam/README.md"
@@ -164,6 +164,9 @@ class EmojiSpam(commands.Cog):
         """Set the emoji limit.
         
         Default limit is 5.
+        Limit must be between 1 and 100.
+
+        If limit is set to 4, a user can send 4 emojis, but not 5.
         """
         if limit < 1:
             return await ctx.send("Limit must be greater than 1!")
@@ -190,17 +193,32 @@ class EmojiSpam(commands.Cog):
         await self.config.guild(ctx.guild).emoji_limit_msg.set("You are sending too many emojis!")
         await ctx.send("Message reset back to default!")
 
-    @emojispam.command()
-    async def msgenable(self, ctx: commands.Context, *, enabled: bool = None):
-        """Enable or disable the message when a user goes over the emoji limit.
+    @emojispam.command(usage="<enable|disable>")
+    async def msgtoggle(self, ctx: commands.Context, add_or_remove: Literal["enable", "disable"]):
+        """Enable or disable the message.
         
-        Default is disabled.
+        If the message is disabled, no message will be sent when a user goes over the emoji limit.
+
+        Default state is disabled.
+
+        **Valid options:**
+        - enable
+        - disable
+
+        **Example:**
+        - `[p]emojispam msgtoggle enable` 
+          - This will enable the message and send it when a user goes over the emoji limit.
+        - `[p]emojispam msgtoggle disable` 
+          - This will disable the message and will not send it when a user goes over the emoji limit.
         """
-        await self.config.guild(ctx.guild).emoji_limit_msg_enabled.set(enabled)
-        if enabled:
+        if add_or_remove == "enable":
+            await self.config.guild(ctx.guild).emoji_limit_msg_enabled.set(True)
             await ctx.send("Message enabled!")
-        else:
+        elif add_or_remove == "disable":
+            await self.config.guild(ctx.guild).emoji_limit_msg_enabled.set(False)
             await ctx.send("Message disabled!")
+        else:
+            await ctx.send("Invalid option!")
 
     @emojispam.command()
     async def ignore(self, ctx: commands.Context, channel: discord.TextChannel = None):
@@ -239,3 +257,38 @@ class EmojiSpam(commands.Cog):
             await ctx.send(
                 f"Currently ignored channels: {', '.join([ctx.guild.get_channel(c).mention for c in ignored_channels])}"
             )
+
+    @emojispam.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def settings(self, ctx: commands.Context):
+        """Show the current settings."""
+        all = await self.config.guild(ctx.guild).all()
+        enabled = all["enabled"]
+        emoji_limit = all["emoji_limit"]
+        emoji_limit_msg = all["emoji_limit_msg"]
+        emoji_limit_msg_enabled = all["emoji_limit_msg_enabled"]
+        embed = discord.Embed(
+            title="Emoji Spam Filter Settings",
+            description=box(
+                f"{'Enabled':15}: {enabled}\n{'Emoji Limit':<15}: {emoji_limit}\n{'Message':<15}: {emoji_limit_msg}\n{'Message Enabled':<14}: {emoji_limit_msg_enabled}",
+                lang="yaml",
+            ),
+            color=await ctx.embed_color(),
+        )
+        await ctx.send(embed=embed)
+
+    @emojispam.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def version(self, ctx: commands.Context) -> None:
+        """Shows the version of the cog."""
+        version = self.__version__
+        author = self.__author__
+        embed = discord.Embed(
+            title="Cog Information",
+            description=box(
+                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
+                lang="yaml",
+            ),
+            color=await ctx.embed_color(),
+        )
+        await ctx.send(embed=embed)
