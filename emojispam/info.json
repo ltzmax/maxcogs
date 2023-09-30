@@ -1,0 +1,26 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "EmojiSpam",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any Emoji spam filter without setting up autoimmune.",
+    "description": "Similar emojispam filter to dyno but without ban, kick and mute.",
+    "short": "Similar emojispam filter to dyno but without ban, kick and mute.",
+    "hidden": false,
+    "min_bot_version": "3.5.0",
+    "tags": [
+        "emoji",
+        "emojispam"
+    ],
+    "permissions": [
+        "embed_links",
+        "manage_messages"
+    ],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
