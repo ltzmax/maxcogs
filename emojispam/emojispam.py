@@ -92,7 +92,7 @@ class EmojiSpam(commands.Cog):
                             f"I don't have permissions to send messages in {message.channel.mention}. Disabling message."
                         )
                     await message.channel.send(
-                        await self.config.guild(message.guild).emoji_limit_msg(), delete_after=10
+                        f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}", delete_after=10
                     )
                 await self.log_channel_embed(message.guild, message)
                 await message.delete()
@@ -121,7 +121,7 @@ class EmojiSpam(commands.Cog):
                             f"I don't have permissions to send messages in {after.channel.mention}. Disabling message."
                         )
                     await after.channel.send(
-                        await self.config.guild(after.guild).emoji_limit_msg(), delete_after=10
+                        f"{after.author.mention} {await self.config.guild(after.guild).emoji_limit_msg()}", delete_after=10
                     )
                 await self.log_channel_embed(after.guild, after)
                 await after.delete()
