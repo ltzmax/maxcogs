@@ -1,13 +1,15 @@
-import discord
-import re
 import logging
+import re
 from typing import Any, Final, Literal
+
+import discord
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
-from redbot.core import commands, Config
 
 log = logging.getLogger("red.maxcogs.emojispam")
 
 EMOJI_REGEX = re.compile("<a?:(\w+):(\d+)>")
+
 
 class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
@@ -17,7 +19,6 @@ class EmojiSpam(commands.Cog):
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/emojispam/README.md"
-
 
     def __init__(self, bot):
         self.bot = bot
@@ -41,18 +42,14 @@ class EmojiSpam(commands.Cog):
         """Nothing to delete."""
         return
 
-    async def log_channel_embed(
-        self,
-        guild: discord.Guild,
-        message: discord.Message
-    ):
+    async def log_channel_embed(self, guild: discord.Guild, message: discord.Message):
         """Send an embed to the log channel."""
         log_channel = await self.config.guild(guild).log_channel()
         if not log_channel:
             return
         log_channel = guild.get_channel(log_channel)
         if not log_channel:
-            return   
+            return
         if (
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
@@ -76,23 +73,31 @@ class EmojiSpam(commands.Cog):
             return
         if not message.guild:
             return
-        if message.channel.id in await self.config.guild(message.guild).ignored_channels():
+        if (
+            message.channel.id
+            in await self.config.guild(message.guild).ignored_channels()
+        ):
             return
         if not await self.config.guild(message.guild).enabled():
-            return 
+            return
         if EMOJI_REGEX.search(message.content):
             emojis = EMOJI_REGEX.findall(message.content)
             if len(emojis) > await self.config.guild(message.guild).emoji_limit():
                 if await self.bot.is_automod_immune(message.author):
                     return
                 if await self.config.guild(message.guild).emoji_limit_msg_enabled():
-                    if not message.channel.permissions_for(message.guild.me).send_messages:
-                        await self.config.guild(message.guild).emoji_limit_msg_enabled.set(False)
+                    if not message.channel.permissions_for(
+                        message.guild.me
+                    ).send_messages:
+                        await self.config.guild(
+                            message.guild
+                        ).emoji_limit_msg_enabled.set(False)
                         log.info(
                             f"I don't have permissions to send messages in {message.channel.mention}. Disabling message."
                         )
                     await message.channel.send(
-                        f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}", delete_after=10
+                        f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}",
+                        delete_after=10,
                     )
                 await self.log_channel_embed(message.guild, message)
                 await message.delete()
@@ -116,16 +121,19 @@ class EmojiSpam(commands.Cog):
                     return
                 if await self.config.guild(after.guild).emoji_limit_msg_enabled():
                     if not after.channel.permissions_for(after.guild.me).send_messages:
-                        await self.config.guild(after.guild).emoji_limit_msg_enabled.set(False)
+                        await self.config.guild(
+                            after.guild
+                        ).emoji_limit_msg_enabled.set(False)
                         log.info(
                             f"I don't have permissions to send messages in {after.channel.mention}. Disabling message."
                         )
                     await after.channel.send(
-                        f"{after.author.mention} {await self.config.guild(after.guild).emoji_limit_msg()}", delete_after=10
+                        f"{after.author.mention} {await self.config.guild(after.guild).emoji_limit_msg()}",
+                        delete_after=10,
                     )
                 await self.log_channel_embed(after.guild, after)
                 await after.delete()
-    
+
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
@@ -135,7 +143,7 @@ class EmojiSpam(commands.Cog):
     @emojispam.command()
     async def toggle(self, ctx: commands.Context, enabled: bool = None):
         """Toggle the emoji spam filter.
-        
+
         If no enabled state is provided, the current state will be toggled.
         """
         if enabled is None:
@@ -147,9 +155,11 @@ class EmojiSpam(commands.Cog):
             await ctx.send("Emoji spam filter disabled!")
 
     @emojispam.command()
-    async def logchannel(self, ctx: commands.Context, channel: discord.TextChannel = None):
+    async def logchannel(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
         """Set the log channel.
-        
+
         If no channel is provided, the log channel will be disabled.
         """
         if not channel:
@@ -162,7 +172,7 @@ class EmojiSpam(commands.Cog):
     @emojispam.command()
     async def limit(self, ctx: commands.Context, limit: int):
         """Set the emoji limit.
-        
+
         Default limit is 5.
         Limit must be between 1 and 100.
 
@@ -178,7 +188,7 @@ class EmojiSpam(commands.Cog):
     @emojispam.command()
     async def msg(self, ctx: commands.Context, *, msg: str):
         """Set the message to send when a user goes over the emoji limit.
-        
+
         Default message is:
         `You are sending too many emojis!`.
         """
@@ -190,13 +200,17 @@ class EmojiSpam(commands.Cog):
     @emojispam.command()
     async def resetmsg(self, ctx: commands.Context):
         """Reset the message to the default message."""
-        await self.config.guild(ctx.guild).emoji_limit_msg.set("You are sending too many emojis!")
+        await self.config.guild(ctx.guild).emoji_limit_msg.set(
+            "You are sending too many emojis!"
+        )
         await ctx.send("Message reset back to default!")
 
     @emojispam.command(usage="<enable|disable>")
-    async def msgtoggle(self, ctx: commands.Context, add_or_remove: Literal["enable", "disable"]):
+    async def msgtoggle(
+        self, ctx: commands.Context, add_or_remove: Literal["enable", "disable"]
+    ):
         """Enable or disable the message.
-        
+
         If the message is disabled, no message will be sent when a user goes over the emoji limit.
 
         Default state is disabled.
@@ -206,9 +220,9 @@ class EmojiSpam(commands.Cog):
         - disable
 
         **Example:**
-        - `[p]emojispam msgtoggle enable` 
+        - `[p]emojispam msgtoggle enable`
           - This will enable the message and send it when a user goes over the emoji limit.
-        - `[p]emojispam msgtoggle disable` 
+        - `[p]emojispam msgtoggle disable`
           - This will disable the message and will not send it when a user goes over the emoji limit.
         """
         if add_or_remove == "enable":
@@ -223,27 +237,33 @@ class EmojiSpam(commands.Cog):
     @emojispam.command()
     async def ignore(self, ctx: commands.Context, channel: discord.TextChannel = None):
         """Ignore a channel.
-        
-        When a channel is ignored, the emoji spam filter will not be applied to that channel.     
+
+        When a channel is ignored, the emoji spam filter will not be applied to that channel.
         """
         if not channel:
             channel = ctx.channel
         if channel.id in await self.config.guild(ctx.guild).ignored_channels():
             await ctx.send("Channel already ignored!")
         else:
-            async with self.config.guild(ctx.guild).ignored_channels() as ignored_channels:
+            async with self.config.guild(
+                ctx.guild
+            ).ignored_channels() as ignored_channels:
                 ignored_channels.append(channel.id)
             await ctx.send(f"{channel.mention} is now ignored!")
 
     @emojispam.command()
-    async def unignore(self, ctx: commands.Context, channel: discord.TextChannel = None):
+    async def unignore(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
         """Unignore a channel."""
         if not channel:
             channel = ctx.channel
         if channel.id not in await self.config.guild(ctx.guild).ignored_channels():
             await ctx.send("Channel isn't ignored!")
         else:
-            async with self.config.guild(ctx.guild).ignored_channels() as ignored_channels:
+            async with self.config.guild(
+                ctx.guild
+            ).ignored_channels() as ignored_channels:
                 ignored_channels.remove(channel.id)
             await ctx.send(f"{channel.mention} is no longer ignored!")
 

@@ -1,8 +1,10 @@
-import discord
-from redbot.core import commands, Config
 from typing import Any, Final
+
+import discord
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
+
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
@@ -15,8 +17,12 @@ class RedUpdate(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=0x1A108201, force_registration=True)
-        default_global = {"redupdate_url": "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"}
+        self.config = Config.get_conf(
+            self, identifier=0x1A108201, force_registration=True
+        )
+        default_global = {
+            "redupdate_url": "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+        }
         self.config.register_global(**default_global)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -36,7 +42,7 @@ class RedUpdate(commands.Cog):
     @redupdateset.command(name="url")
     async def redupdateset_url(self, ctx: commands.Context, url: str):
         """Set the url for redupdate cog.
-        
+
         Has to be vaild link such as `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot` else it will not work.
         """
         # Cause i'm super lazy and don't want to make a regex for this.
@@ -54,7 +60,9 @@ class RedUpdate(commands.Cog):
     @redupdateset.command(name="reset")
     async def redupdateset_reset(self, ctx: commands.Context):
         """Reset the url for redupdate cog."""
-        await self.config.redupdate_url.set("git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot")
+        await self.config.redupdate_url.set(
+            "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+        )
         await ctx.send("Successfully reset the url.")
 
     @redupdateset.command(name="show", aliases=["showsettings", "settings", "view"])
@@ -106,7 +114,7 @@ class RedUpdate(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def discordpyupdate(self, ctx: commands.Context):
         """Update discord.py to latest dev changes.
-        
+
         Do note that this will update discord.py to latest dev changes and not to latest stable release. There may be breaking changes that will break your bot and are not yet on red.
         """
         package = "git+https://github.com/Rapptz/discord.py@master"

@@ -1,5 +1,5 @@
-from redbot.core.bot import Red
 from redbot.core import errors
+from redbot.core.bot import Red
 
 from .redupdate import RedUpdate
 

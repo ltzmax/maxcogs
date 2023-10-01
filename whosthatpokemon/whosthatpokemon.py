@@ -258,7 +258,9 @@ class WhosThatPokemon(commands.Cog):
         """
         pages = []
         users = await self.config.all_users()
-        sorted_users = sorted(users.items(), key=lambda x: x[1]["total_correct_guesses"])
+        sorted_users = sorted(
+            users.items(), key=lambda x: x[1]["total_correct_guesses"]
+        )
         sorted_users.reverse()
         if not sorted_users:
             return await ctx.send(
