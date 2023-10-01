@@ -255,12 +255,12 @@ class EmojiSpam(commands.Cog):
         """Set the delete after time for the message.
 
         Default time is 10 seconds.
-        Time must be between 1 and 120 seconds.
+        Time must be between 5 and 120 seconds.
 
         If time is set to 5, the message will be deleted after 5 seconds.
         """
-        if seconds < 1:
-            return await ctx.send("Time must be greater than 1!")
+        if seconds < 5:
+            return await ctx.send("Time must be greater than 5!")
         if seconds > 120:
             return await ctx.send("Time must be less than 120!")
         await self.config.guild(ctx.guild).delete_after.set(seconds)
