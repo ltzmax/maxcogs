@@ -21,7 +21,7 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 0.1.11 | ltzmax | ✅ |
-| EmojiSpam | Similar emojispam filter to dyno but without ban, kick and mute. | 1.1.0 | MAX | ✅ |
+| EmojiSpam | Similar emojispam filter to dyno but without ban, kick and mute. | 1.3.0 | MAX | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.2 | MAX | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.0 | ltzmax, o-wo | ✅ |
