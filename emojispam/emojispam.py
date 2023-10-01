@@ -9,7 +9,7 @@ from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.emojispam")
 
-EMOJI_REGEX = re.compile("<a?:(\w+):(\d+)>")
+EMOJI_REGEX = re.compile("<a?:(\w+):(\d+)>|[\U0001F000-\U0001F6FF]|[\U0001F900-\U0001F9FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F1E0-\U0001F1FF]")
 
 
 class EmojiSpam(commands.Cog):
