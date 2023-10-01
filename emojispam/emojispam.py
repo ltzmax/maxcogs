@@ -4,7 +4,6 @@ from typing import Any, Final, Literal
 
 import discord
 from redbot.core import Config, commands
-from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.emojispam")
@@ -16,7 +15,7 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.1.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/emojispam/README.md"
@@ -61,7 +60,7 @@ class EmojiSpam(commands.Cog):
             )
             return
         embed = discord.Embed(
-            title="EmojiSpam Deleted Message",
+            title="Emoji Spam Filter detected",
             description=f"{message.author.mention} sent too many emojis in {message.channel.mention}!\n**Message**:\n {message.content}",
             color=await self.bot.get_embed_color(log_channel),
         )
@@ -80,15 +79,6 @@ class EmojiSpam(commands.Cog):
         ):
             return
         if not await self.config.guild(message.guild).enabled():
-            return
-        if not message.guild.me.guild_permissions.manage_messages:
-            if await self.config.guild(message.guild).enabled:
-                await self.config.guild(message.guild).enabled.set(False)
-                log.info(
-                    f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {message.guild.name}. Disabling filter."
-                )
-            return
-        if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if EMOJI_REGEX.search(message.content):
             emojis = EMOJI_REGEX.findall(message.content)
@@ -113,55 +103,36 @@ class EmojiSpam(commands.Cog):
                 await message.delete()
 
     @commands.Cog.listener()
-    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
-        if payload.guild_id is None:
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if after.author.bot:
             return
-        guild = self.bot.get_guild(payload.guild_id)
-        if guild is None:
+        if not after.guild:
             return
-        if not await self.config.guild(guild).enabled():
+        if after.channel.id in await self.config.guild(after.guild).ignored_channels():
             return
-        if not guild.me.guild_permissions.manage_messages:
-            if await self.config.guild(guild).enabled:
-                await self.config.guild(guild).enabled.set(False)
-                log.info(
-                    f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {guild.name}. Disabling filter."
-                )
+        if not await self.config.guild(after.guild).enabled():
             return
-        if await self.bot.cog_disabled_in_guild(self, guild):
+        if len(after.content) < await self.config.guild(after.guild).emoji_limit():
             return
-        if payload.channel_id in await self.config.guild(guild).ignored_channels():
-            return
-        channel = guild.get_channel(payload.channel_id)
-        if channel is None:
-            return
-        if not channel.permissions_for(guild.me).read_message_history:
-            return
-        try:
-            message = await channel.fetch_message(payload.message_id)
-        except discord.NotFound:
-            return
-        if message.author.bot:
-            return
-        if EMOJI_REGEX.search(message.content):
-            emojis = EMOJI_REGEX.findall(message.content)
-            if len(emojis) > await self.config.guild(guild).emoji_limit():
-                if await self.bot.is_automod_immune(message.author):
+        if EMOJI_REGEX.search(after.content):
+            emojis = EMOJI_REGEX.findall(after.content)
+            if len(emojis) > await self.config.guild(after.guild).emoji_limit():
+                if await self.bot.is_automod_immune(after.author):
                     return
-                if await self.config.guild(guild).emoji_limit_msg_enabled():
-                    if not channel.permissions_for(guild.me).send_messages:
-                        await self.config.guild(guild).emoji_limit_msg_enabled.set(
-                            False
-                        )
+                if await self.config.guild(after.guild).emoji_limit_msg_enabled():
+                    if not after.channel.permissions_for(after.guild.me).send_messages:
+                        await self.config.guild(
+                            after.guild
+                        ).emoji_limit_msg_enabled.set(False)
                         log.info(
-                            f"I don't have permissions to send messages in {channel.mention}. Disabling message."
+                            f"I don't have permissions to send messages in {after.channel.mention}. Disabling message."
                         )
-                    await channel.send(
-                        f"{message.author.mention} {await self.config.guild(guild).emoji_limit_msg()}",
+                    await after.channel.send(
+                        f"{after.author.mention} {await self.config.guild(after.guild).emoji_limit_msg()}",
                         delete_after=10,
                     )
-                await self.log_channel_embed(guild, message)
-                await message.delete()
+                await self.log_channel_embed(after.guild, after)
+                await after.delete()
 
     @commands.group()
     @commands.guild_only()
@@ -170,17 +141,15 @@ class EmojiSpam(commands.Cog):
         """Manage the emoji spam filter."""
 
     @emojispam.command()
-    async def toggle(self, ctx: commands.Context, toggle: bool = None):
+    async def toggle(self, ctx: commands.Context, enabled: bool = None):
         """Toggle the emoji spam filter.
 
         If no enabled state is provided, the current state will be toggled.
         """
-        if not ctx.bot_permissions.manage_messages:
-            return await ctx.send(
-                "I don't have the ``manage_messages`` permission to let you enable emojispam filter in this server."
-            )
-        await self.config.guild(ctx.guild).enabled.set(toggle)
-        if toggle:
+        if enabled is None:
+            enabled = not await self.config.guild(ctx.guild).enabled()
+        await self.config.guild(ctx.guild).enabled.set(enabled)
+        if enabled:
             await ctx.send("Emoji spam filter enabled!")
         else:
             await ctx.send("Emoji spam filter disabled!")
@@ -347,31 +316,3 @@ class EmojiSpam(commands.Cog):
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
-
-    @emojispam.command()
-    @commands.bot_has_permissions(embed_links=True)
-    async def reset(self, ctx: commands.Context):
-        """Reset all settings back to default."""
-        view = ConfirmView(ctx.author, disable_buttons=True)
-        embed = discord.Embed(
-            title="Are you sure you want to do this?",
-            description="This will reset all settings for this cog and cannot be undone. You will have to redo everything.",
-            color=await ctx.embed_color(),
-        )
-        view.message = await ctx.send(embed=embed, view=view)
-        await view.wait()
-        if view.result:
-            await self.config.guild(ctx.guild).clear()
-            embed = discord.Embed(
-                title="Settings Reset",
-                description="All settings for this cog have been reset.",
-                color=await ctx.embed_color(),
-            )
-            await ctx.send(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="Settings Reset Cancelled",
-                description="Cancelled resetting settings for this cog.",
-                color=await ctx.embed_color(),
-            )
-            await ctx.send(embed=embed)

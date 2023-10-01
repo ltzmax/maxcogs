@@ -7,7 +7,7 @@
     "description": "Similar emojispam filter to dyno but without ban, kick and mute.",
     "short": "Similar emojispam filter to dyno but without ban, kick and mute.",
     "hidden": false,
-    "min_bot_version": "3.5.3",
+    "min_bot_version": "3.5.0",
     "tags": [
         "emoji",
         "emojispam"
