@@ -9,14 +9,16 @@ from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.emojispam")
 
-EMOJI_REGEX = re.compile("<a?:(\w+):(\d+)>|[\U0001F000-\U0001F6FF]|[\U0001F900-\U0001F9FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F1E0-\U0001F1FF]")
+EMOJI_REGEX = re.compile(
+    "<a?:(\w+):(\d+)>|[\U0001F000-\U0001F6FF]|[\U0001F900-\U0001F9FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F1E0-\U0001F1FF]"
+)
 
 
 class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.5.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/emojispam/README.md"
@@ -31,6 +33,8 @@ class EmojiSpam(commands.Cog):
             "emoji_limit_msg_enabled": False,
             "ignored_channels": [],
             "log_channel": None,
+            "use_embed": False,
+            "delete_after": 10,
         }
         self.config.register_guild(**default_guild)
 
@@ -90,6 +94,9 @@ class EmojiSpam(commands.Cog):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
+
+        delete = await self.config.guild(message.guild).delete_after()
+
         if EMOJI_REGEX.search(message.content):
             emojis = EMOJI_REGEX.findall(message.content)
             if len(emojis) > await self.config.guild(message.guild).emoji_limit():
@@ -105,10 +112,31 @@ class EmojiSpam(commands.Cog):
                         log.info(
                             f"I don't have permissions to send messages in {message.channel.mention}. Disabling message."
                         )
-                    await message.channel.send(
-                        f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}",
-                        delete_after=10,
-                    )
+                    if await self.config.guild(message.guild).use_embed():
+                        if not message.channel.permissions_for(
+                            message.guild.me
+                        ).embed_links:
+                            await self.config.guild(message.guild).use_embed.set(False)
+                            log.info(
+                                f"I don't have permissions to send embeds in {message.channel.mention}. Disabling embeds."
+                            )
+                        embed = discord.Embed(
+                            title="EmojiSpam Deleted",
+                            description=await self.config.guild(
+                                message.guild
+                            ).emoji_limit_msg(),
+                            color=await self.bot.get_embed_color(message.channel),
+                        )
+                        await message.channel.send(
+                            f"{message.author.mention}",
+                            embed=embed,
+                            delete_after=delete,
+                        )
+                    else:
+                        await message.channel.send(
+                            f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}",
+                            delete_after=delete,
+                        )
                 await self.log_channel_embed(message.guild, message)
                 await message.delete()
 
@@ -143,6 +171,9 @@ class EmojiSpam(commands.Cog):
             return
         if message.author.bot:
             return
+
+        delete = await self.config.guild(guild).delete_after()
+
         if EMOJI_REGEX.search(message.content):
             emojis = EMOJI_REGEX.findall(message.content)
             if len(emojis) > await self.config.guild(guild).emoji_limit():
@@ -156,10 +187,28 @@ class EmojiSpam(commands.Cog):
                         log.info(
                             f"I don't have permissions to send messages in {channel.mention}. Disabling message."
                         )
-                    await channel.send(
-                        f"{message.author.mention} {await self.config.guild(guild).emoji_limit_msg()}",
-                        delete_after=10,
-                    )
+                    if await self.config.guild(guild).use_embed():
+                        if not channel.permissions_for(guild.me).embed_links:
+                            await self.config.guild(guild).use_embed.set(False)
+                            log.info(
+                                f"I don't have permissions to send embeds in {channel.mention}. Disabling embeds."
+                            )
+                        embed = discord.Embed(
+                            title="EmojiSpam Deleted",
+                            description=await self.config.guild(guild).emoji_limit_msg(),
+                            color=await self.bot.get_embed_color(channel),
+                        )
+                        await channel.send(
+                            f"{message.author.mention}",
+                            embed=embed,
+                            delete_after=delete,
+                        )
+                    else:
+                        await channel.send(
+                            f"{message.author.mention}",
+                            await self.config.guild(guild).emoji_limit_msg(),
+                            delete_after=delete
+                        )
                 await self.log_channel_embed(guild, message)
                 await message.delete()
 
@@ -184,6 +233,38 @@ class EmojiSpam(commands.Cog):
             await ctx.send("Emoji spam filter enabled!")
         else:
             await ctx.send("Emoji spam filter disabled!")
+
+    @emojispam.command()
+    async def embed(self, ctx: commands.Context, toggle: bool = None):
+        """Toggle the use of embeds for the message.
+
+        If no enabled state is provided, the current state will be toggled.
+        """
+        if not ctx.bot_permissions.embed_links:
+            return await ctx.send(
+                "I don't have the ``embed_links`` permission to let you enable embeds for the message in this server."
+            )
+        await self.config.guild(ctx.guild).use_embed.set(toggle)
+        if toggle:
+            await ctx.send("Embeds enabled!")
+        else:
+            await ctx.send("Embeds disabled!")
+
+    @emojispam.command()
+    async def deleteafter(self, ctx: commands.Context, seconds: int = None):
+        """Set the delete after time for the message.
+
+        Default time is 10 seconds.
+        Time must be between 1 and 120 seconds.
+
+        If time is set to 5, the message will be deleted after 5 seconds.
+        """
+        if seconds < 1:
+            return await ctx.send("Time must be greater than 1!")
+        if seconds > 120:
+            return await ctx.send("Time must be less than 120!")
+        await self.config.guild(ctx.guild).delete_after.set(seconds)
+        await ctx.send(f"Delete after time set to {seconds} seconds!")
 
     @emojispam.command()
     async def logchannel(
@@ -318,6 +399,8 @@ class EmojiSpam(commands.Cog):
         emoji_limit = all["emoji_limit"]
         emoji_limit_msg = all["emoji_limit_msg"]
         emoji_limit_msg_enabled = all["emoji_limit_msg_enabled"]
+        embed = all["use_embed"]
+        delete_after = all["delete_after"]
         log_channel = all["log_channel"]
         if log_channel:
             log_channel = f"<#{log_channel}>"
@@ -326,7 +409,7 @@ class EmojiSpam(commands.Cog):
         embed = discord.Embed(
             title="Emoji Spam Filter Settings",
             description=(
-                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
+                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Use Embed**: {embed}\n**Delete After**: {delete_after} secouds\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
             ),
             color=await ctx.embed_color(),
         )
