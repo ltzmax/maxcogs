@@ -57,7 +57,6 @@ class EmojiSpam(commands.Cog):
             "ignored_channels": [],
             "log_channel": None,
             "use_embed": False,
-            "delete_after": 10,
         }
         self.config.register_guild(**default_guild)
 
@@ -118,8 +117,6 @@ class EmojiSpam(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
 
-        delete = await self.config.guild(message.guild).delete_after()
-
         if EMOJI_REGEX.search(message.content):
             emojis = EMOJI_REGEX.findall(message.content)
             if len(emojis) > await self.config.guild(message.guild).emoji_limit():
@@ -153,12 +150,12 @@ class EmojiSpam(commands.Cog):
                         await message.channel.send(
                             f"{message.author.mention}",
                             embed=embed,
-                            delete_after=delete,
+                            delete_after=10,
                         )
                     else:
                         await message.channel.send(
                             f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}",
-                            delete_after=delete,
+                            delete_after=10,
                         )
                 await self.log_channel_embed(message.guild, message)
                 await message.delete()
@@ -195,8 +192,6 @@ class EmojiSpam(commands.Cog):
         if message.author.bot:
             return
 
-        delete = await self.config.guild(guild).delete_after()
-
         if EMOJI_REGEX.search(message.content):
             emojis = EMOJI_REGEX.findall(message.content)
             if len(emojis) > await self.config.guild(guild).emoji_limit():
@@ -218,19 +213,21 @@ class EmojiSpam(commands.Cog):
                             )
                         embed = discord.Embed(
                             title="EmojiSpam Deleted",
-                            description=await self.config.guild(guild).emoji_limit_msg(),
+                            description=await self.config.guild(
+                                guild
+                            ).emoji_limit_msg(),
                             color=await self.bot.get_embed_color(channel),
                         )
                         await channel.send(
                             f"{message.author.mention}",
                             embed=embed,
-                            delete_after=delete,
+                            delete_after=10,
                         )
                     else:
                         await channel.send(
                             f"{message.author.mention}",
                             await self.config.guild(guild).emoji_limit_msg(),
-                            delete_after=delete
+                            delete_after=10,
                         )
                 await self.log_channel_embed(guild, message)
                 await message.delete()
@@ -274,22 +271,6 @@ class EmojiSpam(commands.Cog):
             await ctx.send("Embeds disabled!")
 
     @emojispam.command()
-    async def deleteafter(self, ctx: commands.Context, seconds: int = None):
-        """Set the delete after time for the message.
-
-        Default time is 10 seconds.
-        Time must be between 5 and 120 seconds.
-
-        If time is set to 5, the message will be deleted after 5 seconds.
-        """
-        if seconds < 5:
-            return await ctx.send("Time must be greater than 5 seconds!")
-        if seconds > 120:
-            return await ctx.send("Time must be less than 120 seconds!")
-        await self.config.guild(ctx.guild).delete_after.set(seconds)
-        await ctx.send(f"Delete after time set to {seconds} seconds!")
-
-    @emojispam.command()
     async def logchannel(
         self, ctx: commands.Context, channel: discord.TextChannel = None
     ):
@@ -297,6 +278,14 @@ class EmojiSpam(commands.Cog):
 
         If no channel is provided, the log channel will be disabled.
         """
+        if (
+            channel
+            and not channel.permissions_for(ctx.me).send_messages
+            or not channel.permissions_for(ctx.me).embed_links
+        ):
+            return await ctx.send(
+                "I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel there."
+            )
         if not channel:
             await self.config.guild(ctx.guild).log_channel.set(None)
             await ctx.send("Log channel disabled!")
@@ -313,10 +302,8 @@ class EmojiSpam(commands.Cog):
 
         If limit is set to 4, a user can send 4 emojis, but not 5.
         """
-        if limit < 1:
-            return await ctx.send("Limit must be greater than 1!")
-        if limit > 100:
-            return await ctx.send("Limit must be less than 100!")
+        if limit < 1 or limit > 100:
+            return await ctx.send("Limit must be between 1 and 100!")
         await self.config.guild(ctx.guild).emoji_limit.set(limit)
         await ctx.send(f"Emoji limit set to {limit}!")
 
@@ -423,7 +410,6 @@ class EmojiSpam(commands.Cog):
         emoji_limit_msg = all["emoji_limit_msg"]
         emoji_limit_msg_enabled = all["emoji_limit_msg_enabled"]
         embed = all["use_embed"]
-        delete_after = all["delete_after"]
         log_channel = all["log_channel"]
         if log_channel:
             log_channel = f"<#{log_channel}>"
@@ -432,7 +418,7 @@ class EmojiSpam(commands.Cog):
         embed = discord.Embed(
             title="Emoji Spam Filter Settings",
             description=(
-                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Use Embed**: {embed}\n**Delete After**: {delete_after} secouds\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
+                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Use Embed**: {embed}\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
             ),
             color=await ctx.embed_color(),
         )

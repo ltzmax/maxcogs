@@ -44,11 +44,6 @@ Set the message to send when a user goes over the emoji limit.<br/><br/>Default 
 
 Set the emoji limit.<br/><br/>Default limit is 5.<br/>Limit must be between 1 and 100.<br/><br/>If limit is set to 4, a user can send 4 emojis, but not 5.
 
-## emojispam deleteafter
- - Usage: `[p]emojispam deleteafter [seconds=None] `
-
-Set the delete after time for the message.<br/><br/>Default time is 10 seconds.<br/>Time must be between 1 and 120 seconds.<br/><br/>If time is set to 5, the message will be deleted after 5 seconds.
-
 ## emojispam ignore
  - Usage: `[p]emojispam ignore [channel=None] `
 
