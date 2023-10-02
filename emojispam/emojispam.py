@@ -87,7 +87,7 @@ class EmojiSpam(commands.Cog):
             )
             return
         embed = discord.Embed(
-            title="EmojiSpam Deleted Message",
+            title="EmojiSpam Deleted",
             description=f"{message.author.mention} sent too many emojis in {message.channel.mention}!\n**Message**:\n {message.content}",
             color=await self.bot.get_embed_color(log_channel),
         )
