@@ -52,7 +52,7 @@ class EmojiSpam(commands.Cog):
         default_guild = {
             "enabled": False,
             "emoji_limit": 5,
-            "emoji_limit_msg": "You are sending too many emojis!",
+            "emoji_limit_msg": "Please don't spam emojis. You are sending too many.",
             "emoji_limit_msg_enabled": False,
             "ignored_channels": [],
             "log_channel": None,
@@ -117,48 +117,51 @@ class EmojiSpam(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
 
-        if EMOJI_REGEX.search(message.content):
-            emojis = EMOJI_REGEX.findall(message.content)
-            if len(emojis) > await self.config.guild(message.guild).emoji_limit():
-                if await self.bot.is_automod_immune(message.author):
-                    return
-                if await self.config.guild(message.guild).emoji_limit_msg_enabled():
+        # Count the number of flag_ emojis in the message
+        flag_emojis = re.findall(r"<a?:flag_\w+:\d+>", message.content)
+        flag_emoji_count = len(flag_emojis)
+
+        # Count the number of non-flag emojis in the message
+        non_flag_emojis = EMOJI_REGEX.findall(message.content)
+        non_flag_emoji_count = len(non_flag_emojis)
+
+        # Check if the total number of emojis in the message is greater than the emoji limit
+        total_emoji_count = flag_emoji_count * 3 + non_flag_emoji_count
+        if total_emoji_count > await self.config.guild(message.guild).emoji_limit():
+            if await self.bot.is_automod_immune(message.author):
+                return
+            if await self.config.guild(message.guild).emoji_limit_msg_enabled():
+                if not message.channel.permissions_for(message.guild.me).send_messages:
+                    await self.config.guild(message.guild).emoji_limit_msg_enabled.set(
+                        False
+                    )
+                    log.info(
+                        f"I don't have permissions to send messages in {message.channel.mention}. Disabling message."
+                    )
+                if await self.config.guild(message.guild).use_embed():
                     if not message.channel.permissions_for(
                         message.guild.me
-                    ).send_messages:
-                        await self.config.guild(
-                            message.guild
-                        ).emoji_limit_msg_enabled.set(False)
+                    ).embed_links:
+                        await self.config.guild(message.guild).use_embed.set(False)
                         log.info(
-                            f"I don't have permissions to send messages in {message.channel.mention}. Disabling message."
+                            f"I don't have permissions to send embeds in {message.channel.mention}. Disabling embeds."
                         )
-                    if await self.config.guild(message.guild).use_embed():
-                        if not message.channel.permissions_for(
-                            message.guild.me
-                        ).embed_links:
-                            await self.config.guild(message.guild).use_embed.set(False)
-                            log.info(
-                                f"I don't have permissions to send embeds in {message.channel.mention}. Disabling embeds."
-                            )
-                        embed = discord.Embed(
-                            title="EmojiSpam Deleted",
-                            description=await self.config.guild(
-                                message.guild
-                            ).emoji_limit_msg(),
-                            color=await self.bot.get_embed_color(message.channel),
-                        )
-                        await message.channel.send(
-                            f"{message.author.mention}",
-                            embed=embed,
-                            delete_after=10,
-                        )
-                    else:
-                        await message.channel.send(
-                            f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}",
-                            delete_after=10,
-                        )
-                await self.log_channel_embed(message.guild, message)
-                await message.delete()
+                    embed = discord.Embed(
+                        description=await self.config.guild(
+                            message.guild
+                        ).emoji_limit_msg(),
+                        color=await self.bot.get_embed_color(message.channel),
+                    )
+                    await message.channel.send(
+                        f"{message.author.mention}", embed=embed, delete_after=10
+                    )
+                else:
+                    await message.channel.send(
+                        f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}",
+                        delete_after=10,
+                    )
+            await self.log_channel_embed(message.guild, message)
+            await message.delete()
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
@@ -192,45 +195,45 @@ class EmojiSpam(commands.Cog):
         if message.author.bot:
             return
 
-        if EMOJI_REGEX.search(message.content):
-            emojis = EMOJI_REGEX.findall(message.content)
-            if len(emojis) > await self.config.guild(guild).emoji_limit():
-                if await self.bot.is_automod_immune(message.author):
-                    return
-                if await self.config.guild(guild).emoji_limit_msg_enabled():
-                    if not channel.permissions_for(guild.me).send_messages:
-                        await self.config.guild(guild).emoji_limit_msg_enabled.set(
-                            False
-                        )
+        # Count the number of flag_ emojis in the message
+        flag_emojis = re.findall(r"<a?:flag_\w+:\d+>", message.content)
+        flag_emoji_count = len(flag_emojis)
+
+        # Count the number of non-flag emojis in the message
+        non_flag_emojis = EMOJI_REGEX.findall(message.content)
+        non_flag_emoji_count = len(non_flag_emojis)
+
+        # Check if the total number of emojis in the message is greater than the emoji limit
+        total_emoji_count = flag_emoji_count + non_flag_emoji_count
+        if total_emoji_count > await self.config.guild(guild).emoji_limit():
+            if await self.bot.is_automod_immune(message.author):
+                return
+            if await self.config.guild(guild).emoji_limit_msg_enabled():
+                if not channel.permissions_for(guild.me).send_messages:
+                    await self.config.guild(guild).emoji_limit_msg_enabled.set(False)
+                    log.info(
+                        f"I don't have permissions to send messages in {channel.mention}. Disabling message."
+                    )
+                if await self.config.guild(guild).use_embed():
+                    if not channel.permissions_for(guild.me).embed_links:
+                        await self.config.guild(guild).use_embed.set(False)
                         log.info(
-                            f"I don't have permissions to send messages in {channel.mention}. Disabling message."
+                            f"I don't have permissions to send embeds in {channel.mention}. Disabling embeds."
                         )
-                    if await self.config.guild(guild).use_embed():
-                        if not channel.permissions_for(guild.me).embed_links:
-                            await self.config.guild(guild).use_embed.set(False)
-                            log.info(
-                                f"I don't have permissions to send embeds in {channel.mention}. Disabling embeds."
-                            )
-                        embed = discord.Embed(
-                            title="EmojiSpam Deleted",
-                            description=await self.config.guild(
-                                guild
-                            ).emoji_limit_msg(),
-                            color=await self.bot.get_embed_color(channel),
-                        )
-                        await channel.send(
-                            f"{message.author.mention}",
-                            embed=embed,
-                            delete_after=10,
-                        )
-                    else:
-                        await channel.send(
-                            f"{message.author.mention}",
-                            await self.config.guild(guild).emoji_limit_msg(),
-                            delete_after=10,
-                        )
-                await self.log_channel_embed(guild, message)
-                await message.delete()
+                    embed = discord.Embed(
+                        description=await self.config.guild(guild).emoji_limit_msg(),
+                        color=await self.bot.get_embed_color(channel),
+                    )
+                    await channel.send(
+                        f"{message.author.mention}", embed=embed, delete_after=10
+                    )
+                else:
+                    await channel.send(
+                        f"{message.author.mention} {await self.config.guild(guild).emoji_limit_msg()}",
+                        delete_after=10,
+                    )
+            await self.log_channel_embed(guild, message)
+            await message.delete()
 
     @commands.group()
     @commands.guild_only()
@@ -312,7 +315,7 @@ class EmojiSpam(commands.Cog):
         """Set the message to send when a user goes over the emoji limit.
 
         Default message is:
-        `You are sending too many emojis!`.
+        `Please don't spam emojis. You are sending too many.`.
         """
         if len(msg) > 1092 or len(msg) < 1:
             return await ctx.send("Message must be between 1 and 1092 characters!")
@@ -323,7 +326,7 @@ class EmojiSpam(commands.Cog):
     async def resetmsg(self, ctx: commands.Context):
         """Reset the message to the default message."""
         await self.config.guild(ctx.guild).emoji_limit_msg.set(
-            "You are sending too many emojis!"
+            "Please don't spam emojis. You are sending too many."
         )
         await ctx.send("Message reset back to default!")
 
