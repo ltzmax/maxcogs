@@ -33,7 +33,7 @@ from redbot.core.utils.chat_formatting import box
 log = logging.getLogger("red.maxcogs.emojispam")
 
 EMOJI_REGEX = re.compile(
-    "<a?:(\w+):(\d+)>|[\U0001F000-\U0001F6FF]|[\U0001F900-\U0001F9FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F1E0-\U0001F1FF]"
+    "<a?:(\w+):(\d+)>|[\U0001F000-\U0001F6FF]|[\U0001F900-\U0001F9FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F1E0-\U0001F1FF]|[\U0001F1E6-\U0001F1FF]{2}|[\U0001F3F3-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F3F4-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F3F9-\U0001F3FA][\U000E0067-\U000E007F]{2}|[\U0001F3FB-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF]"
 )
 
 
@@ -117,16 +117,12 @@ class EmojiSpam(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
 
-        # Count the number of flag_ emojis in the message
-        flag_emojis = re.findall(r"<a?:flag_\w+:\d+>", message.content)
-        flag_emoji_count = len(flag_emojis)
-
         # Count the number of non-flag emojis in the message
         non_flag_emojis = EMOJI_REGEX.findall(message.content)
         non_flag_emoji_count = len(non_flag_emojis)
 
         # Check if the total number of emojis in the message is greater than the emoji limit
-        total_emoji_count = flag_emoji_count * 3 + non_flag_emoji_count
+        total_emoji_count = non_flag_emoji_count
         if total_emoji_count > await self.config.guild(message.guild).emoji_limit():
             if await self.bot.is_automod_immune(message.author):
                 return
@@ -195,16 +191,12 @@ class EmojiSpam(commands.Cog):
         if message.author.bot:
             return
 
-        # Count the number of flag_ emojis in the message
-        flag_emojis = re.findall(r"<a?:flag_\w+:\d+>", message.content)
-        flag_emoji_count = len(flag_emojis)
-
         # Count the number of non-flag emojis in the message
         non_flag_emojis = EMOJI_REGEX.findall(message.content)
         non_flag_emoji_count = len(non_flag_emojis)
 
         # Check if the total number of emojis in the message is greater than the emoji limit
-        total_emoji_count = flag_emoji_count + non_flag_emoji_count
+        total_emoji_count = non_flag_emoji_count
         if total_emoji_count > await self.config.guild(guild).emoji_limit():
             if await self.bot.is_automod_immune(message.author):
                 return
