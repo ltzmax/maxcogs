@@ -29,6 +29,7 @@ import discord
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
+from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box, humanize_list
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
@@ -203,15 +204,17 @@ class AutoPublisher(commands.Cog):
 
         async with self.config.guild(ctx.guild).ignored_channels() as c:
             for channel in channels:
-                if add_or_remove.lower() == "add":
-                    if not channel.id in c:
-                        c.append(channel.id)
+                if channel.is_news():  # add check for news channel
+                    if add_or_remove.lower() == "add":
+                        if not channel.id in c:
+                            c.append(channel.id)
 
-                elif add_or_remove.lower() == "remove":
-                    if channel.id in c:
-                        c.remove(channel.id)
+                    elif add_or_remove.lower() == "remove":
+                        if channel.id in c:
+                            c.remove(channel.id)
 
-        ids = len(list(channels))
+        news_channels = [channel for channel in channels if channel.is_news()]  # filter news channels
+        ids = len(news_channels)
         embed = discord.Embed(
             title="Success!",
             description=f"{'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}.",
@@ -219,7 +222,7 @@ class AutoPublisher(commands.Cog):
         )
         embed.add_field(
             name=f"{'channel:' if ids == 1 else 'channels:'}",
-            value=humanize_list([channel.mention for channel in channels]),
+            value=humanize_list([channel.mention for channel in news_channels]),
         )  # This needs menus to be able to show all channels if there are more than 25 channels.
         await ctx.send(embed=embed)
 
@@ -261,3 +264,17 @@ class AutoPublisher(commands.Cog):
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
+
+    @autopublisher.command()
+    async def reset(self, ctx: commands.Context) -> None:
+        """Reset AutoPublisher setting."""
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send(
+            "Are you sure you want to reset AutoPublisher setting?", view=view
+        )
+        await view.wait()
+        if view.result:
+            await self.config.guild(ctx.guild).clear()
+            await ctx.send("AutoPublisher setting has been reset.")
+        else:
+            await ctx.send("AutoPublisher setting reset has been cancelled.")

@@ -7,7 +7,7 @@
     "description": "Automatically publish messages from a news channel.",
     "short": "Automatically publish messages from a news channel.",
     "hidden": false,
-    "min_bot_version": "3.5.0",
+    "min_bot_version": "3.5.3",
     "tags": [
         "news",
         "auto publish"
