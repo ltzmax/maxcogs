@@ -143,6 +143,7 @@ class EmojiSpam(commands.Cog):
                             f"I don't have permissions to send embeds in {message.channel.mention}. Disabling embeds."
                         )
                     embed = discord.Embed(
+                        title="Warning",
                         description=await self.config.guild(
                             message.guild
                         ).emoji_limit_msg(),
