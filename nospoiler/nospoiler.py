@@ -54,7 +54,7 @@ class NoSpoiler(commands.Cog):
             "enabled": False,
             "log_channel": None,
             "spoiler_warn": False,
-            "spoiler_warn_message": "Usage of spoilers is not allowed in this server.",
+            "spoiler_warn_message": "Usage of spoiler is not allowed in this server.",
             "spoiler_warn_message_embed": False,
         }
         self.config.register_guild(**default_guild)
@@ -312,7 +312,7 @@ class NoSpoiler(commands.Cog):
     async def resetwarnmessage(self, ctx: commands.Context) -> None:
         """Reset the spoiler warning message to default."""
         await self.config.guild(ctx.guild).spoiler_warn_message.set(
-            "Usage of spoilers is not allowed in this server."
+            "Usage of spoiler is not allowed in this server."
         )
         await ctx.send("Spoiler warning message has been reset.")
 
