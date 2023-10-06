@@ -53,6 +53,9 @@ class NoSpoiler(commands.Cog):
         default_guild: Dict[str, Union[bool, Optional[int]]] = {
             "enabled": False,
             "log_channel": None,
+            "spoiler_warn": False,
+            "spoiler_warn_message": "Usage of spoilers is not allowed in this server.",
+            "spoiler_warn_message_embed": False,
         }
         self.config.register_guild(**default_guild)
 
@@ -134,12 +137,54 @@ class NoSpoiler(commands.Cog):
         if await self.bot.is_automod_immune(message.author):
             return
         if SPOILER_REGEX.search(message.content):
+            if await self.config.guild(message.guild).spoiler_warn():
+                if await self.config.guild(message.guild).spoiler_warn_message_embed():
+                    if not message.channel.permissions_for(message.guild.me).embed_links:
+                        await self.config.guild(message.guild).spoiler_warn.set(False)
+                        self.log.info(
+                            f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
+                        )
+                        return
+                    embed = discord.Embed(
+                        title="Warning",
+                        description=await self.config.guild(message.guild).spoiler_warn_message(),
+                        color=await self.bot.get_embed_color(message.channel),
+                    )
+                    await message.channel.send(embed=embed)
+                else:
+                    await message.channel.send(
+                        await self.config.guild(message.guild).spoiler_warn_message()
+                    )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
             return
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
+                    if await self.config.guild(message.guild).spoiler_warn():
+                        if await self.config.guild(message.guild).spoiler_warn_message_embed():
+                            if not message.channel.permissions_for(
+                                message.guild.me
+                            ).embed_links:
+                                await self.config.guild(message.guild).spoiler_warn.set(
+                                    False
+                                )
+                                self.log.info(
+                                    f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
+                                )
+                                return
+                            embed = discord.Embed(
+                                title="Warning",
+                                description=await self.config.guild(
+                                    message.guild
+                                ).spoiler_warn_message(),
+                                color=await self.bot.get_embed_color(message.channel),
+                            )
+                            await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
+                        else:
+                            await message.channel.send(
+                                f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}", delete_after=10
+                            )
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
 
@@ -174,6 +219,24 @@ class NoSpoiler(commands.Cog):
         if message.author.bot:
             return
         if SPOILER_REGEX.search(message.content):
+            if await self.config.guild(guild).spoiler_warn():
+                if await self.config.guild(guild).spoiler_warn_message_embed():
+                    if not channel.permissions_for(guild.me).embed_links:
+                        await self.config.guild(guild).spoiler_warn.set(False)
+                        self.log.info(
+                            f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {channel.mention}."
+                        )
+                        return
+                    embed = discord.Embed(
+                        title="Warning",
+                        description=await self.config.guild(guild).spoiler_warn_message(),
+                        color=await self.bot.get_embed_color(channel),
+                    )
+                    await channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
+                else:
+                    await channel.send(
+                        f"{message.author.mention} {await self.config.guild(guild).spoiler_warn_message()}", delete_after=10
+                    )
             await self.log_channel_embed(guild, message)
             await message.delete()
 
@@ -227,6 +290,52 @@ class NoSpoiler(commands.Cog):
         else:
             await self.config.guild(ctx.guild).log_channel.set(channel.id)
             await ctx.send(f"Log channel has been set to {channel.mention}.")
+
+    @nospoiler.command()
+    async def warn(self, ctx: commands.Context) -> None:
+        """Toggle warning message when a user tries to use spoiler."""
+        spoiler_warn = await self.config.guild(ctx.guild).spoiler_warn()
+        if spoiler_warn:
+            await self.config.guild(ctx.guild).spoiler_warn.set(False)
+            await ctx.send("Spoiler warning message is now disabled.")
+        else:
+            await self.config.guild(ctx.guild).spoiler_warn.set(True)
+            await ctx.send("Spoiler warning message is now enabled.")
+
+    @nospoiler.command()
+    async def warnmessage(self, ctx: commands.Context, *, message: str) -> None:
+        """Set the spoiler warning message."""
+        await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
+        await ctx.send("Spoiler warning message has been set.")
+
+    @nospoiler.command(aliases=["resetwarnmsg", "resetwarn"])
+    async def resetwarnmessage(self, ctx: commands.Context) -> None:
+        """Reset the spoiler warning message to default."""
+        await self.config.guild(ctx.guild).spoiler_warn_message.set(
+            "Usage of spoilers is not allowed in this server."
+        )
+        await ctx.send("Spoiler warning message has been reset.")
+
+    @nospoiler.command()
+    async def warnmessageembed(self, ctx: commands.Context) -> None:
+        """Toggle the spoiler warning message embed."""
+        if not ctx.bot_permissions.embed_links:
+            msg = (
+                f"{self.bot.user.name} does not have permission to `embed_links` to send embed messages.\n"
+                "It need this permission before you can enable the spoiler warning message embed. "
+                f"Else {self.bot.user.name} will not be able to send any embed messages."
+            )
+            await ctx.send(msg)
+            return
+        spoiler_warn_message_embed = await self.config.guild(
+            ctx.guild
+        ).spoiler_warn_message_embed()
+        if spoiler_warn_message_embed:
+            await self.config.guild(ctx.guild).spoiler_warn_message_embed.set(False)
+            await ctx.send("Spoiler warning message embed is now disabled.")
+        else:
+            await self.config.guild(ctx.guild).spoiler_warn_message_embed.set(True)
+            await ctx.send("Spoiler warning message embed is now enabled.")
 
     @nospoiler.command(aliases=["view", "views"])
     @commands.bot_has_permissions(embed_links=True)
