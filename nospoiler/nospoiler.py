@@ -305,6 +305,8 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command()
     async def warnmessage(self, ctx: commands.Context, *, message: str) -> None:
         """Set the spoiler warning message."""
+        if len(message) > 1024:
+            return await ctx.send("Message cannot be longer than 1024 characters.")
         await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
         await ctx.send("Spoiler warning message has been set.")
 
