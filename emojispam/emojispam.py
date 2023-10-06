@@ -87,10 +87,25 @@ class EmojiSpam(commands.Cog):
             return
         embed = discord.Embed(
             title="EmojiSpam Deleted",
-            description=f"{message.author.mention} sent too many emojis in {message.channel.mention}!\n**Message**:\n {message.content}",
+            description=f"{message.author.mention} sent too many emojis!\n**Message**:\n {message.content}",
             color=await self.bot.get_embed_color(log_channel),
         )
-        embed.set_footer(text=f"User ID: {message.author.id}")
+        embed.set_author(
+            name=f"{message.author} ({message.author.id})",
+            icon_url=message.author.avatar.url,
+        )
+        embed.add_field(
+            name="Channel:",
+            value=f"{message.channel.mention} ({message.channel.id})",
+            inline=False,
+        )
+        embed.add_field(
+            name="Deleted At:",
+            # Instead of using message.created_at, we use the current time to prevent the embed from showing the wrong time
+            # It will show the time the message was deleted instead of the time the message was sent. (only shows when logs are sent so wont be accurate)
+            # This prevent me from hardcoding the timezone by using the discord.utils.format_dt function instead.
+            value=discord.utils.format_dt(message.created_at, "F"),
+        )
         await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
