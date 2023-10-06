@@ -150,10 +150,10 @@ class NoSpoiler(commands.Cog):
                         description=await self.config.guild(message.guild).spoiler_warn_message(),
                         color=await self.bot.get_embed_color(message.channel),
                     )
-                    await message.channel.send(embed=embed)
+                    await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
                 else:
                     await message.channel.send(
-                        await self.config.guild(message.guild).spoiler_warn_message()
+                        f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}", delete_after=10
                     )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
@@ -317,7 +317,7 @@ class NoSpoiler(commands.Cog):
         await ctx.send("Spoiler warning message has been reset.")
 
     @nospoiler.command()
-    async def warnmessageembed(self, ctx: commands.Context) -> None:
+    async def embed(self, ctx: commands.Context) -> None:
         """Toggle the spoiler warning message embed."""
         if not ctx.bot_permissions.embed_links:
             msg = (
