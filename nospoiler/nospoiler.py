@@ -139,7 +139,9 @@ class NoSpoiler(commands.Cog):
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(message.guild).spoiler_warn():
                 if await self.config.guild(message.guild).spoiler_warn_message_embed():
-                    if not message.channel.permissions_for(message.guild.me).embed_links:
+                    if not message.channel.permissions_for(
+                        message.guild.me
+                    ).embed_links:
                         await self.config.guild(message.guild).spoiler_warn.set(False)
                         self.log.info(
                             f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
@@ -147,13 +149,18 @@ class NoSpoiler(commands.Cog):
                         return
                     embed = discord.Embed(
                         title="Warning",
-                        description=await self.config.guild(message.guild).spoiler_warn_message(),
+                        description=await self.config.guild(
+                            message.guild
+                        ).spoiler_warn_message(),
                         color=await self.bot.get_embed_color(message.channel),
                     )
-                    await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
+                    await message.channel.send(
+                        f"{message.author.mention}", embed=embed, delete_after=10
+                    )
                 else:
                     await message.channel.send(
-                        f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}", delete_after=10
+                        f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
+                        delete_after=10,
                     )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
@@ -162,7 +169,9 @@ class NoSpoiler(commands.Cog):
             for attachment in attachments:
                 if attachment.is_spoiler():
                     if await self.config.guild(message.guild).spoiler_warn():
-                        if await self.config.guild(message.guild).spoiler_warn_message_embed():
+                        if await self.config.guild(
+                            message.guild
+                        ).spoiler_warn_message_embed():
                             if not message.channel.permissions_for(
                                 message.guild.me
                             ).embed_links:
@@ -180,10 +189,15 @@ class NoSpoiler(commands.Cog):
                                 ).spoiler_warn_message(),
                                 color=await self.bot.get_embed_color(message.channel),
                             )
-                            await message.channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
+                            await message.channel.send(
+                                f"{message.author.mention}",
+                                embed=embed,
+                                delete_after=10,
+                            )
                         else:
                             await message.channel.send(
-                                f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}", delete_after=10
+                                f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
+                                delete_after=10,
                             )
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
@@ -229,13 +243,18 @@ class NoSpoiler(commands.Cog):
                         return
                     embed = discord.Embed(
                         title="Warning",
-                        description=await self.config.guild(guild).spoiler_warn_message(),
+                        description=await self.config.guild(
+                            guild
+                        ).spoiler_warn_message(),
                         color=await self.bot.get_embed_color(channel),
                     )
-                    await channel.send(f"{message.author.mention}", embed=embed, delete_after=10)
+                    await channel.send(
+                        f"{message.author.mention}", embed=embed, delete_after=10
+                    )
                 else:
                     await channel.send(
-                        f"{message.author.mention} {await self.config.guild(guild).spoiler_warn_message()}", delete_after=10
+                        f"{message.author.mention} {await self.config.guild(guild).spoiler_warn_message()}",
+                        delete_after=10,
                     )
             await self.log_channel_embed(guild, message)
             await message.delete()

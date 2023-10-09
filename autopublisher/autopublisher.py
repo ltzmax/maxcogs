@@ -29,8 +29,8 @@ import discord
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box, humanize_list
+from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
@@ -213,7 +213,9 @@ class AutoPublisher(commands.Cog):
                         if channel.id in c:
                             c.remove(channel.id)
 
-        news_channels = [channel for channel in channels if channel.is_news()]  # filter news channels
+        news_channels = [
+            channel for channel in channels if channel.is_news()
+        ]  # filter news channels
         ids = len(news_channels)
         embed = discord.Embed(
             title="Success!",

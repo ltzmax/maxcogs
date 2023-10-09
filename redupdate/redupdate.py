@@ -70,7 +70,9 @@ class RedUpdate(commands.Cog):
         """
         # Cause i'm super lazy and don't want to make a regex for this.
         # usually forks that are private uses `git+ssh://git@` instead of `https://`.
-        if not url.startswith("git+ssh://git@github.com") and not url.startswith("git+https://github.com"):
+        if not url.startswith("git+ssh://git@github.com") and not url.startswith(
+            "git+https://github.com"
+        ):
             return await ctx.send("This is not a valid url for your fork.")
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
