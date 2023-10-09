@@ -32,4 +32,3 @@ black <source_file_or_directory>
 ```yaml
 isort <source_file_or_directory>
 ```
-
