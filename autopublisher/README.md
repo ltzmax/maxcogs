@@ -40,4 +40,3 @@ Show AutoPublisher setting.
  - Usage: `[p]autopublisher version `
 
 Shows the version of the cog.
-

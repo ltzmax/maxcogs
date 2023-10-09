@@ -15,7 +15,7 @@ Update [botname] to latest dev changes.
 Update [botname] to latest dev changes.
 
 # discordpyupdate
- - Usage: ``[p]discordpyupdate `` 
+ - Usage: ``[p]discordpyupdate ``
  - Restricted to: `OWNER`
 
 Update discord.py to latest dev changes.
