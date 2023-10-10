@@ -17,6 +17,7 @@ body:
       options:
         - autopublisher
         - emojispam
+        - imageonly
         - nospoiler
         - nekosbest
         - redupdate

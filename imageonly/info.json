@@ -1,0 +1,26 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "ImageOnly",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any image/link filter without setting up autoimmune.",
+    "description": "This cog will only let you allow images/links in a set channel.",
+    "short": "This cog will only let you allow images/links in a set channel.",
+    "hidden": false,
+    "min_bot_version": "3.5.3",
+    "tags": [
+        "links only",
+        "image only"
+    ],
+    "permissions": [
+        "manage_messages",
+        "embed_links"
+    ],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
