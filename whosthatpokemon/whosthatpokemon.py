@@ -155,7 +155,15 @@ class WhosThatPokemon(commands.Cog):
             ),
             color=await ctx.embed_color(),
         )
-        await ctx.send(embed=embed)
+        view = discord.ui.View()
+        style = discord.ButtonStyle.gray
+        docs = discord.ui.Button(
+            style=style,
+            label="Cog Documentations",
+            url=self.__docs__,
+        )
+        view.add_item(item=docs)
+        await ctx.send(embed=embed, view=view)
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(
