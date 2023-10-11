@@ -40,7 +40,7 @@ URL_REGEX = re.compile(
 
 
 class ImageOnly(commands.Cog):
-    """Only allow images in a channel or links."""
+    """Only allow images in a channel."""
 
     __version__: Final[str] = "1.0.0"
     __author__: Final[str] = "MAX"
