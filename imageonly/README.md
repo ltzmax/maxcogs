@@ -15,7 +15,7 @@ Image only settings.
 ## imageonly channel
  - Usage: `[p]imageonly channel [channel=None] `
 
-Set the channel to allow only images/links.
+Set the channel to allow only images.
 
 ## imageonly toggle
  - Usage: `[p]imageonly toggle `
