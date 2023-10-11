@@ -3,7 +3,7 @@ This cog relies on autoimmune feature from core itself. you are not immune from 
 
 # ImageOnly Help
 
-Only allow images in a channel or links.
+Only allow images in a channel.
 
 # imageonly
  - Usage: `[p]imageonly `
