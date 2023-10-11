@@ -55,7 +55,7 @@ class ImageOnly(commands.Cog):
             "channel": None,
             "enabled": False,
             "message_toggle": False,
-            "message": "You can only send images/links in this channel.",
+            "message": "You can only send images in this channel.",
             "embed": False,
             "log_channel": None,
         }
@@ -126,7 +126,7 @@ class ImageOnly(commands.Cog):
                         "I don't have permissions to send embeds in the channel. Disabling embeds."
                     )
                 embed = discord.Embed(
-                    title="Only images/links allowed.",
+                    title="Only images allowed.",
                     description=await self.config.guild(message.guild).message(),
                     color=await self.bot.get_embed_color(message.channel),
                 )
@@ -159,7 +159,7 @@ class ImageOnly(commands.Cog):
         else:
             await self.config.guild(ctx.guild).enabled.set(True)
             await ctx.send(
-                "Image only enabled.\nUse `{prefix}imageonly channel` to set the channel to allow only images/links.".format(
+                "Image only enabled.\nUse `{prefix}imageonly channel` to set the channel to allow only images.".format(
                     prefix=ctx.prefix
                 )
             )
@@ -173,7 +173,7 @@ class ImageOnly(commands.Cog):
         """Set the channel to allow only images/links."""
         if await self.config.guild(ctx.guild).channel():
             await self.config.guild(ctx.guild).channel.set(
-                "You can only send images/links in this channel."
+                "You can only send images in this channel."
             )
             await ctx.send("Channel reset.")
         else:
