@@ -59,4 +59,3 @@ Reset image only settings.
  - Usage: `[p]imageonly version `
 
 Shows the version of the cog.
-
