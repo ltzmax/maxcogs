@@ -21,8 +21,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from logging import LoggerAdapter
 import re
+from logging import LoggerAdapter
 from typing import Any, Final, Literal
 
 import discord
@@ -323,9 +323,7 @@ class EmojiSpam(commands.Cog):
         """
         if limit < 1 or limit > 100:
             return await ctx.send("Limit must be between 1 and 100!")
-            self.log.info(
-                f"Limit must be between 1 and 100 in {ctx.guild.name}."
-            )
+            self.log.info(f"Limit must be between 1 and 100 in {ctx.guild.name}.")
         await self.config.guild(ctx.guild).emoji_limit.set(limit)
         await ctx.send(f"Emoji limit set to {limit}!")
 

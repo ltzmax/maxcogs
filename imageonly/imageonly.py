@@ -21,17 +21,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import discord
-import re
 import asyncio
+import re
 from logging import LoggerAdapter
-
 from typing import Any, Final
-from redbot.core.bot import Red
-from redbot.core import commands, Config
-from redbot.core.utils.views import ConfirmView
+
+import discord
 from red_commons.logging import RedTraceLogger, getLogger
+from redbot.core import Config, commands
+from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.imageonly")
 
@@ -213,9 +213,7 @@ class ImageOnly(commands.Cog):
         else:
             if len(message) > 2000 or len(message) < 1:
                 return await ctx.send("Message must be between 1 and 2000 characters.")
-                self.log.info(
-                    "Message must be between 1 and 2000 characters."
-                )
+                self.log.info("Message must be between 1 and 2000 characters.")
             await self.config.guild(ctx.guild).message.set(message)
             await ctx.send("Message set.")
 

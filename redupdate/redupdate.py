@@ -21,16 +21,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from logging import LoggerAdapter
 from typing import Any, Final
 
 import discord
-from logging import LoggerAdapter
-from redbot.core import Config, commands
 from red_commons.logging import RedTraceLogger, getLogger
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.redupdate")
+
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
