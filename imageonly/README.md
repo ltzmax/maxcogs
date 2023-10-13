@@ -1,6 +1,9 @@
 # NOTE
 This cog relies on autoimmune feature from core itself. you are not immune from any image/link filter without setting up trusted roles to bypass any deletions. not even admin, mod or guild owners bypasses this filter.
 
+# Removal
+Just a note that this cog will be removed once discord has released their image only channels feature. This feature from discord is currently only available for a set amount servers, once this being rolled out for everyone, this cog will be deleted.
+
 # ImageOnly Help
 
 Only allow images in a channel.
@@ -56,4 +59,3 @@ Reset image only settings.
  - Usage: `[p]imageonly version `
 
 Shows the version of the cog.
-
