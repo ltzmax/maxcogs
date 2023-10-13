@@ -24,10 +24,13 @@ SOFTWARE.
 from typing import Any, Final
 
 import discord
+from logging import LoggerAdapter
 from redbot.core import Config, commands
+from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
+log: RedTraceLogger = getLogger("red.maxcogs.redupdate")
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
@@ -47,6 +50,10 @@ class RedUpdate(commands.Cog):
             "redupdate_url": "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
         }
         self.config.register_global(**default_global)
+
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -74,8 +81,10 @@ class RedUpdate(commands.Cog):
             "git+https://github.com"
         ):
             return await ctx.send("This is not a valid url for your fork.")
+            self.log.info("You provided an invalid url for your fork.")
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
+            self.log.info("You provided an invalid url for your fork.")
         data = await self.config.redupdate_url()
         if data == url:
             return await ctx.send("This url is already set.")
@@ -89,6 +98,9 @@ class RedUpdate(commands.Cog):
             "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
         )
         await ctx.send("Successfully reset the url.")
+        self.log.info(
+            "Successfully reset the url to `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot`"
+        )
 
     @redupdateset.command(name="show", aliases=["showsettings", "settings", "view"])
     async def redupdateset_show(self, ctx: commands.Context):
@@ -127,6 +139,9 @@ class RedUpdate(commands.Cog):
             )
             view.add_item(item=jack)
             return await ctx.send(embed=embed, view=view)
+            self.log.info(
+                "You need to have Shell from JackCogs loaded and installed to use this command."
+            )
         embed = discord.Embed(
             description="Successfully updated {}.".format(self.bot.user.name),
             color=await ctx.embed_color(),
@@ -175,6 +190,9 @@ class RedUpdate(commands.Cog):
                 )
                 view.add_item(item=jack)
                 return await ctx.send(embed=embed, view=view)
+                self.log.info(
+                    "You need to have Shell from JackCogs loaded and installed to use this command."
+                )
             embed = discord.Embed(
                 title="Discord.py Updated",
                 description="Successfully updated {}.".format(self.bot.user.name),

@@ -21,16 +21,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import logging
+from logging import LoggerAdapter
 import re
 from typing import Any, Final, Literal
 
 import discord
+from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
-log = logging.getLogger("red.maxcogs.emojispam")
+log: RedTraceLogger = getLogger("red.maxcogs.emojispam")
 
 EMOJI_REGEX = re.compile(
     "<a?:(\w+):(\d+)>|[\U0001F000-\U0001F6FF]|[\U0001F900-\U0001F9FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F1E0-\U0001F1FF]|[\U0001F1E6-\U0001F1FF]{2}|[\U0001F3F3-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F3F4-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F3F9-\U0001F3FA][\U000E0067-\U000E007F]{2}|[\U0001F3FB-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF]|\u2B1C|\u2B1B|[\U0001F7E2-\U0001F7E8]"
@@ -60,6 +61,10 @@ class EmojiSpam(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
+
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
@@ -82,7 +87,7 @@ class EmojiSpam(commands.Cog):
             or not log_channel.permissions_for(guild.me).embed_links
         ):
             await self.config.guild(guild).log_channel.set(None)
-            log.info(
+            self.log.info(
                 "I don't have permissions to send messages or embeds in the log channel. Disabling log channel."
             )
             return
@@ -118,7 +123,7 @@ class EmojiSpam(commands.Cog):
         if not message.guild.me.guild_permissions.manage_messages:
             if await self.config.guild(message.guild).enabled:
                 await self.config.guild(message.guild).enabled.set(False)
-                log.info(
+                self.log.info(
                     f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {message.guild.name}. Disabling filter."
                 )
             return
@@ -139,7 +144,7 @@ class EmojiSpam(commands.Cog):
                     await self.config.guild(message.guild).emoji_limit_msg_enabled.set(
                         False
                     )
-                    log.info(
+                    self.log.info(
                         f"I don't have permissions to send messages in {message.channel.mention}. Disabling message."
                     )
                 if await self.config.guild(message.guild).use_embed():
@@ -147,7 +152,7 @@ class EmojiSpam(commands.Cog):
                         message.guild.me
                     ).embed_links:
                         await self.config.guild(message.guild).use_embed.set(False)
-                        log.info(
+                        self.log.info(
                             f"I don't have permissions to send embeds in {message.channel.mention}. Disabling embeds."
                         )
                     embed = discord.Embed(
@@ -180,7 +185,7 @@ class EmojiSpam(commands.Cog):
         if not guild.me.guild_permissions.manage_messages:
             if await self.config.guild(guild).enabled:
                 await self.config.guild(guild).enabled.set(False)
-                log.info(
+                self.log.info(
                     f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {guild.name}. Disabling filter."
                 )
             return
@@ -212,13 +217,13 @@ class EmojiSpam(commands.Cog):
             if await self.config.guild(guild).emoji_limit_msg_enabled():
                 if not channel.permissions_for(guild.me).send_messages:
                     await self.config.guild(guild).emoji_limit_msg_enabled.set(False)
-                    log.info(
+                    self.log.info(
                         f"I don't have permissions to send messages in {channel.mention}. Disabling message."
                     )
                 if await self.config.guild(guild).use_embed():
                     if not channel.permissions_for(guild.me).embed_links:
                         await self.config.guild(guild).use_embed.set(False)
-                        log.info(
+                        self.log.info(
                             f"I don't have permissions to send embeds in {channel.mention}. Disabling embeds."
                         )
                     embed = discord.Embed(
@@ -253,6 +258,9 @@ class EmojiSpam(commands.Cog):
             return await ctx.send(
                 "I don't have the ``manage_messages`` permission to let you enable emojispam filter in this server."
             )
+            self.log.info(
+                f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {ctx.guild.name}. Disabling filter."
+            )
         await self.config.guild(ctx.guild).enabled.set(toggle)
         if toggle:
             await ctx.send("Emoji spam filter enabled!")
@@ -268,6 +276,9 @@ class EmojiSpam(commands.Cog):
         if not ctx.bot_permissions.embed_links:
             return await ctx.send(
                 "I don't have the ``embed_links`` permission to let you enable embeds for the message in this server."
+            )
+            self.log.info(
+                f"I don't have the ``embed_links`` permission to let you enable embeds for the message in {ctx.guild.name}. Disabling embeds."
             )
         await self.config.guild(ctx.guild).use_embed.set(toggle)
         if toggle:
@@ -291,6 +302,9 @@ class EmojiSpam(commands.Cog):
             return await ctx.send(
                 "I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel there."
             )
+            self.log.info(
+                f"I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel in {ctx.guild.name}. Disabling log channel."
+            )
         if not channel:
             await self.config.guild(ctx.guild).log_channel.set(None)
             await ctx.send("Log channel disabled!")
@@ -309,6 +323,9 @@ class EmojiSpam(commands.Cog):
         """
         if limit < 1 or limit > 100:
             return await ctx.send("Limit must be between 1 and 100!")
+            self.log.info(
+                f"Limit must be between 1 and 100 in {ctx.guild.name}."
+            )
         await self.config.guild(ctx.guild).emoji_limit.set(limit)
         await ctx.send(f"Emoji limit set to {limit}!")
 
@@ -321,6 +338,9 @@ class EmojiSpam(commands.Cog):
         """
         if len(msg) > 1092 or len(msg) < 1:
             return await ctx.send("Message must be between 1 and 1092 characters!")
+            self.log.info(
+                f"Message must be between 1 and 1092 characters in {ctx.guild.name}."
+            )
         await self.config.guild(ctx.guild).emoji_limit_msg.set(msg)
         await ctx.send("Message set!")
 

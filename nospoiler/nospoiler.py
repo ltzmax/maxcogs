@@ -272,7 +272,9 @@ class NoSpoiler(commands.Cog):
         Spoiler filter is disabled by default.
         """
         if not ctx.bot_permissions.manage_messages:
-            return await ctx.send("I don't have manage_messages permission to let you toggle the spoiler filter.")
+            return await ctx.send(
+                "I don't have manage_messages permission to let you toggle the spoiler filter."
+            )
         if await self.config.guild(ctx.guild).enabled():
             await self.config.guild(ctx.guild).enabled.set(False)
             await ctx.send("Spoiler filter is now disabled.")
@@ -334,7 +336,9 @@ class NoSpoiler(commands.Cog):
     async def embed(self, ctx: commands.Context) -> None:
         """Toggle the spoiler warning message embed."""
         if not ctx.bot_permissions.embed_links:
-            return await ctx.send("I don't have embed_links permission to let you toggle the spoiler warning message embed.")
+            return await ctx.send(
+                "I don't have embed_links permission to let you toggle the spoiler warning message embed."
+            )
         spoiler_warn_message_embed = await self.config.guild(
             ctx.guild
         ).spoiler_warn_message_embed()
