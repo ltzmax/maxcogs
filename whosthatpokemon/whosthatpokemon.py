@@ -45,6 +45,8 @@ from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .converter import Generation
 from .view import WhosThatPokemonView
 
+log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon")
+
 API_URL: Final[str] = "https://pokeapi.co/api/v2"
 
 
