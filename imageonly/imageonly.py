@@ -122,7 +122,7 @@ class ImageOnly(commands.Cog):
         if await self.config.guild(message.guild).message_toggle():
             if not message.channel.permissions_for(message.guild.me).send_messages:
                 await self.config.guild(message.guild).message_toggle.set(False)
-                selflog.info(
+                self.log.info(
                     "I don't have permissions to send messages in the channel. Disabling message."
                 )
             if await self.config.guild(message.guild).embed():
