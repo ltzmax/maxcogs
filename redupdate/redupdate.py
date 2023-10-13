@@ -81,11 +81,11 @@ class RedUpdate(commands.Cog):
         if not url.startswith("git+ssh://git@github.com") and not url.startswith(
             "git+https://github.com"
         ):
-            return await ctx.send("This is not a valid url for your fork.")
             self.log.info("You provided an invalid url for your fork.")
+            return await ctx.send("This is not a valid url for your fork.")
         if not url.endswith("#egg=Red-DiscordBot"):
-            return await ctx.send("This is not a valid url for your fork.")
             self.log.info("You provided an invalid url for your fork.")
+            return await ctx.send("This is not a valid url for your fork.")
         data = await self.config.redupdate_url()
         if data == url:
             return await ctx.send("This url is already set.")
@@ -99,9 +99,6 @@ class RedUpdate(commands.Cog):
             "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
         )
         await ctx.send("Successfully reset the url.")
-        self.log.info(
-            "Successfully reset the url to `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot`"
-        )
 
     @redupdateset.command(name="show", aliases=["showsettings", "settings", "view"])
     async def redupdateset_show(self, ctx: commands.Context):
@@ -139,10 +136,10 @@ class RedUpdate(commands.Cog):
                 url="https://github.com/jack1142/JackCogs",
             )
             view.add_item(item=jack)
-            return await ctx.send(embed=embed, view=view)
             self.log.info(
                 "You need to have Shell from JackCogs loaded and installed to use this command."
             )
+            return await ctx.send(embed=embed, view=view)
         embed = discord.Embed(
             description="Successfully updated {}.".format(self.bot.user.name),
             color=await ctx.embed_color(),
@@ -190,10 +187,10 @@ class RedUpdate(commands.Cog):
                     url="https://github.com/jack1142/JackCogs",
                 )
                 view.add_item(item=jack)
-                return await ctx.send(embed=embed, view=view)
                 self.log.info(
                     "You need to have Shell from JackCogs loaded and installed to use this command."
                 )
+                return await ctx.send(embed=embed, view=view)
             embed = discord.Embed(
                 title="Discord.py Updated",
                 description="Successfully updated {}.".format(self.bot.user.name),

@@ -70,6 +70,9 @@ class RolePlayCog(commands.Cog):
     ) -> None:
         async with self.session.get(NEKOS + action) as response:
             if response.status != 200:
+                self.log.error(
+                    f"Something went wrong while trying to contact API. Status Code: {response.status}"
+                )
                 await ctx.send("Something went wrong while trying to contact API.")
                 return
             data = await response.json()

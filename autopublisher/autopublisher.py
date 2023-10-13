@@ -90,21 +90,21 @@ class AutoPublisher(commands.Cog):
             or not message.guild.me.guild_permissions.view_channel
         ):
             if await self.config.guild(message.guild).toggle():
-                await self.config.guild(message.guild).toggle.set(False)
                 self.log.info(
                     "AutoPublisher has been disabled due to missing permissions in {guild}.".format(
                         guild=message.guild.name
                     )
                 )
+                await self.config.guild(message.guild).toggle.set(False)
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():
-                await self.config.guild(message.guild).toggle.set(False)
                 self.log.info(
                     "AutoPublisher has been disabled due to missing News Channel feature in {guild}.".format(
                         guild=message.guild.name
                     )
                 )
+                await self.config.guild(message.guild).toggle.set(False)
             return
         if not message.channel.is_news():
             return
@@ -117,11 +117,7 @@ class AutoPublisher(commands.Cog):
                 discord.Forbidden,
                 asyncio.TimeoutError,
             ) as e:
-                self.log.error(
-                    "Failed to publish message in {channel} due to {error}".format(
-                        channel=message.channel.mention, error=e
-                    ),
-                )
+                self.log.error(e)
 
     @commands.group(aliases=["aph", "autopub"])
     @commands.guild_only()
@@ -149,6 +145,11 @@ class AutoPublisher(commands.Cog):
                 description=f"Please enable News Channel feature in your server. [Learn more]({DISCORD_INFO})",
                 color=await ctx.embed_color(),
             )
+            self.log.info(
+                "AutoPublisher cannot be enabled due to missing News Channel feature in {guild}.".format(
+                    guild=ctx.guild.name
+                )
+            )
             return await ctx.send(embed=embed)
         if (
             not ctx.guild.me.guild_permissions.manage_messages
@@ -158,6 +159,11 @@ class AutoPublisher(commands.Cog):
                 title="Missing permissions.",
                 description=f"I need `manage_messages` and `view_channel` permissions to be able to publish messages. Please ensure that I have those permissions.",
                 color=await ctx.embed_color(),
+            )
+            self.log.info(
+                "AutoPublisher has been disabled due to missing permissions in {guild}.".format(
+                    guild=ctx.guild.name
+                )
             )
             return await ctx.send(embed=embed)
         await self.config.guild(ctx.guild).toggle.set(toggle)

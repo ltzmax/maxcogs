@@ -88,10 +88,10 @@ class ImageOnly(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            await self.config.guild(guild).log_channel.set(None)
             self.log.info(
                 "I don't have permissions to send messages or embeds in the log channel. Disabling log channel."
             )
+            await self.config.guild(guild).log_channel.set(None)
             return
         embed = discord.Embed(
             title="Message deleted",
@@ -121,16 +121,16 @@ class ImageOnly(commands.Cog):
             return
         if await self.config.guild(message.guild).message_toggle():
             if not message.channel.permissions_for(message.guild.me).send_messages:
-                await self.config.guild(message.guild).message_toggle.set(False)
                 self.log.info(
                     "I don't have permissions to send messages in the channel. Disabling message."
                 )
+                await self.config.guild(message.guild).message_toggle.set(False)
             if await self.config.guild(message.guild).embed():
                 if not message.channel.permissions_for(message.guild.me).embed_links:
-                    await self.config.guild(message.guild).embed.set(False)
                     self.log.info(
                         "I don't have permissions to send embeds in the channel. Disabling embeds."
                     )
+                    await self.config.guild(message.guild).embed.set(False)
                 embed = discord.Embed(
                     title="Only images allowed.",
                     description=await self.config.guild(message.guild).message(),
@@ -212,8 +212,8 @@ class ImageOnly(commands.Cog):
             await ctx.send("Message reset.")
         else:
             if len(message) > 2000 or len(message) < 1:
-                return await ctx.send("Message must be between 1 and 2000 characters.")
                 self.log.info("Message must be between 1 and 2000 characters.")
+                return await ctx.send("Message must be between 1 and 2000 characters.")
             await self.config.guild(ctx.guild).message.set(message)
             await ctx.send("Message set.")
 

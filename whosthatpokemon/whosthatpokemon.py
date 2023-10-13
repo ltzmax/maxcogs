@@ -27,6 +27,7 @@ SOFTWARE.
 import asyncio
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
+from logging import LoggerAdapter
 from random import randint
 from typing import Any, Dict, Final, List, Optional
 
@@ -34,6 +35,7 @@ import aiohttp
 import discord
 from discord import File
 from PIL import Image
+from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import bundled_data_path
@@ -70,6 +72,10 @@ class WhosThatPokemon(commands.Cog):
         }
         self.config.register_user(**default_user)
 
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
+
     async def cog_unload(self) -> None:
         await self.session.close()
 
@@ -86,9 +92,13 @@ class WhosThatPokemon(commands.Cog):
         try:
             async with self.session.get(url) as response:
                 if response.status != 200:
+                    self.log.error(
+                        f"Failed to get data from {url} with status code {response.status}"
+                    )
                     return {"http_code": response.status}
                 return await response.json()
         except asyncio.TimeoutError:
+            self.log.error(f"Request to {url} timed out.")
             return {"http_code": 408}
 
     async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
@@ -102,6 +112,9 @@ class WhosThatPokemon(commands.Cog):
         try:
             async with self.session.get(base_url) as response:
                 if response.status != 200:
+                    self.log.error(
+                        f"Failed to get image from {base_url} with status code {response.status}"
+                    )
                     return None
                 data = await response.read()
         except asyncio.TimeoutError:
@@ -206,6 +219,7 @@ class WhosThatPokemon(commands.Cog):
 
         temp = await self.generate_image(f"{poke_id:>03}", hide=True)
         if temp is None:
+            self.log.error(f"Failed to generate image.")
             return await ctx.send("Failed to generate whosthatpokemon card image.")
 
         # Took this from Core's event file.
@@ -215,6 +229,9 @@ class WhosThatPokemon(commands.Cog):
         )
         species_data = await self.get_data(f"{API_URL}/pokemon-species/{poke_id}")
         if species_data.get("http_code"):
+            self.log.error(
+                f"Failed to get data from PokeAPI with status code {species_data['http_code']}"
+            )
             return await ctx.send("Failed to get species data from PokeAPI.")
         names_data = species_data.get("names", [{}])
         eligible_names = [x["name"].lower() for x in names_data]
@@ -248,8 +265,10 @@ class WhosThatPokemon(commands.Cog):
                 description=f"You took too long to answer.\nThe Pokemon was... **{english_name}**.",
                 color=0x8B0000,
             )
+            self.log.info(f"{ctx.author} ran out of time.")
             return await ctx.send(f"{ctx.author.mention}", embed=embed)
         if await self.config.user(ctx.author).all():
+            self.log.info(f"{ctx.author} has guessed correctly. Added +1 to total.")
             await self.config.user(ctx.author).total_correct_guesses.set(
                 await self.config.user(ctx.author).total_correct_guesses() + 1
             )
@@ -271,6 +290,7 @@ class WhosThatPokemon(commands.Cog):
         )
         sorted_users.reverse()
         if not sorted_users:
+            self.log.info("No one has played whosthatpokemon yet.")
             return await ctx.send(
                 "No one has played whosthatpokemon yet. Use `[p]whosthatpokemon` to start!"
             )
@@ -312,6 +332,7 @@ class WhosThatPokemon(commands.Cog):
             ctx.author
         ).total_correct_guesses()
         if not total_correct_guesses:
+            self.log.info(f"{ctx.author} has not played whosthatpokemon yet.")
             return await ctx.send(
                 f"You have not played whosthatpokemon yet. Use `{ctx.clean_prefix}whosthatpokemon` to start!"
             )

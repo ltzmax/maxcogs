@@ -26,10 +26,12 @@ SOFTWARE.
 """
 import asyncio
 from datetime import datetime
+from logging import LoggerAdapter
 from typing import Any, Final, List
 
 import aiohttp
 import discord
+from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
@@ -48,6 +50,10 @@ class TCGCard(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
+
+        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
+            log, {"version": self.__version__}
+        )
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -105,10 +111,12 @@ class TCGCard(commands.Cog):
         try:
             async with self.session.get(base_url, headers=headers) as response:
                 if response.status != 200:
+                    self.log.error(f"HTTP error {response.status}")
                     await ctx.send(f"https://http.cat/{response.status}")
                     return
                 output = await response.json()
         except asyncio.TimeoutError:
+            self.log.error("Operation timed out.")
             await ctx.send("Operation timed out.")
             return
 

@@ -86,10 +86,10 @@ class EmojiSpam(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            await self.config.guild(guild).log_channel.set(None)
             self.log.info(
                 "I don't have permissions to send messages or embeds in the log channel. Disabling log channel."
             )
+            await self.config.guild(guild).log_channel.set(None)
             return
         embed = discord.Embed(
             title="EmojiSpam Deleted",
@@ -141,20 +141,20 @@ class EmojiSpam(commands.Cog):
                 return
             if await self.config.guild(message.guild).emoji_limit_msg_enabled():
                 if not message.channel.permissions_for(message.guild.me).send_messages:
-                    await self.config.guild(message.guild).emoji_limit_msg_enabled.set(
-                        False
-                    )
                     self.log.info(
                         f"I don't have permissions to send messages in {message.channel.mention}. Disabling message."
+                    )
+                    await self.config.guild(message.guild).emoji_limit_msg_enabled.set(
+                        False
                     )
                 if await self.config.guild(message.guild).use_embed():
                     if not message.channel.permissions_for(
                         message.guild.me
                     ).embed_links:
-                        await self.config.guild(message.guild).use_embed.set(False)
                         self.log.info(
                             f"I don't have permissions to send embeds in {message.channel.mention}. Disabling embeds."
                         )
+                        await self.config.guild(message.guild).use_embed.set(False)
                     embed = discord.Embed(
                         title="Warning",
                         description=await self.config.guild(
@@ -184,10 +184,10 @@ class EmojiSpam(commands.Cog):
             return
         if not guild.me.guild_permissions.manage_messages:
             if await self.config.guild(guild).enabled:
-                await self.config.guild(guild).enabled.set(False)
                 self.log.info(
                     f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {guild.name}. Disabling filter."
                 )
+                await self.config.guild(guild).enabled.set(False)
             return
         if await self.bot.cog_disabled_in_guild(self, guild):
             return
@@ -216,10 +216,10 @@ class EmojiSpam(commands.Cog):
                 return
             if await self.config.guild(guild).emoji_limit_msg_enabled():
                 if not channel.permissions_for(guild.me).send_messages:
-                    await self.config.guild(guild).emoji_limit_msg_enabled.set(False)
                     self.log.info(
                         f"I don't have permissions to send messages in {channel.mention}. Disabling message."
                     )
+                    await self.config.guild(guild).emoji_limit_msg_enabled.set(False)
                 if await self.config.guild(guild).use_embed():
                     if not channel.permissions_for(guild.me).embed_links:
                         await self.config.guild(guild).use_embed.set(False)
@@ -255,11 +255,11 @@ class EmojiSpam(commands.Cog):
         If no enabled state is provided, the current state will be toggled.
         """
         if not ctx.bot_permissions.manage_messages:
-            return await ctx.send(
-                "I don't have the ``manage_messages`` permission to let you enable emojispam filter in this server."
-            )
             self.log.info(
                 f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {ctx.guild.name}. Disabling filter."
+            )
+            return await ctx.send(
+                "I don't have the ``manage_messages`` permission to let you enable emojispam filter in this server."
             )
         await self.config.guild(ctx.guild).enabled.set(toggle)
         if toggle:
@@ -274,11 +274,11 @@ class EmojiSpam(commands.Cog):
         If no enabled state is provided, the current state will be toggled.
         """
         if not ctx.bot_permissions.embed_links:
-            return await ctx.send(
-                "I don't have the ``embed_links`` permission to let you enable embeds for the message in this server."
-            )
             self.log.info(
                 f"I don't have the ``embed_links`` permission to let you enable embeds for the message in {ctx.guild.name}. Disabling embeds."
+            )
+            return await ctx.send(
+                "I don't have the ``embed_links`` permission to let you enable embeds for the message in this server."
             )
         await self.config.guild(ctx.guild).use_embed.set(toggle)
         if toggle:
@@ -299,11 +299,11 @@ class EmojiSpam(commands.Cog):
             and not channel.permissions_for(ctx.me).send_messages
             or not channel.permissions_for(ctx.me).embed_links
         ):
-            return await ctx.send(
-                "I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel there."
-            )
             self.log.info(
                 f"I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel in {ctx.guild.name}. Disabling log channel."
+            )
+            return await ctx.send(
+                "I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel there."
             )
         if not channel:
             await self.config.guild(ctx.guild).log_channel.set(None)
@@ -335,10 +335,10 @@ class EmojiSpam(commands.Cog):
         `Please don't spam emojis. You are sending too many.`.
         """
         if len(msg) > 1092 or len(msg) < 1:
-            return await ctx.send("Message must be between 1 and 1092 characters!")
             self.log.info(
                 f"Message must be between 1 and 1092 characters in {ctx.guild.name}."
             )
+            return await ctx.send("Message must be between 1 and 1092 characters!")
         await self.config.guild(ctx.guild).emoji_limit_msg.set(msg)
         await ctx.send("Message set!")
 
