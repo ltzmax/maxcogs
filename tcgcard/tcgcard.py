@@ -39,6 +39,7 @@ from redbot.core.utils.views import SimpleMenu
 
 log: RedTraceLogger = getLogger("red.maxcogs.tcgcard")
 
+
 class TCGCard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
