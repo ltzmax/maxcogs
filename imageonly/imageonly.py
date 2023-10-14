@@ -35,9 +35,8 @@ from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.imageonly")
 
-# gif, gifv and mp4 is there incase meme channels are used for this purpose.
 URL_REGEX = re.compile(
-    r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|gif|png|svg|webp|gifv|mp4|mov|webm))"
+    r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|png|svg|webp|mov|webm))"
 )
 
 
