@@ -30,7 +30,7 @@ import discord
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.imageonly")
@@ -44,7 +44,7 @@ URL_REGEX = re.compile(
 class ImageOnly(commands.Cog):
     """Only allow images in a channel."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -54,7 +54,7 @@ class ImageOnly(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=78631113035100160)
         default_guild = {
-            "channel": None,
+            "channels": None,
             "enabled": False,
             "message_toggle": False,
             "message": "You can only send images in this channel.",
@@ -102,22 +102,24 @@ class ImageOnly(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        """Check if the message is an image."""
+        if not message.guild:
+            return
         if message.author.bot:
             return
         if not message.guild:
             return
         if not await self.config.guild(message.guild).enabled():
             return
-        channel = await self.config.guild(message.guild).channel()
-        if not channel:
-            return
+        channels = await self.config.guild(message.guild).channels()
+        if channels is not None:
+            if message.channel.id not in channels:
+                return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if await self.bot.is_automod_immune(message.author):
             return
         if message.attachments or URL_REGEX.search(message.content):
-            return
-        if message.channel.id != channel:
             return
         if await self.config.guild(message.guild).message_toggle():
             if not message.channel.permissions_for(message.guild.me).send_messages:
@@ -174,17 +176,20 @@ class ImageOnly(commands.Cog):
     async def channel(
         self,
         ctx: commands.Context,
-        channel: discord.TextChannel = None,
-    ) -> None:
-        """Set the channel to allow only images/links."""
-        if await self.config.guild(ctx.guild).channel():
-            await self.config.guild(ctx.guild).channel.set(
-                "You can only send images in this channel."
-            )
-            await ctx.send("Channel reset.")
+        channels: commands.Greedy[discord.TextChannel] = None,
+    ):
+        """Set the channels to allow only images in."""
+        if not channels:
+            await self.config.guild(ctx.guild).channels.set(None)
+            await ctx.send("Channels reset.")
         else:
-            await self.config.guild(ctx.guild).channel.set(channel.id)
-            await ctx.send("Channel set to {channel}.".format(channel=channel.mention))
+            channels = [channel.id for channel in channels]
+            await self.config.guild(ctx.guild).channels.set(channels)
+            await ctx.send(
+                "Channels set to {channels}.".format(
+                    channels=humanize_list([f"<#{channel}>" for channel in channels])
+            )
+        )
 
     @imageonly.command()
     async def logchannel(
@@ -243,11 +248,13 @@ class ImageOnly(commands.Cog):
         """Show image only settings."""
         data = await self.config.guild(ctx.guild).all()
         enabled = data["enabled"]
-        channel = data["channel"]
-        if channel is not None:
-            channel = "<#{channel}>".format(channel=channel)
+        channels = data["channels"]
+        if channels is not None:
+            channels = humanize_list(
+                [f"<#{channel}>" for channel in channels]
+            )
         else:
-            channel = "None"
+            channels = "None"
         log_channel = data["log_channel"]
         if log_channel is not None:
             log_channel = "<#{log_channel}>".format(log_channel=log_channel)
@@ -260,14 +267,14 @@ class ImageOnly(commands.Cog):
             title="Image only settings",
             description="""
             **Enabled:** {enabled}
-            **Channel:** {channel}
+            **Channel:** {channels}
             **Log channel:** {log_channel}
             **Embed:** {embed}
             **Message toggle:** {msgtoggle}
             **Message:** {message}
             """.format(
                 enabled=enabled,
-                channel=channel,
+                channels=channels,
                 log_channel=log_channel,
                 embed=embed,
                 msgtoggle=msgtoggle,
