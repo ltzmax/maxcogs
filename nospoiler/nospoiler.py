@@ -399,6 +399,7 @@ class NoSpoiler(commands.Cog):
 
         **Example:**
         ```
+        {embed(title):No spoiler allowed.}
         {embed(description):{member(mention)} You cannot send spoilers here.}
         {embed(color):{color}}
         ```
