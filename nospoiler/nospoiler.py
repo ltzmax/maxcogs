@@ -49,7 +49,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.2"
+    __version__: Final[str] = "1.6.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
