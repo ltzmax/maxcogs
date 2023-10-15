@@ -196,8 +196,8 @@ class ImageOnly(commands.Cog):
             await ctx.send(
                 "Channels set to {channels}.".format(
                     channels=humanize_list([f"<#{channel}>" for channel in channels])
-                )
             )
+        )
 
     @imageonly.command()
     async def logchannel(
@@ -258,7 +258,9 @@ class ImageOnly(commands.Cog):
         enabled = data["enabled"]
         channels = data["channels"]
         if channels is not None:
-            channels = humanize_list([f"<#{channel}>" for channel in channels])
+            channels = humanize_list(
+                [f"<#{channel}>" for channel in channels]
+            )
         else:
             channels = "None"
         log_channel = data["log_channel"]
