@@ -413,7 +413,7 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Successfully resetted the warn message.")
 
     @nospoiler.command()
-    async def delete(self, ctx: commands.Context, amount: commands.Range[int, 0, 100]):
+    async def delete(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
         """
         Change when the warn message get's deleted.
         """
