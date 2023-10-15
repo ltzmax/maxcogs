@@ -162,7 +162,7 @@ class NoSpoiler(commands.Cog):
                 warnmessage = await self.config.guild(
                     message.guild
                 ).spoiler_warn_message()
-                delete_after = self.config.guild(message.guild).delete_after()
+                delete_after = await self.config.guild(message.guild).delete_after()
                 color = await self.bot.get_embed_color(message.channel)
                 kwargs = process_tagscript(
                     warnmessage,
@@ -210,7 +210,9 @@ class NoSpoiler(commands.Cog):
                         warnmessage = await self.config.guild(
                             message.guild
                         ).spoiler_warn_message()
-                        delete_after = self.config.guild(message.guild).delete_after()
+                        delete_after = await self.config.guild(
+                            message.guild
+                        ).delete_after()
                         color = await self.bot.get_embed_color(message.channel)
                         kwargs = process_tagscript(
                             warnmessage,
@@ -281,7 +283,7 @@ class NoSpoiler(commands.Cog):
                     await self.config.guild(guild).spoiler_warn.set(False)
                     return
                 warnmessage = await self.config.guild(guild).spoiler_warn_message()
-                delete_after = self.config.guild(guild).delete_after()
+                delete_after = await self.config.guild(guild).delete_after()
                 color = await self.bot.get_embed_color(message.channel)
                 author = guild.get_member(message.author.id)
                 kwargs = process_tagscript(
@@ -425,10 +427,19 @@ class NoSpoiler(commands.Cog):
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         log_channel = config["log_channel"]
+        delete_after = config["delete_after"]
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**\nLog Channel: {log_channel}.",
+            description=(
+                f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}"
+                f"**\nLog Channel: {log_channel}.\nDelete After: {delete_after}."
+            ),
             color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="Warn Message:",
+            value=box(config["spoiler_warn_message"], lang="json"),
+            inline=False,
         )
         await ctx.send(embed=embed)
 
