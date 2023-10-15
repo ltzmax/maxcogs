@@ -21,6 +21,9 @@
         9,
         0
     ],
+    "requirements": [
+        "TagScript==2.6.2"
+    ],
     "end_user_data_statement": "This cog does not store any End User Data.",
     "type": "COG"
 }
