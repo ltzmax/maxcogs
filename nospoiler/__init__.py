@@ -1,13 +1,13 @@
-import orjson
 import re
 from pathlib import Path
 from typing import Match, Optional, Pattern
 
+import orjson
 from redbot.core.bot import Red
 from redbot.core.errors import CogLoadError
 
-from .nospoiler import NoSpoiler
 from ._tagscript import validate_tagscriptengine
+from .nospoiler import NoSpoiler
 
 VERSION_RE: Pattern[str] = re.compile(r"TagScript==(\d\.\d\.\d)")
 

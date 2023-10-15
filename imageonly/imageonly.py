@@ -92,11 +92,11 @@ class ImageOnly(commands.Cog):
             )
             await self.config.guild(guild).log_channel.set(None)
             return
-        embed = discord.Embed( 
-             title="Message Deleted", 
-             description=f"{message.author.mention} sent a message that wasn't attachement!\n**Message**:\n{message.content}", 
-             color=await self.bot.get_embed_color(log_channel), 
-         )
+        embed = discord.Embed(
+            title="Message Deleted",
+            description=f"{message.author.mention} sent a message that wasn't attachement!\n**Message**:\n{message.content}",
+            color=await self.bot.get_embed_color(log_channel),
+        )
         embed.set_author(
             name=f"{message.author} ({message.author.id})",
             icon_url=message.author.avatar.url,

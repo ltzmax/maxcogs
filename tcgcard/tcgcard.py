@@ -25,13 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
-import orjson
 from datetime import datetime
 from logging import LoggerAdapter
 from typing import Any, Final, List
 
 import aiohttp
 import discord
+import orjson
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import app_commands, commands
 from redbot.core.bot import Red
