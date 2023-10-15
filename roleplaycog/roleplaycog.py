@@ -76,8 +76,8 @@ class RolePlayCog(commands.Cog):
                 )
                 await ctx.send("Something went wrong while trying to contact API.")
                 return
-            data = await response.read()
-            url = orjson.loads(data)
+            response_data = await response.read()
+            data = orjson.loads(response_data)
 
         action_fmt = ACTIONS.get(action, action)
         anime_name = data["results"][0]["anime_name"]
