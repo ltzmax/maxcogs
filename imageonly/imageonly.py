@@ -96,16 +96,16 @@ class ImageOnly(commands.Cog):
              title="Message Deleted", 
              description=f"{message.author.mention} sent a message that wasn't attachement!\n**Message**:\n{message.content}", 
              color=await self.bot.get_embed_color(log_channel), 
-         ) 
+         )
         embed.set_author(
             name=f"{message.author} ({message.author.id})",
             icon_url=message.author.avatar.url,
         )
-         embed.add_field( 
-             name="Channel:", 
-             value=f"{message.channel.mention} ({message.channel.id})", 
-             inline=False, 
-         )        
+        embed.add_field(
+            name="Channel:",
+            value=f"{message.channel.mention} ({message.channel.id})",
+            inline=False,
+        )
          await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
