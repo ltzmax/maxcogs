@@ -106,7 +106,7 @@ class ImageOnly(commands.Cog):
             value=f"{message.channel.mention} ({message.channel.id})",
             inline=False,
         )
-         await log_channel.send(embed=embed)
+        await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
