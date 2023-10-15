@@ -1,4 +1,4 @@
-import json
+import orjson
 import re
 from pathlib import Path
 from typing import Match, Optional, Pattern
@@ -12,7 +12,7 @@ from ._tagscript import validate_tagscriptengine
 VERSION_RE: Pattern[str] = re.compile(r"TagScript==(\d\.\d\.\d)")
 
 with open(Path(__file__).parent / "info.json") as f:
-    data = json.load(f)
+    data = orjson.loads(f.read())
 
 tse_version = None
 for requirement in data.get("requirements", []):
