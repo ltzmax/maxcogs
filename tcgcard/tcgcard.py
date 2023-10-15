@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
+import orjson
 from datetime import datetime
 from logging import LoggerAdapter
 from typing import Any, Final, List
@@ -44,7 +45,7 @@ class TCGCard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
     __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000"]
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.3.1"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/tcgcard/README.md"
@@ -116,7 +117,7 @@ class TCGCard(commands.Cog):
                     self.log.error(f"HTTP error {response.status}")
                     await ctx.send(f"https://http.cat/{response.status}")
                     return
-                output = await response.json()
+                output = orjson.loads(await response.read())
         except asyncio.TimeoutError:
             self.log.error("Operation timed out.")
             await ctx.send("Operation timed out.")
