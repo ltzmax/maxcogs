@@ -412,7 +412,7 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).spoiler_warn_message.clear()
             await ctx.send("Successfully resetted the warn message.")
 
-    @nospoiler.command()
+    @nospoiler.command(aliases=["timeout"])
     async def delete(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
         """
         Change when the warn message get's deleted.
