@@ -379,7 +379,7 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     async def warnmessage(
-        self, ctx: commands.Context, *, message: TagscriptConverter
+        self, ctx: commands.Context, *, message: Optional[TagscriptConverter]
     ) -> None:
         """
         Set the spoiler warning message.
