@@ -26,10 +26,19 @@ from logging import LoggerAdapter
 from typing import Any, Dict, Final, Optional, Pattern, Union
 
 import discord
+import TagScriptEngine as tse
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
+
+from ._tagscript import (
+    TAGSCRIPT_LIMIT,
+    TagCharacterLimitReached,
+    TagscriptConverter,
+    process_tagscript,
+    warn_message,
+)
 
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 
@@ -40,7 +49,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.2"
+    __version__: Final[str] = "1.6.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
@@ -50,12 +59,12 @@ class NoSpoiler(commands.Cog):
         self.config: Config = Config.get_conf(
             self, identifier=1234567890, force_registration=True
         )
-        default_guild: Dict[str, Union[bool, Optional[int]]] = {
+        default_guild: Dict[str, Union[bool, Optional[int], str]] = {
             "enabled": False,
             "log_channel": None,
             "spoiler_warn": False,
-            "spoiler_warn_message": "Usage of spoiler is not allowed in this server.",
-            "spoiler_warn_message_embed": False,
+            "spoiler_warn_message": warn_message,
+            "delete_after": 10,
         }
         self.config.register_guild(**default_guild)
 
@@ -71,6 +80,12 @@ class NoSpoiler(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
+
+    async def validate_tagscript(self, tagscript: str) -> bool:
+        length = len(tagscript)
+        if length > TAGSCRIPT_LIMIT:
+            raise TagCharacterLimitReached(TAGSCRIPT_LIMIT, length)
+        return True
 
     async def log_channel_embed(
         self,
@@ -138,30 +153,43 @@ class NoSpoiler(commands.Cog):
             return
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(message.guild).spoiler_warn():
-                if await self.config.guild(message.guild).spoiler_warn_message_embed():
-                    if not message.channel.permissions_for(
-                        message.guild.me
-                    ).embed_links:
-                        self.log.info(
-                            f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
-                        )
-                        await self.config.guild(message.guild).spoiler_warn.set(False)
-                        return
-                    embed = discord.Embed(
-                        title="Warning",
-                        description=await self.config.guild(
-                            message.guild
-                        ).spoiler_warn_message(),
-                        color=await self.bot.get_embed_color(message.channel),
+                if not message.channel.permissions_for(message.guild.me).embed_links:
+                    self.log.info(
+                        f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
                     )
-                    await message.channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=10
+                    await self.config.guild(message.guild).spoiler_warn.set(False)
+                    return
+                warnmessage = await self.config.guild(
+                    message.guild
+                ).spoiler_warn_message()
+                delete_after = await self.config.guild(message.guild).delete_after()
+                color = await self.bot.get_embed_color(message.channel)
+                kwargs = process_tagscript(
+                    warnmessage,
+                    {
+                        "server": tse.GuildAdapter(message.guild),
+                        "member": tse.MemberAdapter(message.author),
+                        "author": tse.MemberAdapter(message.author),
+                        "color": tse.StringAdapter(str(color)),
+                    },
+                )
+                if not kwargs:
+                    await self.config.guild(message.guild).spoiler_warn_message.clear()
+                    kwargs = process_tagscript(
+                        warn_message,
+                        {
+                            "server": tse.GuildAdapter(message.guild),
+                            "member": tse.MemberAdapter(message.author),
+                            "author": tse.MemberAdapter(message.author),
+                            "color": tse.StringAdapter(str(color)),
+                        },
                     )
-                else:
-                    await message.channel.send(
-                        f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                        delete_after=10,
-                    )
+                kwargs["allowed_mentions"] = discord.AllowedMentions(
+                    everyone=False, roles=False
+                )
+                kwargs["delete_after"] = delete_after
+                await message.channel.send(**kwargs)
+
             await self.log_channel_embed(message.guild, message)
             await message.delete()
             return
@@ -169,36 +197,50 @@ class NoSpoiler(commands.Cog):
             for attachment in attachments:
                 if attachment.is_spoiler():
                     if await self.config.guild(message.guild).spoiler_warn():
-                        if await self.config.guild(
+                        if not message.channel.permissions_for(
+                            message.guild.me
+                        ).embed_links:
+                            self.log.info(
+                                f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
+                            )
+                            await self.config.guild(message.guild).spoiler_warn.set(
+                                False
+                            )
+                            return
+                        warnmessage = await self.config.guild(
                             message.guild
-                        ).spoiler_warn_message_embed():
-                            if not message.channel.permissions_for(
-                                message.guild.me
-                            ).embed_links:
-                                self.log.info(
-                                    f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
-                                )
-                                await self.config.guild(message.guild).spoiler_warn.set(
-                                    False
-                                )
-                                return
-                            embed = discord.Embed(
-                                title="Warning",
-                                description=await self.config.guild(
-                                    message.guild
-                                ).spoiler_warn_message(),
-                                color=await self.bot.get_embed_color(message.channel),
+                        ).spoiler_warn_message()
+                        delete_after = await self.config.guild(
+                            message.guild
+                        ).delete_after()
+                        color = await self.bot.get_embed_color(message.channel)
+                        kwargs = process_tagscript(
+                            warnmessage,
+                            {
+                                "server": tse.GuildAdapter(message.guild),
+                                "member": tse.MemberAdapter(message.author),
+                                "author": tse.MemberAdapter(message.author),
+                                "color": tse.StringAdapter(str(color)),
+                            },
+                        )
+                        if not kwargs:
+                            await self.config.guild(
+                                message.guild
+                            ).spoiler_warn_message.clear()
+                            kwargs = process_tagscript(
+                                warn_message,
+                                {
+                                    "server": tse.GuildAdapter(message.guild),
+                                    "member": tse.MemberAdapter(message.author),
+                                    "author": tse.MemberAdapter(message.author),
+                                    "color": tse.StringAdapter(str(color)),
+                                },
                             )
-                            await message.channel.send(
-                                f"{message.author.mention}",
-                                embed=embed,
-                                delete_after=10,
-                            )
-                        else:
-                            await message.channel.send(
-                                f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                                delete_after=10,
-                            )
+                        kwargs["allowed_mentions"] = discord.AllowedMentions(
+                            everyone=False, roles=False
+                        )
+                        kwargs["delete_after"] = delete_after
+                        await message.channel.send(**kwargs)
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
 
@@ -234,28 +276,41 @@ class NoSpoiler(commands.Cog):
             return
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(guild).spoiler_warn():
-                if await self.config.guild(guild).spoiler_warn_message_embed():
-                    if not channel.permissions_for(guild.me).embed_links:
-                        self.log.info(
-                            f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {channel.mention}."
-                        )
-                        await self.config.guild(guild).spoiler_warn.set(False)
-                        return
-                    embed = discord.Embed(
-                        title="Warning",
-                        description=await self.config.guild(
-                            guild
-                        ).spoiler_warn_message(),
-                        color=await self.bot.get_embed_color(channel),
+                if not channel.permissions_for(guild.me).embed_links:
+                    self.log.info(
+                        f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {channel.mention}."
                     )
-                    await channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=10
+                    await self.config.guild(guild).spoiler_warn.set(False)
+                    return
+                warnmessage = await self.config.guild(guild).spoiler_warn_message()
+                delete_after = await self.config.guild(guild).delete_after()
+                color = await self.bot.get_embed_color(message.channel)
+                author = guild.get_member(message.author.id)
+                kwargs = process_tagscript(
+                    warnmessage,
+                    {
+                        "server": tse.GuildAdapter(guild),
+                        "member": tse.MemberAdapter(author),
+                        "author": tse.MemberAdapter(author),
+                        "color": tse.StringAdapter(str(color)),
+                    },
+                )
+                if not kwargs:
+                    await self.config.guild(guild).spoiler_warn_message.clear()
+                    kwargs = process_tagscript(
+                        warn_message,
+                        {
+                            "server": tse.GuildAdapter(guild),
+                            "member": tse.MemberAdapter(author),
+                            "author": tse.MemberAdapter(author),
+                            "color": tse.StringAdapter(str(color)),
+                        },
                     )
-                else:
-                    await channel.send(
-                        f"{message.author.mention} {await self.config.guild(guild).spoiler_warn_message()}",
-                        delete_after=10,
-                    )
+                kwargs["allowed_mentions"] = discord.AllowedMentions(
+                    everyone=False, roles=False
+                )
+                kwargs["delete_after"] = delete_after
+                await message.channel.send(**kwargs)
             await self.log_channel_embed(guild, message)
             await message.delete()
 
@@ -323,40 +378,48 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Spoiler warning message is now enabled.")
 
     @nospoiler.command()
-    async def warnmessage(self, ctx: commands.Context, *, message: str) -> None:
-        """Set the spoiler warning message."""
-        if len(message) > 1024 or len(message) < 1:
-            return await ctx.send("Message must be between 1 and 1024 characters.")
-        await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
-        await ctx.send("Spoiler warning message has been set.")
+    async def warnmessage(
+        self, ctx: commands.Context, *, message: Optional[TagscriptConverter]
+    ) -> None:
+        """
+        Set the spoiler warning message.
 
-    @nospoiler.command(aliases=["resetwarnmsg", "resetwarn"])
-    async def resetwarnmessage(self, ctx: commands.Context) -> None:
-        """Reset the spoiler warning message to default."""
-        await self.config.guild(ctx.guild).spoiler_warn_message.set(
-            "Usage of spoiler is not allowed in this server."
-        )
-        await ctx.send("Spoiler warning message has been reset.")
+        (Supports Tagscript)
 
-    @nospoiler.command()
-    async def embed(self, ctx: commands.Context) -> None:
-        """Toggle the spoiler warning message embed."""
-        if not ctx.bot_permissions.embed_links:
-            self.log.info(
-                f"I cannot toggle the spoiler warning message embed because I don't have embed_links permission in {ctx.channel.mention}."
+        **Blocks:**
+        - [Assugnment Block](https://phen-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#assignment-block)
+        - [If Block](https://phen-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#if-block)
+        - [Embed Block](https://phen-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#embed-block)
+        - [Command Block](https://phen-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#command-block)
+
+        **Variable:**
+        - `{server}`: [Your guild/server.](https://phen-cogs.readthedocs.io/en/latest/tags/default_variables.html#server-block)
+        - `{member}`: [Author of the message.](https://phen-cogs.readthedocs.io/en/latest/tags/default_variables.html#author-block)
+        - `{color}`: [botname]'s default color.
+
+        **Example:**
+        ```
+        {embed(title):No spoiler allowed.}
+        {embed(description):{member(mention)} You cannot send spoilers here.}
+        {embed(color):{color}}
+        ```
+        """
+        if message:
+            await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
+            await ctx.send(
+                f"Sucessfully changed the warn message: \n {box(f'{message}', lang='json')}"
             )
-            return await ctx.send(
-                "I don't have embed_links permission to let you toggle the spoiler warning message embed."
-            )
-        spoiler_warn_message_embed = await self.config.guild(
-            ctx.guild
-        ).spoiler_warn_message_embed()
-        if spoiler_warn_message_embed:
-            await self.config.guild(ctx.guild).spoiler_warn_message_embed.set(False)
-            await ctx.send("Spoiler warning message embed is now disabled.")
         else:
-            await self.config.guild(ctx.guild).spoiler_warn_message_embed.set(True)
-            await ctx.send("Spoiler warning message embed is now enabled.")
+            await self.config.guild(ctx.guild).spoiler_warn_message.clear()
+            await ctx.send("Successfully resetted the warn message.")
+
+    @nospoiler.command(aliases=["timeout"])
+    async def delete(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
+        """
+        Change when the warn message get's deleted.
+        """
+        await self.config.guild(ctx.guild).delete_after.set(amount)
+        await ctx.send(f"The delete after is now {amount}.")
 
     @nospoiler.command(aliases=["view", "views"])
     @commands.bot_has_permissions(embed_links=True)
@@ -365,10 +428,19 @@ class NoSpoiler(commands.Cog):
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         log_channel = config["log_channel"]
+        delete_after = config["delete_after"]
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**\nLog Channel: {log_channel}.",
+            description=(
+                f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}"
+                f"**\nLog Channel: {log_channel}.\nDelete After: {delete_after}."
+            ),
             color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="Warn Message:",
+            value=box(config["spoiler_warn_message"], lang="json"),
+            inline=False,
         )
         await ctx.send(embed=embed)
 
