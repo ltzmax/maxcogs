@@ -25,6 +25,7 @@ from typing import Any, Dict, Final, Optional
 
 import aiohttp
 import discord
+import orjson
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
@@ -41,7 +42,8 @@ async def api_call(
         if response.status != 200:
             await ctx.send("Something went wrong while trying to contact API.")
             return
-        url = await response.json()
+        data = await response.read()
+        url = orjson.loads(data)
         return url
 
 

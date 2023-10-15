@@ -26,6 +26,7 @@ from typing import Any, Final
 
 import aiohttp
 import discord
+import orjson
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import commands
 from redbot.core.bot import Red
@@ -75,7 +76,8 @@ class RolePlayCog(commands.Cog):
                 )
                 await ctx.send("Something went wrong while trying to contact API.")
                 return
-            data = await response.json()
+            data = await response.read()
+            url = orjson.loads(data)
 
         action_fmt = ACTIONS.get(action, action)
         anime_name = data["results"][0]["anime_name"]

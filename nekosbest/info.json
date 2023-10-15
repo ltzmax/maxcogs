@@ -19,6 +19,7 @@
     "permissions": [
         "embed_links"
     ],
+    "requirements": ["orjson"],
     "min_python_version": [
         3,
         8,
