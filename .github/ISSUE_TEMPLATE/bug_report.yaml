@@ -16,9 +16,11 @@ body:
       description: What cog are you getting issue from?
       options:
         - autopublisher
+        - customping
         - emojispam
         - imageonly
         - nospoiler
+        - plaguegame
         - nekosbest
         - redupdate
         - tcgcard

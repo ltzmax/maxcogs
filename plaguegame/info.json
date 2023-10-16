@@ -1,0 +1,10 @@
+	{
+    "author" : ["PhenoM4n4n", "max"],
+    "install_msg" : "Thank you for installing PlagueGame! Get started by setting a log channel, name, and infecting Patient 0 using `[p]plagueset`\nThis will cause infections to happen at a 30% rate when an infected user pings another user in a bot command. There is currently no way to opt out of this behaviour besides unloading the cog.",
+    "name" : "Plague",
+    "short" : "Infect users with the plague!",
+    "description" : "Plague game with a doctor and plaguebearer.",
+    "requirements": ["unidecode", "rapidfuzz"],
+    "tags" : ["fun", "plague"],
+    "end_user_data_statement": "This cog stores data on users based off their interactions within the game. Examples of such data are their 'health state' (healthy or infected) or their 'game role' (user, doctor, plaguebearer)."
+}

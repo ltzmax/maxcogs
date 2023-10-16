@@ -16,9 +16,11 @@ body:
       description: What cog are you feature requesting to?
       options:
         - autopublisher
+        - customping
         - emojispam
         - imageonly
         - nospoiler
+        - plaguegame
         - nekosbest
         - redupdate
         - tcgcard
