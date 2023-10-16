@@ -43,6 +43,8 @@ class CustomPing(commands.Cog):
     """A more information rich ping message."""
 
     __version__ = "1.0.0"
+    __author__ = humanize_list(["phenom4n4n", "ltzmax"])
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/customping/README.md"
 
     def __init__(self, bot):
         self.bot = bot
@@ -54,6 +56,12 @@ class CustomPing(commands.Cog):
         default_global = {"host_latency": True}
         self.config.register_global(**default_global)
         self.settings = {}
+
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre = super().format_help_for_context(ctx)
+        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def cog_load(self):
         self.settings = await self.config.all()
