@@ -34,6 +34,7 @@ import time
 import discord
 import speedtest
 from redbot.core import Config, commands
+from redbot.core.utils.chat_formatting import humanize_list
 
 old_ping = None
 log = logging.getLogger("red.phenom4n4n.customping")
