@@ -33,6 +33,7 @@ from unidecode import unidecode
 
 log = logging.getLogger("red.maxcogs.plaguegame.converters")
 
+
 def hundred_int(arg: str):
     try:
         ret = int(arg)
@@ -64,7 +65,9 @@ class FuzzyMember(MemberConverter):
                 )
             ]
             if not result:
-                raise BadArgument(f'Member "{argument}" not found.' if self.response else None)
+                raise BadArgument(
+                    f'Member "{argument}" not found.' if self.response else None
+                )
 
             sorted_result = sorted(result, key=lambda r: r[1], reverse=True)
             member = sorted_result[0][0]
@@ -75,7 +78,9 @@ class FuzzyHuman(FuzzyMember):
     async def convert(self, ctx: commands.Context, argument: str) -> discord.Member:
         member = await super().convert(ctx, argument)
         if member.bot:
-            raise BadArgument("Keep bots out of this. We aren't susceptible to human diseases.")
+            raise BadArgument(
+                "Keep bots out of this. We aren't susceptible to human diseases."
+            )
             log.info(f"{member} is a bot and was not infected.")
         return member
 

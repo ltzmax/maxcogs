@@ -58,7 +58,6 @@ class CustomPing(commands.Cog):
         self.config.register_global(**default_global)
         self.settings = {}
 
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
@@ -89,7 +88,9 @@ class CustomPing(commands.Cog):
         message = await ctx.send("Pinging...", reference=ref)
         end = time.monotonic()
         totalPing = round((end - start) * 1000, 2)
-        e = discord.Embed(title="Pinging..", description=f"`{'Overall Latency':<16}`:{totalPing}ms")
+        e = discord.Embed(
+            title="Pinging..", description=f"`{'Overall Latency':<16}`:{totalPing}ms"
+        )
         await asyncio.sleep(0.25)
         try:
             await message.edit(content=None, embed=e)
@@ -126,7 +127,9 @@ class CustomPing(commands.Cog):
             await loop.run_in_executor(executor, s.get_servers)
             await loop.run_in_executor(executor, s.get_best_server)
         except Exception as exc:
-            log.exception("An exception occured while fetching host latency.", exc_info=exc)
+            log.exception(
+                "An exception occured while fetching host latency.", exc_info=exc
+            )
             host_latency = "`Failed`"
         else:
             result = s.results.dict()
@@ -201,7 +204,9 @@ class CustomPing(commands.Cog):
             color = discord.Colour.orange()
         else:
             color = discord.Colour.green()
-        e = discord.Embed(color=color, title="Shard Pings", description="\n".join(description))
+        e = discord.Embed(
+            color=color, title="Shard Pings", description="\n".join(description)
+        )
         e.set_footer(text=f"Average: {round(average_ping, 2)}ms")
         await ctx.send(embed=e)
 
@@ -211,10 +216,14 @@ class CustomPing(commands.Cog):
         """Manage CustomPing settings."""
 
     @pingset.command(name="hostlatency")
-    async def pingset_hostlatency(self, ctx: commands.Context, true_or_false: bool = None):
+    async def pingset_hostlatency(
+        self, ctx: commands.Context, true_or_false: bool = None
+    ):
         """Toggle displaying host latency on the ping command."""
         target_state = (
-            true_or_false if true_or_false is not None else not (await self.config.host_latency())
+            true_or_false
+            if true_or_false is not None
+            else not (await self.config.host_latency())
         )
         await self.config.host_latency.set(target_state)
         self.settings["host_latency"] = target_state

@@ -30,7 +30,12 @@ from collections import Counter
 import discord
 from redbot.core import Config, bank, checks, commands
 from redbot.core.utils import AsyncIter
-from redbot.core.utils.chat_formatting import humanize_number, pagify, humanize_list, box
+from redbot.core.utils.chat_formatting import (
+    humanize_number,
+    pagify,
+    humanize_list,
+    box,
+)
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.views import ConfirmView
@@ -102,7 +107,9 @@ class Plague(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=2395486659, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=2395486659, force_registration=True
+        )
         default_global = {"plagueName": "Plague", "logChannel": None, "rate": 75}
         default_user = {
             "gameRole": GameRole.USER,
@@ -116,7 +123,6 @@ class Plague(commands.Cog):
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
         return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
-
 
     async def red_delete_data_for_user(self, *, requester: str, user_id: int):
         await self.config.user_from_id(user_id).clear()
@@ -166,13 +172,11 @@ class Plague(commands.Cog):
         if userRole == GameRole.DOCTOR:
             thumbnail = "https://contestimg.wish.com/api/webimage/5b556e7ba225161706d6857a-large.jpg?cache_buster=e79a94ce3e105025c5655d67b3d5e1bd"
         elif userRole == GameRole.PLAGUEBEARER:
-                        # credit to John Yakimow
-                        # https://goldenyak.artstation.com/projects/v1z81O
+            # credit to John Yakimow
+            # https://goldenyak.artstation.com/projects/v1z81O
             thumbnail = "https://cdna.artstation.com/p/assets/images/images/015/285/028/large/john-yakimow-plaguebear.jpg?1547774010"
         elif userState == GameState.INFECTED:
-            thumbnail = (
-                "https://cdn.pixabay.com/photo/2020/04/29/07/54/coronavirus-5107715_960_720.png"
-            )
+            thumbnail = "https://cdn.pixabay.com/photo/2020/04/29/07/54/coronavirus-5107715_960_720.png"
         else:
             thumbnail = "https://static.thenounproject.com/png/2090399-200.png"
 
@@ -221,7 +225,9 @@ class Plague(commands.Cog):
         currency = await bank.get_currency_name(ctx.guild)
         await self.config.user(ctx.author).gameRole.set(GameRole.PLAGUEBEARER)
         await self.notify_user(ctx, ctx.author, NotificationType.PLAGUEBEARER)
-        await ctx.send(f"{ctx.author} has spent 10,000 {currency} and become a Plaguebearer.")
+        await ctx.send(
+            f"{ctx.author} has spent 10,000 {currency} and become a Plaguebearer."
+        )
 
     @commands.check(has_role)
     @bank.cost(10000)
@@ -302,7 +308,9 @@ class Plague(commands.Cog):
                 embeds = []
                 infected_pages = list(pagify(infected_list))
                 for index, page in enumerate(infected_pages, start=1):
-                    embed = discord.Embed(color=color, title="Infected Users", description=page)
+                    embed = discord.Embed(
+                        color=color, title="Infected Users", description=page
+                    )
                     embed.set_footer(text=f"{index}/{len(infected_pages)}")
                     embeds.append(embed)
                 await menu(ctx, embeds, DEFAULT_CONTROLS)
@@ -337,7 +345,9 @@ class Plague(commands.Cog):
                 embeds = []
                 infected_pages = list(pagify(infected_list))
                 for index, page in enumerate(infected_pages, start=1):
-                    embed = discord.Embed(color=color, title="Infected Members", description=page)
+                    embed = discord.Embed(
+                        color=color, title="Infected Members", description=page
+                    )
                     embed.set_footer(text=f"{index}/{len(infected_pages)}")
                     embeds.append(embed)
                 await menu(ctx, embeds, DEFAULT_CONTROLS)
@@ -370,7 +380,9 @@ class Plague(commands.Cog):
                 embeds = []
                 healthy_pages = list(pagify(healthy_list))
                 for index, page in enumerate(healthy_pages, start=1):
-                    embed = discord.Embed(color=color, title="Healthy Users", description=page)
+                    embed = discord.Embed(
+                        color=color, title="Healthy Users", description=page
+                    )
                     embed.set_footer(text=f"{index}/{len(healthy_pages)}")
                     embeds.append(embed)
                 await menu(ctx, embeds, DEFAULT_CONTROLS)
@@ -431,7 +443,8 @@ class Plague(commands.Cog):
         """Reset a user."""
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
-            f"Are you sure you want to reset **{user}**?\nThis will reset all their data from this cog.", view=view
+            f"Are you sure you want to reset **{user}**?\nThis will reset all their data from this cog.",
+            view=view,
         )
         await view.wait()
         if view.result:
@@ -557,9 +570,7 @@ class Plague(commands.Cog):
         plagueName = await self.config.plagueName()
         if notificationType == NotificationType.INFECT:
             title = f"You have been infected with {plagueName}!"
-            description = (
-                f"{ctx.author} infected you. You now have access to `{prefixes[-1]}infect`."
-            )
+            description = f"{ctx.author} infected you. You now have access to `{prefixes[-1]}infect`."
         elif notificationType == NotificationType.CURE:
             title = f"You have been cured from {plagueName}!"
             description = f"{ctx.author} cured you."
@@ -571,7 +582,9 @@ class Plague(commands.Cog):
             description = f"{ctx.author} has set you as a Plaguebearer. You now have access to `{prefixes[-1]}infect`."
 
         embed = discord.Embed(title=title, description=description)
-        embed.set_footer(text=f"Use `{prefixes[-1]}plaguenotify` to disable these notifications.")
+        embed.set_footer(
+            text=f"Use `{prefixes[-1]}plaguenotify` to disable these notifications."
+        )
         try:
             await user.send(embed=embed)
         except discord.Forbidden:
