@@ -157,6 +157,57 @@ class ImageOnly(commands.Cog):
         await message.delete()
         await self.log_channel_embed(message.guild, message)
 
+    # Cause some people actually managed to post something without image / image link on edit.
+    # So we have to check edits as well.
+    @commands.Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        """Check if the message is an image."""
+        if not before.guild:
+            return
+        if before.author.bot:
+            return
+        if not before.guild:
+            return
+        if not await self.config.guild(before.guild).enabled():
+            return
+        channels = await self.config.guild(before.guild).channels()
+        if channels is not None:
+            if before.channel.id not in channels:
+                return
+        if await self.bot.cog_disabled_in_guild(self, before.guild):
+            return
+        if await self.bot.is_automod_immune(before.author):
+            return
+        if before.attachments or URL_REGEX.search(before.content):
+            return
+        if await self.config.guild(before.guild).message_toggle():
+            if not before.channel.permissions_for(before.guild.me).send_messages:
+                self.log.info(
+                    "I don't have permissions to send messages in the channel. Disabling message."
+                )
+                await self.config.guild(before.guild).message_toggle.set(False)
+            if await self.config.guild(before.guild).embed():
+                if not before.channel.permissions_for(before.guild.me).embed_links:
+                    self.log.info(
+                        "I don't have permissions to send embeds in the channel. Disabling embeds."
+                    )
+                    await self.config.guild(before.guild).embed.set(False)
+                embed = discord.Embed(
+                    title="Only images allowed.",
+                    description=await self.config.guild(before.guild).message(),
+                    color=await self.bot.get_embed_color(before.channel),
+                )
+                await before.channel.send(
+                    f"{before.author.mention}", embed=embed, delete_after=10
+                )
+            else:
+                await before.channel.send(
+                    f"{before.author.mention} {await self.config.guild(before.guild).message()}",
+                    delete_after=10,
+                )
+        await before.delete()
+        await self.log_channel_embed(before.guild, before)
+
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
