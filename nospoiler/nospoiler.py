@@ -56,6 +56,7 @@ class NoSpoiler(commands.Cog):
             "spoiler_warn": False,
             "spoiler_warn_message": "Usage of spoiler is not allowed in this server.",
             "spoiler_warn_message_embed": False,
+            "timeout": 10,
         }
         self.config.register_guild(**default_guild)
 
@@ -136,6 +137,9 @@ class NoSpoiler(commands.Cog):
             return
         if await self.bot.is_automod_immune(message.author):
             return
+
+        timeout = await self.config.guild(message.guild).timeout()
+
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(message.guild).spoiler_warn():
                 if await self.config.guild(message.guild).spoiler_warn_message_embed():
@@ -155,12 +159,12 @@ class NoSpoiler(commands.Cog):
                         color=await self.bot.get_embed_color(message.channel),
                     )
                     await message.channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=10
+                        f"{message.author.mention}", embed=embed, delete_after=timeout
                     )
                 else:
                     await message.channel.send(
                         f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                        delete_after=10,
+                        delete_after=timeout
                     )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
@@ -192,12 +196,12 @@ class NoSpoiler(commands.Cog):
                             await message.channel.send(
                                 f"{message.author.mention}",
                                 embed=embed,
-                                delete_after=10,
+                                delete_after=timeout
                             )
                         else:
                             await message.channel.send(
                                 f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                                delete_after=10,
+                                delete_after=timeout
                             )
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
@@ -232,6 +236,9 @@ class NoSpoiler(commands.Cog):
             return
         if message.author.bot:
             return
+
+        timeout = await self.config.guild(guild).timeout()
+
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(guild).spoiler_warn():
                 if await self.config.guild(guild).spoiler_warn_message_embed():
@@ -249,12 +256,12 @@ class NoSpoiler(commands.Cog):
                         color=await self.bot.get_embed_color(channel),
                     )
                     await channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=10
+                        f"{message.author.mention}", embed=embed, delete_after=timeout
                     )
                 else:
                     await channel.send(
                         f"{message.author.mention} {await self.config.guild(guild).spoiler_warn_message()}",
-                        delete_after=10,
+                        delete_after=timeout
                     )
             await self.log_channel_embed(guild, message)
             await message.delete()
@@ -284,6 +291,16 @@ class NoSpoiler(commands.Cog):
         else:
             await self.config.guild(ctx.guild).enabled.set(True)
             await ctx.send("Spoiler filter is now enabled.")
+
+    @nospoiler.command()
+    async def deleteafter(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
+        """Set the delete after timeout.
+
+        Default timeout is 10 seconds.
+        Timeout must be between 5 and 120 seconds.
+        """
+        await self.config.guild(ctx.guild).timeout.set(amount)
+        await ctx.send(f"Timeout set to {amount} seconds!")
 
     @nospoiler.command()
     async def logchannel(
@@ -365,10 +382,35 @@ class NoSpoiler(commands.Cog):
         config = await self.config.guild(ctx.guild).all()
         enabled = config["enabled"]
         log_channel = config["log_channel"]
+        if log_channel is None:
+            log_channel = "Not set"
+        else:
+            log_channel = ctx.guild.get_channel(log_channel).mention
+
+        spoiler_warn = config["spoiler_warn"]
+        spoiler_warn_message = config["spoiler_warn_message"]
+        spoiler_warn_message_embed = config["spoiler_warn_message_embed"]
+        timeout = config["timeout"]
         embed = discord.Embed(
             title="Spoiler Filter Settings",
             description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**\nLog Channel: {log_channel}.",
             color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="Warning Message:",
+            value=f"{'Enabled' if spoiler_warn else 'Disabled'}",
+            inline=False,
+        )
+        embed.add_field(
+            name="Warning Message Embed:",
+            value=f"{'Enabled' if spoiler_warn_message_embed else 'Disabled'}",
+            inline=False,
+        )
+        embed.add_field(name="Timeout:", value=f"{timeout} seconds", inline=False)
+        embed.add_field(
+            name="Warning Message Content:",
+            value=box(spoiler_warn_message, lang="yaml"),
+            inline=False,
         )
         await ctx.send(embed=embed)
 

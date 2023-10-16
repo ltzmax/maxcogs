@@ -59,6 +59,7 @@ class ImageOnly(commands.Cog):
             "message": "You can only send images in this channel.",
             "embed": False,
             "log_channel": None,
+            "timeout": 10,
         }
         self.config.register_guild(**default_guild)
 
@@ -127,6 +128,9 @@ class ImageOnly(commands.Cog):
             return
         if await self.bot.is_automod_immune(message.author):
             return
+        
+        timeout = await self.config.guild(message.guild).timeout()
+
         if message.attachments or URL_REGEX.search(message.content):
             return
         if await self.config.guild(message.guild).message_toggle():
@@ -147,12 +151,12 @@ class ImageOnly(commands.Cog):
                     color=await self.bot.get_embed_color(message.channel),
                 )
                 await message.channel.send(
-                    f"{message.author.mention}", embed=embed, delete_after=10
+                    f"{message.author.mention}", embed=embed, delete_after=timeout
                 )
             else:
                 await message.channel.send(
                     f"{message.author.mention} {await self.config.guild(message.guild).message()}",
-                    delete_after=10,
+                    delete_after=timeout
                 )
         await message.delete()
         await self.log_channel_embed(message.guild, message)
@@ -180,6 +184,9 @@ class ImageOnly(commands.Cog):
             return
         if before.attachments or URL_REGEX.search(before.content):
             return
+
+        timeout = await self.config.guild(before.guild).timeout()
+
         if await self.config.guild(before.guild).message_toggle():
             if not before.channel.permissions_for(before.guild.me).send_messages:
                 self.log.info(
@@ -198,12 +205,12 @@ class ImageOnly(commands.Cog):
                     color=await self.bot.get_embed_color(before.channel),
                 )
                 await before.channel.send(
-                    f"{before.author.mention}", embed=embed, delete_after=10
+                    f"{before.author.mention}", embed=embed, delete_after=timeout
                 )
             else:
                 await before.channel.send(
                     f"{before.author.mention} {await self.config.guild(before.guild).message()}",
-                    delete_after=10,
+                    delete_after=timeout
                 )
         await before.delete()
         await self.log_channel_embed(before.guild, before)
@@ -300,6 +307,16 @@ class ImageOnly(commands.Cog):
         else:
             await self.config.guild(ctx.guild).embed.set(True)
             await ctx.send("Embed enabled.")
+    
+    @imageonly.command()
+    async def deleteafter(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
+        """Set the delete after timeout.
+
+        Default timeout is 10 seconds.
+        Timeout must be between 5 and 120 seconds.
+        """
+        await self.config.guild(ctx.guild).timeout.set(amount)
+        await ctx.send(f"Timeout set to {amount} seconds!")
 
     @imageonly.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -320,6 +337,7 @@ class ImageOnly(commands.Cog):
         message = data["message"]
         msgtoggle = data["message_toggle"]
         embed = data["embed"]
+        timeout = data["timeout"]
         embed = discord.Embed(
             title="Image only settings",
             description="""
@@ -327,6 +345,7 @@ class ImageOnly(commands.Cog):
             **Channel:** {channels}
             **Log channel:** {log_channel}
             **Embed:** {embed}
+            **Timeout:** {timeout}
             **Message toggle:** {msgtoggle}
             **Message:** {message}
             """.format(
@@ -334,6 +353,7 @@ class ImageOnly(commands.Cog):
                 channels=channels,
                 log_channel=log_channel,
                 embed=embed,
+                timeout=timeout,
                 msgtoggle=msgtoggle,
                 message=message,
             ),

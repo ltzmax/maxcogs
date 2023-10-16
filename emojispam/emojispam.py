@@ -58,6 +58,7 @@ class EmojiSpam(commands.Cog):
             "ignored_channels": [],
             "log_channel": None,
             "use_embed": False,
+            "timeout": 10,
         }
         self.config.register_guild(**default_guild)
 
@@ -130,6 +131,8 @@ class EmojiSpam(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
 
+        timeout = await self.config.guild(message.guild).timeout()
+
         # Count the number of non-flag emojis in the message
         non_flag_emojis = EMOJI_REGEX.findall(message.content)
         non_flag_emoji_count = len(non_flag_emojis)
@@ -163,12 +166,12 @@ class EmojiSpam(commands.Cog):
                         color=await self.bot.get_embed_color(message.channel),
                     )
                     await message.channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=10
+                        f"{message.author.mention}", embed=embed, delete_after=timeout
                     )
                 else:
                     await message.channel.send(
                         f"{message.author.mention} {await self.config.guild(message.guild).emoji_limit_msg()}",
-                        delete_after=10,
+                        delete_after=timeout,
                     )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
@@ -205,6 +208,8 @@ class EmojiSpam(commands.Cog):
         if message.author.bot:
             return
 
+        timeout = await self.config.guild(guild).timeout()        
+
         # Count the number of non-flag emojis in the message
         non_flag_emojis = EMOJI_REGEX.findall(message.content)
         non_flag_emoji_count = len(non_flag_emojis)
@@ -232,12 +237,12 @@ class EmojiSpam(commands.Cog):
                         color=await self.bot.get_embed_color(channel),
                     )
                     await channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=10
+                        f"{message.author.mention}", embed=embed, delete_after=timeout
                     )
                 else:
                     await channel.send(
                         f"{message.author.mention} {await self.config.guild(guild).emoji_limit_msg()}",
-                        delete_after=10,
+                        delete_after=timeout,
                     )
             await self.log_channel_embed(guild, message)
             await message.delete()
@@ -326,6 +331,16 @@ class EmojiSpam(commands.Cog):
             self.log.info(f"Limit must be between 1 and 100 in {ctx.guild.name}.")
         await self.config.guild(ctx.guild).emoji_limit.set(limit)
         await ctx.send(f"Emoji limit set to {limit}!")
+
+    @emojispam.command(aliases=["timeout"])
+    async def deleteafter(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
+        """Set the delete after timeout.
+
+        Default timeout is 10 seconds.
+        Timeout must be between 5 and 120 seconds.
+        """
+        await self.config.guild(ctx.guild).timeout.set(amount)
+        await ctx.send(f"Timeout set to {amount} seconds!")
 
     @emojispam.command()
     async def msg(self, ctx: commands.Context, *, msg: str):
@@ -433,6 +448,7 @@ class EmojiSpam(commands.Cog):
         emoji_limit_msg = all["emoji_limit_msg"]
         emoji_limit_msg_enabled = all["emoji_limit_msg_enabled"]
         embed = all["use_embed"]
+        timeout = all["timeout"]
         log_channel = all["log_channel"]
         if log_channel:
             log_channel = f"<#{log_channel}>"
@@ -441,7 +457,7 @@ class EmojiSpam(commands.Cog):
         embed = discord.Embed(
             title="Emoji Spam Filter Settings",
             description=(
-                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Use Embed**: {embed}\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
+                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Timeout**: {timeout}\n**Use Embed**: {embed}\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
             ),
             color=await ctx.embed_color(),
         )
