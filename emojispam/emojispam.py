@@ -208,7 +208,7 @@ class EmojiSpam(commands.Cog):
         if message.author.bot:
             return
 
-        timeout = await self.config.guild(guild).timeout()        
+        timeout = await self.config.guild(guild).timeout()
 
         # Count the number of non-flag emojis in the message
         non_flag_emojis = EMOJI_REGEX.findall(message.content)
@@ -333,7 +333,9 @@ class EmojiSpam(commands.Cog):
         await ctx.send(f"Emoji limit set to {limit}!")
 
     @emojispam.command(aliases=["timeout"])
-    async def deleteafter(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
+    async def deleteafter(
+        self, ctx: commands.Context, amount: commands.Range[int, 5, 120]
+    ):
         """Set the delete after timeout.
 
         Default timeout is 10 seconds.
