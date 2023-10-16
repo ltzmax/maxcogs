@@ -128,7 +128,7 @@ class ImageOnly(commands.Cog):
             return
         if await self.bot.is_automod_immune(message.author):
             return
-        
+
         timeout = await self.config.guild(message.guild).timeout()
 
         if message.attachments or URL_REGEX.search(message.content):
@@ -156,7 +156,7 @@ class ImageOnly(commands.Cog):
             else:
                 await message.channel.send(
                     f"{message.author.mention} {await self.config.guild(message.guild).message()}",
-                    delete_after=timeout
+                    delete_after=timeout,
                 )
         await message.delete()
         await self.log_channel_embed(message.guild, message)
@@ -210,7 +210,7 @@ class ImageOnly(commands.Cog):
             else:
                 await before.channel.send(
                     f"{before.author.mention} {await self.config.guild(before.guild).message()}",
-                    delete_after=timeout
+                    delete_after=timeout,
                 )
         await before.delete()
         await self.log_channel_embed(before.guild, before)
@@ -307,9 +307,11 @@ class ImageOnly(commands.Cog):
         else:
             await self.config.guild(ctx.guild).embed.set(True)
             await ctx.send("Embed enabled.")
-    
+
     @imageonly.command()
-    async def deleteafter(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
+    async def deleteafter(
+        self, ctx: commands.Context, amount: commands.Range[int, 5, 120]
+    ):
         """Set the delete after timeout.
 
         Default timeout is 10 seconds.
