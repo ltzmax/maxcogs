@@ -21,7 +21,7 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 0.1.11 | ltzmax | ✅ |
-| CustomPing | Creates a custom ping embed to display latency statistics. | 1.0.0 | phenom4n4n, ltzmax | ✅ |
+| CustomPing | Creates a custom ping embed to display latency statistics. | 1.0.2 | phenom4n4n, ltzmax | ✅ |
 | EmojiSpam | Similar emojispam filter to dyno but without ban, kick and mute. | 1.5.0 | MAX | ✅ |
 | ImageOnly | Only allow images in a channel or links. | 1.5.0 | MAX | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.2 | MAX | ✅ |

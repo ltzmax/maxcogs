@@ -43,7 +43,7 @@ log = logging.getLogger("red.maxcogs.customping")
 class CustomPing(commands.Cog):
     """A more information rich ping message."""
 
-    __version__ = "1.0.0"
+    __version__ = "1.0.2"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/customping/README.md"
 
@@ -97,7 +97,7 @@ class CustomPing(commands.Cog):
             return
 
         botPing = round(self.bot.latency * 1000, 2)
-        e.description = e.description + f"\n`{'Discord WebSocket Latency':<16}`: {botPing}ms"
+        e.description = e.description + f"\n`{'Discord WS':<16}`:{botPing}ms"
         await asyncio.sleep(0.25)
 
         averagePing = (botPing + totalPing) / 2
@@ -134,7 +134,7 @@ class CustomPing(commands.Cog):
             host_latency = f"{host_latency}ms"
 
         e.title = "Pong!"
-        e.description = e.description + f"\n{'Host Latency':<16}`:{host_latency}"
+        e.description = e.description + f"\n`{'Host Latency':<16}`:{host_latency}"
         await asyncio.sleep(0.25)
         try:
             await message.edit(embed=e)
@@ -149,14 +149,14 @@ class CustomPing(commands.Cog):
 
         e = discord.Embed(
             title="Pinging..",
-            description=f"Receival Latency: {receival_ping}ms",
+            description=f"`{'Receival Latency':<13}`:{receival_ping}ms",
         )
 
         send_start = time.monotonic()
         message = await ctx.send(embed=e)
         send_end = time.monotonic()
         send_ping = round((send_end - send_start) * 1000, 2)
-        e.description += f"\nSend Latency: {send_ping}ms"
+        e.description += f"\n`{'Send Latency':<16}`:{send_ping}ms"
         await asyncio.sleep(0.25)
 
         edit_start = time.monotonic()
@@ -166,7 +166,7 @@ class CustomPing(commands.Cog):
             return
         edit_end = time.monotonic()
         edit_ping = round((edit_end - edit_start) * 1000, 2)
-        e.description += f"\nEdit Latency: {edit_ping}ms"
+        e.description += f"\n`{'Edit Latency':<16}`:{edit_ping}ms"
 
         average_ping = (receival_ping + send_ping + edit_ping) / 3
         if average_ping >= 1000:
