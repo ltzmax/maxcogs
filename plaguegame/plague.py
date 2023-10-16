@@ -30,7 +30,7 @@ from collections import Counter
 import discord
 from redbot.core import Config, bank, checks, commands
 from redbot.core.utils import AsyncIter
-from redbot.core.utils.chat_formatting import humanize_number, pagify, humanize_list
+from redbot.core.utils.chat_formatting import humanize_number, pagify, humanize_list, box
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.views import ConfirmView
@@ -91,7 +91,7 @@ async def has_role(ctx: commands.Context) -> bool:
 class Plague(commands.Cog):
     """A plague game."""
 
-    __version__ = "1.0.6"
+    __version__ = "1.0.7"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/plaguegame/README.md"
 
@@ -453,9 +453,9 @@ class Plague(commands.Cog):
         channel = self.bot.get_channel(data["logChannel"])
         channel = channel.mention if channel else "None"
         description = [
-            f"Name: {data['plagueName']}",
-            f"Log Channel: {channel}",
-            f"Infection Rate: {data['rate']}%",
+            f"`{'Name':<16}`:{data['plagueName']}",
+            f"`{'Log Channel':<16}`:{channel}",
+            f"`{'Infection Rate':<16}`:{data['rate']}%",
         ]
         e = discord.Embed(
             color=await ctx.embed_color(),
@@ -475,19 +475,49 @@ class Plague(commands.Cog):
     async def plagueset_stats(self, ctx: commands.Context):
         """View plague game stats."""
         data = await self.get_plague_stats()
+        infected = hn(data[GameState.INFECTED])
+        health = hn(data[GameState.HEALTHY])
+        doctors = hn(data[GameRole.DOCTOR])
+        plaguebear = hn(data[GameRole.PLAGUEBEARER])
+        jobless = hn(data[GameRole.USER])
         description = [
-            f"Infected Users: {hn(data[GameState.INFECTED])}",
-            f"Healhy Users: {hn(data[GameState.HEALTHY])}",
-            f"Doctors: {hn(data[GameRole.DOCTOR])}",
-            f"Plaguebearers: {hn(data[GameRole.PLAGUEBEARER])}",
-            f"Jobless Users: {hn(data[GameRole.USER])}",
+            f"`{'Infected Users':<16}`:{infected}",
+            f"`{'Healhy Users':<16}`:{health}",
+            f"`{'Doctors':<16}`:{doctors}",
+            f"`{'Plaguebearers':<16}`:{plaguebear}",
+            f"`{'Jobless Users':<16}`:{jobless}",
         ]
         e = discord.Embed(
             title=f"{await self.config.plagueName()} Stats",
             color=await ctx.embed_color(),
-            description="\n".join(description),
+            description=("\n".join(description)),
         )
+        e.set_footer(text=f"Total: {humanize_number(sum(data.values()))}")
         await ctx.send(embed=e)
+
+    @plagueset.command(name="version")
+    @commands.bot_has_permissions(embed_links=True)
+    async def plagueset_version(self, ctx: commands.Context) -> None:
+        """Shows the version of the cog."""
+        version = self.__version__
+        author = self.__author__
+        embed = discord.Embed(
+            title="Cog Information",
+            description=box(
+                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
+                lang="yaml",
+            ),
+            color=await ctx.embed_color(),
+        )
+        view = discord.ui.View()
+        style = discord.ButtonStyle.gray
+        docs = discord.ui.Button(
+            style=style,
+            label="Cog Documentations",
+            url=self.__docs__,
+        )
+        view.add_item(item=docs)
+        await ctx.send(embed=embed, view=view)
 
     async def infect_user(self, ctx, user: discord.User, auto=False):
         game_data = await self.config.all()

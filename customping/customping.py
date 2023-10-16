@@ -37,7 +37,7 @@ from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import humanize_list
 
 old_ping = None
-log = logging.getLogger("red.phenom4n4n.customping")
+log = logging.getLogger("red.maxcogs.customping")
 
 
 class CustomPing(commands.Cog):
@@ -89,7 +89,7 @@ class CustomPing(commands.Cog):
         message = await ctx.send("Pinging...", reference=ref)
         end = time.monotonic()
         totalPing = round((end - start) * 1000, 2)
-        e = discord.Embed(title="Pinging..", description=f"Overall Latency: {totalPing}ms")
+        e = discord.Embed(title="Pinging..", description=f"`{'Overall Latency':<16}`:{totalPing}ms")
         await asyncio.sleep(0.25)
         try:
             await message.edit(content=None, embed=e)
@@ -97,7 +97,7 @@ class CustomPing(commands.Cog):
             return
 
         botPing = round(self.bot.latency * 1000, 2)
-        e.description = e.description + f"\nDiscord WebSocket Latency: {botPing}ms"
+        e.description = e.description + f"\n`{'Discord WebSocket Latency':<16}`: {botPing}ms"
         await asyncio.sleep(0.25)
 
         averagePing = (botPing + totalPing) / 2
@@ -134,7 +134,7 @@ class CustomPing(commands.Cog):
             host_latency = f"{host_latency}ms"
 
         e.title = "Pong!"
-        e.description = e.description + f"\nHost Latency: {host_latency}"
+        e.description = e.description + f"\n{'Host Latency':<16}`:{host_latency}"
         await asyncio.sleep(0.25)
         try:
             await message.edit(embed=e)
