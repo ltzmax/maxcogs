@@ -164,7 +164,7 @@ class NoSpoiler(commands.Cog):
                 else:
                     await message.channel.send(
                         f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                        delete_after=timeout
+                        delete_after=timeout,
                     )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
@@ -196,12 +196,12 @@ class NoSpoiler(commands.Cog):
                             await message.channel.send(
                                 f"{message.author.mention}",
                                 embed=embed,
-                                delete_after=timeout
+                                delete_after=timeout,
                             )
                         else:
                             await message.channel.send(
                                 f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                                delete_after=timeout
+                                delete_after=timeout,
                             )
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
@@ -261,7 +261,7 @@ class NoSpoiler(commands.Cog):
                 else:
                     await channel.send(
                         f"{message.author.mention} {await self.config.guild(guild).spoiler_warn_message()}",
-                        delete_after=timeout
+                        delete_after=timeout,
                     )
             await self.log_channel_embed(guild, message)
             await message.delete()
@@ -293,7 +293,9 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Spoiler filter is now enabled.")
 
     @nospoiler.command()
-    async def deleteafter(self, ctx: commands.Context, amount: commands.Range[int, 5, 120]):
+    async def deleteafter(
+        self, ctx: commands.Context, amount: commands.Range[int, 5, 120]
+    ):
         """Set the delete after timeout.
 
         Default timeout is 10 seconds.
