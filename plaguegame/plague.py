@@ -99,7 +99,7 @@ class Plague(commands.Cog):
     __version__ = "1.0.7"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
     __docs__ = (
-        "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/plaguegame)"
+        "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/plague)"
     )
 
     def format_help_for_context(self, ctx):
