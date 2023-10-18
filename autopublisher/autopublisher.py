@@ -42,7 +42,7 @@ DISCORD_INFO: Final[
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "0.1.11"
+    __version__: Final[str] = "2.1.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/autopublisher"
 
