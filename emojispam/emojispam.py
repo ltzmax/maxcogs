@@ -42,7 +42,7 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.0"
+    __version__: Final[str] = "1.5.1"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot):
@@ -252,7 +252,7 @@ class EmojiSpam(commands.Cog):
         """Manage the emoji spam filter."""
 
     @emojispam.command()
-    async def toggle(self, ctx: commands.Context, toggle: bool = None):
+    async def toggle(self, ctx: commands.Context):
         """Toggle the emoji spam filter.
 
         If no enabled state is provided, the current state will be toggled.
@@ -264,11 +264,12 @@ class EmojiSpam(commands.Cog):
             return await ctx.send(
                 "I don't have the ``manage_messages`` permission to let you enable emojispam filter in this server."
             )
-        await self.config.guild(ctx.guild).enabled.set(toggle)
-        if toggle:
-            await ctx.send("Emoji spam filter enabled!")
-        else:
+        if await self.config.guild(ctx.guild).enabled():
+            await self.config.guild(ctx.guild).enabled.set(False)
             await ctx.send("Emoji spam filter disabled!")
+        else:
+            await self.config.guild(ctx.guild).enabled.set(True)
+            await ctx.send("Emoji spam filter enabled!")
 
     @emojispam.command()
     async def embed(self, ctx: commands.Context, toggle: bool = None):
