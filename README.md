@@ -1,10 +1,12 @@
 <h1 align="center">MAXCOGS</h1>
-## Docs
-Documentations for each of my cogs can be found [by clicking here](https://maxcogs.gitbook.io/maxcogs/)
 
 ## Contact
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #forum_othercogs then go to #maxcogs channel or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX (username: ltzmax) (345628097929936898)
 
+## Docs
+Documentations for each of my cogs can be found [by clicking here](https://maxcogs.gitbook.io/maxcogs)
+
+## Inforamtions, install and cogs.
 `[p]` is your prefix.
 
 To add this repo:
