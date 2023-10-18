@@ -43,7 +43,7 @@ class NoSpoiler(commands.Cog):
     __version__: Final[str] = "1.5.2"
     __docs__: Final[
         str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/nospoiler/README.md"
+    ] = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/nospoiler)"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

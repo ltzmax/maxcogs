@@ -47,7 +47,7 @@ class ImageOnly(commands.Cog):
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/imageonly/README.md"
+    ] = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/imageonly)"
 
     def __init__(self, bot: Red):
         self.bot = bot

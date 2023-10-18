@@ -45,7 +45,7 @@ class CustomPing(commands.Cog):
 
     __version__ = "1.0.2"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/customping/README.md"
+    __docs__ = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/customping)"
 
     def __init__(self, bot):
         self.bot = bot

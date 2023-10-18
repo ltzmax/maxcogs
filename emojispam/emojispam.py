@@ -45,7 +45,7 @@ class EmojiSpam(commands.Cog):
     __version__: Final[str] = "1.5.0"
     __docs__: Final[
         str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/emojispam/README.md"
+    ] = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/emojispam)"
 
     def __init__(self, bot):
         self.bot = bot
