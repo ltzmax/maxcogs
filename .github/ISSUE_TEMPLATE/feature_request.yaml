@@ -21,6 +21,7 @@ body:
         - imageonly
         - nospoiler
         - plaguegame
+        - ratings
         - nekosbest
         - redupdate
         - tcgcard

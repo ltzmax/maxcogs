@@ -30,6 +30,7 @@ To install any cog you want:
 | ImageOnly | Only allow images in a channel or links. | 1.5.0 | MAX | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.2 | MAX | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
+| Ratings | Rate how simp you are or something | 1.0.2 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.1 | ltzmax, o-wo | ✅ |
 | RedUpdate | Update your bot to latest dev changes.| 1.4.0 | ltzmax, kuro | ✅ |
