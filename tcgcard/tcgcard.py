@@ -48,7 +48,7 @@ class TCGCard(commands.Cog):
     __version__: Final[str] = "1.3.1"
     __docs__: Final[
         str
-    ] = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/tcgcard)"
+    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/tcgcard"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

@@ -91,7 +91,7 @@ class NekosBest(commands.Cog):
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
-    ] = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/nekosbest)"
+    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/nekosbest"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

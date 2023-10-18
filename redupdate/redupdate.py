@@ -40,7 +40,7 @@ class RedUpdate(commands.Cog):
     __version__: Final[str] = "1.4.0"
     __docs__: Final[
         str
-    ] = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/redupdate)"
+    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/redupdate"
 
     def __init__(self, bot):
         self.bot = bot

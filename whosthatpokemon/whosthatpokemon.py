@@ -61,7 +61,7 @@ class WhosThatPokemon(commands.Cog):
     __version__: Final[str] = "1.2.7"
     __docs__: Final[
         str
-    ] = "[Click here for the docs!](https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon)"
+    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot
