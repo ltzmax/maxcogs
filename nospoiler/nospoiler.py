@@ -304,7 +304,9 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Timeout set to {amount} seconds!")
 
     @nospoiler.command()
-    @app_commands.describe(channel="The channel where the bot will log the deleted spoiler messages.")
+    @app_commands.describe(
+        channel="The channel where the bot will log the deleted spoiler messages."
+    )
     async def logchannel(
         self, ctx: commands.Context, channel: discord.TextChannel = None
     ) -> None:
