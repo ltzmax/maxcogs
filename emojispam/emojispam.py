@@ -43,9 +43,7 @@ class EmojiSpam(commands.Cog):
 
     __author__: Final[str] = "MAX"
     __version__: Final[str] = "1.5.0"
-    __docs__: Final[
-        str
-    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot):
         self.bot = bot
