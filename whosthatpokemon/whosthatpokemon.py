@@ -53,7 +53,7 @@ API_URL: Final[str] = "https://pokeapi.co/api/v2"
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __author__ = humanize_list(["@306810730055729152", "max", "flame442"])
+    __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
     __version__: Final[str] = "1.2.7"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
