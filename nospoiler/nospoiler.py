@@ -27,7 +27,7 @@ from typing import Any, Dict, Final, Optional, Pattern, Union
 
 import discord
 from red_commons.logging import RedTraceLogger, getLogger
-from redbot.core import Config, commands
+from redbot.core import Config, commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 
@@ -264,7 +264,7 @@ class NoSpoiler(commands.Cog):
             await self.log_channel_embed(guild, message)
             await message.delete()
 
-    @commands.group()
+    @commands.hybrid_group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def nospoiler(self, ctx: commands.Context) -> None:
@@ -291,6 +291,7 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Spoiler filter is now enabled.")
 
     @nospoiler.command()
+    @app_commands.describe(amount="The timeout must be between 5 and 120 seconds.")
     async def deleteafter(
         self, ctx: commands.Context, amount: commands.Range[int, 5, 120]
     ):
@@ -303,6 +304,7 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Timeout set to {amount} seconds!")
 
     @nospoiler.command()
+    @app_commands.describe(channel="The channel where the bot will log the deleted spoiler messages.")
     async def logchannel(
         self, ctx: commands.Context, channel: discord.TextChannel = None
     ) -> None:
@@ -340,6 +342,7 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Spoiler warning message is now enabled.")
 
     @nospoiler.command()
+    @app_commands.describe(message="The spoiler warning message.")
     async def warnmessage(self, ctx: commands.Context, *, message: str) -> None:
         """Set the spoiler warning message."""
         if len(message) > 1024 or len(message) < 1:

@@ -27,7 +27,7 @@ from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
 from red_commons.logging import RedTraceLogger, getLogger
-from redbot.core import Config, commands
+from redbot.core import Config, commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.views import ConfirmView
@@ -117,7 +117,7 @@ class AutoPublisher(commands.Cog):
             ) as e:
                 self.log.error(e)
 
-    @commands.group(aliases=["aph", "autopub"])
+    @commands.hybrid_group(aliases=["aph", "autopub"])
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def autopublisher(self, ctx: commands.Context) -> None:
@@ -127,6 +127,7 @@ class AutoPublisher(commands.Cog):
     @commands.bot_has_permissions(
         embed_links=True, manage_messages=True, view_channel=True
     )
+    @app_commands.describe(toggle="Enable or disable AutoPublisher.")
     async def toggle(self, ctx: commands.Context, toggle: bool) -> None:
         """Toggle AutoPublisher enable or disable.
 
@@ -181,6 +182,10 @@ class AutoPublisher(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
+    @app_commands.describe(
+        add_or_remove="Add or remove channels for your guild.",
+        channels="The channels to add or remove.",
+    )
     @autopublisher.command(
         aliases=["ignorechannels"], usage="<add_or_remove> <channels>"
     )

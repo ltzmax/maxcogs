@@ -28,7 +28,7 @@ import random
 from collections import Counter
 
 import discord
-from redbot.core import Config, bank, commands, app_commands
+from redbot.core import Config, bank, commands
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import (
     humanize_number,
@@ -154,8 +154,7 @@ class Plague(commands.Cog):
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.guild_only()
-    @app_commands.describe(member=("The member you want to check."))
-    @commands.hybrid_command("plagueprofile", aliases=["pprofile"])
+    @commands.command("plagueprofile", aliases=["pprofile"])
     async def plagueProfile(self, ctx, *, member: FuzzyHuman = None):
         """Show's your Plague Game profile"""
         member = member or ctx.author
