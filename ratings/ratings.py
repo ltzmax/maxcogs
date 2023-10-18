@@ -41,11 +41,10 @@ class Ratings(commands.Cog):
     """
     Rate how simp you are.
     """
+
     __author__: Final[str] = humanize_list(["phenom4n4n", "ltzmax"])
     __version__: Final[str] = "1.0.2"
-    __docs__: Final[
-        str
-    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/ratings"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/ratings"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -60,13 +59,19 @@ class Ratings(commands.Cog):
         pre = super().format_help_for_context(ctx)
         return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int) -> None:
+    async def red_delete_data_for_user(
+        self, *, requester: RequestType, user_id: int
+    ) -> None:
         return
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
     async def simprate(
-        self, ctx: commands.Context, member: Optional[discord.Member], *, simpable: Optional[str]
+        self,
+        ctx: commands.Context,
+        member: Optional[discord.Member],
+        *,
+        simpable: Optional[str],
     ):
         """Find out how much someone is simping for something."""
         member = member or ctx.author
@@ -79,7 +84,8 @@ class Ratings(commands.Cog):
         embed = discord.Embed(
             title=message,
             color=await ctx.embed_color(),
-            description=chat.inline(("█" * round(rate / 4)).ljust(25)) + f" {rate}% {emoji}",
+            description=chat.inline(("█" * round(rate / 4)).ljust(25))
+            + f" {rate}% {emoji}",
         )
         await ctx.send(embed=embed)
 
@@ -93,7 +99,8 @@ class Ratings(commands.Cog):
         embed = discord.Embed(
             title=f"{member.name}'s Clownery",
             color=await ctx.embed_color(),
-            description=chat.inline(("█" * round(rate / 4)).ljust(25)) + f" {rate}% {emoji}",
+            description=chat.inline(("█" * round(rate / 4)).ljust(25))
+            + f" {rate}% {emoji}",
         )
         await ctx.send(embed=embed)
 
@@ -122,15 +129,20 @@ class Ratings(commands.Cog):
 
     @commands.command(aliases=["sanity"])
     @commands.bot_has_permissions(embed_links=True)
-    async def sanitycheck(self, ctx: commands.Context, member: Optional[discord.Member]):
+    async def sanitycheck(
+        self, ctx: commands.Context, member: Optional[discord.Member]
+    ):
         """Check your sanity."""
         member = member or ctx.author
-        random.seed(str(member.id) + str(date.today().strftime("%j")) + str(self.bot.user.id))
+        random.seed(
+            str(member.id) + str(date.today().strftime("%j")) + str(self.bot.user.id)
+        )
         sanity = random.randint(0, 100)
         embed = discord.Embed(
             title=f"{member.name}'s Sanity Check",
             color=await ctx.embed_color(),
-            description=chat.inline(("█" * round(sanity / 4)).ljust(25)) + f" {sanity}%",
+            description=chat.inline(("█" * round(sanity / 4)).ljust(25))
+            + f" {sanity}%",
         )
         await ctx.send(embed=embed)
 
