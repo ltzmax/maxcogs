@@ -44,9 +44,7 @@ class AutoPublisher(commands.Cog):
 
     __version__: Final[str] = "0.1.11"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/autopublisher"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/autopublisher"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

@@ -45,9 +45,7 @@ class ImageOnly(commands.Cog):
 
     __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://maxcogs.gitbook.io/maxcogs/cogs/imageonly"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/imageonly"
 
     def __init__(self, bot: Red):
         self.bot = bot
