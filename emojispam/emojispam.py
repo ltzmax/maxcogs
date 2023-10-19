@@ -42,7 +42,7 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.2"
+    __version__: Final[str] = "1.5.3"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot):
