@@ -27,8 +27,14 @@ from typing import Any, Final
 import discord
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
+from .embed import (
+    redupdate,
+    discordpyupdate,
+    redupdateinfo,
+    redupdateset_url,
+    failedupdate,
+)
 
 log: RedTraceLogger = getLogger("red.maxcogs.redupdate")
 
@@ -37,7 +43,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.4.0"
+    __version__: Final[str] = "1.4.1"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/redupdate"
 
     def __init__(self, bot):
@@ -74,21 +80,7 @@ class RedUpdate(commands.Cog):
 
         Has to be vaild link such as `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot` else it will not work.
         """
-        # Cause i'm super lazy and don't want to make a regex for this.
-        # usually forks that are private uses `git+ssh://git@` instead of `https://`.
-        if not url.startswith("git+ssh://git@github.com") and not url.startswith(
-            "git+https://github.com"
-        ):
-            self.log.info("You provided an invalid url for your fork.")
-            return await ctx.send("This is not a valid url for your fork.")
-        if not url.endswith("#egg=Red-DiscordBot"):
-            self.log.info("You provided an invalid url for your fork.")
-            return await ctx.send("This is not a valid url for your fork.")
-        data = await self.config.redupdate_url()
-        if data == url:
-            return await ctx.send("This url is already set.")
-        await self.config.redupdate_url.set(url)
-        await ctx.send(f"Successfully set the url to {url}.")
+        await redupdateset_url(self, ctx, url)
 
     @redupdateset.command(name="reset")
     async def redupdateset_reset(self, ctx: commands.Context):
@@ -120,30 +112,8 @@ class RedUpdate(commands.Cog):
                 send_message_on_success=False,
             )
         except AttributeError:
-            msg = "You need to have Shell from JackCogs loaded and installed to use this command."
-            embed = discord.Embed(
-                title="Error in redupdate",
-                description=msg,
-                color=await ctx.embed_color(),
-            )
-            view = discord.ui.View()
-            style = discord.ButtonStyle.gray
-            jack = discord.ui.Button(
-                style=style,
-                label="JackCogs repo",
-                url="https://github.com/jack1142/JackCogs",
-            )
-            view.add_item(item=jack)
-            self.log.info(
-                "You need to have Shell from JackCogs loaded and installed to use this command."
-            )
-            return await ctx.send(embed=embed, view=view)
-        embed = discord.Embed(
-            description="Successfully updated {}.".format(self.bot.user.name),
-            color=await ctx.embed_color(),
-        )
-        embed.set_footer(text="Restart required to apply changes!")
-        await ctx.send(embed=embed, silent=True)
+            return await failedupdate(self, ctx)
+        await redupdate(self, ctx)
 
     @commands.is_owner()
     @commands.command(aliases=["dpydevupdate"])
@@ -171,31 +141,8 @@ class RedUpdate(commands.Cog):
                     send_message_on_success=False,
                 )
             except AttributeError:
-                msg = "You need to have Shell from JackCogs loaded and installed to use this command."
-                embed = discord.Embed(
-                    title="Error in redupdate",
-                    description=msg,
-                    color=await ctx.embed_color(),
-                )
-                view = discord.ui.View()
-                style = discord.ButtonStyle.gray
-                jack = discord.ui.Button(
-                    style=style,
-                    label="JackCogs repo",
-                    url="https://github.com/jack1142/JackCogs",
-                )
-                view.add_item(item=jack)
-                self.log.info(
-                    "You need to have Shell from JackCogs loaded and installed to use this command."
-                )
-                return await ctx.send(embed=embed, view=view)
-            embed = discord.Embed(
-                title="Discord.py Updated",
-                description="Successfully updated {}.".format(self.bot.user.name),
-                color=await ctx.embed_color(),
-            )
-            embed.set_footer(text="Restart required to apply changes!")
-            await ctx.send(embed=embed, silent=True)
+                return await failedupdate(self, ctx)
+            await discordpyupdate(self, ctx)
         else:
             embed = discord.Embed(
                 title="Discord.py Update Cancelled",
@@ -208,22 +155,4 @@ class RedUpdate(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def redupdateinfo(self, ctx: commands.Context):
         """Shows information about the cog."""
-        version = self.__version__
-        author = self.__author__
-        embed = discord.Embed(
-            title="Cog Information",
-            description=box(
-                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
-                lang="yaml",
-            ),
-            color=await ctx.embed_color(),
-        )
-        view = discord.ui.View()
-        style = discord.ButtonStyle.gray
-        docs = discord.ui.Button(
-            style=style,
-            label="Cog Documentations",
-            url=self.__docs__,
-        )
-        view.add_item(item=docs)
-        await ctx.send(embed=embed, view=view)
+        await redupdateinfo(self, ctx)

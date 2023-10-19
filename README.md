@@ -33,7 +33,7 @@ To install any cog you want:
 | Ratings | Rate how simp you are or something | 1.0.2 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.1 | ltzmax, o-wo | ✅ |
-| RedUpdate | Update your bot to latest dev changes.| 1.4.0 | ltzmax, kuro | ✅ |
+| RedUpdate | Update your bot to latest dev changes.| 1.4.1 | ltzmax, kuro | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.2.1| ltzmax | ✅ |
 | WhosThatPokemon | Guess whos that pokemon? | 1.3.0 | ltzmax, o-wo | ✅ |
 
