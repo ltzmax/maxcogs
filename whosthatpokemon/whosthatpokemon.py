@@ -24,26 +24,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import asyncio
 from datetime import datetime, timedelta, timezone
-from io import BytesIO
 from logging import LoggerAdapter
 from random import randint
-from typing import Any, Dict, Final, List, Optional
+from typing import Any, Final, List
 
 import aiohttp
 import discord
 from discord import File
-from PIL import Image
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
-from redbot.core.data_manager import bundled_data_path
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 from .converter import Generation
 from .view import WhosThatPokemonView
+from .core import get_data, generate_image
 
 log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon")
 
@@ -54,7 +51,7 @@ class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.2.7"
+    __version__: Final[str] = "1.4.0"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
     def __init__(self, bot: Red):
@@ -84,72 +81,6 @@ class WhosThatPokemon(commands.Cog):
         """Nothing to delete."""
         return
 
-    async def get_data(self, url: str) -> Dict[str, Any]:
-        try:
-            async with self.session.get(url) as response:
-                if response.status != 200:
-                    self.log.error(
-                        f"Failed to get data from {url} with status code {response.status}"
-                    )
-                    return {"http_code": response.status}
-                return await response.json()
-        except asyncio.TimeoutError:
-            self.log.error(f"Request to {url} timed out.")
-            return {"http_code": 408}
-
-    async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
-        base_image = Image.open(bundled_data_path(self) / "template.webp").convert(
-            "RGBA"
-        )
-        bg_width, bg_height = base_image.size
-        base_url = (
-            f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
-        )
-        try:
-            async with self.session.get(base_url) as response:
-                if response.status != 200:
-                    self.log.error(
-                        f"Failed to get image from {base_url} with status code {response.status}"
-                    )
-                    return None
-                data = await response.read()
-        except asyncio.TimeoutError:
-            return None
-
-        pbytes = BytesIO(data)
-        poke_image = Image.open(pbytes)
-        poke_width, poke_height = poke_image.size
-        poke_image_resized = poke_image.resize(
-            (int(poke_width * 1.6), int(poke_height * 1.6))
-        )
-
-        if hide:
-            p_load = poke_image_resized.load()  # type: ignore
-            for y in range(poke_image_resized.size[1]):
-                for x in range(poke_image_resized.size[0]):
-                    if p_load[x, y] == (0, 0, 0, 0):  # type: ignore
-                        continue
-                    p_load[x, y] = (1, 1, 1)  # type: ignore
-
-        paste_w = int((bg_width - poke_width) / 10)
-        paste_h = int((bg_height - poke_height) / 4)
-
-        base_image.paste(poke_image_resized, (paste_w, paste_h), poke_image_resized)
-
-        temp = BytesIO()
-        base_image.save(temp, "png")
-        temp.seek(0)
-        pbytes.close()
-        base_image.close()
-        poke_image.close()
-        return temp
-
-    # _____ ________  ______  ___  ___   _   _______  _____
-    # /  __ \  _  |  \/  ||  \/  | / _ \ | \ | |  _  \/  ___|
-    # | /  \/ | | | .  . || .  . |/ /_\ \|  \| | | | |\ `--.
-    # | |   | | | | |\/| || |\/| ||  _  || . ` | | | | `--. \
-    # | \__/\ \_/ / |  | || |  | || | | || |\  | |/ / /\__/ /
-    # \____/\___/\_|  |_/\_|  |_/\_| |_/\_| \_/___/  \____/
     @commands.command(name="wtpversion", hidden=True)
     @commands.bot_has_permissions(embed_links=True)
     async def whosthatpokemon_version(self, ctx: commands.Context) -> None:
@@ -213,7 +144,7 @@ class WhosThatPokemon(commands.Cog):
         poke_id = generation or randint(1, 898)
         if_guessed_right = False
 
-        temp = await self.generate_image(f"{poke_id:>03}", hide=True)
+        temp = await generate_image(self, f"{poke_id:>03}", hide=True)
         if temp is None:
             self.log.error(f"Failed to generate image.")
             return await ctx.send("Failed to generate whosthatpokemon card image.")
@@ -223,7 +154,7 @@ class WhosThatPokemon(commands.Cog):
         img_timeout = discord.utils.format_dt(
             datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
         )
-        species_data = await self.get_data(f"{API_URL}/pokemon-species/{poke_id}")
+        species_data = await get_data(self, f"{API_URL}/pokemon-species/{poke_id}")
         if species_data.get("http_code"):
             self.log.error(
                 f"Failed to get data from PokeAPI with status code {species_data['http_code']}"
@@ -235,7 +166,7 @@ class WhosThatPokemon(commands.Cog):
             0
         ]
 
-        revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
+        revealed = await generate_image(self, f"{poke_id:>03}", hide=False)
         revealed_img = File(revealed, "whosthatpokemon.png")
 
         view = WhosThatPokemonView(eligible_names)

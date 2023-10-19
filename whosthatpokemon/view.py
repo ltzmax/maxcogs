@@ -19,9 +19,9 @@ class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(
-            f"You entered: {self.poke.value}", ephemeral=True
+            f"You guessed: {self.poke.value}",
+            ephemeral=True,
         )
-
 
 class WhosThatPokemonView(discord.ui.View):
     def __init__(self, eligible_names: List[Any]) -> None:
@@ -53,7 +53,7 @@ class WhosThatPokemonView(discord.ui.View):
             await self.message.edit(view=self)
             # Send a message indicating who guessed the Pokémon
             await interaction.followup.send(
-                f"{self.winner.display_name} guessed the Pokémon correctly!"
+                f"{interaction.user.mention} guessed the Pokémon correctly!",
             )
 
     async def on_error(
