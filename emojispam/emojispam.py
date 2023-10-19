@@ -34,14 +34,16 @@ from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.emojispam")
 
-EMOJI_REGEX = regex.compile(r'(?<emoji>[\p{Emoji_Presentation}]|<a?:\w+:(\d+)>|<:)')
+EMOJI_REGEX = regex.compile(r"(?<emoji>[\p{Emoji_Presentation}]|<a?:\w+:(\d+)>|<:)")
+
 
 def count_emojis(message):
-  """Counts the total number of emojis in a message."""
-  emoji_count = 0
-  for emoji in EMOJI_REGEX.findall(message.content):
-    emoji_count += 1
-  return emoji_count
+    """Counts the total number of emojis in a message."""
+    emoji_count = 0
+    for emoji in EMOJI_REGEX.findall(message.content):
+        emoji_count += 1
+    return emoji_count
+
 
 class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
