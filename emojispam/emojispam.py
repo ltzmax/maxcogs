@@ -473,6 +473,12 @@ class EmojiSpam(commands.Cog):
                 embed=embed,
                 timeout=timeout,
                 log_channel=log_channel,
+                ignored_channels=", ".join(
+                    [
+                        ctx.guild.get_channel(c).mention
+                        for c in await self.config.guild(ctx.guild).ignored_channels()
+                    ]
+                ),
                 emoji_limit_msg=emoji_limit_msg,
             ),
             color=await ctx.embed_color(),
