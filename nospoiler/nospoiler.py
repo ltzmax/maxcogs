@@ -40,7 +40,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.2"
+    __version__: Final[str] = "1.5.3"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/nospoiler"
 
     def __init__(self, bot: Red) -> None:
@@ -398,24 +398,22 @@ class NoSpoiler(commands.Cog):
         timeout = config["timeout"]
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description=f"Spoiler filter is currently **{'enabled' if enabled else 'disabled'}**\nLog Channel: {log_channel}.",
+            description="""
+            **Enabled:** {enabled}
+            **Log Channel:** {log_channel}
+            **Spoiler Warning:** {spoiler_warn}
+            **Spoiler Warning Message Embed:** {spoiler_warn_message_embed}
+            **Timeout:** {timeout} seconds
+            **Spoiler Warning Message:** {spoiler_warn_message}
+            """.format(
+                enabled=enabled,
+                log_channel=log_channel,
+                spoiler_warn=spoiler_warn,
+                spoiler_warn_message_embed=spoiler_warn_message_embed,
+                timeout=timeout,
+                spoiler_warn_message=spoiler_warn_message,
+            ),
             color=await ctx.embed_color(),
-        )
-        embed.add_field(
-            name="Warning Message:",
-            value=f"{'Enabled' if spoiler_warn else 'Disabled'}",
-            inline=False,
-        )
-        embed.add_field(
-            name="Warning Message Embed:",
-            value=f"{'Enabled' if spoiler_warn_message_embed else 'Disabled'}",
-            inline=False,
-        )
-        embed.add_field(name="Timeout:", value=f"{timeout} seconds", inline=False)
-        embed.add_field(
-            name="Warning Message Content:",
-            value=box(spoiler_warn_message, lang="yaml"),
-            inline=False,
         )
         await ctx.send(embed=embed)
 

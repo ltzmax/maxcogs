@@ -42,7 +42,7 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.1"
+    __version__: Final[str] = "1.5.2"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot):
@@ -457,8 +457,23 @@ class EmojiSpam(commands.Cog):
             log_channel = "None"
         embed = discord.Embed(
             title="Emoji Spam Filter Settings",
-            description=(
-                f"**Log Channel**: {log_channel}\n**Enabled**: {enabled}\n**Emoji Limit**: {emoji_limit}\n**Timeout**: {timeout}\n**Use Embed**: {embed}\n**Message Enabled**: {emoji_limit_msg_enabled}\n**Current Message**: {emoji_limit_msg}"
+            description="""
+            **Enabled:** {enabled}
+            **Emoji Limit:** {emoji_limit}
+            **Message Enabled:** {emoji_limit_msg_enabled}
+            **Embed:** {embed}
+            **Timeout:** {timeout}
+            **Log Channel:** {log_channel}
+            **Ignored Channels:** {ignored_channels}
+            **Message:** {emoji_limit_msg}
+            """.format(
+                enabled=enabled,
+                emoji_limit=emoji_limit,
+                emoji_limit_msg_enabled=emoji_limit_msg_enabled,
+                embed=embed,
+                timeout=timeout,
+                log_channel=log_channel,
+                emoji_limit_msg=emoji_limit_msg,
             ),
             color=await ctx.embed_color(),
         )

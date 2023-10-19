@@ -26,9 +26,9 @@ To install any cog you want:
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 2.1.1 | ltzmax | ✅ |
 | CustomPing | Creates a custom ping embed to display latency statistics. | 1.0.2 | phenom4n4n, ltzmax | ✅ |
-| EmojiSpam | Similar emojispam filter to dyno but without ban, kick and mute. | 1.5.1 | MAX | ✅ |
+| EmojiSpam | Similar emojispam filter to dyno but without ban, kick and mute. | 1.5.2 | MAX | ✅ |
 | ImageOnly | Only allow images in a channel or links. | 1.5.0 | MAX | ✅ |
-| NoSpoiler | Prevent using spoiler messages | 1.5.2 | MAX | ✅ |
+| NoSpoiler | Prevent using spoiler messages | 1.5.3 | MAX | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
 | Ratings | Rate how simp you are or something | 1.0.2 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
