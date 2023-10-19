@@ -42,7 +42,7 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.3"
+    __version__: Final[str] = "1.5.4"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot):
@@ -455,6 +455,17 @@ class EmojiSpam(commands.Cog):
             log_channel = f"<#{log_channel}>"
         else:
             log_channel = "None"
+        ignored_channels = all["ignored_channels"]
+        if not ignored_channels:
+            ignored_channels = "None"
+        else:
+            ignored_channels = ", ".join(
+                [
+                    ctx.guild.get_channel(c).mention
+                    for c in await self.config.guild(ctx.guild).ignored_channels()
+                ]
+            )
+
         embed = discord.Embed(
             title="Emoji Spam Filter Settings",
             description="""
@@ -473,12 +484,7 @@ class EmojiSpam(commands.Cog):
                 embed=embed,
                 timeout=timeout,
                 log_channel=log_channel,
-                ignored_channels=", ".join(
-                    [
-                        ctx.guild.get_channel(c).mention
-                        for c in await self.config.guild(ctx.guild).ignored_channels()
-                    ]
-                ),
+                ignored_channels=ignored_channels,
                 emoji_limit_msg=emoji_limit_msg,
             ),
             color=await ctx.embed_color(),
