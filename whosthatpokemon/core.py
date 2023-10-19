@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 from PIL import Image
 from redbot.core.data_manager import bundled_data_path
 
+
 async def get_data(self, url: str) -> Dict[str, Any]:
     try:
         async with self.session.get(url) as response:
@@ -17,14 +18,11 @@ async def get_data(self, url: str) -> Dict[str, Any]:
         self.log.error(f"Request to {url} timed out.")
         return {"http_code": 408}
 
+
 async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
-    base_image = Image.open(bundled_data_path(self) / "template.webp").convert(
-        "RGBA"
-    )
+    base_image = Image.open(bundled_data_path(self) / "template.webp").convert("RGBA")
     bg_width, bg_height = base_image.size
-    base_url = (
-        f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
-    )
+    base_url = f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
     try:
         async with self.session.get(base_url) as response:
             if response.status != 200:

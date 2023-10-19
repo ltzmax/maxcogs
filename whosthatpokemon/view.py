@@ -23,6 +23,7 @@ class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
             ephemeral=True,
         )
 
+
 class WhosThatPokemonView(discord.ui.View):
     def __init__(self, eligible_names: List[Any]) -> None:
         self.eligible_names = eligible_names
