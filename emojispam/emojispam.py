@@ -49,7 +49,7 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.5"
+    __version__: Final[str] = "1.5.6"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot):
@@ -99,7 +99,7 @@ class EmojiSpam(commands.Cog):
             return
         embed = discord.Embed(
             title="EmojiSpam Deleted",
-            description=f"{message.author.mention} sent too many emojis!\n**Message**:\n {message.content}",
+            description=f"{message.author.mention} sent too many emojis!\n**Message**:\n{message.content}",
             color=await self.bot.get_embed_color(log_channel),
         )
         embed.set_author(
