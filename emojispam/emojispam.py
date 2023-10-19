@@ -26,6 +26,7 @@ from logging import LoggerAdapter
 from typing import Any, Final, Literal
 
 import discord
+import regex
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
@@ -33,16 +34,20 @@ from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.emojispam")
 
-EMOJI_REGEX = re.compile(
-    "<a?:(\w+):(\d+)>|[\U0001F000-\U0001F6FF]|[\U0001F900-\U0001F9FF]|[\U0001F600-\U0001F64F]|[\U0001F680-\U0001F6FF]|[\U0001F1E0-\U0001F1FF]|[\U0001F1E6-\U0001F1FF]{2}|[\U0001F3F3-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F3F4-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F3F9-\U0001F3FA][\U000E0067-\U000E007F]{2}|[\U0001F3FB-\U0001F3FF][\U000E0067-\U000E007F]{2}|[\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF][\U0001F1E6-\U0001F1FF]|\u2B1C|\u2B1B|[\U0001F7E2-\U0001F7E8]|[\U0001F170-\U0001F19A]"
-)
+EMOJI_REGEX = regex.compile(r'(?<emoji>[\p{Emoji_Presentation}]|<a?:\w+:(\d+)>|<:)')
 
+def count_emojis(message):
+  """Counts the total number of emojis in a message."""
+  emoji_count = 0
+  for emoji in EMOJI_REGEX.findall(message.content):
+    emoji_count += 1
+  return emoji_count
 
 class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.4"
+    __version__: Final[str] = "1.5.5"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot):
@@ -131,13 +136,9 @@ class EmojiSpam(commands.Cog):
 
         timeout = await self.config.guild(message.guild).timeout()
 
-        # Count the number of non-flag emojis in the message
-        non_flag_emojis = EMOJI_REGEX.findall(message.content)
-        non_flag_emoji_count = len(non_flag_emojis)
+        emoji_count = count_emojis(message)
 
-        # Check if the total number of emojis in the message is greater than the emoji limit
-        total_emoji_count = non_flag_emoji_count
-        if total_emoji_count > await self.config.guild(message.guild).emoji_limit():
+        if emoji_count > await self.config.guild(message.guild).emoji_limit():
             if await self.bot.is_automod_immune(message.author):
                 return
             if await self.config.guild(message.guild).emoji_limit_msg_enabled():
@@ -208,13 +209,9 @@ class EmojiSpam(commands.Cog):
 
         timeout = await self.config.guild(guild).timeout()
 
-        # Count the number of non-flag emojis in the message
-        non_flag_emojis = EMOJI_REGEX.findall(message.content)
-        non_flag_emoji_count = len(non_flag_emojis)
+        emoji_count = count_emojis(message)
 
-        # Check if the total number of emojis in the message is greater than the emoji limit
-        total_emoji_count = non_flag_emoji_count
-        if total_emoji_count > await self.config.guild(guild).emoji_limit():
+        if emoji_count > await self.config.guild(guild).emoji_limit():
             if await self.bot.is_automod_immune(message.author):
                 return
             if await self.config.guild(guild).emoji_limit_msg_enabled():

@@ -16,6 +16,7 @@
         "embed_links",
         "manage_messages"
     ],
+    "requirements": ["regex"],
     "min_python_version": [
         3,
         9,
