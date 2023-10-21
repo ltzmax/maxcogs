@@ -37,10 +37,9 @@ from redbot.core import Config, app_commands, commands, errors
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
-from .converter import Generation
 
 try:
-    from maxcogs_utils.wtpview import WhosThatPokemonView, generate_image, get_data
+    from maxcogs_utils.wtpview import WhosThatPokemonView, generate_image, get_data, Generation
 except ModuleNotFoundError:
     raise errors.CogLoadError(
         "You need to install maxcogs-utils to use this cog.\n"
