@@ -33,17 +33,36 @@ import time
 
 import discord
 import speedtest
+import random
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import humanize_list
 
 old_ping = None
 log = logging.getLogger("red.maxcogs.customping")
 
+ping_gifs = (
+    "https://i1.wp.com/drunkenanimeblog.com/wp-content/uploads/2017/11/shakunetsu-no-takkyuu-musume-scorching-ping-pong-girls.gif?fit=540%2C303&ssl=1&resize=350%2C200",
+    "https://media1.tenor.com/images/2b27c6e7747d319f76fd98d2a226ab33/tenor.gif?itemid=15479836",
+    "https://i.gifer.com/6TaL.gif",
+    "https://remyfool.files.wordpress.com/2016/11/agari-rally.gif?w=924",
+    "https://4.bp.blogspot.com/-8XanbCQDxfg/WnJTaUeifYI/AAAAAAABEUo/5yv_KUlLV9cmJsuI8jeFRrGSXbtQMclngCKgBGAs/s1600/Omake%2BGif%2BAnime%2B-%2BShokugeki%2Bno%2BSoma%2BS2%2B-%2BOAD%2B1%2B%255BDVD%255D%2B-%2BMegumi%2Bvs%2BIsshiki.gif",
+    "https://i.kym-cdn.com/photos/images/original/000/753/601/bc8.gif",
+    "https://i.imgur.com/1cnscjV.gif",
+    "https://images.squarespace-cdn.com/content/v1/5b23e822f79392038cbd486c/1589129513917-X6QBWRXBHLCSFXT9INR2/b17c1b31e185d12aeca55b576c1ecaef.gif",
+    "http://i.imgur.com/LkdjWE6.gif",
+    "https://media.tenor.com/XRIWMzU-r4QAAAAC/inugami-korone-nakiri-ayame.gif",
+    "https://media.tenor.com/On7v3wlDxNUAAAAC/ping-pong-anime.gif",
+    "https://media.tenor.com/0zPtv37IWy8AAAAC/cats-ping-pong.gif",
+    "https://media.tenor.com/93epse7Vp4sAAAAC/kobayashi-anime.gif",
+    "https://media.tenor.com/dOlTBFsf8PwAAAAC/shakunetsu-no-takkyuu-musume-ping-pong.gif",
+    "https://media.tenor.com/8I81GjIeBYIAAAAd/anime-sport.gif"
+)
+ping_gifs_picker = random.choice(ping_gifs)
 
 class CustomPing(commands.Cog):
     """A more information rich ping message."""
 
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
     __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/customping"
 
@@ -54,7 +73,7 @@ class CustomPing(commands.Cog):
             identifier=325236743863625234572,
             force_registration=True,
         )
-        default_global = {"host_latency": True}
+        default_global = {"host_latency": True, "ping_gifs": False}
         self.config.register_global(**default_global)
         self.settings = {}
 
@@ -108,6 +127,9 @@ class CustomPing(commands.Cog):
             color = discord.Colour.orange()
         else:
             color = discord.Colour.green()
+
+        if self.settings["ping_gifs"]:
+            e.set_image(url=ping_gifs_picker)
 
         if not self.settings["host_latency"]:
             e.title = "Pong!"
@@ -230,6 +252,23 @@ class CustomPing(commands.Cog):
         word = " " if target_state else " not "
         await ctx.send(
             f"Host latency will{word}be displayed on the `{ctx.clean_prefix}ping` command."
+        )
+
+    @pingset.command(name="pinggifs")
+    async def pingset_pinggifs(
+        self, ctx: commands.Context, true_or_false: bool = None
+    ):
+        """Toggle displaying ping gifs on the ping command."""
+        target_state = (
+            true_or_false
+            if true_or_false is not None
+            else not (await self.config.ping_gifs())
+        )
+        await self.config.ping_gifs.set(target_state)
+        self.settings["ping_gifs"] = target_state
+        word = " " if target_state else " not "
+        await ctx.send(
+            f"Ping gifs will{word}be displayed on the `{ctx.clean_prefix}ping` command."
         )
 
 
