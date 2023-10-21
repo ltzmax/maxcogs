@@ -55,8 +55,9 @@ ping_gifs = [
     "https://media.tenor.com/0zPtv37IWy8AAAAC/cats-ping-pong.gif",
     "https://media.tenor.com/93epse7Vp4sAAAAC/kobayashi-anime.gif",
     "https://media.tenor.com/dOlTBFsf8PwAAAAC/shakunetsu-no-takkyuu-musume-ping-pong.gif",
-    "https://media.tenor.com/8I81GjIeBYIAAAAd/anime-sport.gif"
+    "https://media.tenor.com/8I81GjIeBYIAAAAd/anime-sport.gif",
 ]
+
 
 class CustomPing(commands.Cog):
     """A more information rich ping message."""
@@ -254,9 +255,7 @@ class CustomPing(commands.Cog):
         )
 
     @pingset.command(name="pinggifs")
-    async def pingset_pinggifs(
-        self, ctx: commands.Context, true_or_false: bool = None
-    ):
+    async def pingset_pinggifs(self, ctx: commands.Context, true_or_false: bool = None):
         """Toggle displaying ping gifs on the ping command."""
         target_state = (
             true_or_false
