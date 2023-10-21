@@ -27,6 +27,7 @@ from typing import Any, Final, Literal
 
 import discord
 import regex
+from redbot.core.bot import Red
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
@@ -49,10 +50,10 @@ class EmojiSpam(commands.Cog):
     """Similar emojispam filter to dyno but without ban, kick and mute."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.6"
+    __version__: Final[str] = "1.5.7"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
-    def __init__(self, bot):
+    def __init__(self, bot: Red):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild = {
