@@ -44,6 +44,7 @@ async def discordpyupdate(self, ctx: commands.Context):
     view = Buttons(ctx)
     view.message = await ctx.send(embed=embed, view=view)
 
+
 async def redupdateinfo(self, ctx: commands.Context):
     version = self.__version__
     author = self.__author__
