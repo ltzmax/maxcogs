@@ -40,7 +40,7 @@ from redbot.core.utils.chat_formatting import humanize_list
 old_ping = None
 log = logging.getLogger("red.maxcogs.customping")
 
-ping_gifs = (
+ping_gifs = [
     "https://i1.wp.com/drunkenanimeblog.com/wp-content/uploads/2017/11/shakunetsu-no-takkyuu-musume-scorching-ping-pong-girls.gif?fit=540%2C303&ssl=1&resize=350%2C200",
     "https://media1.tenor.com/images/2b27c6e7747d319f76fd98d2a226ab33/tenor.gif?itemid=15479836",
     "https://i.gifer.com/6TaL.gif",
@@ -56,8 +56,7 @@ ping_gifs = (
     "https://media.tenor.com/93epse7Vp4sAAAAC/kobayashi-anime.gif",
     "https://media.tenor.com/dOlTBFsf8PwAAAAC/shakunetsu-no-takkyuu-musume-ping-pong.gif",
     "https://media.tenor.com/8I81GjIeBYIAAAAd/anime-sport.gif"
-)
-ping_gifs_picker = random.choice(ping_gifs)
+]
 
 class CustomPing(commands.Cog):
     """A more information rich ping message."""
@@ -129,7 +128,7 @@ class CustomPing(commands.Cog):
             color = discord.Colour.green()
 
         if self.settings["ping_gifs"]:
-            e.set_image(url=ping_gifs_picker)
+            e.set_image(url=random.choice(ping_gifs))
 
         if not self.settings["host_latency"]:
             e.title = "Pong!"
