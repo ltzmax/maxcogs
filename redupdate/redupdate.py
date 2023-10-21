@@ -41,6 +41,31 @@ except ModuleNotFoundError:
 
 log: RedTraceLogger = getLogger("red.maxcogs.redupdate")
 
+async def redupdate(self, ctx: commands.Context):
+    embed = discord.Embed(
+        description="Successfully updated {}.".format(self.bot.user.name),
+        color=await ctx.embed_color(),
+    )
+    embed.set_footer(text="Restart required to apply changes!")
+    view = Buttons(ctx)
+    view.message = await ctx.send(embed=embed, view=view)
+
+async def failedupdate(self, ctx: commands.Context):
+    msg = "You need to have Shell from JackCogs loaded and installed to use this command."
+    embed = discord.Embed(
+        title="Error in redupdate",
+        description=msg,
+        color=await ctx.embed_color(),
+    )
+    view = discord.ui.View()
+    style = discord.ButtonStyle.gray
+    jack = discord.ui.Button(
+        style=style,
+        label="JackCogs repo",
+        url="https://github.com/jack1142/JackCogs",
+    )
+    view.add_item(item=jack)
+    return await ctx.send(embed=embed, view=view)
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
@@ -71,32 +96,6 @@ class RedUpdate(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
-
-    async def redupdate(self, ctx: commands.Context):
-        embed = discord.Embed(
-            description="Successfully updated {}.".format(self.bot.user.name),
-            color=await ctx.embed_color(),
-        )
-        embed.set_footer(text="Restart required to apply changes!")
-        view = Buttons(ctx)
-        view.message = await ctx.send(embed=embed, view=view)
-
-    async def failedupdate(self, ctx: commands.Context):
-        msg = "You need to have Shell from JackCogs loaded and installed to use this command."
-        embed = discord.Embed(
-            title="Error in redupdate",
-            description=msg,
-            color=await ctx.embed_color(),
-        )
-        view = discord.ui.View()
-        style = discord.ButtonStyle.gray
-        jack = discord.ui.Button(
-            style=style,
-            label="JackCogs repo",
-            url="https://github.com/jack1142/JackCogs",
-        )
-        view.add_item(item=jack)
-        return await ctx.send(embed=embed, view=view)
 
     @commands.is_owner()
     @commands.group(aliases=["redset"], hidden=True)
@@ -177,8 +176,8 @@ class RedUpdate(commands.Cog):
                 send_message_on_success=False,
             )
         except AttributeError:
-            return await self.failedupdate(self, ctx)
-        await self.redupdate(self, ctx)
+            return await failedupdate(self, ctx)
+        await redupdate(self, ctx)
 
     @commands.is_owner()
     @commands.command(aliases=["dpydevupdate"])
@@ -206,8 +205,8 @@ class RedUpdate(commands.Cog):
                     send_message_on_success=False,
                 )
             except AttributeError:
-                return await self.failedupdate(self, ctx)
-            await self.redupdate(self, ctx)
+                return await failedupdate(self, ctx)
+            await redupdate(self, ctx)
         else:
             embed = discord.Embed(
                 title="Discord.py Update Cancelled",
