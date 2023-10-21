@@ -1,6 +1,7 @@
 import discord
 from redbot.core import errors, commands, Config
 from redbot.core.utils.chat_formatting import box
+
 try:
     from maxcogs_utils.restart import Buttons
 except ModuleNotFoundError:
@@ -9,6 +10,7 @@ except ModuleNotFoundError:
         "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
         "And restart your bot afterwards if you didnt already shutdown to install it."
     )
+
 
 async def redupdate(self, ctx: commands.Context):
     embed = discord.Embed(
