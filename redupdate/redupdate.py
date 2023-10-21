@@ -177,8 +177,8 @@ class RedUpdate(commands.Cog):
                 send_message_on_success=False,
             )
         except AttributeError:
-            return await failedupdate(self, ctx)
-        await redupdate(self, ctx)
+            return await self.failedupdate(self, ctx)
+        await self.redupdate(self, ctx)
 
     @commands.is_owner()
     @commands.command(aliases=["dpydevupdate"])
@@ -206,8 +206,8 @@ class RedUpdate(commands.Cog):
                     send_message_on_success=False,
                 )
             except AttributeError:
-                return await failedupdate(self, ctx)
-            await redupdate(self, ctx)
+                return await self.failedupdate(self, ctx)
+            await self.redupdate(self, ctx)
         else:
             embed = discord.Embed(
                 title="Discord.py Update Cancelled",
