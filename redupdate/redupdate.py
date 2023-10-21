@@ -41,6 +41,7 @@ except ModuleNotFoundError:
 
 log: RedTraceLogger = getLogger("red.maxcogs.redupdate")
 
+
 async def redupdate(self, ctx: commands.Context):
     embed = discord.Embed(
         description="Successfully updated {}.".format(self.bot.user.name),
@@ -50,8 +51,11 @@ async def redupdate(self, ctx: commands.Context):
     view = Buttons(ctx)
     view.message = await ctx.send(embed=embed, view=view)
 
+
 async def failedupdate(self, ctx: commands.Context):
-    msg = "You need to have Shell from JackCogs loaded and installed to use this command."
+    msg = (
+        "You need to have Shell from JackCogs loaded and installed to use this command."
+    )
     embed = discord.Embed(
         title="Error in redupdate",
         description=msg,
@@ -66,6 +70,7 @@ async def failedupdate(self, ctx: commands.Context):
     )
     view.add_item(item=jack)
     return await ctx.send(embed=embed, view=view)
+
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
