@@ -39,8 +39,7 @@ from redbot.core.utils.chat_formatting import (
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.views import ConfirmView
-
-from .converters import Curable, FuzzyHuman, Infectable, hundred_int
+from maxcogs_utils.plaguegame import Curable, FuzzyHuman, Infectable, hundred_int
 
 hn = humanize_number
 

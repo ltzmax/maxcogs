@@ -39,7 +39,7 @@ from redbot.core.utils.chat_formatting import box, humanize_list, humanize_numbe
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 try:
-    from maxcogs_utils.wtpview import (
+    from maxcogs_utils.whosthatpokemon import (
         WhosThatPokemonView,
         generate_image,
         get_data,

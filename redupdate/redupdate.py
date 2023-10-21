@@ -31,7 +31,7 @@ from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
 
 try:
-    from maxcogs_utils.restart import Buttons
+    from maxcogs_utils.redupdate import Buttons
 except ModuleNotFoundError:
     raise errors.CogLoadError(
         "You need to install maxcogs-utils to use this cog.\n"
