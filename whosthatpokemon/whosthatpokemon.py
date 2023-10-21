@@ -37,6 +37,7 @@ from redbot.core import Config, app_commands, commands, errors
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
+
 try:
     from maxcogs_utils.wtpview import WhosThatPokemonView
 except ModuleNotFoundError:
