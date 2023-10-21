@@ -41,8 +41,8 @@ async def discordpyupdate(self, ctx: commands.Context):
         color=await ctx.embed_color(),
     )
     embed.set_footer(text="Restart required to apply changes!")
-    await ctx.send(embed=embed)
-
+    view = Buttons(ctx)
+    view.message = await ctx.send(embed=embed, view=view)
 
 async def redupdateinfo(self, ctx: commands.Context):
     version = self.__version__
