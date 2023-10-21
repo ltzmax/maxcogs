@@ -1,4 +1,5 @@
 import discord
+from maxcogs_utils.restart import Buttons
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import box
 
@@ -9,7 +10,8 @@ async def redupdate(self, ctx: commands.Context):
         color=await ctx.embed_color(),
     )
     embed.set_footer(text="Restart required to apply changes!")
-    await ctx.send(embed=embed)
+    view = Buttons(ctx)
+    view.message = await ctx.send(embed=embed, view=view)
 
 
 async def failedupdate(self, ctx: commands.Context):
