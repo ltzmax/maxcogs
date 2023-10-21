@@ -28,7 +28,7 @@ import random
 from collections import Counter
 
 import discord
-from redbot.core import Config, bank, commands
+from redbot.core import Config, bank, commands, errors
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import (
     humanize_number,
@@ -39,7 +39,14 @@ from redbot.core.utils.chat_formatting import (
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.views import ConfirmView
-from maxcogs_utils.plaguegame import Curable, FuzzyHuman, Infectable, hundred_int
+try:
+    from maxcogs_utils.plaguegame import Curable, FuzzyHuman, Infectable, hundred_int
+except ModuleNotFoundError:
+    raise errors.CogLoadError(
+        "You need to install maxcogs-utils to use this cog.\n"
+        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
+        "And restart your bot afterwards if you didnt already shutdown to install it."
+    )
 
 hn = humanize_number
 
