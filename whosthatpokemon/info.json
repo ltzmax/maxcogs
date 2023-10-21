@@ -11,7 +11,8 @@
     ],
     "required_cogs": {},
     "requirements": [
-        "pillow"
+        "pillow",
+        "git+https://github.com/ltzmax/maxcogs-utils"
     ],
     "tags": [
         "pokemon",
