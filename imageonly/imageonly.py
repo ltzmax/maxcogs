@@ -36,7 +36,7 @@ from redbot.core.utils.views import ConfirmView
 log: RedTraceLogger = getLogger("red.maxcogs.imageonly")
 
 URL_REGEX = re.compile(
-    r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|png|svg|webp|mov|webm))"
+    r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|png|svg|webp|webm))"
 )
 
 
