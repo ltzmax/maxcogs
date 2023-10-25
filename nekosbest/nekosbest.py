@@ -26,14 +26,15 @@ from typing import Any, Dict, Final, Optional
 import aiohttp
 import discord
 import orjson
-from redbot.core import commands, errors
+from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
+from redbot.core.errors import CogLoadError
 
 try:
     import maxcogs_utils
-except ModuleNotFoundError:
-    raise errors.CogLoadError(
+except ImportError:
+    raise CogLoadError(
         "You need to install maxcogs-utils to use this cog.\n"
         "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
         "And restart your bot afterwards if you didnt already shutdown to install it."

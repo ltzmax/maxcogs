@@ -29,7 +29,8 @@ from collections import Counter
 
 import discord
 from redbot.core.bot import Red
-from redbot.core import Config, bank, commands, errors
+from redbot.core import Config, bank, commands
+from redbot.core.errors import CogLoadError
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import (
     humanize_number,
@@ -44,8 +45,8 @@ from .converters import Curable, FuzzyHuman, Infectable, hundred_int
 
 try:
     import maxcogs_utils
-except ModuleNotFoundError:
-    raise errors.CogLoadError(
+except ImportError:
+    raise CogLoadError(
         "You need to install maxcogs-utils to use this cog.\n"
         "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
         "And restart your bot afterwards if you didnt already shutdown to install it."

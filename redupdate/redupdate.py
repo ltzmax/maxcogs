@@ -27,15 +27,16 @@ from typing import Any, Final
 import discord
 from redbot.core.bot import Red
 from red_commons.logging import RedTraceLogger, getLogger
-from redbot.core import errors, commands, Config
+from redbot.core import commands, Config
 from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
+from redbot.core.errors import CogLoadError
 from .view import Buttons
 
 try:
     import maxcogs_utils
-except ModuleNotFoundError:
-    raise errors.CogLoadError(
+except ImportError:
+    raise CogLoadError(
         "You need to install maxcogs-utils to use this cog.\n"
         "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
         "And restart your bot afterwards if you didnt already shutdown to install it."

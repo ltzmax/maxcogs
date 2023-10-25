@@ -34,13 +34,14 @@ import time
 import discord
 import speedtest
 import random
-from redbot.core import Config, commands, errors
+from redbot.core import Config, commands
+from redbot.core.errors import CogLoadError
 from redbot.core.utils.chat_formatting import humanize_list
 
 try:
     import maxcogs_utils
-except ModuleNotFoundError:
-    raise errors.CogLoadError(
+except ImportError:
+    raise CogLoadError(
         "You need to install maxcogs-utils to use this cog.\n"
         "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
         "And restart your bot afterwards if you didnt already shutdown to install it."
