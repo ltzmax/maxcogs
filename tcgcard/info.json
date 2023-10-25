@@ -13,6 +13,7 @@
         "pokemontcg",
         "tcgcard"
     ],
+    "requirements": ["git+https://github.com/ltzmax/maxcogs-utils"],
     "min_bot_version": "3.5.0",
     "hidden": false,
     "disabled": false,

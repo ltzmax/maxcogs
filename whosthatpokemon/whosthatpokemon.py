@@ -44,6 +44,16 @@ from .converters import (
         Generation,
 )
 
+try:
+    import maxcogs_utils
+except ModuleNotFoundError:
+    raise errors.CogLoadError(
+        "You need to install maxcogs-utils to use this cog.\n"
+        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
+        "And restart your bot afterwards if you didnt already shutdown to install it."
+    )
+
+
 log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon")
 
 API_URL: Final[str] = "https://pokeapi.co/api/v2"
@@ -52,12 +62,11 @@ API_URL: Final[str] = "https://pokeapi.co/api/v2"
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.4.0"
-    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
+    __author__ = ["@306810730055729152", "max", "flame442"]
+    __version__ = "1.4.0"
 
     def __init__(self, bot: Red):
-        self.bot: Red = bot
+        super().__init__(bot)
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
         self.config = Config.get_conf(
             self, identifier=1234567890, force_registration=True
@@ -73,15 +82,6 @@ class WhosThatPokemon(commands.Cog):
 
     async def cog_unload(self) -> None:
         await self.session.close()
-
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad!"""
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: {humanize_list(self.__author__)}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
-
-    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
-        """Nothing to delete."""
-        return
 
     @commands.command(name="wtpversion", hidden=True)
     @commands.bot_has_permissions(embed_links=True)

@@ -6,7 +6,8 @@
 	"short": "Creates a custom ping embed to display latency statistics.",
 	"tags": ["ping"],
     "requirements": [
-        "speedtest-cli"
+        "speedtest-cli",
+        "git+https://github.com/ltzmax/maxcogs-utils"
     ],
     "end_user_data_statement": "This cog does not store any End User Data."
   }

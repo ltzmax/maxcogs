@@ -34,8 +34,17 @@ import time
 import discord
 import speedtest
 import random
-from redbot.core import Config, commands
+from redbot.core import Config, commands, errors
 from redbot.core.utils.chat_formatting import humanize_list
+
+try:
+    import maxcogs_utils
+except ModuleNotFoundError:
+    raise errors.CogLoadError(
+        "You need to install maxcogs-utils to use this cog.\n"
+        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
+        "And restart your bot afterwards if you didnt already shutdown to install it."
+    )
 
 old_ping = None
 log = logging.getLogger("red.maxcogs.customping")
@@ -59,15 +68,14 @@ ping_gifs = [
 ]
 
 
-class CustomPing(commands.Cog):
+class CustomPing(maxcogs_utils.Cog):
     """A more information rich ping message."""
 
     __version__ = "1.0.3"
-    __author__ = humanize_list(["phenom4n4n", "ltzmax"])
-    __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/customping"
+    __author__ = ["max", "PhenoM4n4n"]
 
     def __init__(self, bot):
-        self.bot = bot
+        super().__init__(bot)
         self.config = Config.get_conf(
             self,
             identifier=325236743863625234572,
@@ -77,16 +85,8 @@ class CustomPing(commands.Cog):
         self.config.register_global(**default_global)
         self.settings = {}
 
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad!"""
-        pre = super().format_help_for_context(ctx)
-        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
-
     async def cog_load(self):
         self.settings = await self.config.all()
-
-    async def red_delete_data_for_user(self, **kwargs):
-        return
 
     def cog_unload(self):
         global old_ping

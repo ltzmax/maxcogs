@@ -28,6 +28,7 @@ import random
 from collections import Counter
 
 import discord
+from redbot.core.bot import Red
 from redbot.core import Config, bank, commands, errors
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import (
@@ -40,6 +41,16 @@ from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactio
 from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.views import ConfirmView
 from .converters import Curable, FuzzyHuman, Infectable, hundred_int
+
+try:
+    import maxcogs_utils
+except ModuleNotFoundError:
+    raise errors.CogLoadError(
+        "You need to install maxcogs-utils to use this cog.\n"
+        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
+        "And restart your bot afterwards if you didnt already shutdown to install it."
+    )
+
 
 hn = humanize_number
 
@@ -92,20 +103,14 @@ async def has_role(ctx: commands.Context) -> bool:
     return userRole != GameRole.USER
 
 
-class Plague(commands.Cog):
+class Plague(maxcogs_utils.Cog):
     """A plague game."""
 
     __version__ = "1.0.7"
-    __author__ = humanize_list(["phenom4n4n", "ltzmax"])
-    __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/plague"
+    __author__ = ["phenom4n4n", "ltzmax"]
 
-    def format_help_for_context(self, ctx):
-        pre_processed = super().format_help_for_context(ctx)
-        n = "\n" if "\n\n" not in pre_processed else ""
-        return f"{pre_processed}{n}\nCog Version: {self.__version__}"
-
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot: Red):
+        super().__init__(bot)
         self.config = Config.get_conf(
             self, identifier=2395486659, force_registration=True
         )
@@ -117,11 +122,6 @@ class Plague(commands.Cog):
         }
         self.config.register_global(**default_global)
         self.config.register_user(**default_user)
-
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad!"""
-        pre = super().format_help_for_context(ctx)
-        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def red_delete_data_for_user(self, *, requester: str, user_id: int):
         await self.config.user_from_id(user_id).clear()
