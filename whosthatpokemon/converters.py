@@ -34,6 +34,7 @@ from redbot.core.data_manager import bundled_data_path
 # This is for my whosthatpokemon cog.
 # https://github.com/ltzmax/maxcogs/tree/master/whosthatpokemon
 
+
 class Generation(commands.Converter):
     async def convert(self, ctx: commands.Context, argument: str) -> int:
         allowed_gens = [f"gen{x}" for x in range(1, 9)]
@@ -57,6 +58,7 @@ class Generation(commands.Converter):
             return randint(722, 809)
         elif argument.lower() == "gen8":
             return randint(810, 898)
+
 
 async def get_data(self, url: str) -> Dict[str, Any]:
     try:
@@ -109,6 +111,7 @@ async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]
     base_image.close()
     poke_image.close()
     return temp
+
 
 # Mainly flame who build this view and modal. All credits goes to flame for that work.
 # https://discord.com/channels/133049272517001216/133251234164375552/1104515319604723762
