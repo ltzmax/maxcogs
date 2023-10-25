@@ -250,24 +250,24 @@ class CustomPing(commands.Cog):
             f"Host latency will{word}be displayed on the `{ctx.clean_prefix}ping` command."
         )
 
-    @pingset.command(name="addgif", aliases=["add"])
-    async def pingset_addgif(self, ctx: commands.Context, gif_url: str):
+    @pingset.command(name="add", aliases=["addgif", "addimage"])
+    async def pingset_add(self, ctx: commands.Context, url: str):
         """Add a custom gif or image to the ping command."""
-        if not GIF_REGEX.match(gif_url):
+        if not GIF_REGEX.match(url):
             return await ctx.send("That is not a valid gif or image url.")
-        if gif_url in await self.config.ping_custom_gifs():
+        if url in await self.config.ping_custom_gifs():
             return await ctx.send("That gif is already in the list of custom gifs.")
         async with self.config.ping_custom_gifs() as gifs:
-            gifs.append(gif_url)
-        await ctx.send("Custom gif added.")
+            gifs.append(url)
+        await ctx.send("Successfully added your url and it will be displayed.")
 
-    @pingset.command(name="removegif")
-    async def pingset_removegif(self, ctx: commands.Context, gif_url: str):
+    @pingset.command(name="remove", aliases=["removegif", "del", "delete"])
+    async def pingset_removegif(self, ctx: commands.Context, url: str):
         """Remove a custom gif or image from the ping command."""
-        if gif_url not in await self.config.ping_custom_gifs():
+        if url not in await self.config.ping_custom_gifs():
             return await ctx.send("That gif is not in the list of custom gifs.")
         async with self.config.ping_custom_gifs() as gifs:
-            gifs.remove(gif_url)
+            gifs.remove(url)
         await ctx.send("Custom gif removed.")
 
     @pingset.command(name="listgifs")
@@ -275,28 +275,28 @@ class CustomPing(commands.Cog):
         """List all custom gifs or images."""
         gifs = await self.config.ping_custom_gifs()
         if not gifs:
-            return await ctx.send("No custom gifs have been added.")
+            return await ctx.send("No custom Gifs/images have been added.")
         await ctx.send(
             f"Custom gifs:\n{humanize_list(gifs)}",
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
-    @pingset.command(name="cleargifs")
-    async def pingset_cleargifs(self, ctx: commands.Context):
+    @pingset.command(name="clear")
+    async def pingset_clear(self, ctx: commands.Context):
         """Clear all custom gifs or images."""
         if not await self.config.ping_custom_gifs():
-            return await ctx.send("No custom gifs have been added.")
+            return await ctx.send("No custom have been added to clear.")
         await self.config.ping_custom_gifs.set([])
-        await ctx.send("Custom gifs cleared.")
+        await ctx.send("cleared everything.")
 
-    @pingset.command(name="togglegifs")
-    async def pingset_togglegifs(
+    @pingset.command(name="toggle")
+    async def pingset_toggle(
         self, ctx: commands.Context, true_or_false: bool = None
     ):
         """Toggle displaying gifs or images on the ping command."""
         if not await self.config.ping_custom_gifs():
             return await ctx.send(
-                "You must add a custom gif before you can toggle gifs."
+                "You must add a image/gif before you can enable this"
             )
         target_state = (
             true_or_false
@@ -307,7 +307,7 @@ class CustomPing(commands.Cog):
         self.settings["ping_gifs"] = target_state
         word = " " if target_state else " not "
         await ctx.send(
-            f"Gifs will{word}be displayed on the `{ctx.clean_prefix}ping` command."
+            f"Gifs/Images will{word}be displayed on the `{ctx.clean_prefix}ping` command."
         )
 
     @pingset.command(name="settings")
@@ -321,7 +321,7 @@ class CustomPing(commands.Cog):
             title="CustomPing Settings",
             description="""
             **Host Latency**: {host_latency}
-            **Gifs**: {ping_gifs}
+            **Gifs/Images**: {ping_gifs}
             """.format(
                 host_latency=host_latency,
                 ping_gifs=ping_gifs,
