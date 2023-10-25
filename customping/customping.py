@@ -40,29 +40,18 @@ from redbot.core.utils.chat_formatting import humanize_list
 old_ping = None
 log = logging.getLogger("red.maxcogs.customping")
 
-ping_gifs = [
-    "https://i1.wp.com/drunkenanimeblog.com/wp-content/uploads/2017/11/shakunetsu-no-takkyuu-musume-scorching-ping-pong-girls.gif?fit=540%2C303&ssl=1&resize=350%2C200",
-    "https://media1.tenor.com/images/2b27c6e7747d319f76fd98d2a226ab33/tenor.gif?itemid=15479836",
-    "https://i.gifer.com/6TaL.gif",
-    "https://remyfool.files.wordpress.com/2016/11/agari-rally.gif?w=924",
-    "https://4.bp.blogspot.com/-8XanbCQDxfg/WnJTaUeifYI/AAAAAAABEUo/5yv_KUlLV9cmJsuI8jeFRrGSXbtQMclngCKgBGAs/s1600/Omake%2BGif%2BAnime%2B-%2BShokugeki%2Bno%2BSoma%2BS2%2B-%2BOAD%2B1%2B%255BDVD%255D%2B-%2BMegumi%2Bvs%2BIsshiki.gif",
-    "https://i.kym-cdn.com/photos/images/original/000/753/601/bc8.gif",
-    "https://i.imgur.com/1cnscjV.gif",
-    "https://images.squarespace-cdn.com/content/v1/5b23e822f79392038cbd486c/1589129513917-X6QBWRXBHLCSFXT9INR2/b17c1b31e185d12aeca55b576c1ecaef.gif",
-    "http://i.imgur.com/LkdjWE6.gif",
-    "https://media.tenor.com/XRIWMzU-r4QAAAAC/inugami-korone-nakiri-ayame.gif",
-    "https://media.tenor.com/On7v3wlDxNUAAAAC/ping-pong-anime.gif",
-    "https://media.tenor.com/0zPtv37IWy8AAAAC/cats-ping-pong.gif",
-    "https://media.tenor.com/93epse7Vp4sAAAAC/kobayashi-anime.gif",
-    "https://media.tenor.com/dOlTBFsf8PwAAAAC/shakunetsu-no-takkyuu-musume-ping-pong.gif",
-    "https://media.tenor.com/8I81GjIeBYIAAAAd/anime-sport.gif",
-]
-
+async def random_custom_gif(ctx: commands.Context):
+    gifs = await ctx.cog.config.ping_custom_gifs()
+    if gifs:
+        return random.choice(gifs)
+    else:
+        await ctx.cog.config.ping_gifs.set(False)
+    return None
 
 class CustomPing(commands.Cog):
     """A more information rich ping message."""
 
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
     __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/customping"
 
@@ -73,7 +62,11 @@ class CustomPing(commands.Cog):
             identifier=325236743863625234572,
             force_registration=True,
         )
-        default_global = {"host_latency": True, "ping_gifs": False}
+        default_global = {
+            "host_latency": True, 
+            "ping_gifs": False,
+            "ping_custom_gifs": [],
+        }
         self.config.register_global(**default_global)
         self.settings = {}
 
@@ -128,8 +121,7 @@ class CustomPing(commands.Cog):
         else:
             color = discord.Colour.green()
 
-        if self.settings["ping_gifs"]:
-            e.set_image(url=random.choice(ping_gifs))
+        e.set_image(url=await random_custom_gif(ctx))
 
         if not self.settings["host_latency"]:
             e.title = "Pong!"
@@ -254,9 +246,46 @@ class CustomPing(commands.Cog):
             f"Host latency will{word}be displayed on the `{ctx.clean_prefix}ping` command."
         )
 
-    @pingset.command(name="pinggifs")
-    async def pingset_pinggifs(self, ctx: commands.Context, true_or_false: bool = None):
-        """Toggle displaying ping gifs on the ping command."""
+    @pingset.command(name="addgif")
+    async def pingset_addgif(self, ctx: commands.Context, gif_url: str):
+        """Add a custom gif to the ping command."""
+        async with self.config.ping_custom_gifs() as gifs:
+            gifs.append(gif_url)
+        await ctx.send("Custom gif added.")
+
+    @pingset.command(name="removegif")
+    async def pingset_removegif(self, ctx: commands.Context, gif_url: str):
+        """Remove a custom gif from the ping command."""
+        async with self.config.ping_custom_gifs() as gifs:
+            gifs.remove(gif_url)
+        await ctx.send("Custom gif removed.")
+
+    @pingset.command(name="listgifs")
+    async def pingset_listgifs(self, ctx: commands.Context):
+        """List all custom gifs."""
+        gifs = await self.config.ping_custom_gifs()
+        if not gifs:
+            return await ctx.send("No custom gifs have been added.")
+        await ctx.send(
+            f"Custom gifs:\n{humanize_list(gifs)}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
+    @pingset.command(name="cleargifs")
+    async def pingset_cleargifs(self, ctx: commands.Context):
+        """Clear all custom gifs."""
+        await self.config.ping_custom_gifs.set([])
+        await ctx.send("Custom gifs cleared.")
+
+    @pingset.command(name="togglegifs")
+    async def pingset_togglegifs(
+        self, ctx: commands.Context, true_or_false: bool = None
+    ):
+        """Toggle displaying gifs on the ping command."""
+        if not await self.config.ping_custom_gifs():
+            return await ctx.send(
+                "You must add a custom gif before you can toggle gifs."
+            )
         target_state = (
             true_or_false
             if true_or_false is not None
@@ -266,9 +295,28 @@ class CustomPing(commands.Cog):
         self.settings["ping_gifs"] = target_state
         word = " " if target_state else " not "
         await ctx.send(
-            f"Ping gifs will{word}be displayed on the `{ctx.clean_prefix}ping` command."
+            f"Gifs will{word}be displayed on the `{ctx.clean_prefix}ping` command."
         )
 
+    @pingset.command(name="settings")
+    @commands.bot_has_permissions(embed_links=True)
+    async def pingset_settings(self, ctx: commands.Context):
+        """View current settings."""
+        data = await self.config.all()
+        host_latency = data["host_latency"]
+        ping_gifs = data["ping_gifs"]
+        e = discord.Embed(
+            title="CustomPing Settings",
+            description="""
+            **Host Latency**: {host_latency}
+            **Gifs**: {ping_gifs}
+            """.format(
+                host_latency=host_latency,
+                ping_gifs=ping_gifs,
+            ),
+            color=await ctx.embed_color(),
+        )
+        await ctx.send(embed=e)
 
 async def setup(bot):
     global old_ping
