@@ -16,7 +16,6 @@
         "embed_links",
         "manage_messages"
     ],
-    "requirements": ["git+https://github.com/ltzmax/maxcogs-utils"],
     "min_python_version": [
         3,
         9,

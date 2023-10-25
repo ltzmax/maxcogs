@@ -25,22 +25,11 @@ from logging import LoggerAdapter
 from typing import Any, Final
 
 import discord
-from redbot.core.bot import Red
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import commands, Config
 from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
-from redbot.core.errors import CogLoadError
 from .view import Buttons
-
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
 
 log: RedTraceLogger = getLogger("red.maxcogs.redupdate")
 
@@ -75,14 +64,15 @@ async def failedupdate(self, ctx: commands.Context):
     return await ctx.send(embed=embed, view=view)
 
 
-class RedUpdate(maxcogs_utils.Cog):
+class RedUpdate(commands.Cog):
     """Update [botname] to latest dev changes."""
 
-    __author__ = ["MAX, kuro"]
-    __version__ = "1.4.2"
+    __author__: Final[str] = "MAX, kuro"
+    __version__: Final[str] = "1.4.2"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/redupdate"
 
-    def __init__(self, bot: Red):
-        super().__init__(bot)
+    def __init__(self, bot):
+        self.bot = bot
         self.config = Config.get_conf(
             self, identifier=0x1A108201, force_registration=True
         )
@@ -94,6 +84,15 @@ class RedUpdate(maxcogs_utils.Cog):
         self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
             log, {"version": self.__version__}
         )
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre = super().format_help_for_context(ctx)
+        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
 
     @commands.is_owner()
     @commands.group(aliases=["redset"], hidden=True)

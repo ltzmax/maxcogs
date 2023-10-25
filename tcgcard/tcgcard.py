@@ -37,29 +37,19 @@ from redbot.core import app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
-from redbot.core.errors import CogLoadError
-
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
-
 
 log: RedTraceLogger = getLogger("red.maxcogs.tcgcard")
 
 
-class TCGCard(maxcogs_utils.Cog):
+class TCGCard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
-    __author__ = ["<@306810730055729152>", "MAX#1000"]
-    __version__ = "1.3.1"
+    __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000"]
+    __version__: Final[str] = "1.3.1"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/tcgcard"
 
     def __init__(self, bot: Red) -> None:
-        super().__init__(bot)
+        self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
 
         self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
@@ -68,6 +58,15 @@ class TCGCard(maxcogs_utils.Cog):
 
     async def cog_unload(self) -> None:
         await self.session.close()
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="tcgversion", hidden=True)

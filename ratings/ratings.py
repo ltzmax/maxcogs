@@ -33,33 +33,36 @@ from redbot.core.bot import Red
 from redbot.core.config import Config
 from redbot.core.utils import chat_formatting as chat
 from redbot.core.utils.chat_formatting import humanize_list
-from redbot.core.errors import CogLoadError
 
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
+RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
 
-class Ratings(maxcogs_utils.Cog):
+class Ratings(commands.Cog):
     """
     Rate how simp you are.
     """
 
-    __author__ = ["phenom4n4n", "ltzmax"]
-    __version__ = "1.0.2"
+    __author__: Final[str] = humanize_list(["phenom4n4n", "ltzmax"])
+    __version__: Final[str] = "1.0.2"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/ratings"
 
     def __init__(self, bot: Red) -> None:
-        super().__init__(bot)
+        self.bot = bot
         self.config = Config.get_conf(
             self,
             identifier=2353262345234652,
             force_registration=True,
         )
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre = super().format_help_for_context(ctx)
+        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(
+        self, *, requester: RequestType, user_id: int
+    ) -> None:
+        return
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)

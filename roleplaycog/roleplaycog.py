@@ -31,31 +31,21 @@ from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
-from redbot.core.errors import CogLoadError
 
 from .core import ACTIONS, ICON, NEKOS
-
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
-
 
 log: RedTraceLogger = getLogger("red.maxcogs.roleplaycog")
 
 
-class RolePlayCog(maxcogs_utils.Cog):
+class RolePlayCog(commands.Cog):
     """Roleplay cog to interact with other users."""
 
-    __version__ = "0.2.1"
-    __author__ = ["MAX"]
+    __version__: Final[str] = "0.2.1"
+    __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/roleplaycog"
 
     def __init__(self, bot: Red) -> None:
-        super().__init__(bot)
+        self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
 
         self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
@@ -64,6 +54,15 @@ class RolePlayCog(maxcogs_utils.Cog):
 
     async def cog_unload(self):
         await self.session.close()
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
 
     async def embedgen(
         self, ctx: commands.Context, member: discord.Member, action: str

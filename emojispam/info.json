@@ -16,7 +16,7 @@
         "embed_links",
         "manage_messages"
     ],
-    "requirements": ["regex", "git+https://github.com/ltzmax/maxcogs-utils"],
+    "requirements": ["regex"],
     "min_python_version": [
         3,
         9,

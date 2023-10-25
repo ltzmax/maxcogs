@@ -35,7 +35,6 @@ from discord import File
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
-from redbot.core.errors import CogLoadError
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .converters import (
@@ -45,16 +44,6 @@ from .converters import (
     Generation,
 )
 
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
-
-
 log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon")
 
 API_URL: Final[str] = "https://pokeapi.co/api/v2"
@@ -63,8 +52,9 @@ API_URL: Final[str] = "https://pokeapi.co/api/v2"
 class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
-    __author__ = ["@306810730055729152", "max", "flame442"]
-    __version__ = "1.4.0"
+    __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
+    __version__: Final[str] = "1.4.0"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot
@@ -83,6 +73,15 @@ class WhosThatPokemon(commands.Cog):
 
     async def cog_unload(self) -> None:
         await self.session.close()
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {humanize_list(self.__author__)}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
 
     @commands.command(name="wtpversion", hidden=True)
     @commands.bot_has_permissions(embed_links=True)

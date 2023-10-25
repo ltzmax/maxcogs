@@ -34,28 +34,20 @@ from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.views import ConfirmView
 from redbot.core.errors import CogLoadError
 
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
-
 log: RedTraceLogger = getLogger("red.maxcogs.imageonly")
 
 URL_REGEX = re.compile(r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|png|svg|webp|webm))")
 
 
-class ImageOnly(maxcogs_utils.Cog):
+class ImageOnly(commands.Cog):
     """Only allow images in a channel."""
 
-    __version__ = "1.5.0"
-    __author__ = ["MAX"]
+    __version__: Final[str] = "1.5.0"
+    __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/imageonly"
 
     def __init__(self, bot: Red):
-        super().__init__(bot)
+        self.bot = bot
         self.config = Config.get_conf(self, identifier=78631113035100160)
         default_guild = {
             "channels": None,
@@ -71,6 +63,15 @@ class ImageOnly(maxcogs_utils.Cog):
         self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
             log, {"version": self.__version__}
         )
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
 
     async def log_channel_embed(self, guild: discord.Guild, message: discord.Message):
         """Send an embed to the log channel."""

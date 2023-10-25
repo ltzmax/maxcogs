@@ -7,7 +7,7 @@
     "author": [
         "PhenoM4n4n", "max"
     ],
-    "requirements": ["git+https://github.com/ltzmax/maxcogs-utils"],
+    "requirements": [],
     "tags": ["rate", "rattings", "drunk", "simp"],
     "min_bot_version": "3.5.0",
     "hidden": false,

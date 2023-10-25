@@ -29,17 +29,6 @@ import orjson
 from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
-from redbot.core.errors import CogLoadError
-
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
-
 
 NEKOS_API: Final[str] = "https://nekos.best/api/v2/"
 ICON: Final[str] = "https://nekos.best/logo_short.png"
@@ -95,18 +84,28 @@ async def embedgen(ctx: commands.Context, url: Dict[str, Any], endpoint: str) ->
     await ctx.send(embed=emb, view=view)
 
 
-class NekosBest(maxcogs_utils.Cog):
+class NekosBest(commands.Cog):
     """Sends random images from nekos.best."""
 
-    __version__ = "0.1.20"
-    __author__ = ["MAX"]
+    __version__: Final[str] = "0.1.20"
+    __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/nekosbest"
 
     def __init__(self, bot: Red) -> None:
-        super().__init__(bot)
+        self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
 
     async def cog_unload(self) -> None:
         await self.session.close()
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
 
     @commands.bot_has_permissions(embed_links=True)
     @commands.command(name="nekostversion", aliases=["nekosbestv"], hidden=True)

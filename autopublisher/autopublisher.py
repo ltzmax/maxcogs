@@ -26,21 +26,11 @@ from logging import LoggerAdapter
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
-from redbot.core.errors import CogLoadError
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.views import ConfirmView
-
-try:
-    import maxcogs_utils
-except ImportError:
-    raise CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
@@ -49,14 +39,15 @@ DISCORD_INFO: Final[
 ] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
 
 
-class AutoPublisher(maxcogs_utils.Cog):
+class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__ = "2.1.1"
-    __author__ = ["MAX"]
+    __version__: Final[str] = "2.1.1"
+    __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/autopublisher"
 
     def __init__(self, bot: Red) -> None:
-        super().__init__(bot)
+        self.bot: Red = bot
         self.config: Config = Config.get_conf(
             self, identifier=15786223, force_registration=True
         )
@@ -69,6 +60,15 @@ class AutoPublisher(maxcogs_utils.Cog):
         self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
             log, {"version": self.__version__}
         )
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Thanks Sinbad!"""
+        pre_processed = super().format_help_for_context(ctx)
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
