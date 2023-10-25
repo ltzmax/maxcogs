@@ -43,6 +43,7 @@ except ModuleNotFoundError:
         "And restart your bot afterwards if you didnt already shutdown to install it."
     )
 
+
 class Ratings(maxcogs_utils.Cog):
     """
     Rate how simp you are.
