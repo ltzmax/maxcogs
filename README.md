@@ -6,6 +6,9 @@
 ## Docs
 Documentations for each of my cogs can be found [by clicking here](https://maxcogs.gitbook.io/maxcogs)
 
+## Support
+You can support me at [github sponsor](https://github.com/sponsors/ltzmax) or [buy me a coffee](https://www.buymeacoffee.com/ltzmax).
+
 ## Inforamtions, install and cogs.
 `[p]` is your prefix.
 

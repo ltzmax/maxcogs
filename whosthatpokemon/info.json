@@ -3,7 +3,7 @@
     "short": "Play a game of Who's That Pok\u00e9mon.",
     "description": "Play a game of Who's That Pok\u00e9mon.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "install_msg": "Thank you for installing WhosThatPokemon cog. Hope you will enjoy it.",
+    "install_msg": "Thank you for installing.\nif you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
     "author": [
         "<@306810730055729152>",
         "ltzmax (MAX#1000)",
