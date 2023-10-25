@@ -37,20 +37,12 @@ from redbot.core import Config, app_commands, commands, errors
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
-
-try:
-    from maxcogs_utils.whosthatpokemon import (
+from .converters import (
         WhosThatPokemonView,
         generate_image,
         get_data,
         Generation,
-    )
-except ModuleNotFoundError:
-    raise errors.CogLoadError(
-        "You need to install maxcogs-utils to use this cog.\n"
-        "`pip install git+https://github.com/ltzmax/maxcogs-utils.git` in your env\n"
-        "And restart your bot afterwards if you didnt already shutdown to install it."
-    )
+)
 
 log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon")
 
