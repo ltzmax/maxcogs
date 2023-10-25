@@ -40,6 +40,7 @@ from redbot.core.utils.chat_formatting import humanize_list
 old_ping = None
 log = logging.getLogger("red.maxcogs.customping")
 
+
 async def random_custom_gif(ctx: commands.Context):
     gifs = await ctx.cog.config.ping_custom_gifs()
     if gifs:
@@ -47,6 +48,7 @@ async def random_custom_gif(ctx: commands.Context):
     else:
         await ctx.cog.config.ping_gifs.set(False)
     return None
+
 
 class CustomPing(commands.Cog):
     """A more information rich ping message."""
@@ -63,7 +65,7 @@ class CustomPing(commands.Cog):
             force_registration=True,
         )
         default_global = {
-            "host_latency": True, 
+            "host_latency": True,
             "ping_gifs": False,
             "ping_custom_gifs": [],
         }
@@ -317,6 +319,7 @@ class CustomPing(commands.Cog):
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=e)
+
 
 async def setup(bot):
     global old_ping
