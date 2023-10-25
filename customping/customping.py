@@ -256,6 +256,8 @@ class CustomPing(commands.Cog):
     @pingset.command(name="removegif")
     async def pingset_removegif(self, ctx: commands.Context, gif_url: str):
         """Remove a custom gif from the ping command."""
+        if gif_url not in await self.config.ping_custom_gifs():
+            return await ctx.send("That gif is not in the list of custom gifs.")
         async with self.config.ping_custom_gifs() as gifs:
             gifs.remove(gif_url)
         await ctx.send("Custom gif removed.")
@@ -274,6 +276,8 @@ class CustomPing(commands.Cog):
     @pingset.command(name="cleargifs")
     async def pingset_cleargifs(self, ctx: commands.Context):
         """Clear all custom gifs."""
+        if not await self.config.ping_custom_gifs():
+            return await ctx.send("No custom gifs have been added.")
         await self.config.ping_custom_gifs.set([])
         await ctx.send("Custom gifs cleared.")
 
