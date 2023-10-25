@@ -290,14 +290,10 @@ class CustomPing(commands.Cog):
         await ctx.send("cleared everything.")
 
     @pingset.command(name="toggle")
-    async def pingset_toggle(
-        self, ctx: commands.Context, true_or_false: bool = None
-    ):
+    async def pingset_toggle(self, ctx: commands.Context, true_or_false: bool = None):
         """Toggle displaying gifs or images on the ping command."""
         if not await self.config.ping_custom_gifs():
-            return await ctx.send(
-                "You must add a image/gif before you can enable this"
-            )
+            return await ctx.send("You must add a image/gif before you can enable this")
         target_state = (
             true_or_false
             if true_or_false is not None
