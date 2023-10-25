@@ -30,12 +30,14 @@ import asyncio
 import concurrent
 import logging
 import time
-
+import re
 import discord
 import speedtest
 import random
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import humanize_list
+
+GIF_REGEX = re.compile(r"(http)?s?:?(\/\/[^\"']*\.(?:png|jpg|jpeg|gif|gifv))")
 
 old_ping = None
 log = logging.getLogger("red.maxcogs.customping")
@@ -248,9 +250,13 @@ class CustomPing(commands.Cog):
             f"Host latency will{word}be displayed on the `{ctx.clean_prefix}ping` command."
         )
 
-    @pingset.command(name="addgif")
+    @pingset.command(name="addgif", aliases=["add"])
     async def pingset_addgif(self, ctx: commands.Context, gif_url: str):
-        """Add a custom gif to the ping command."""
+        """Add a custom gif or image to the ping command."""
+        if not GIF_REGEX.match(gif_url):
+            return await ctx.send("That is not a valid gif or image url.")
+        if gif_url in await self.config.ping_custom_gifs():
+            return await ctx.send("That gif is already in the list of custom gifs.")
         async with self.config.ping_custom_gifs() as gifs:
             gifs.append(gif_url)
         await ctx.send("Custom gif added.")
