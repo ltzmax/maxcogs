@@ -263,7 +263,7 @@ class CustomPing(commands.Cog):
 
     @pingset.command(name="removegif")
     async def pingset_removegif(self, ctx: commands.Context, gif_url: str):
-        """Remove a custom gif from the ping command."""
+        """Remove a custom gif or image from the ping command."""
         if gif_url not in await self.config.ping_custom_gifs():
             return await ctx.send("That gif is not in the list of custom gifs.")
         async with self.config.ping_custom_gifs() as gifs:
@@ -272,7 +272,7 @@ class CustomPing(commands.Cog):
 
     @pingset.command(name="listgifs")
     async def pingset_listgifs(self, ctx: commands.Context):
-        """List all custom gifs."""
+        """List all custom gifs or images."""
         gifs = await self.config.ping_custom_gifs()
         if not gifs:
             return await ctx.send("No custom gifs have been added.")
@@ -283,7 +283,7 @@ class CustomPing(commands.Cog):
 
     @pingset.command(name="cleargifs")
     async def pingset_cleargifs(self, ctx: commands.Context):
-        """Clear all custom gifs."""
+        """Clear all custom gifs or images."""
         if not await self.config.ping_custom_gifs():
             return await ctx.send("No custom gifs have been added.")
         await self.config.ping_custom_gifs.set([])
@@ -293,7 +293,7 @@ class CustomPing(commands.Cog):
     async def pingset_togglegifs(
         self, ctx: commands.Context, true_or_false: bool = None
     ):
-        """Toggle displaying gifs on the ping command."""
+        """Toggle displaying gifs or images on the ping command."""
         if not await self.config.ping_custom_gifs():
             return await ctx.send(
                 "You must add a custom gif before you can toggle gifs."
