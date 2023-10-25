@@ -66,7 +66,7 @@ class WhosThatPokemon(commands.Cog):
     __version__ = "1.4.0"
 
     def __init__(self, bot: Red):
-        super().__init__(bot)
+        self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
         self.config = Config.get_conf(
             self, identifier=1234567890, force_registration=True
