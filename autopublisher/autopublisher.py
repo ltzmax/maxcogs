@@ -34,15 +34,10 @@ from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
-DISCORD_INFO: Final[
-    str
-] = "<https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server>"
-
-
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.1.1"
+    __version__: Final[str] = "2.1.2"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/autopublisher"
 
@@ -139,47 +134,22 @@ class AutoPublisher(commands.Cog):
             - Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
         """
         if "NEWS" not in ctx.guild.features:
-            embed = discord.Embed(
-                title="News Channel is not enabled.",
-                description=f"Please enable News Channel feature in your server. [Learn more]({DISCORD_INFO})",
-                color=await ctx.embed_color(),
+            view = discord.ui.View()
+            style = discord.ButtonStyle.gray
+            discordinfo = discord.ui.Button(
+                style=style,
+                label="Learn more here",
+                url="https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server",
+                emoji="<:icons_info:880113401207095346>"
             )
-            self.log.info(
-                "AutoPublisher cannot be enabled due to missing News Channel feature in {guild}.".format(
-                    guild=ctx.guild.name
-                )
+            view.add_item(item=discordinfo)
+            return await ctx.send(
+                f"Your server doesn't have News Channel feature. Please enable it first.", view=view
             )
-            return await ctx.send(embed=embed)
-        if (
-            not ctx.guild.me.guild_permissions.manage_messages
-            or not ctx.guild.me.guild_permissions.view_channel
-        ):
-            embed = discord.Embed(
-                title="Missing permissions.",
-                description=f"I need `manage_messages` and `view_channel` permissions to be able to publish messages. Please ensure that I have those permissions.",
-                color=await ctx.embed_color(),
-            )
-            self.log.info(
-                "AutoPublisher has been disabled due to missing permissions in {guild}.".format(
-                    guild=ctx.guild.name
-                )
-            )
-            return await ctx.send(embed=embed)
         await self.config.guild(ctx.guild).toggle.set(toggle)
-        if toggle:
-            embed = discord.Embed(
-                title="AutoPublisher is now enabled.",
-                description=f"AutoPublisher will now publish messages from news channels.",
-                color=await ctx.embed_color(),
-            )
-            await ctx.send(embed=embed)
-        else:
-            embed = discord.Embed(
-                title="AutoPublisher is now disabled.",
-                description=f"AutoPublisher will no longer publish messages from news channels.",
-                color=await ctx.embed_color(),
-            )
-            await ctx.send(embed=embed)
+        await ctx.send(
+            f"AutoPublisher has been {'enabled' if toggle else 'disabled'} for {ctx.guild.name}."
+        )
 
     @commands.bot_has_permissions(embed_links=True)
     @app_commands.describe(
@@ -250,18 +220,21 @@ class AutoPublisher(commands.Cog):
             ignored_channels.append(channel.mention)
         embed = discord.Embed(
             title="AutoPublisher Setting",
-            description=f"AutoPublisher is currently **{'enabled' if toggle else 'disabled'}**.",
-            color=0xE91E63,
+            description="""
+            **Toggle:** {toggle}
+            **Ignored Channels:** {ignored_channels}
+            """.format(
+                toggle=toggle,
+                ignored_channels=humanize_list(ignored_channels)
+                if ignored_channels
+                else "None",
+            ),
+            color=await ctx.embed_color(),
         )
-        if ignored_channels:
-            embed.add_field(
-                name="Blacklisted Channels:",
-                value=humanize_list(ignored_channels),
-            )  # This needs menus to be able to show all channels if there are more than 25 channels.
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
-    @autopublisher.command()
+    @autopublisher.command(with_app_command=False)
     async def version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog."""
         version = self.__version__
@@ -284,7 +257,7 @@ class AutoPublisher(commands.Cog):
         view.add_item(item=docs)
         await ctx.send(embed=embed, view=view)
 
-    @autopublisher.command()
+    @autopublisher.command(with_app_command=False)
     async def reset(self, ctx: commands.Context) -> None:
         """Reset AutoPublisher setting."""
         view = ConfirmView(ctx.author, disable_buttons=True)
