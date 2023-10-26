@@ -113,7 +113,7 @@ class AutoPublisher(commands.Cog):
             ) as e:
                 self.log.error(e)
 
-    @commands.hybrid_group(aliases=["aph", "autopub"])
+    @commands.group(aliases=["aph", "autopub"])
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def autopublisher(self, ctx: commands.Context) -> None:
@@ -151,7 +151,8 @@ class AutoPublisher(commands.Cog):
         await self.config.guild(ctx.guild).toggle.set(
             not await self.config.guild(ctx.guild).toggle()
         )
-        await ctx.send(f"AutoPublisher has been {'enabled' if await self.config.guild(ctx.guild).toggle() else 'disabled'}.")
+        toggle = await self.config.guild(ctx.guild).toggle()
+        await ctx.send(f"AutoPublisher has been {'enabled' if toggle else 'disabled'}.")
 
     @commands.bot_has_permissions(embed_links=True)
     @app_commands.describe(
@@ -236,7 +237,7 @@ class AutoPublisher(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
-    @autopublisher.command(with_app_command=False)
+    @autopublisher.command()
     async def version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog."""
         version = self.__version__
@@ -259,7 +260,7 @@ class AutoPublisher(commands.Cog):
         view.add_item(item=docs)
         await ctx.send(embed=embed, view=view)
 
-    @autopublisher.command(with_app_command=False)
+    @autopublisher.command()
     async def reset(self, ctx: commands.Context) -> None:
         """Reset AutoPublisher setting."""
         view = ConfirmView(ctx.author, disable_buttons=True)
