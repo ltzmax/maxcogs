@@ -286,7 +286,9 @@ class NoSpoiler(commands.Cog):
         await self.config.guild(ctx.guild).enabled.set(
             not await self.config.guild(ctx.guild).enabled()
         )
-        await ctx.send(f"Nospoiler is now {'enabled' if await self.config.guild(ctx.guild).enabled() else 'disabled'}.")
+        await ctx.send(
+            f"Nospoiler is now {'enabled' if await self.config.guild(ctx.guild).enabled() else 'disabled'}."
+        )
 
     @nospoiler.command()
     @app_commands.describe(amount="The timeout must be between 5 and 120 seconds.")
