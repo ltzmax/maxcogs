@@ -34,6 +34,7 @@ from redbot.core.utils.views import ConfirmView
 
 log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
 
+
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
@@ -140,11 +141,12 @@ class AutoPublisher(commands.Cog):
                 style=style,
                 label="Learn more here",
                 url="https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server",
-                emoji="<:icons_info:880113401207095346>"
+                emoji="<:icons_info:880113401207095346>",
             )
             view.add_item(item=discordinfo)
             return await ctx.send(
-                f"Your server doesn't have News Channel feature. Please enable it first.", view=view
+                f"Your server doesn't have News Channel feature. Please enable it first.",
+                view=view,
             )
         await self.config.guild(ctx.guild).toggle.set(toggle)
         await ctx.send(
