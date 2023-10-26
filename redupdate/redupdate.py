@@ -121,7 +121,7 @@ class RedUpdate(commands.Cog):
 
     @redupdateset.command(name="reset")
     async def redupdateset_reset(self, ctx: commands.Context):
-        """Reset the url for redupdate cog."""
+        """Reset the url back to default."""
         await self.config.redupdate_url.set(
             "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
         )
