@@ -124,7 +124,7 @@ class AutoPublisher(commands.Cog):
         manage_messages=True, view_channel=True
     )
     @app_commands.describe(toggle="Enable or disable AutoPublisher.")
-    async def toggle(self, ctx: commands.Context, toggle: bool) -> None:
+    async def toggle(self, ctx: commands.Context):
         """Toggle AutoPublisher enable or disable.
 
         - It's disabled by default.
@@ -148,10 +148,10 @@ class AutoPublisher(commands.Cog):
                 f"Your server doesn't have News Channel feature. Please enable it first.",
                 view=view,
             )
-        await self.config.guild(ctx.guild).toggle.set(toggle)
-        await ctx.send(
-            f"AutoPublisher has been {'enabled' if toggle else 'disabled'} for {ctx.guild.name}."
+        await self.config.guild(ctx.guild).toggle.set(
+            not await self.config.guild(ctx.guild).toggle()
         )
+        await ctx.send(f"AutoPublisher has been {'enabled' if await self.config.guild(ctx.guild).toggle() else 'disabled'}.")
 
     @commands.bot_has_permissions(embed_links=True)
     @app_commands.describe(
