@@ -31,6 +31,7 @@ from random import randint
 from redbot.core import commands
 from redbot.core.data_manager import bundled_data_path
 
+
 class Generation(commands.Converter):
     async def convert(self, ctx: commands.Context, argument: str) -> int:
         allowed_gens = [f"gen{x}" for x in range(1, 10)]
