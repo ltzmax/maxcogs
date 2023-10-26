@@ -27,12 +27,12 @@ from logging import LoggerAdapter
 from typing import Any, Final
 
 import discord
+from typing import Literal
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.views import ConfirmView
-from redbot.core.errors import CogLoadError
 
 log: RedTraceLogger = getLogger("red.maxcogs.imageonly")
 
@@ -42,7 +42,7 @@ URL_REGEX = re.compile(r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|png|svg|webp|we
 class ImageOnly(commands.Cog):
     """Only allow images in a channel."""
 
-    __version__: Final[str] = "1.5.0"
+    __version__: Final[str] = "1.5.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/imageonly"
 
@@ -239,17 +239,42 @@ class ImageOnly(commands.Cog):
     async def channel(
         self,
         ctx: commands.Context,
+        add_or_remove: Literal["add", "remove"],
         channels: commands.Greedy[discord.TextChannel] = None,
     ):
         """Set the channels to allow only images in."""
-        if not channels:
-            await self.config.guild(ctx.guild).channels.set(None)
-            await ctx.send("Channels reset.")
-        else:
+        if channels is None:
+            return await ctx.send("You need to specify a channel.")
+        if add_or_remove == "add":
             channels = [channel.id for channel in channels]
-            await self.config.guild(ctx.guild).channels.set(channels)
+            current_channels = await self.config.guild(ctx.guild).channels()
+            if current_channels is None:
+                current_channels = []
+            for channel in channels:
+                if channel in current_channels:
+                    return await ctx.send(
+                        "Channel is already in the list."
+                    )
+            current_channels.extend(channels)
+            await self.config.guild(ctx.guild).channels.set(current_channels)
             await ctx.send(
-                "Channels set to {channels}.".format(
+                "Added {channels} to the list.".format(
+                    channels=humanize_list([f"<#{channel}>" for channel in channels])
+                )
+            )
+        elif add_or_remove == "remove":
+            channels = [channel.id for channel in channels]
+            current_channels = await self.config.guild(ctx.guild).channels()
+            for channel in channels:
+                if channel in current_channels:
+                    current_channels.remove(channel)
+                else:
+                    return await ctx.send(
+                        "Channel is not in the list."
+                    )    
+            await self.config.guild(ctx.guild).channels.set(current_channels)
+            await ctx.send(
+                "Removed {channels} from the list.".format(
                     channels=humanize_list([f"<#{channel}>" for channel in channels])
                 )
             )
