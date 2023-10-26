@@ -283,12 +283,10 @@ class NoSpoiler(commands.Cog):
             return await ctx.send(
                 "I don't have manage_messages permission to let you toggle the spoiler filter."
             )
-        if await self.config.guild(ctx.guild).enabled():
-            await self.config.guild(ctx.guild).enabled.set(False)
-            await ctx.send("Spoiler filter is now disabled.")
-        else:
-            await self.config.guild(ctx.guild).enabled.set(True)
-            await ctx.send("Spoiler filter is now enabled.")
+        await self.config.guild(ctx.guild).enabled.set(
+            not await self.config.guild(ctx.guild).enabled()
+        )
+        await ctx.send(f"Nospoiler is now {'enabled' if await self.config.guild(ctx.guild).enabled() else 'disabled'}.")
 
     @nospoiler.command()
     @app_commands.describe(amount="The timeout must be between 5 and 120 seconds.")
