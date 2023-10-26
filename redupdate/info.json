@@ -16,7 +16,6 @@
     "permissions": [
         "embed_links"
     ],
-    "required_cogs": ["Shell"],
     "requirements": [],
     "min_python_version": [
         3,
