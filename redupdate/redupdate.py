@@ -95,7 +95,7 @@ class RedUpdate(commands.Cog):
         return
 
     @commands.is_owner()
-    @commands.group(aliases=["redset"], hidden=True)
+    @commands.group(aliases=["redset"])
     async def redupdateset(self, ctx: commands.Context):
         """Setting commands for redupdate cog."""
 
