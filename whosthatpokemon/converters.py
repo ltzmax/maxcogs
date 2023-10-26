@@ -31,16 +31,12 @@ from random import randint
 from redbot.core import commands
 from redbot.core.data_manager import bundled_data_path
 
-# This is for my whosthatpokemon cog.
-# https://github.com/ltzmax/maxcogs/tree/master/whosthatpokemon
-
-
 class Generation(commands.Converter):
     async def convert(self, ctx: commands.Context, argument: str) -> int:
-        allowed_gens = [f"gen{x}" for x in range(1, 9)]
+        allowed_gens = [f"gen{x}" for x in range(1, 10)]
         if argument.lower() not in allowed_gens:
             ctx.command.reset_cooldown(ctx)
-            raise commands.BadArgument("Only `gen1` to `gen8` values are allowed.")
+            raise commands.BadArgument("Only `gen1` to `gen9` values are allowed.")
 
         if argument.lower() == "gen1":
             return randint(1, 151)
@@ -57,7 +53,9 @@ class Generation(commands.Converter):
         elif argument.lower() == "gen7":
             return randint(722, 809)
         elif argument.lower() == "gen8":
-            return randint(810, 898)
+            return randint(810, 905)
+        elif argument.lower() == "gen9":
+            return randint(906, 1010)
 
 
 async def get_data(self, url: str) -> Dict[str, Any]:

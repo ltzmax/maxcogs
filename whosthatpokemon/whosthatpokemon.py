@@ -53,7 +53,7 @@ class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.4.0"
+    __version__: Final[str] = "1.4.1"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
     def __init__(self, bot: Red):
@@ -109,7 +109,7 @@ class WhosThatPokemon(commands.Cog):
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(
-        generation=("Optionally choose generation from gen1 to gen8.")
+        generation=("Optionally choose generation from gen1 to gen9.")
     )
     @app_commands.choices(
         generation=[
@@ -121,6 +121,7 @@ class WhosThatPokemon(commands.Cog):
             app_commands.Choice(name="Generation 6", value="gen6"),
             app_commands.Choice(name="Generation 7", value="gen7"),
             app_commands.Choice(name="Generation 8", value="gen8"),
+            app_commands.Choice(name="Generation 9", value="gen9"),
         ]
     )
     @commands.cooldown(1, 30, commands.BucketType.user)
