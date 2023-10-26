@@ -267,7 +267,9 @@ class EmojiSpam(commands.Cog):
         await self.config.guild(ctx.guild).enabled.set(
             not await self.config.guild(ctx.guild).enabled()
         )
-        await ctx.send(f"Emoji spam filter is now {'enabled' if await self.config.guild(ctx.guild).enabled() else 'disabled'}!")
+        await ctx.send(
+            f"Emoji spam filter is now {'enabled' if await self.config.guild(ctx.guild).enabled() else 'disabled'}!"
+        )
 
     @emojispam.command()
     async def embed(self, ctx: commands.Context, toggle: bool = None):
