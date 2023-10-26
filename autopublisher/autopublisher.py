@@ -120,9 +120,7 @@ class AutoPublisher(commands.Cog):
         """Manage AutoPublisher setting."""
 
     @autopublisher.command()
-    @commands.bot_has_permissions(
-        manage_messages=True, view_channel=True
-    )
+    @commands.bot_has_permissions(manage_messages=True, view_channel=True)
     @app_commands.describe(toggle="Enable or disable AutoPublisher.")
     async def toggle(self, ctx: commands.Context):
         """Toggle AutoPublisher enable or disable.
@@ -151,7 +149,9 @@ class AutoPublisher(commands.Cog):
         await self.config.guild(ctx.guild).toggle.set(
             not await self.config.guild(ctx.guild).toggle()
         )
-        await ctx.send(f"AutoPublisher has been {'enabled' if await self.config.guild(ctx.guild).toggle() else 'disabled'}.")
+        await ctx.send(
+            f"AutoPublisher has been {'enabled' if await self.config.guild(ctx.guild).toggle() else 'disabled'}."
+        )
 
     @commands.bot_has_permissions(embed_links=True)
     @app_commands.describe(
