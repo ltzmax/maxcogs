@@ -120,9 +120,7 @@ class AutoPublisher(commands.Cog):
         """Manage AutoPublisher setting."""
 
     @autopublisher.command()
-    @commands.bot_has_permissions(
-        manage_messages=True, view_channel=True
-    )
+    @commands.bot_has_permissions(manage_messages=True, view_channel=True)
     @app_commands.describe(toggle="Enable or disable AutoPublisher.")
     async def toggle(self, ctx: commands.Context):
         """Toggle AutoPublisher enable or disable.
