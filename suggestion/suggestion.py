@@ -211,6 +211,20 @@ class Suggestion(commands.Cog):
     @suggestion.command()
     async def reset(self, ctx):
         """Reset the suggestion settings."""
+        data = await self.config.guild(ctx.guild).all()
+        channel = data["channel"]
+        toggle = data["toggle"]
+        suggest_vote = data["suggest_vote"]
+        upvote = data["suggest_default_upvote"]
+        downvote = data["suggest_default_downvote"]
+        if (
+            channel is None
+            and toggle is False
+            and suggest_vote is False
+            and upvote == "👍"
+            and downvote == "👎"
+        ):
+            return await ctx.send("Suggestion settings are already reset, i cannot reset them again.")
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             "Are you sure you want to reset the suggestion settings?", view=view
