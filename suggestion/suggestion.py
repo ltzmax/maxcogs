@@ -164,9 +164,10 @@ class Suggestion(commands.Cog):
     @suggestion.command()
     async def channel(self, ctx, channel: discord.TextChannel):
         """Set or reset the suggestion channel."""
-        if not channel.permissions_for(ctx.guild.me).send_messages or not channel.permissions_for(
-            ctx.guild.me
-        ).embed_links:
+        if (
+            not channel.permissions_for(ctx.guild.me).send_messages
+            or not channel.permissions_for(ctx.guild.me).embed_links
+        ):
             return await ctx.send(
                 "I don't have permissions to send messages or embed links in {channel}".format(
                     channel=channel.mention
@@ -218,10 +219,7 @@ class Suggestion(commands.Cog):
         data = await self.config.guild(ctx.guild).all()
         suggest_default_upvote = data["suggest_default_upvote"]
         suggest_default_downvote = data["suggest_default_downvote"]
-        if (
-            suggest_default_upvote == "👍"
-            and suggest_default_downvote == "👎"
-        ):
+        if suggest_default_upvote == "👍" and suggest_default_downvote == "👎":
             return await ctx.send("Default upvote/downvote emojis are already set.")
         await self.config.guild(ctx.guild).suggest_default_upvote.set("👍")
         await self.config.guild(ctx.guild).suggest_default_downvote.set("👎")
