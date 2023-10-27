@@ -21,14 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import discord
 import logging
-
 from typing import Final, Optional
+
+import discord
+from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.views import ConfirmView
-from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.views import ConfirmView
+
 from .converter import EmojiConverter
 
 log = logging.getLogger("red.maxcogs.suggestion")
