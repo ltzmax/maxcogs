@@ -120,17 +120,12 @@ class Suggestion(commands.Cog):
             ),
         )
         if data["suggest_vote"]:
-            if ctx.guild.me.guild_permissions.add_reactions:
-                await msg.add_reaction(
-                    await self.config.guild(ctx.guild).suggest_default_upvote()
-                )
-                await msg.add_reaction(
-                    await self.config.guild(ctx.guild).suggest_default_downvote()
-                )
-            else:
+            if not channel.permissions_for(ctx.guild.me).add_reactions:
                 await data["suggest_vote"].set(False)
                 return
                 log.info("I don't have permissions to add reactions in that channel")
+            await msg.add_reaction(data["suggest_default_upvote"])
+            await msg.add_reaction(data["suggest_default_downvote"])
         await ctx.reply(
             "Suggestion sent!",
             allowed_mentions=discord.AllowedMentions(replied_user=False),
