@@ -26,6 +26,7 @@ body:
         - redupdate
         - tcgcard
         - RolePlayCog
+        - Suggestion
         - whosthatpokemon
     validations:
       required: true
