@@ -24,38 +24,20 @@ SOFTWARE.
 import discord
 import logging
 
-from typing import Union, Final
+from typing import Union, Final, Optional
 from redbot.core.bot import Red
 from redbot.core.utils.views import ConfirmView
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import box
+from .converter import EmojiConverter
 
 log = logging.getLogger("red.maxcogs.suggestion")
-
-
-# from phen's roleutils
-# https://github.com/phenom4n4n/phen-cogs/blob/5b12bd42831bded0e52a67a4eef19616f10bbe25/roleutils/converters.py#L112-L123
-class RealEmojiConverter(commands.EmojiConverter):
-    async def convert(
-        self, ctx: commands.Context, argument: str
-    ) -> Union[discord.Emoji, str]:
-        try:
-            emoji = await super().convert(ctx, argument)
-        except commands.BadArgument:
-            try:
-                await ctx.message.add_reaction(argument)
-            except discord.HTTPException:
-                raise commands.EmojiNotFound(argument)
-            else:
-                emoji = argument
-        return emoji
-
 
 class Suggestion(commands.Cog):
     """Suggest something to the server or something else?"""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.0.2"
+    __version__: Final[str] = "1.0.3"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/suggestion"
 
     def __init__(self, bot: Red):
@@ -198,32 +180,24 @@ class Suggestion(commands.Cog):
         """Set a new default upvote/downvote emoji."""
 
     @emoji.command()
-    async def upvote(self, ctx, emoji: RealEmojiConverter):
-        """Set the default upvote emoji."""
+    async def upvote(self, ctx, emoji: Optional[EmojiConverter]):
+        """Set a new default upvote emoji."""
+        data = await self.config.guild(ctx.guild).all()
         if emoji is None:
-            return await ctx.send("You need to specify an emoji")
+            await self.config.guild(ctx.guild).suggest_default_upvote.set("👍")
+            return await ctx.send("Default upvote emoji reset")
         await self.config.guild(ctx.guild).suggest_default_upvote.set(str(emoji))
         await ctx.send(f"Default upvote emoji set to {emoji}")
 
     @emoji.command()
-    async def downvote(self, ctx, emoji: RealEmojiConverter):
-        """Set the default downvote emoji."""
+    async def downvote(self, ctx, emoji: Optional[EmojiConverter]):
+        """Set a new default downvote emoji."""
+        data = await self.config.guild(ctx.guild).all()
         if emoji is None:
-            return await ctx.send("You need to specify an emoji")
+            await self.config.guild(ctx.guild).suggest_default_downvote.set("👎")
+            return await ctx.send("Default downvote emoji reset")
         await self.config.guild(ctx.guild).suggest_default_downvote.set(str(emoji))
         await ctx.send(f"Default downvote emoji set to {emoji}")
-
-    @emoji.command()
-    async def reset(self, ctx):
-        """Reset back to default upvote/downvote emojis."""
-        data = await self.config.guild(ctx.guild).all()
-        suggest_default_upvote = data["suggest_default_upvote"]
-        suggest_default_downvote = data["suggest_default_downvote"]
-        if suggest_default_upvote == "👍" and suggest_default_downvote == "👎":
-            return await ctx.send("Default upvote/downvote emojis are already set.")
-        await self.config.guild(ctx.guild).suggest_default_upvote.set("👍")
-        await self.config.guild(ctx.guild).suggest_default_downvote.set("👎")
-        await ctx.send("Default upvote/downvote emojis reset")
 
     @suggestion.command()
     async def reset(self, ctx):
