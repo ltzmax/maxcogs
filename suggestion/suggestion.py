@@ -24,7 +24,7 @@ SOFTWARE.
 import discord
 import logging
 
-from typing import Optional, Union, Final
+from typing import Union, Final
 from redbot.core.bot import Red
 from redbot.core.utils.views import ConfirmView
 from redbot.core import commands, Config
