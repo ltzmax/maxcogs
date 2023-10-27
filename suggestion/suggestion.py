@@ -109,7 +109,7 @@ class Suggestion(commands.Cog):
         next_id = data["next_suggestion_id"]
         await self.config.guild(ctx.guild).next_suggestion_id.set(next_id + 1)
         embed = discord.Embed(
-            title="Suggestion",
+            title="New Suggestion",
             description=message,
             color=await ctx.embed_color(),
         )
