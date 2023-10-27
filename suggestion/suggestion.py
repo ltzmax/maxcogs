@@ -95,7 +95,11 @@ class Suggestion(commands.Cog):
         ):
             await self.config.guild(ctx.guild).channel.set(None)
             return
-            log.info("I don't have permissions to send messages or embed links in {channel}".format(channel=channel))
+            log.info(
+                "I don't have permissions to send messages or embed links in {channel}".format(
+                    channel=channel
+                )
+            )
         if len(message) > 2024 or len(message) < 3:
             return await ctx.send(
                 "Your suggestion must be between 3 and 2024 characters long"
@@ -123,7 +127,11 @@ class Suggestion(commands.Cog):
             if not channel.permissions_for(ctx.guild.me).add_reactions:
                 await data["suggest_vote"].set(False)
                 return
-                log.info("I don't have permissions to add reactions in {channel}".format(channel=channel))
+                log.info(
+                    "I don't have permissions to add reactions in {channel}".format(
+                        channel=channel
+                    )
+                )
             await msg.add_reaction(data["suggest_default_upvote"])
             await msg.add_reaction(data["suggest_default_downvote"])
         await ctx.reply(
