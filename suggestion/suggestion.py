@@ -232,7 +232,9 @@ class Suggestion(commands.Cog):
             and upvote == "👍"
             and downvote == "👎"
         ):
-            return await ctx.send("Suggestion settings are already reset, i cannot reset them again.")
+            return await ctx.send(
+                "Suggestion settings are already reset, i cannot reset them again."
+            )
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             "Are you sure you want to reset the suggestion settings?", view=view
