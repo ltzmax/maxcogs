@@ -252,9 +252,7 @@ class ImageOnly(commands.Cog):
                 current_channels = []
             for channel in channels:
                 if channel in current_channels:
-                    return await ctx.send(
-                        "Channel is already in the list."
-                    )
+                    return await ctx.send("Channel is already in the list.")
             current_channels.extend(channels)
             await self.config.guild(ctx.guild).channels.set(current_channels)
             await ctx.send(
@@ -269,9 +267,7 @@ class ImageOnly(commands.Cog):
                 if channel in current_channels:
                     current_channels.remove(channel)
                 else:
-                    return await ctx.send(
-                        "Channel is not in the list."
-                    )    
+                    return await ctx.send("Channel is not in the list.")
             await self.config.guild(ctx.guild).channels.set(current_channels)
             await ctx.send(
                 "Removed {channels} from the list.".format(
