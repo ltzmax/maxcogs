@@ -123,7 +123,7 @@ class Suggestion(commands.Cog):
             if not channel.permissions_for(ctx.guild.me).add_reactions:
                 await data["suggest_vote"].set(False)
                 return
-                log.info("I don't have permissions to add reactions in that channel")
+                log.info("I don't have permissions to add reactions in {channel}".format(channel=channel))
             await msg.add_reaction(data["suggest_default_upvote"])
             await msg.add_reaction(data["suggest_default_downvote"])
         await ctx.reply(
