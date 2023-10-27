@@ -141,7 +141,7 @@ class WhosThatPokemon(commands.Cog):
         - `[p]whosthatpokemon gen1` - This will pick any pokemon from generation 1 for you to guess.
 
         **Arguments:**
-        - `[generation]` - Where you choose any generation from gen 1 to gen 8.
+        - `[generation]` - Where you choose any generation from gen 1 to gen 9.
         """
         await ctx.typing()
         poke_id = generation or randint(1, 898)
