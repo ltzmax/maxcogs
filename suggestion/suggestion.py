@@ -63,6 +63,7 @@ class Suggestion(commands.Cog):
             "suggest_vote": False,
             "suggest_default_upvote": "👍",
             "suggest_default_downvote": "👎",
+            "next_suggestion_id": 1,
         }
         self.config.register_guild(**default_guild)
 
@@ -97,6 +98,8 @@ class Suggestion(commands.Cog):
                 "Your suggestion must be between 3 and 2024 characters long"
             )
             log.info("Suggestion is too long or too short")
+        next_id = data["next_suggestion_id"]
+        await self.config.guild(ctx.guild).next_suggestion_id.set(next_id + 1)
         embed = discord.Embed(
             title="Suggestion",
             description=message,
@@ -107,6 +110,7 @@ class Suggestion(commands.Cog):
             icon_url=ctx.author.avatar.url,
         )
         msg = await channel.send(
+            f"Suggestion #{next_id}",
             embed=embed,
             allowed_mentions=discord.AllowedMentions(
                 everyone=False, roles=False, users=False
