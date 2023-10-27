@@ -28,6 +28,7 @@ from typing import Optional, Union, Final
 from redbot.core.bot import Red
 from redbot.core.utils.views import ConfirmView
 from redbot.core import commands, Config
+from redbot.core.utils.chat_formatting import box
 
 log = logging.getLogger("red.maxcogs.suggestion")
 
@@ -252,3 +253,27 @@ class Suggestion(commands.Cog):
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
+
+    @suggestion.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def version(self, ctx):
+        """Shows the version of the cog."""
+        version = self.__version__
+        author = self.__author__
+        embed = discord.Embed(
+            title="Cog Information",
+            description=box(
+                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
+                lang="yaml",
+            ),
+            color=await ctx.embed_color(),
+        )
+        view = discord.ui.View()
+        style = discord.ButtonStyle.gray
+        docs = discord.ui.Button(
+            style=style,
+            label="Cog Documentations",
+            url=self.__docs__,
+        )
+        view.add_item(item=docs)
+        await ctx.send(embed=embed, view=view)
