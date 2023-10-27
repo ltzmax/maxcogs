@@ -95,7 +95,7 @@ class Suggestion(commands.Cog):
         ):
             await self.config.guild(ctx.guild).channel.set(None)
             return
-            log.info("I don't have permissions to send messages or embed links there")
+            log.info("I don't have permissions to send messages or embed links in {channel}".format(channel=channel))
         if len(message) > 2024 or len(message) < 3:
             return await ctx.send(
                 "Your suggestion must be between 3 and 2024 characters long"
