@@ -3,7 +3,7 @@ from redbot.core.bot import Red
 from .suggestion import Suggestion
 
 __red_end_user_data_statement__ = (
-    "This cog does not persistently store data about users."
+    "This cog stores user names and userid upon sending a suggestion. It does not store any data."
 )
 
 
