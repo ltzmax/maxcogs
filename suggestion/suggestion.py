@@ -33,6 +33,7 @@ from .converter import EmojiConverter
 
 log = logging.getLogger("red.maxcogs.suggestion")
 
+
 class Suggestion(commands.Cog):
     """Suggest something to the server or something else?"""
 
