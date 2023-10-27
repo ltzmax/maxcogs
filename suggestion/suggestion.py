@@ -55,7 +55,7 @@ class Suggestion(commands.Cog):
     """Suggest something to the server or something else?"""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.0.1"
+    __version__: Final[str] = "1.0.2"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/suggestion"
 
     def __init__(self, bot: Red):
@@ -67,7 +67,7 @@ class Suggestion(commands.Cog):
             "suggest_vote": False,
             "suggest_default_upvote": "👍",
             "suggest_default_downvote": "👎",
-            "next_suggestion_id": 1,
+            "next_suggestion_id": 0,
         }
         self.config.register_guild(**default_guild)
 
@@ -162,21 +162,24 @@ class Suggestion(commands.Cog):
         )
 
     @suggestion.command()
-    async def channel(self, ctx, channel: Optional[discord.TextChannel] = None):
+    async def channel(self, ctx, channel: discord.TextChannel):
         """Set or reset the suggestion channel."""
-        if (
-            not ctx.bot_permissions.manage_messages
-            or not ctx.bot_permissions.embed_links
-        ):
+        if not channel.permissions_for(ctx.guild.me).send_messages or not channel.permissions_for(
+            ctx.guild.me
+        ).embed_links:
             return await ctx.send(
-                "I don't have permissions to send messages or embed links in this server or the channel you specified"
+                "I don't have permissions to send messages or embed links in {channel}".format(
+                    channel=channel.mention
+                )
             )
-        if channel is not None:
-            await self.config.guild(ctx.guild).channel.set(channel.id)
-            await ctx.send(f"Suggestion channel set to {channel.mention}")
-        else:
-            await self.config.guild(ctx.guild).channel.set(None)
-            await ctx.send("Suggestion channel reset")
+        await self.config.guild(ctx.guild).channel.set(channel.id)
+        await ctx.send(f"Suggestion channel set to {channel.mention}")
+
+    @suggestion.command()
+    async def resetchannel(self, ctx):
+        """Reset the suggestion channel."""
+        await self.config.guild(ctx.guild).channel.set(None)
+        await ctx.send("Suggestion channel reset")
 
     @suggestion.command()
     async def vote(self, ctx):
@@ -212,6 +215,14 @@ class Suggestion(commands.Cog):
     @emoji.command()
     async def reset(self, ctx):
         """Reset back to default upvote/downvote emojis."""
+        data = await self.config.guild(ctx.guild).all()
+        suggest_default_upvote = data["suggest_default_upvote"]
+        suggest_default_downvote = data["suggest_default_downvote"]
+        if (
+            suggest_default_upvote == "👍"
+            and suggest_default_downvote == "👎"
+        ):
+            return await ctx.send("Default upvote/downvote emojis are already set.")
         await self.config.guild(ctx.guild).suggest_default_upvote.set("👍")
         await self.config.guild(ctx.guild).suggest_default_downvote.set("👎")
         await ctx.send("Default upvote/downvote emojis reset")
@@ -220,21 +231,11 @@ class Suggestion(commands.Cog):
     async def reset(self, ctx):
         """Reset the suggestion settings."""
         data = await self.config.guild(ctx.guild).all()
-        channel = data["channel"]
         toggle = data["toggle"]
+        channel = data["channel"]
         suggest_vote = data["suggest_vote"]
-        upvote = data["suggest_default_upvote"]
-        downvote = data["suggest_default_downvote"]
-        if (
-            channel is None
-            and toggle is False
-            and suggest_vote is False
-            and upvote == "👍"
-            and downvote == "👎"
-        ):
-            return await ctx.send(
-                "Suggestion settings are already reset, i cannot reset them again."
-            )
+        if toggle is False and channel is None and suggest_vote is False:
+            return await ctx.send("Suggestion settings are already reset")
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             "Are you sure you want to reset the suggestion settings?", view=view
