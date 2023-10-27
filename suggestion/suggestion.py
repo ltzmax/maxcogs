@@ -35,7 +35,9 @@ log = logging.getLogger("red.maxcogs.suggestion")
 # from phen's roleutils
 # https://github.com/phenom4n4n/phen-cogs/blob/5b12bd42831bded0e52a67a4eef19616f10bbe25/roleutils/converters.py#L112-L123
 class RealEmojiConverter(commands.EmojiConverter):
-    async def convert(self, ctx: commands.Context, argument: str) -> Union[discord.Emoji, str]:
+    async def convert(
+        self, ctx: commands.Context, argument: str
+    ) -> Union[discord.Emoji, str]:
         try:
             emoji = await super().convert(ctx, argument)
         except commands.BadArgument:
@@ -46,6 +48,7 @@ class RealEmojiConverter(commands.EmojiConverter):
             else:
                 emoji = argument
         return emoji
+
 
 class Suggestion(commands.Cog):
     """Suggest something to the server or something else?"""
@@ -114,8 +117,12 @@ class Suggestion(commands.Cog):
         )
         if data["suggest_vote"]:
             if ctx.guild.me.guild_permissions.add_reactions:
-                await msg.add_reaction(await self.config.guild(ctx.guild).suggest_default_upvote())
-                await msg.add_reaction(await self.config.guild(ctx.guild).suggest_default_downvote())
+                await msg.add_reaction(
+                    await self.config.guild(ctx.guild).suggest_default_upvote()
+                )
+                await msg.add_reaction(
+                    await self.config.guild(ctx.guild).suggest_default_downvote()
+                )
             else:
                 await data["suggest_vote"].set(False)
                 return
@@ -222,8 +229,12 @@ class Suggestion(commands.Cog):
         toggle = await self.config.guild(ctx.guild).toggle()
         channel = self.bot.get_channel(await self.config.guild(ctx.guild).channel())
         suggest_vote = await self.config.guild(ctx.guild).suggest_vote()
-        suggest_default_upvote = await self.config.guild(ctx.guild).suggest_default_upvote()
-        suggest_default_downvote = await self.config.guild(ctx.guild).suggest_default_downvote()
+        suggest_default_upvote = await self.config.guild(
+            ctx.guild
+        ).suggest_default_upvote()
+        suggest_default_downvote = await self.config.guild(
+            ctx.guild
+        ).suggest_default_downvote()
         embed = discord.Embed(
             title="Suggestion settings",
             description="""
