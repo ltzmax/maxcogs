@@ -174,7 +174,7 @@ class Suggestion(commands.Cog):
             return await ctx.send("That suggestion has already been processed")
         new_embed = discord.Embed.from_dict(embed.to_dict())
         new_embed.color = discord.Color.green()
-        new_embed.set_footer(text="Suggestion Approved.")
+        new_embed.set_footer(text="Suggestion have been Approved.")
         try:
             await message.edit(embed=new_embed)
         except discord.Forbidden as e:
