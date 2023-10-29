@@ -101,9 +101,6 @@ class Suggestion(commands.Cog):
             name=f"{ctx.author} ({ctx.author.id})",
             icon_url=ctx.author.avatar.url,
         )
-        # need to set the footer to something so we can check if the suggestion is pending
-        # This allows us to approve/deny suggestions only from the cog and not from other embed messages.
-        embed.set_footer(text="Suggestion Pending.")
         msg = await channel.send(
             f"Suggestion #{next_id}",
             embed=embed,
@@ -133,117 +130,6 @@ class Suggestion(commands.Cog):
     async def suggest(self, ctx, *, message: str):
         """Send a suggestion to the suggestion channel."""
         await self.suggest_embed(ctx, message=message)
-
-    @commands.admin()
-    @commands.guild_only()
-    @commands.command(aliases=["accept"])
-    @commands.cooldown(1, 2, commands.BucketType.user)
-    @commands.max_concurrency(1, commands.BucketType.channel)
-    async def approve(self, ctx, message_id: int):
-        """Approve a suggestion.
-
-        This will also clear the reactions on the suggestion if the suggestion voting is enabled.
-
-        __Parameters__
-        - message_id - The ID of the suggestion message.
-
-        **Example:**
-        - `[p]approve 1167805683668889711`
-            - Approves the suggestion with the message ID of `1167805683668889711`.
-        """
-        if not message_id:
-            return await ctx.send("You need to provide a message ID")
-        data = await self.config.guild(ctx.guild).all()
-        toggle = data["toggle"]
-        channel = data["channel"]
-        if toggle is False:
-            return await ctx.send("Suggestion system is disabled")
-        if channel is None:
-            return await ctx.send("Suggestion channel is not set")
-        try:
-            message = await self.bot.get_channel(channel).fetch_message(message_id)
-        except discord.NotFound:
-            return await ctx.send("That message ID is invalid")
-        if message.author != self.bot.user:
-            return await ctx.send("That message is not a suggestion")
-        if not message.embeds:
-            return await ctx.send("That message is not a suggestion")
-        embed = message.embeds[0]
-        # Check if the suggestion is pending to be approved
-        if embed.footer.text != "Suggestion Pending.":
-            return await ctx.send("That suggestion has already been processed")
-        new_embed = discord.Embed.from_dict(embed.to_dict())
-        new_embed.color = discord.Color.green()
-        new_embed.set_footer(text="Suggestion have been Approved.")
-        try:
-            await message.edit(embed=new_embed)
-        except discord.Forbidden as e:
-            return await ctx.send(
-                "Unfortunatly I don't have permissions to edit that message due to it being too old.\nDiscord only allows bots to edit messages that are less than 2 weeks old."
-            )
-            log.info(e)
-        if data["suggest_vote"]:
-            try:
-                await message.clear_reactions()
-            except discord.Forbidden:
-                log.info("I don't have permissions to clear reactions")
-                pass
-        await ctx.send("Suggestion approved")
-
-    @commands.admin()
-    @commands.guild_only()
-    @commands.command(aliases=["deny"])
-    @commands.cooldown(1, 2, commands.BucketType.user)
-    @commands.max_concurrency(1, commands.BucketType.channel)
-    async def reject(self, ctx, message_id: int):
-        """Reject a suggestion.
-
-        This will also clear the reactions on the suggestion if the suggestion voting is enabled.
-
-        __Parameters__
-        - message_id - The ID of the suggestion message.
-
-        **Example:**
-        - `[p]reject 1167805683668889711`
-            - Rejects the suggestion with the message ID of `1167805683668889711`.
-        """
-        if not message_id:
-            return await ctx.send("You need to provide a message ID")
-        data = await self.config.guild(ctx.guild).all()
-        toggle = data["toggle"]
-        channel = data["channel"]
-        if toggle is False:
-            return await ctx.send("Suggestion system is disabled")
-        if channel is None:
-            return await ctx.send("Suggestion channel is not set")
-        try:
-            message = await self.bot.get_channel(channel).fetch_message(message_id)
-        except discord.NotFound:
-            return await ctx.send("That message ID is invalid")
-            log.info("Message ID is invalid")
-        if message.author != self.bot.user:
-            return await ctx.send("That message is not a suggestion")
-        embed = message.embeds[0]
-        # Check if the suggestion is pending to be denied
-        if embed.footer.text != "Suggestion Pending.":
-            return await ctx.send("That suggestion has already been processed")
-        new_embed = discord.Embed.from_dict(embed.to_dict())
-        new_embed.color = 0x8B0000
-        new_embed.set_footer(text="Suggestion have been Rejected.")
-        try:
-            await message.edit(embed=new_embed)
-        except discord.Forbidden as e:
-            return await ctx.send(
-                "Unfortunatly I don't have permissions to edit that message due to it being too old.\nDiscord only allows bots to edit messages that are less than 2 weeks old."
-            )
-            log.info(e)
-        if data["suggest_vote"]:
-            try:
-                await message.clear_reactions()
-            except discord.Forbidden:
-                log.info("I don't have permissions to clear reactions")
-                pass
-        await ctx.send("Suggestion denied")
 
     @commands.group()
     @commands.guild_only()
