@@ -24,10 +24,9 @@ SOFTWARE.
 import asyncio
 import re
 from logging import LoggerAdapter
-from typing import Any, Final
+from typing import Any, Final, Union, Literal
 
 import discord
-from typing import Literal
 from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -42,7 +41,7 @@ URL_REGEX = re.compile(r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|png|svg|webp|we
 class ImageOnly(commands.Cog):
     """Only allow images in a channel."""
 
-    __version__: Final[str] = "1.5.1"
+    __version__: Final[str] = "1.5.2"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/imageonly"
 
@@ -113,21 +112,17 @@ class ImageOnly(commands.Cog):
             return
         if message.author.bot:
             return
-        if not message.guild:
-            return
-        if not await self.config.guild(message.guild).enabled():
-            return
         channels = await self.config.guild(message.guild).channels()
         if channels is not None:
             if message.channel.id not in channels:
                 return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
+        if not await self.config.guild(message.guild).enabled():
+            return
         if await self.bot.is_automod_immune(message.author):
             return
-
         timeout = await self.config.guild(message.guild).timeout()
-
         if message.attachments or URL_REGEX.search(message.content):
             return
         if await self.config.guild(message.guild).message_toggle():
@@ -158,60 +153,6 @@ class ImageOnly(commands.Cog):
         await message.delete()
         await self.log_channel_embed(message.guild, message)
 
-    # Cause some people actually managed to post something without image / image link on edit.
-    # So we have to check edits as well.
-    @commands.Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        """Check if the message is an image."""
-        if not before.guild:
-            return
-        if before.author.bot:
-            return
-        if not before.guild:
-            return
-        if not await self.config.guild(before.guild).enabled():
-            return
-        channels = await self.config.guild(before.guild).channels()
-        if channels is not None:
-            if before.channel.id not in channels:
-                return
-        if await self.bot.cog_disabled_in_guild(self, before.guild):
-            return
-        if await self.bot.is_automod_immune(before.author):
-            return
-        if before.attachments or URL_REGEX.search(before.content):
-            return
-
-        timeout = await self.config.guild(before.guild).timeout()
-
-        if await self.config.guild(before.guild).message_toggle():
-            if not before.channel.permissions_for(before.guild.me).send_messages:
-                self.log.info(
-                    "I don't have permissions to send messages in the channel. Disabling message."
-                )
-                await self.config.guild(before.guild).message_toggle.set(False)
-            if await self.config.guild(before.guild).embed():
-                if not before.channel.permissions_for(before.guild.me).embed_links:
-                    self.log.info(
-                        "I don't have permissions to send embeds in the channel. Disabling embeds."
-                    )
-                    await self.config.guild(before.guild).embed.set(False)
-                embed = discord.Embed(
-                    title="Only images allowed.",
-                    description=await self.config.guild(before.guild).message(),
-                    color=await self.bot.get_embed_color(before.channel),
-                )
-                await before.channel.send(
-                    f"{before.author.mention}", embed=embed, delete_after=timeout
-                )
-            else:
-                await before.channel.send(
-                    f"{before.author.mention} {await self.config.guild(before.guild).message()}",
-                    delete_after=timeout,
-                )
-        await before.delete()
-        await self.log_channel_embed(before.guild, before)
-
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
@@ -240,7 +181,7 @@ class ImageOnly(commands.Cog):
         self,
         ctx: commands.Context,
         add_or_remove: Literal["add", "remove"],
-        channels: commands.Greedy[discord.TextChannel] = None,
+        channels: commands.Greedy[Union[discord.TextChannel]] = None,
     ):
         """Set the channels to allow only images in."""
         if channels is None:
