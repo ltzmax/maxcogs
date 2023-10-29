@@ -101,9 +101,6 @@ class Suggestion(commands.Cog):
             name=f"{ctx.author} ({ctx.author.id})",
             icon_url=ctx.author.avatar.url,
         )
-        # need to set the footer to something so we can check if the suggestion is pending
-        # This allows us to approve/deny suggestions only from the cog and not from other embed messages.
-        embed.set_footer(text="Suggestion Pending.")
         msg = await channel.send(
             f"Suggestion #{next_id}",
             embed=embed,
