@@ -39,7 +39,7 @@ class Suggestion(commands.Cog):
     """Suggest something to the server or something else?"""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.0.4"
+    __version__: Final[str] = "1.0.5"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/suggestion"
 
     def __init__(self, bot: Red):
@@ -51,7 +51,7 @@ class Suggestion(commands.Cog):
             "suggest_vote": False,
             "suggest_default_upvote": "👍",
             "suggest_default_downvote": "👎",
-            "next_suggestion_id": 0,
+            "suggestion_id": 0,
         }
         self.config.register_guild(**default_guild)
 
@@ -90,8 +90,8 @@ class Suggestion(commands.Cog):
                 "Your suggestion must be between 3 and 2024 characters long"
             )
             log.info("Suggestion is too long or too short")
-        next_id = data["next_suggestion_id"]
-        await self.config.guild(ctx.guild).next_suggestion_id.set(next_id + 1)
+        next_id = data["suggestion_id"] + 1
+        await self.config.guild(ctx.guild).suggestion_id.set(next_id)
         embed = discord.Embed(
             title="New Suggestion",
             description=message,
@@ -119,10 +119,14 @@ class Suggestion(commands.Cog):
                 )
             await msg.add_reaction(data["suggest_default_upvote"])
             await msg.add_reaction(data["suggest_default_downvote"])
-        await ctx.reply(
-            "Suggestion sent!",
-            allowed_mentions=discord.AllowedMentions(replied_user=False),
-        )
+        try:
+            await ctx.reply(
+                "Suggestion sent!",
+                allowed_mentions=discord.AllowedMentions(replied_user=False),
+            )
+        # handle when reply fails.
+        except discord.HTTPException:
+            await ctx.send("Suggestion sent!")
 
     @commands.command()
     @commands.guild_only()
