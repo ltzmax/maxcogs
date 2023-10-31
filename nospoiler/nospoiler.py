@@ -34,6 +34,7 @@ SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 
 log = logging.getLogger("red.maxcogs.nospoiler")
 
+
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 

@@ -127,7 +127,7 @@ class EmojiSpam(commands.Cog):
                 await self.config.guild(message.guild).enabled.set(False)
                 log.info(
                     f"I don't have the ``manage_messages`` permission to let you enable emojispam filter in {message.guild.name}. Disabling filter."
-                )               
+                )
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return

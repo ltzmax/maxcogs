@@ -108,9 +108,7 @@ class TCGCard(commands.Cog):
             async with self.session.get(base_url, headers=headers) as response:
                 if response.status != 200:
                     await ctx.send(f"https://http.cat/{response.status}")
-                    log.error(
-                        f"Failed to fetch data. Status code: {response.status}."
-                    )
+                    log.error(f"Failed to fetch data. Status code: {response.status}.")
                     return
                 output = orjson.loads(await response.read())
         except asyncio.TimeoutError:

@@ -34,6 +34,7 @@ from redbot.core.data_manager import bundled_data_path
 
 log = logging.getLogger("red.maxcogs.whosthatpokemon.converters")
 
+
 class Generation(commands.Converter):
     async def convert(self, ctx: commands.Context, argument: str) -> int:
         allowed_gens = [f"gen{x}" for x in range(1, 10)]
@@ -66,7 +67,9 @@ async def get_data(self, url: str) -> Dict[str, Any]:
         async with self.session.get(url) as response:
             if response.status != 200:
                 return {"http_code": response.status}
-                log.error(f"Failed to get data from {url} with status code {response.status}")
+                log.error(
+                    f"Failed to get data from {url} with status code {response.status}"
+                )
             return await response.json()
     except asyncio.TimeoutError:
         log.error(f"Failed to get data from {url} due to timeout")
