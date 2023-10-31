@@ -293,8 +293,6 @@ class WhosThatPokemon(commands.Cog):
         if view.result:
             await self.config.clear_all_users()
             await ctx.send("✅ WhosThatPokemon leaderboard has been reset.")
-            log.info(
-                f"{ctx.author} reset the whosthatpokemon leaderboard globally."
-            )
+            log.info(f"{ctx.author} reset the whosthatpokemon leaderboard globally.")
         else:
             await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")

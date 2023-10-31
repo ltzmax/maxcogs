@@ -33,6 +33,7 @@ from redbot.core.utils.views import ConfirmView
 
 log = logging.getLogger("red.maxcogs.autopublisher")
 
+
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
