@@ -24,7 +24,7 @@ SOFTWARE.
 from typing import Any, Final
 
 import discord
-import loggging
+import logging
 from redbot.core import commands, Config
 from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
