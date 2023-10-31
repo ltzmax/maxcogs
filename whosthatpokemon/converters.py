@@ -24,6 +24,7 @@ SOFTWARE.
 import discord
 
 import asyncio
+import logging
 from io import BytesIO
 from typing import Any, Dict, Optional, List
 from PIL import Image
@@ -31,6 +32,7 @@ from random import randint
 from redbot.core import commands
 from redbot.core.data_manager import bundled_data_path
 
+log = logging.getLogger("red.maxcogs.whosthatpokemon.converters")
 
 class Generation(commands.Converter):
     async def convert(self, ctx: commands.Context, argument: str) -> int:
@@ -63,13 +65,11 @@ async def get_data(self, url: str) -> Dict[str, Any]:
     try:
         async with self.session.get(url) as response:
             if response.status != 200:
-                self.log.error(
-                    f"Failed to get data from {url} with status code {response.status}"
-                )
                 return {"http_code": response.status}
+                log.error(f"Failed to get data from {url} with status code {response.status}")
             return await response.json()
     except asyncio.TimeoutError:
-        self.log.error(f"Request to {url} timed out.")
+        log.error(f"Failed to get data from {url} due to timeout")
         return {"http_code": 408}
 
 
@@ -83,6 +83,7 @@ async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]
                 return None
             data = await response.read()
     except asyncio.TimeoutError:
+        log.error(f"Failed to get data from {base_url} due to timeout")
         return None
     pbytes = BytesIO(data)
     poke_image = Image.open(pbytes)

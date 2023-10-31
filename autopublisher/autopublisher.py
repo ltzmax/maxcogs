@@ -22,18 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import asyncio
-from logging import LoggerAdapter
+import logging
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
-from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.views import ConfirmView
 
-log: RedTraceLogger = getLogger("red.maxcogs.autopublisher")
-
+log = logging.getLogger("red.maxcogs.autopublisher")
 
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
@@ -52,10 +50,6 @@ class AutoPublisher(commands.Cog):
             "ignored_channels": [],
         }
         self.config.register_guild(**default_guild)
-
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
-            log, {"version": self.__version__}
-        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -84,34 +78,30 @@ class AutoPublisher(commands.Cog):
             or not message.guild.me.guild_permissions.view_channel
         ):
             if await self.config.guild(message.guild).toggle():
-                self.log.info(
-                    "AutoPublisher has been disabled due to missing permissions in {guild}.".format(
-                        guild=message.guild.name
-                    )
-                )
                 await self.config.guild(message.guild).toggle.set(False)
+                log.info(
+                    f"AutoPublisher has been disabled in {message.guild} due to missing permissions."
+                )
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():
-                self.log.info(
-                    "AutoPublisher has been disabled due to missing News Channel feature in {guild}.".format(
-                        guild=message.guild.name
-                    )
-                )
                 await self.config.guild(message.guild).toggle.set(False)
+                log.info(
+                    f"AutoPublisher has been disabled in {message.guild} due to News Channel feature is not enabled."
+                )
             return
         if not message.channel.is_news():
             return
         if message.channel.is_news():
             try:
-                await asyncio.sleep(2)
+                await asyncio.sleep(0.5)
                 await asyncio.wait_for(message.publish(), timeout=60)
             except (
                 discord.HTTPException,
                 discord.Forbidden,
                 asyncio.TimeoutError,
             ) as e:
-                self.log.error(e)
+                log.error(e)
 
     @commands.group(aliases=["aph", "autopub"])
     @commands.guild_only()

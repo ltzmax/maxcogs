@@ -23,17 +23,16 @@ SOFTWARE.
 """
 import asyncio
 import re
-from logging import LoggerAdapter
+import logging
 from typing import Any, Final, Union, Literal
 
 import discord
-from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list
 from redbot.core.utils.views import ConfirmView
 
-log: RedTraceLogger = getLogger("red.maxcogs.imageonly")
+log = logging.getLogger("red.maxcogs.imageonly")
 
 URL_REGEX = re.compile(r"(http[s]?:\/\/[^\"\']*\.(?:png|jpg|jpeg|png|svg|webp|webm))")
 
@@ -59,10 +58,6 @@ class ImageOnly(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
-            log, {"version": self.__version__}
-        )
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
@@ -84,10 +79,10 @@ class ImageOnly(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            self.log.info(
-                "I don't have permissions to send messages or embeds in the log channel. Disabling log channel."
-            )
             await self.config.guild(guild).log_channel.set(None)
+            log.info(
+                f"I don't have permissions to send messages or embeds in {log_channel.mention}. Disabling log channel."
+            )
             return
         embed = discord.Embed(
             title="Message Deleted",
@@ -127,16 +122,16 @@ class ImageOnly(commands.Cog):
             return
         if await self.config.guild(message.guild).message_toggle():
             if not message.channel.permissions_for(message.guild.me).send_messages:
-                self.log.info(
-                    "I don't have permissions to send messages in the channel. Disabling message."
-                )
                 await self.config.guild(message.guild).message_toggle.set(False)
+                log.info(
+                    "I don't have permissions to send messages in that channel. Disabling message."
+                )
             if await self.config.guild(message.guild).embed():
                 if not message.channel.permissions_for(message.guild.me).embed_links:
-                    self.log.info(
-                        "I don't have permissions to send embeds in the channel. Disabling embeds."
-                    )
                     await self.config.guild(message.guild).embed.set(False)
+                    log.info(
+                        "I don't have permissions to send embeds in that channel. Disabling embed."
+                    )
                 embed = discord.Embed(
                     title="Only images allowed.",
                     description=await self.config.guild(message.guild).message(),
@@ -242,7 +237,6 @@ class ImageOnly(commands.Cog):
             await ctx.send("Message reset.")
         else:
             if len(message) > 2000 or len(message) < 1:
-                self.log.info("Message must be between 1 and 2000 characters.")
                 return await ctx.send("Message must be between 1 and 2000 characters.")
             await self.config.guild(ctx.guild).message.set(message)
             await ctx.send("Message set.")

@@ -21,17 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from logging import LoggerAdapter
 from typing import Any, Final
 
 import discord
-from red_commons.logging import RedTraceLogger, getLogger
+import loggging
 from redbot.core import commands, Config
 from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
 from .view import Buttons
 
-log: RedTraceLogger = getLogger("red.maxcogs.redupdate")
+log = logging.getLogger("red.maxcogs.redupdate")
 
 
 async def redupdate(self, ctx: commands.Context):
@@ -81,10 +80,6 @@ class RedUpdate(commands.Cog):
         }
         self.config.register_global(**default_global)
 
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
-            log, {"version": self.__version__}
-        )
-
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
@@ -111,8 +106,10 @@ class RedUpdate(commands.Cog):
             "git+https://github.com"
         ):
             return await ctx.send("This is not a valid url for your fork.")
+            log.info("You need to set correct url for your fork first.")
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
+            log.info("You need to set correct url for your fork first.")
         data = await self.config.redupdate_url()
         if data == url:
             return await ctx.send("This url is already set.")

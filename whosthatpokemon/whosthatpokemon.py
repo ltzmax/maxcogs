@@ -25,14 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 from datetime import datetime, timedelta, timezone
-from logging import LoggerAdapter
 from random import randint
 from typing import Any, Final, List
 
 import aiohttp
 import discord
+import logging
 from discord import File
-from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
@@ -44,7 +43,7 @@ from .converters import (
     Generation,
 )
 
-log: RedTraceLogger = getLogger("red.maxcogs.whosthatpokemon")
+log = logging.getLogger("red.maxcogs.whosthatpokemon")
 
 API_URL: Final[str] = "https://pokeapi.co/api/v2"
 
@@ -66,10 +65,6 @@ class WhosThatPokemon(commands.Cog):
             "total_correct_guesses": 0,
         }
         self.config.register_user(**default_user)
-
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
-            log, {"version": self.__version__}
-        )
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -159,10 +154,8 @@ class WhosThatPokemon(commands.Cog):
         )
         species_data = await get_data(self, f"{API_URL}/pokemon-species/{poke_id}")
         if species_data.get("http_code"):
-            self.log.error(
-                f"Failed to get data from PokeAPI with status code {species_data['http_code']}"
-            )
             return await ctx.send("Failed to get species data from PokeAPI.")
+            log.error(f"Failed to get species data from PokeAPI. {species_data}")
         names_data = species_data.get("names", [{}])
         eligible_names = [x["name"].lower() for x in names_data]
         english_name = [x["name"] for x in names_data if x["language"]["name"] == "en"][
@@ -195,12 +188,14 @@ class WhosThatPokemon(commands.Cog):
                 description=f"You took too long to answer.\nThe Pokemon was... **{english_name}**.",
                 color=0x8B0000,
             )
-            self.log.info(f"{ctx.author} ran out of time.")
             return await ctx.send(f"{ctx.author.mention}", embed=embed)
+            log.info(f"{ctx.author} ran out of time to guess the pokemon.")
         if await self.config.user(ctx.author).all():
-            self.log.info(f"{ctx.author} has guessed correctly. Added +1 to total.")
             await self.config.user(ctx.author).total_correct_guesses.set(
                 await self.config.user(ctx.author).total_correct_guesses() + 1
+            )
+            log.info(
+                f"{ctx.author} guessed the pokemon correctly and got a point added to their total correct guesses."
             )
         await ctx.send(file=revealed_img, embed=embed)
 
@@ -220,10 +215,10 @@ class WhosThatPokemon(commands.Cog):
         )
         sorted_users.reverse()
         if not sorted_users:
-            self.log.info("No one has played whosthatpokemon yet.")
             return await ctx.send(
                 "No one has played whosthatpokemon yet. Use `[p]whosthatpokemon` to start!"
             )
+            log.info("No one has played whosthatpokemon yet so nothing to show.")
         embed = discord.Embed(
             title="WhosThatPokemon Leaderboard",
             description="Top 10 users with most correct guesses.",
@@ -262,9 +257,11 @@ class WhosThatPokemon(commands.Cog):
             ctx.author
         ).total_correct_guesses()
         if not total_correct_guesses:
-            self.log.info(f"{ctx.author} has not played whosthatpokemon yet.")
             return await ctx.send(
                 f"You have not played whosthatpokemon yet. Use `{ctx.clean_prefix}whosthatpokemon` to start!"
+            )
+            log.info(
+                f"{ctx.author} tried to check their stats but they have not played whosthatpokemon yet."
             )
         human = humanize_number(total_correct_guesses)
         embed = discord.Embed(
@@ -296,5 +293,8 @@ class WhosThatPokemon(commands.Cog):
         if view.result:
             await self.config.clear_all_users()
             await ctx.send("✅ WhosThatPokemon leaderboard has been reset.")
+            log.info(
+                f"{ctx.author} reset the whosthatpokemon leaderboard globally."
+            )
         else:
             await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")

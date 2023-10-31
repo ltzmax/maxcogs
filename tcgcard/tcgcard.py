@@ -26,19 +26,18 @@ SOFTWARE.
 """
 import asyncio
 from datetime import datetime
-from logging import LoggerAdapter
 from typing import Any, Final, List
 
 import aiohttp
 import discord
 import orjson
-from red_commons.logging import RedTraceLogger, getLogger
+import logging
 from redbot.core import app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
 
-log: RedTraceLogger = getLogger("red.maxcogs.tcgcard")
+log = logging.getLogger("red.maxcogs.tcgcard")
 
 
 class TCGCard(commands.Cog):
@@ -51,10 +50,6 @@ class TCGCard(commands.Cog):
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
-
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
-            log, {"version": self.__version__}
-        )
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -112,17 +107,20 @@ class TCGCard(commands.Cog):
         try:
             async with self.session.get(base_url, headers=headers) as response:
                 if response.status != 200:
-                    self.log.error(f"HTTP error {response.status}")
                     await ctx.send(f"https://http.cat/{response.status}")
+                    log.error(
+                        f"Failed to fetch data. Status code: {response.status}."
+                    )
                     return
                 output = orjson.loads(await response.read())
         except asyncio.TimeoutError:
-            self.log.error("Operation timed out.")
             await ctx.send("Operation timed out.")
+            log.error("Operation timed out while fetching data.")
             return
 
         if not output["data"]:
             await ctx.send("There is no results for that search.")
+            log.info("There is no results for that search in the API.")
             return
 
         pages = []

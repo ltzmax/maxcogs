@@ -22,19 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import re
-from logging import LoggerAdapter
+import logging
 from typing import Any, Dict, Final, Optional, Pattern, Union
 
 import discord
-from red_commons.logging import RedTraceLogger, getLogger
 from redbot.core import Config, commands, app_commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 
-log: RedTraceLogger = getLogger("red.maxcogs.nospoiler")
-
+log = logging.getLogger("red.maxcogs.nospoiler")
 
 class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
@@ -57,10 +55,6 @@ class NoSpoiler(commands.Cog):
             "timeout": 10,
         }
         self.config.register_guild(**default_guild)
-
-        self.log: LoggerAdapter[RedTraceLogger] = LoggerAdapter(
-            log, {"version": self.__version__}
-        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -86,10 +80,10 @@ class NoSpoiler(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            self.log.info(
-                f"Spoiler filter is now disabled because I don't have send_messages or embed_links permission in {log_channel.mention}."
-            )
             await self.config.guild(guild).log_channel.set(None)
+            log.info(
+                f"Log channel is now disabled because I don't have send_messages or embed_links permission in {log_channel.mention}."
+            )
             return
         if message.content:
             embed = discord.Embed(
@@ -124,10 +118,10 @@ class NoSpoiler(commands.Cog):
             return
         if not message.guild.me.guild_permissions.manage_messages:
             if await self.config.guild(message.guild).enabled():
-                self.log.info(
+                await self.config.guild(message.guild).enabled.set(False)
+                log.info(
                     f"Spoiler filter is now disabled because I don't have manage_messages permission."
                 )
-                await self.config.guild(message.guild).enabled.set(False)
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
@@ -144,10 +138,10 @@ class NoSpoiler(commands.Cog):
                     if not message.channel.permissions_for(
                         message.guild.me
                     ).embed_links:
-                        self.log.info(
+                        await self.config.guild(message.guild).spoiler_warn.set(False)
+                        log.info(
                             f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
                         )
-                        await self.config.guild(message.guild).spoiler_warn.set(False)
                         return
                     embed = discord.Embed(
                         title="Warning",
@@ -177,11 +171,11 @@ class NoSpoiler(commands.Cog):
                             if not message.channel.permissions_for(
                                 message.guild.me
                             ).embed_links:
-                                self.log.info(
-                                    f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
-                                )
                                 await self.config.guild(message.guild).spoiler_warn.set(
                                     False
+                                )
+                                log.info(
+                                    f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
                                 )
                                 return
                             embed = discord.Embed(
@@ -216,10 +210,10 @@ class NoSpoiler(commands.Cog):
             return
         if not guild.me.guild_permissions.manage_messages:
             if await self.config.guild(guild).enabled():
-                self.log.info(
+                await self.config.guild(guild).enabled.set(False)
+                log.info(
                     f"Spoiler filter is now disabled because I don't have manage_messages permission."
                 )
-                await self.config.guild(guild).enabled.set(False)
             return
         if await self.bot.cog_disabled_in_guild(self, guild):
             return
@@ -241,10 +235,10 @@ class NoSpoiler(commands.Cog):
             if await self.config.guild(guild).spoiler_warn():
                 if await self.config.guild(guild).spoiler_warn_message_embed():
                     if not channel.permissions_for(guild.me).embed_links:
-                        self.log.info(
+                        await self.config.guild(guild).spoiler_warn.set(False)
+                        log.info(
                             f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {channel.mention}."
                         )
-                        await self.config.guild(guild).spoiler_warn.set(False)
                         return
                     embed = discord.Embed(
                         title="Warning",
@@ -277,9 +271,6 @@ class NoSpoiler(commands.Cog):
         Spoiler filter is disabled by default.
         """
         if not ctx.bot_permissions.manage_messages:
-            self.log.info(
-                "I cannot toggle the spoiler filter because I don't have manage_messages permission."
-            )
             return await ctx.send(
                 "I don't have manage_messages permission to let you toggle the spoiler filter."
             )
@@ -315,9 +306,6 @@ class NoSpoiler(commands.Cog):
         If the channel is not set, the bot will not log the deleted spoiler messages.
         """
         if not ctx.bot_permissions.send_messages or not ctx.bot_permissions.embed_links:
-            log.info(
-                f"I cannot set the log channel because I don't have send_messages or embed_links permission in {ctx.channel.mention}."
-            )
             msg = (
                 f"{self.bot.user.name} does not have permission to `send_messages` or `embed_links` to send log messages.\n"
                 "It need this permission before you can set the log channel. "
@@ -364,9 +352,6 @@ class NoSpoiler(commands.Cog):
     async def embed(self, ctx: commands.Context) -> None:
         """Toggle the spoiler warning message embed."""
         if not ctx.bot_permissions.embed_links:
-            self.log.info(
-                f"I cannot toggle the spoiler warning message embed because I don't have embed_links permission in {ctx.channel.mention}."
-            )
             return await ctx.send(
                 "I don't have embed_links permission to let you toggle the spoiler warning message embed."
             )
