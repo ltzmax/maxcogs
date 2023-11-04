@@ -32,6 +32,7 @@ from io import BytesIO
 import aiohttp
 import discord
 import logging
+import asyncio
 from PIL import Image
 from discord import File
 from perftracker import perf, get_stats
