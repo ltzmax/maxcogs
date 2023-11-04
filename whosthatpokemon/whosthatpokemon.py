@@ -26,19 +26,22 @@ SOFTWARE.
 """
 from datetime import datetime, timedelta, timezone
 from random import randint
-from typing import Any, Final, List
+from typing import Any, Final, List, Optional
+from io import BytesIO
 
 import aiohttp
 import discord
 import logging
+from PIL import Image
 from discord import File
+from perftracker import perf, get_stats
+from redbot.core.data_manager import bundled_data_path
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .converters import (
     WhosThatPokemonView,
-    generate_image,
     get_data,
     Generation,
 )
@@ -52,7 +55,7 @@ class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.4.1"
+    __version__: Final[str] = "1.4.2"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
     def __init__(self, bot: Red):
@@ -77,6 +80,46 @@ class WhosThatPokemon(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
+
+    @perf(max_entries=1000)
+    async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
+        base_image = Image.open(bundled_data_path(self) / "template.webp").convert("RGBA")
+        bg_width, bg_height = base_image.size
+        base_url = f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
+        try:
+            async with self.session.get(base_url) as response:
+                if response.status != 200:
+                    return None
+                data = await response.read()
+        except asyncio.TimeoutError:
+            log.error(f"Failed to get data from {base_url} due to timeout")
+            return None
+        pbytes = BytesIO(data)
+        poke_image = Image.open(pbytes)
+        poke_width, poke_height = poke_image.size
+        poke_image_resized = poke_image.resize(
+            (int(poke_width * 1.6), int(poke_height * 1.6))
+        )
+
+        if hide:
+            p_load = poke_image_resized.load()  # type: ignore
+            for y in range(poke_image_resized.size[1]):
+                for x in range(poke_image_resized.size[0]):
+                    if p_load[x, y] == (0, 0, 0, 0):  # type: ignore
+                        continue
+                    p_load[x, y] = (1, 1, 1)  # type: ignore
+
+        paste_w = int((bg_width - poke_width) / 10)
+        paste_h = int((bg_height - poke_height) / 4)
+
+        base_image.paste(poke_image_resized, (paste_w, paste_h), poke_image_resized)
+        temp = BytesIO()
+        base_image.save(temp, "png")
+        temp.seek(0)
+        pbytes.close()
+        base_image.close()
+        poke_image.close()
+        return temp
 
     @commands.command(name="wtpversion", hidden=True)
     @commands.bot_has_permissions(embed_links=True)
@@ -142,7 +185,7 @@ class WhosThatPokemon(commands.Cog):
         poke_id = generation or randint(1, 898)
         if_guessed_right = False
 
-        temp = await generate_image(self, f"{poke_id:>03}", hide=True)
+        temp = await self.generate_image(f"{poke_id:>03}", hide=True)
         if temp is None:
             self.log.error(f"Failed to generate image.")
             return await ctx.send("Failed to generate whosthatpokemon card image.")
@@ -162,7 +205,7 @@ class WhosThatPokemon(commands.Cog):
             0
         ]
 
-        revealed = await generate_image(self, f"{poke_id:>03}", hide=False)
+        revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
         revealed_img = File(revealed, "whosthatpokemon.png")
 
         view = WhosThatPokemonView(eligible_names)
@@ -264,12 +307,10 @@ class WhosThatPokemon(commands.Cog):
                 f"{ctx.author} tried to check their stats but they have not played whosthatpokemon yet."
             )
         human = humanize_number(total_correct_guesses)
-        embed = discord.Embed(
-            title=f"{ctx.author.display_name}'s WhosThatPokemon Stats",
-            description=f"Total Correct Guesses: **{human}**",
-            color=await ctx.embed_color(),
+        await ctx.send(
+            f"{ctx.author.mention} you have **{human}** correct guesses in whosthatpokemon.",
+            allowed_mentions=discord.AllowedMentions(users=False)
         )
-        await ctx.send(embed=embed)
 
     @commands.is_owner()
     @commands.command(name="wtpreset")
@@ -296,3 +337,16 @@ class WhosThatPokemon(commands.Cog):
             log.info(f"{ctx.author} reset the whosthatpokemon leaderboard globally.")
         else:
             await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")
+
+    @commands.is_owner()
+    @commands.command(name="wtpperformance", hidden=True)
+    async def whosthatpokemon_performance(self, ctx):
+        """Shows performance."""
+        stats = get_stats()
+        record = stats.get(self.generate_image)
+        if record:
+            avg_time = stats.avg_time(self.generate_image)
+            cpm = stats.cpm(self.generate_image)
+            await ctx.send(f"Average Time: {avg_time:.3f}s | Calls per minute: {cpm:.3f}")
+        else:
+            await ctx.send("No performance found yet.")

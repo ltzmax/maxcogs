@@ -39,7 +39,7 @@ To install any cog you want:
 | RedUpdate | Update your bot to latest dev changes.| 1.4.2 | ltzmax, kuro | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.2.1| ltzmax | ✅ |
 | Suggestion | Simple suggestion cog that allows users to send a suggestion. | 1.0.5 | ltzmax | ✅ |
-| WhosThatPokemon | Guess whos that pokemon? | 1.4.1 | ltzmax, o-wo | ✅ |
+| WhosThatPokemon | Guess whos that pokemon? | 1.4.2 | ltzmax, o-wo | ✅ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.

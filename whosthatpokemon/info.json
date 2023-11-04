@@ -11,7 +11,8 @@
     ],
     "required_cogs": {},
     "requirements": [
-        "pillow"
+        "pillow",
+        "perftracker"
     ],
     "tags": [
         "pokemon",
