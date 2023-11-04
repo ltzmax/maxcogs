@@ -83,9 +83,13 @@ class WhosThatPokemon(commands.Cog):
 
     @perf(max_entries=1000)
     async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
-        base_image = Image.open(bundled_data_path(self) / "template.webp").convert("RGBA")
+        base_image = Image.open(bundled_data_path(self) / "template.webp").convert(
+            "RGBA"
+        )
         bg_width, bg_height = base_image.size
-        base_url = f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
+        base_url = (
+            f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
+        )
         try:
             async with self.session.get(base_url) as response:
                 if response.status != 200:
@@ -309,7 +313,7 @@ class WhosThatPokemon(commands.Cog):
         human = humanize_number(total_correct_guesses)
         await ctx.send(
             f"{ctx.author.mention} you have **{human}** correct guesses in whosthatpokemon.",
-            allowed_mentions=discord.AllowedMentions(users=False)
+            allowed_mentions=discord.AllowedMentions(users=False),
         )
 
     @commands.is_owner()
@@ -347,6 +351,8 @@ class WhosThatPokemon(commands.Cog):
         if record:
             avg_time = stats.avg_time(self.generate_image)
             cpm = stats.cpm(self.generate_image)
-            await ctx.send(f"Average Time: {avg_time:.3f}s | Calls per minute: {cpm:.3f}")
+            await ctx.send(
+                f"Average Time: {avg_time:.3f}s | Calls per minute: {cpm:.3f}"
+            )
         else:
             await ctx.send("No performance found yet.")

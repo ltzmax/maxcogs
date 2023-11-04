@@ -72,6 +72,7 @@ async def get_data(self, url: str) -> Dict[str, Any]:
         log.error(f"Failed to get data from {url} due to timeout")
         return {"http_code": 408}
 
+
 # Mainly flame who build this view and modal. All credits goes to flame for that work.
 # https://discord.com/channels/133049272517001216/133251234164375552/1104515319604723762
 class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
