@@ -182,7 +182,9 @@ class ImageOnly(commands.Cog):
         self,
         ctx: commands.Context,
         add_or_remove: Literal["add", "remove"],
-        channels: commands.Greedy[Union[discord.TextChannel, discord.Thread, discord.ForumChannel]] = None,
+        channels: commands.Greedy[
+            Union[discord.TextChannel, discord.Thread, discord.ForumChannel]
+        ] = None,
     ):
         """Set the channels to allow only images in."""
         if channels is None:
