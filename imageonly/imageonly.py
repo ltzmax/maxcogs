@@ -109,8 +109,14 @@ class ImageOnly(commands.Cog):
             return
         channels = await self.config.guild(message.guild).channels()
         if channels is not None:
-            if message.channel.id not in channels:
-                return
+            if isinstance(message.channel, (discord.Thread, discord.ForumChannel)):
+                # If the message was sent in a thread or a forum, check the parent channel
+                if message.channel.parent_id not in channels:
+                    return
+            else:
+                # If the message was not sent in a thread or a forum, check the channel normally
+                if message.channel.id not in channels:
+                    return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if not await self.config.guild(message.guild).enabled():
@@ -176,7 +182,7 @@ class ImageOnly(commands.Cog):
         self,
         ctx: commands.Context,
         add_or_remove: Literal["add", "remove"],
-        channels: commands.Greedy[Union[discord.TextChannel]] = None,
+        channels: commands.Greedy[Union[discord.TextChannel, discord.Thread, discord.ForumChannel]] = None,
     ):
         """Set the channels to allow only images in."""
         if channels is None:
