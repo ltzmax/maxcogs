@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from typing import Any, Final
+from typing import Any, Final, Optional
 
 import discord
 import logging
@@ -157,9 +157,21 @@ class RedUpdate(commands.Cog):
     @commands.is_owner()
     @commands.command(aliases=["updatered"])
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def redupdate(self, ctx: commands.Context):
-        """Update [botname] to latest dev changes."""
-        package = await self.config.redupdate_url()
+    async def redupdate(self, ctx: commands.Context, stable: Optional[bool] = False):
+        """
+        update [botname] to latest dev/stable changes.
+        
+        Parameters
+        ----------
+        - stable : bool
+            - If True, it will update to latest stable release. If False, it will update to latest dev changes.
+        """
+        if stable:
+            package = "pip install --force-reinstall Red-DiscordBot"
+            log.info("Updating to latest stable release...")
+        else:
+            package = await self.config.redupdate_url()
+            log.info("Updating to latest dev changes...")
         if not package:
             return await ctx.send("You need to set correct url for your fork first.")
         shell = self.bot.get_cog("Shell")
@@ -173,8 +185,13 @@ class RedUpdate(commands.Cog):
             return await failedupdate(self, ctx)
         await redupdate(self, ctx)
 
+    # This command is for updating discord.py to latest dev changes.
+    # It is hidden because it is not recommended to use this as it may break your bot
+    # if there are breaking changes that are not yet on red and you are using them on your bot.
+    # if you want to use this, you need to ensure that you know what you are doing and you know how to fix your bot if it breaks.
+    # I will not provide any support for this command.
     @commands.is_owner()
-    @commands.command(aliases=["dpydevupdate"])
+    @commands.command(aliases=["dpydevupdate"], hidden=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def discordpyupdate(self, ctx: commands.Context):
         """Update discord.py to latest dev changes.
