@@ -119,14 +119,11 @@ class Suggestion(commands.Cog):
                 )
             await msg.add_reaction(data["suggest_default_upvote"])
             await msg.add_reaction(data["suggest_default_downvote"])
-        try:
-            await ctx.reply(
-                "Suggestion sent!",
-                allowed_mentions=discord.AllowedMentions(replied_user=False),
-            )
-        # handle when reply fails.
-        except discord.HTTPException:
-            await ctx.send("Suggestion sent!")
+        await ctx.send(
+            "Suggestion sent!",
+            allowed_mentions=discord.AllowedMentions(replied_user=False),
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+        )
 
     @commands.command()
     @commands.guild_only()
