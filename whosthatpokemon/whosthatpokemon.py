@@ -187,7 +187,7 @@ class WhosThatPokemon(commands.Cog):
         - `[generation]` - Where you choose any generation from gen 1 to gen 9.
         """
         await ctx.typing()
-        poke_id = generation or randint(1, 898)
+        poke_id = generation or randint(1, 1010)
         if_guessed_right = False
 
         temp = await self.generate_image(f"{poke_id:>03}", hide=True)

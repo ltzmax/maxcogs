@@ -21,12 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import discord
-
 import asyncio
 import logging
-from typing import Any, Dict, List
 from random import randint
+from typing import Any, Dict, List
+
+import discord
 from redbot.core import commands
 
 log = logging.getLogger("red.maxcogs.whosthatpokemon.converters")
@@ -84,10 +84,7 @@ class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
     )
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        await interaction.response.send_message(
-            f"You guessed: {self.poke.value}",
-            ephemeral=True,
-        )
+        await interaction.response.defer()
 
 
 class WhosThatPokemonView(discord.ui.View):
@@ -120,7 +117,12 @@ class WhosThatPokemonView(discord.ui.View):
             await self.message.edit(view=self)
             # Send a message indicating who guessed the Pokémon
             await interaction.followup.send(
-                f"{interaction.user.mention} guessed the Pokémon correctly!",
+                f"{interaction.user.mention} Guessed the Pokémon correctly!",
+            )
+        else:
+            # Send a message indicating that the guess was incorrect
+            await interaction.followup.send(
+                f"{interaction.user.mention}, Wrong Pokémon name!",
             )
 
     async def on_error(
