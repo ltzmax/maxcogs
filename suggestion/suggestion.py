@@ -236,21 +236,22 @@ class Suggestion(commands.Cog):
         suggest_default_downvote = await self.config.guild(
             ctx.guild
         ).suggest_default_downvote()
+        msg = (
+            "Suggestion system: {toggle}\n"
+            "Suggestion channel: {channel}\n"
+            "Suggestion voting: {suggest_vote}\n"
+            "Default upvote emoji: {suggest_default_upvote}\n"
+            "Default downvote emoji: {suggest_default_downvote}"
+        ).format(
+            toggle=toggle,
+            channel=channel.mention if channel is not None else None,
+            suggest_vote=suggest_vote,
+            suggest_default_upvote=suggest_default_upvote,
+            suggest_default_downvote=suggest_default_downvote,
+        )
         embed = discord.Embed(
             title="Suggestion settings",
-            description="""
-            **Toggle:** {toggle}
-            **Channel:** {channel}
-            **Suggest vote:** {suggest_vote}
-            **Default upvote emoji:** {upvote}
-            **Default downvote emoji:** {downvote}
-            """.format(
-                toggle=toggle,
-                channel=channel.mention if channel else "Not set",
-                suggest_vote=suggest_vote,
-                upvote=suggest_default_upvote,
-                downvote=suggest_default_downvote,
-            ),
+            description=msg,
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
