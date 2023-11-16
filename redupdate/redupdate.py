@@ -64,10 +64,10 @@ async def failedupdate(self, ctx: commands.Context):
 
 
 class RedUpdate(commands.Cog):
-    """Update [botname] to latest dev changes."""
+    """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.4.2"
+    __version__: Final[str] = "1.4.3"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/redupdate"
 
     def __init__(self, bot):
