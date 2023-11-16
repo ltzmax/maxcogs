@@ -160,7 +160,7 @@ class RedUpdate(commands.Cog):
     async def redupdate(self, ctx: commands.Context, stable: Optional[bool] = False):
         """
         update [botname] to latest dev/stable changes.
-        
+
         Parameters
         ----------
         - stable : bool
