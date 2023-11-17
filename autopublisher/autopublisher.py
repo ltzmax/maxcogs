@@ -196,7 +196,7 @@ class AutoPublisher(commands.Cog):
         embed.add_field(
             name=f"{'channel:' if ids == 1 else 'channels:'}",
             value=humanize_list([channel.mention for channel in news_channels]),
-        )  # This needs menus to be able to show all channels if there are more than 25 channels.
+        )
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
@@ -210,17 +210,13 @@ class AutoPublisher(commands.Cog):
         for channel in channels:
             channel = ctx.guild.get_channel(channel)
             ignored_channels.append(channel.mention)
+        msg = (
+            f"AutoPublisher is currently {'enabled' if toggle else 'disabled'}.\n"
+            f"Ignored channels: {humanize_list(ignored_channels) if ignored_channels else 'None'}"
+        )
         embed = discord.Embed(
             title="AutoPublisher Setting",
-            description="""
-            **Toggle:** {toggle}
-            **Ignored Channels:** {ignored_channels}
-            """.format(
-                toggle=toggle,
-                ignored_channels=humanize_list(ignored_channels)
-                if ignored_channels
-                else "None",
-            ),
+            description=msg,
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
