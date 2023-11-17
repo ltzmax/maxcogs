@@ -382,23 +382,24 @@ class NoSpoiler(commands.Cog):
         spoiler_warn_message = config["spoiler_warn_message"]
         spoiler_warn_message_embed = config["spoiler_warn_message_embed"]
         timeout = config["timeout"]
+        msg = (
+            "Enabled: {enabled}\n"
+            "Log Channel: {log_channel}\n"
+            "Spoiler Warn: {spoiler_warn}\n"
+            "Spoiler Warn Message Embed: {spoiler_warn_message_embed}\n"
+            "Timeout: {timeout} seconds\n"
+            "Spoiler Warn Message: {spoiler_warn_message}"
+        ).format(
+            enabled=enabled,
+            log_channel=log_channel,
+            spoiler_warn=spoiler_warn,
+            spoiler_warn_message_embed=spoiler_warn_message_embed,
+            timeout=timeout,
+            spoiler_warn_message=spoiler_warn_message,
+        )
         embed = discord.Embed(
             title="Spoiler Filter Settings",
-            description="""
-            **Enabled:** {enabled}
-            **Log Channel:** {log_channel}
-            **Spoiler Warning:** {spoiler_warn}
-            **Spoiler Warning Message Embed:** {spoiler_warn_message_embed}
-            **Timeout:** {timeout} seconds
-            **Spoiler Warning Message:** {spoiler_warn_message}
-            """.format(
-                enabled=enabled,
-                log_channel=log_channel,
-                spoiler_warn=spoiler_warn,
-                spoiler_warn_message_embed=spoiler_warn_message_embed,
-                timeout=timeout,
-                spoiler_warn_message=spoiler_warn_message,
-            ),
+            description=msg,
             color=await ctx.embed_color(),
         )
         await ctx.send(embed=embed)
