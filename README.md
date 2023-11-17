@@ -29,8 +29,6 @@ To install any cog you want:
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 2.1.2 | ltzmax | ✅ |
 | CustomPing | Creates a custom ping embed to display latency statistics. | 1.0.4 | phenom4n4n, ltzmax | ✅ |
-| EmojiSpam | Similar emojispam filter to dyno but without ban, kick and mute. | 1.5.7 | MAX | ✅ |
-| ImageOnly | Only allow images in a channel or links. | 1.5.2 | MAX | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.3 | MAX | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
 | Ratings | Rate how simp you are or something | 1.0.2 | phenom4n4n, ltzmax | ✅ |
@@ -38,6 +36,7 @@ To install any cog you want:
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.1 | ltzmax, o-wo | ✅ |
 | RedUpdate | Update your bot to latest dev changes.| 1.4.2 | ltzmax, kuro | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.2.1| ltzmax | ✅ |
+| TheMovieDB | Search for informatio of movies and tv shows from themoviedb.org. | 1.0.0 | ltzmax | ✅ |
 | Suggestion | Simple suggestion cog that allows users to send a suggestion. | 1.0.5 | ltzmax | ✅ |
 | WhosThatPokemon | Guess whos that pokemon? | 1.4.2 | ltzmax, o-wo | ✅ |
 

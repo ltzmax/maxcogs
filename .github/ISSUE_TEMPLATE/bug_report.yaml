@@ -17,13 +17,12 @@ body:
       options:
         - autopublisher
         - customping
-        - emojispam
-        - imageonly
         - nospoiler
         - plaguegame
         - ratings
         - nekosbest
         - redupdate
+        - themoviedb
         - tcgcard
         - RolePlayCog
         - Suggestion
