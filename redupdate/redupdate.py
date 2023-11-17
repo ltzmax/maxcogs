@@ -96,7 +96,7 @@ class RedUpdate(commands.Cog):
 
     @redupdateset.command(name="url")
     async def redupdateset_url(self, ctx: commands.Context, url: str):
-        """Set the url for redupdate cog.
+        """Set your custom fork url of red.
 
         Has to be vaild link such as `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot` else it will not work.
         """
@@ -114,7 +114,7 @@ class RedUpdate(commands.Cog):
         if data == url:
             return await ctx.send("This url is already set.")
         await self.config.redupdate_url.set(url)
-        await ctx.send(f"Successfully set the url to {url}.")
+        await ctx.tick()
 
     @redupdateset.command(name="reset")
     async def redupdateset_reset(self, ctx: commands.Context):
@@ -122,13 +122,19 @@ class RedUpdate(commands.Cog):
         await self.config.redupdate_url.set(
             "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
         )
-        await ctx.send("Successfully reset the url.")
+        await ctx.tick()
 
-    @redupdateset.command(name="show", aliases=["showsettings", "settings", "view"])
-    async def redupdateset_show(self, ctx: commands.Context):
+    @redupdateset.command(name="settings")
+    @commands.bot_has_permissions(embed_links=True)
+    async def redupdateset_settings(self, ctx: commands.Context):
         """Show the url for redupdate cog."""
         url = await self.config.redupdate_url()
-        await ctx.send(f"The current url is `{url}`.")
+        embed = discord.Embed(
+            title="Redupdate Settings",
+            description="Current url for redupdate cog is `{}`.".format(url),
+            color=await ctx.embed_color(),
+        )
+        await ctx.send(embed=embed)
 
     @redupdateset.command(name="version")
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
@@ -157,21 +163,21 @@ class RedUpdate(commands.Cog):
     @commands.is_owner()
     @commands.command(aliases=["updatered"])
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def redupdate(self, ctx: commands.Context, stable: Optional[bool] = False):
+    async def redupdate(self, ctx: commands.Context, dev: Optional[bool] = False):
         """
         update [botname] to latest dev/stable changes.
 
         Parameters
         ----------
-        - stable : bool
-            - If True, it will update to latest stable release. If False, it will update to latest dev changes.
+        - dev : bool
+            - If True, it will update to latest dev changes. If False, it will update to latest stable release.
         """
-        if stable:
-            package = "pip install --force-reinstall Red-DiscordBot"
-            log.info("Updating to latest stable release...")
-        else:
+        if dev:
             package = await self.config.redupdate_url()
             log.info("Updating to latest dev changes...")
+        else:
+            package = "pip install --force-reinstall Red-DiscordBot"
+            log.info("Updating to latest stable release...")
         if not package:
             return await ctx.send("You need to set correct url for your fork first.")
         shell = self.bot.get_cog("Shell")

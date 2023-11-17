@@ -4,7 +4,7 @@
         "kuro"
     ],
     "name": "RedUpdate",
-    "install_msg": "Thanks for installing.\n⚠️**WARNING**⚠️\nWhen you run the update command in this cog, it will update to latest dev version of Red. Use `[p]updatered true` to update to stable version of red.",
+    "install_msg": "Thanks for installing.",
     "description": "Update your bot to latest dev version of red.",
     "short": "Update your bot to latest dev version of red.",
     "hidden": false,
