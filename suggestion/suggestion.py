@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 import logging
+import asyncio
 from typing import Final, Optional
 
 import discord
@@ -39,7 +40,7 @@ class Suggestion(commands.Cog):
     """Suggest something to the server or something else?"""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.0.5"
+    __version__: Final[str] = "1.0.6"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/suggestion"
 
     def __init__(self, bot: Red):
@@ -52,6 +53,7 @@ class Suggestion(commands.Cog):
             "suggest_default_upvote": "👍",
             "suggest_default_downvote": "👎",
             "suggestion_id": 0,
+            "allouw_without_command": False,
         }
         self.config.register_guild(**default_guild)
 
@@ -63,6 +65,92 @@ class Suggestion(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs):
         """Nothing to delete"""
         return
+
+    @commands.Cog.listener()
+    async def on_message_without_command(self, message: discord.Message):
+        """
+        Send a suggestion to the suggestion channel without using a command.
+        You can just type your suggestion in the suggestion channel and the bot will delete your message and build the embed with your message.
+        """
+        # if its enbaled or not
+        if not await self.config.guild(message.guild).allouw_without_command():
+            return
+        # Ignore bots
+        if message.author.bot:
+            return
+        # check for the channel
+        channel = await self.config.guild(message.guild).channel()
+        if channel is None:
+            return
+        # check for the channel
+        if message.channel.id != channel:
+            return
+        # check if the cog is disabled
+        if await self.bot.cog_disabled_in_guild(self, message.guild):
+            return
+
+        if not message.content:
+            return
+
+        # check for the length
+        if len(message.content) > 2024 or len(message.content) < 3:
+            await asyncio.sleep(0.3)
+            await message.delete()
+            await message.channel.send(
+                "Your suggestion must be between 3 and 2024 characters long",
+                delete_after=10,
+            )
+            log.info(
+                f"Suggestion is too long or too short in {message.channel} by {message.author} ({message.author.id})"
+            )
+            return
+
+        # check for the permissions of the bot in the channel
+        if (
+            not message.guild.me.guild_permissions.manage_messages
+            or not message.guild.me.guild_permissions.embed_links
+            or not message.guild.me.guild_permissions.send_messages
+        ):
+            await self.config.guild(message.guild).withoutcmd.set(False)
+            return
+            log.info(
+                "I don't have permissions to send messages, manage messages or embed links in {channel}".format(
+                    channel=message.channel
+                )
+            )
+        next_id = await self.config.guild(message.guild).suggestion_id() + 1
+        await self.config.guild(message.guild).suggestion_id.set(next_id)
+        # Create an embed from the message
+        embed = discord.Embed(
+            title="New Suggestion",
+            description=message.content,
+            color=await self.bot.get_embed_color(message.channel),
+        )
+        embed.set_author(
+            name=f"{message.author} ({message.author.id})",
+            icon_url=message.author.avatar.url,
+        )
+        # Delete the original message
+        await asyncio.sleep(0.3)
+        await message.delete()
+        # Send the embed
+        message = await message.channel.send(f"Suggestion #{next_id}", embed=embed)
+        if await self.config.guild(message.guild).suggest_vote():
+            if not message.channel.permissions_for(message.guild.me).add_reactions:
+                await self.config.guild(message.guild).suggest_vote.set(False)
+                return
+                log.info(
+                    "I don't have permissions to add reactions in {channel}".format(
+                        channel=message.channel
+                    )
+                )
+            await asyncio.sleep(0.5)
+            await message.add_reaction(
+                await self.config.guild(message.guild).suggest_default_upvote()
+            )
+            await message.add_reaction(
+                await self.config.guild(message.guild).suggest_default_downvote()
+            )
 
     async def suggest_embed(self, ctx, *, message: str):
         """Send a suggestion to the suggestion channel."""
@@ -130,6 +218,12 @@ class Suggestion(commands.Cog):
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def suggest(self, ctx, *, message: str):
         """Send a suggestion to the suggestion channel."""
+        if await self.config.guild(ctx.guild).allouw_without_command():
+            return await ctx.send(
+                "You can't use this command while allow_without_command is enabled",
+                allowed_mentions=discord.AllowedMentions(replied_user=False),
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
         await self.suggest_embed(ctx, message=message)
 
     @commands.group()
@@ -143,6 +237,27 @@ class Suggestion(commands.Cog):
         """Toggle the suggestion system"""
         toggle = await self.config.guild(ctx.guild).toggle()
         await self.config.guild(ctx.guild).toggle.set(not toggle)
+        await ctx.send(
+            f"Suggestion system is now {'enabled' if not toggle else 'disabled'}"
+        )
+
+    @suggestion.command(name="withoutcmd")
+    async def allouw_without_command(self, ctx):
+        """
+        Toggle whether suggestions can be sent without using a command.
+
+        This means that you can just type your suggestion in the suggestion channel and the bot will build the embed with your message.
+
+        Note: This will disable the `[p]suggest` command from being used.
+        """
+        if not await self.config.guild(ctx.guild).toggle():
+            return await ctx.send("You need to enable the suggestion system first")
+        if not await self.config.guild(ctx.guild).channel():
+            return await ctx.send("You need to set the suggestion channel first")
+        if not ctx.guild.me.guild_permissions.manage_messages:
+            return await ctx.send("I don't have permissions to manage messages")
+        toggle = await self.config.guild(ctx.guild).allouw_without_command()
+        await self.config.guild(ctx.guild).allouw_without_command.set(not toggle)
         await ctx.send(
             f"Suggestion system is now {'enabled' if not toggle else 'disabled'}"
         )
@@ -165,6 +280,8 @@ class Suggestion(commands.Cog):
     @suggestion.command()
     async def resetchannel(self, ctx):
         """Reset the suggestion channel."""
+        if not await self.config.guild(ctx.guild).channel():
+            return await ctx.send("Suggestion channel is already reset.")
         await self.config.guild(ctx.guild).channel.set(None)
         await ctx.send("Suggestion channel reset")
 
@@ -236,14 +353,17 @@ class Suggestion(commands.Cog):
         suggest_default_downvote = await self.config.guild(
             ctx.guild
         ).suggest_default_downvote()
+        withoutcmd = await self.config.guild(ctx.guild).allouw_without_command()
         msg = (
             "Suggestion system: {toggle}\n"
+            "Without command: {withoutcmd}\n"
             "Suggestion channel: {channel}\n"
             "Suggestion voting: {suggest_vote}\n"
             "Default upvote emoji: {suggest_default_upvote}\n"
             "Default downvote emoji: {suggest_default_downvote}"
         ).format(
             toggle=toggle,
+            withoutcmd=withoutcmd,
             channel=channel.mention if channel is not None else None,
             suggest_vote=suggest_vote,
             suggest_default_upvote=suggest_default_upvote,
