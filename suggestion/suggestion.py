@@ -263,27 +263,21 @@ class Suggestion(commands.Cog):
         )
 
     @suggestion.command()
-    async def channel(self, ctx, channel: discord.TextChannel):
+    async def channel(self, ctx, channel: Optional[discord.TextChannel]):
         """Set or reset the suggestion channel."""
-        if (
-            not channel.permissions_for(ctx.guild.me).send_messages
-            or not channel.permissions_for(ctx.guild.me).embed_links
-        ):
+        if channel is None:
+            await self.config.guild(ctx.guild).channel.set(None)
+            return await ctx.send("Suggestion channel reset")
+        if not channel.permissions_for(ctx.guild.me).send_messages or not channel.permissions_for(ctx.guild.me).embed_links:
             return await ctx.send(
                 "I don't have permissions to send messages or embed links in {channel}".format(
                     channel=channel.mention
                 )
             )
+        if await self.config.guild(ctx.guild).channel() == channel.id:
+            return await ctx.send("This channel is already the suggestion channel")
         await self.config.guild(ctx.guild).channel.set(channel.id)
         await ctx.send(f"Suggestion channel set to {channel.mention}")
-
-    @suggestion.command()
-    async def resetchannel(self, ctx):
-        """Reset the suggestion channel."""
-        if not await self.config.guild(ctx.guild).channel():
-            return await ctx.send("Suggestion channel is already reset.")
-        await self.config.guild(ctx.guild).channel.set(None)
-        await ctx.send("Suggestion channel reset")
 
     @suggestion.command()
     async def vote(self, ctx):
