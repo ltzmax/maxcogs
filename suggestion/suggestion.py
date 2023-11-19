@@ -43,7 +43,7 @@ class Suggestion(commands.Cog):
     """Suggest something to the server or something else?"""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.0.6"
+    __version__: Final[str] = "1.0.7"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/suggestion"
 
     def __init__(self, bot: Red):
