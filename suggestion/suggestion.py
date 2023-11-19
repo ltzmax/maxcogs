@@ -258,14 +258,18 @@ class Suggestion(commands.Cog):
             return await ctx.send("Something went wrong while approving the suggestion")
             info.log(f"Some error occured while approving a suggestion: {e}")
         if reason is not None and len(reason) > 1024:
-            return await ctx.send("Your reason must be between 0 and 1024 characters long")
+            return await ctx.send(
+                "Your reason must be between 0 and 1024 characters long"
+            )
         if msg.embeds:
             try:
                 embed = msg.embeds[0]
             except IndexError:
                 return await ctx.send("Message not found")
-                info.log(f"{ctx.author} tried to approve a message that is not a suggestion")
-            if embed.title != 'New Suggestion':
+                info.log(
+                    f"{ctx.author} tried to approve a message that is not a suggestion"
+                )
+            if embed.title != "New Suggestion":
                 return await ctx.send("This message is not a suggestion")
             embed.color = 0x00FF00
             if reason is not None:
@@ -273,7 +277,9 @@ class Suggestion(commands.Cog):
             embed.set_footer(text="Approved by {author}".format(author=ctx.author))
             await msg.edit(embed=embed)
             await ctx.send(
-                "Approved suggestion #{id}".format(id=SUGGESTION_ID.search(msg.content).group(1)),
+                "Approved suggestion #{id}".format(
+                    id=SUGGESTION_ID.search(msg.content).group(1)
+                ),
                 allowed_mentions=discord.AllowedMentions(replied_user=False),
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
             )
@@ -309,14 +315,18 @@ class Suggestion(commands.Cog):
             return await ctx.send("Something went wrong while rejecting the suggestion")
             info.log(f"Some error occured while rejecting a suggestion: {e}")
         if reason is not None and len(reason) > 1024:
-            return await ctx.send("Your reason must be between 0 and 1024 characters long")
+            return await ctx.send(
+                "Your reason must be between 0 and 1024 characters long"
+            )
         if msg.embeds:
             try:
                 embed = msg.embeds[0]
             except IndexError:
                 return await ctx.send("Message not found")
-                info.log(f"{ctx.author} tried to reject a message that is not a suggestion")
-            if embed.title != 'New Suggestion':
+                info.log(
+                    f"{ctx.author} tried to reject a message that is not a suggestion"
+                )
+            if embed.title != "New Suggestion":
                 return await ctx.send("This message is not a suggestion")
             embed.color = 0xFF0000
             if reason is not None:
@@ -324,7 +334,9 @@ class Suggestion(commands.Cog):
             embed.set_footer(text="Rejected by {author}".format(author=ctx.author))
             await msg.edit(embed=embed)
             await ctx.send(
-                "Rejected suggestion #{id}".format(id=SUGGESTION_ID.search(msg.content).group(1)),
+                "Rejected suggestion #{id}".format(
+                    id=SUGGESTION_ID.search(msg.content).group(1)
+                ),
                 allowed_mentions=discord.AllowedMentions(replied_user=False),
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
             )
