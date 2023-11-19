@@ -123,7 +123,7 @@ class Suggestion(commands.Cog):
         # Create an embed from the message
         embed = discord.Embed(
             title="New Suggestion",
-            description=message.content,
+            description=f"Description\n> {message.content}",
             color=await self.bot.get_embed_color(message.channel),
         )
         embed.set_author(
@@ -182,7 +182,7 @@ class Suggestion(commands.Cog):
         await self.config.guild(ctx.guild).suggestion_id.set(next_id)
         embed = discord.Embed(
             title="New Suggestion",
-            description=message,
+            description=f"Description\n> {message}",
             color=await ctx.embed_color(),
         )
         embed.set_author(
