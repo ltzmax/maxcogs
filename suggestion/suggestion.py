@@ -268,7 +268,10 @@ class Suggestion(commands.Cog):
         if channel is None:
             await self.config.guild(ctx.guild).channel.set(None)
             return await ctx.send("Suggestion channel reset")
-        if not channel.permissions_for(ctx.guild.me).send_messages or not channel.permissions_for(ctx.guild.me).embed_links:
+        if (
+            not channel.permissions_for(ctx.guild.me).send_messages
+            or not channel.permissions_for(ctx.guild.me).embed_links
+        ):
             return await ctx.send(
                 "I don't have permissions to send messages or embed links in {channel}".format(
                     channel=channel.mention
