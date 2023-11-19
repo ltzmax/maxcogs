@@ -23,6 +23,7 @@ SOFTWARE.
 """
 import logging
 import asyncio
+import re
 from typing import Final, Optional
 
 import discord
@@ -32,6 +33,8 @@ from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
 from .converter import EmojiConverter
+
+SUGGESTION_ID = re.compile(r"(?:Suggestion #)(\d+)")
 
 log = logging.getLogger("red.maxcogs.suggestion")
 
@@ -123,7 +126,7 @@ class Suggestion(commands.Cog):
         # Create an embed from the message
         embed = discord.Embed(
             title="New Suggestion",
-            description=f"Description\n> {message.content}",
+            description=f"**Description**:\n> {message.content}",
             color=await self.bot.get_embed_color(message.channel),
         )
         embed.set_author(
@@ -182,7 +185,7 @@ class Suggestion(commands.Cog):
         await self.config.guild(ctx.guild).suggestion_id.set(next_id)
         embed = discord.Embed(
             title="New Suggestion",
-            description=f"Description\n> {message}",
+            description=f"**Description**:\n> {message}",
             color=await ctx.embed_color(),
         )
         embed.set_author(
@@ -225,6 +228,108 @@ class Suggestion(commands.Cog):
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
             )
         await self.suggest_embed(ctx, message=message)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.admin()
+    async def approve(self, ctx, message_id: int, *, reason: Optional[str] = None):
+        """
+        Approve a suggestion.
+
+        Must be a message id of a suggestion in the suggestion channel.
+        If the suggestion is approved, the bot will edit the embed and add a footer with the approver.
+
+        Parameters
+        ----------
+        - message_id : int
+            - The message id of the suggestion.
+        """
+        data = await self.config.guild(ctx.guild).all()
+        toggle = data["toggle"]
+        channel = data["channel"]
+        if toggle is False:
+            return await ctx.send("Suggestion system is disabled")
+        if channel is None:
+            return await ctx.send("Suggestion channel is not set")
+        channel = self.bot.get_channel(channel)
+        try:
+            msg = await channel.fetch_message(message_id)
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException) as e:
+            return await ctx.send("Something went wrong while approving the suggestion")
+            info.log(f"Some error occured while approving a suggestion: {e}")
+        if reason is not None and len(reason) > 1024:
+            return await ctx.send("Your reason must be between 0 and 1024 characters long")
+        if msg.embeds:
+            try:
+                embed = msg.embeds[0]
+            except IndexError:
+                return await ctx.send("Message not found")
+                info.log(f"{ctx.author} tried to approve a message that is not a suggestion")
+            if embed.title != 'New Suggestion':
+                return await ctx.send("This message is not a suggestion")
+            embed.color = 0x00FF00
+            if reason is not None:
+                embed.add_field(name="Reason:", value=f"> {reason}")
+            embed.set_footer(text="Approved by {author}".format(author=ctx.author))
+            await msg.edit(embed=embed)
+            await ctx.send(
+                "Approved suggestion #{id}".format(id=SUGGESTION_ID.search(msg.content).group(1)),
+                allowed_mentions=discord.AllowedMentions(replied_user=False),
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        else:
+            await ctx.send("This message is not a suggestion")
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.admin()
+    async def reject(self, ctx, message_id: int, *, reason: Optional[str] = None):
+        """
+        Reject a suggestion.
+
+        Must be a message id of a suggestion in the suggestion channel.
+        If the suggestion is rejected, the bot will edit the embed and add a footer with the rejecter.
+
+        Parameters
+        ----------
+        - message_id : int
+            - The message id of the suggestion.
+        """
+        data = await self.config.guild(ctx.guild).all()
+        toggle = data["toggle"]
+        channel = data["channel"]
+        if toggle is False:
+            return await ctx.send("Suggestion system is disabled")
+        if channel is None:
+            return await ctx.send("Suggestion channel is not set")
+        channel = self.bot.get_channel(channel)
+        try:
+            msg = await channel.fetch_message(message_id)
+        except (discord.NotFound, discord.Forbidden, discord.HTTPException) as e:
+            return await ctx.send("Something went wrong while rejecting the suggestion")
+            info.log(f"Some error occured while rejecting a suggestion: {e}")
+        if reason is not None and len(reason) > 1024:
+            return await ctx.send("Your reason must be between 0 and 1024 characters long")
+        if msg.embeds:
+            try:
+                embed = msg.embeds[0]
+            except IndexError:
+                return await ctx.send("Message not found")
+                info.log(f"{ctx.author} tried to reject a message that is not a suggestion")
+            if embed.title != 'New Suggestion':
+                return await ctx.send("This message is not a suggestion")
+            embed.color = 0xFF0000
+            if reason is not None:
+                embed.add_field(name="Reason:", value=f"> {reason}")
+            embed.set_footer(text="Rejected by {author}".format(author=ctx.author))
+            await msg.edit(embed=embed)
+            await ctx.send(
+                "Rejected suggestion #{id}".format(id=SUGGESTION_ID.search(msg.content).group(1)),
+                allowed_mentions=discord.AllowedMentions(replied_user=False),
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        else:
+            await ctx.send("This message is not a suggestion")
 
     @commands.group()
     @commands.guild_only()
