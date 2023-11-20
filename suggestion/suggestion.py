@@ -75,7 +75,9 @@ class Suggestion(commands.Cog):
         Send a suggestion to the suggestion channel without using a command.
         You can just type your suggestion in the suggestion channel and the bot will delete your message and build the embed with your message.
         """
-        # if its enbaled or not
+        if message.guild is None:
+            return
+        # check if its enabled or not
         if not await self.config.guild(message.guild).allouw_without_command():
             return
         # Ignore bots
