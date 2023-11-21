@@ -258,7 +258,7 @@ class Suggestion(commands.Cog):
             msg = await channel.fetch_message(message_id)
         except (discord.NotFound, discord.Forbidden, discord.HTTPException) as e:
             return await ctx.send("Something went wrong while approving the suggestion")
-            info.log(f"Some error occured while approving a suggestion: {e}")
+            log.info(f"Some error occured while approving a suggestion: {e}")
         if reason is not None and len(reason) > 1024:
             return await ctx.send(
                 "Your reason must be between 0 and 1024 characters long"
@@ -268,7 +268,7 @@ class Suggestion(commands.Cog):
                 embed = msg.embeds[0]
             except IndexError:
                 return await ctx.send("Message not found")
-                info.log(
+                log.info(
                     f"{ctx.author} tried to approve a message that is not a suggestion"
                 )
             if embed.title != "New Suggestion":
@@ -315,7 +315,7 @@ class Suggestion(commands.Cog):
             msg = await channel.fetch_message(message_id)
         except (discord.NotFound, discord.Forbidden, discord.HTTPException) as e:
             return await ctx.send("Something went wrong while rejecting the suggestion")
-            info.log(f"Some error occured while rejecting a suggestion: {e}")
+            log.info(f"Some error occured while rejecting a suggestion: {e}")
         if reason is not None and len(reason) > 1024:
             return await ctx.send(
                 "Your reason must be between 0 and 1024 characters long"
@@ -325,7 +325,7 @@ class Suggestion(commands.Cog):
                 embed = msg.embeds[0]
             except IndexError:
                 return await ctx.send("Message not found")
-                info.log(
+                log.info(
                     f"{ctx.author} tried to reject a message that is not a suggestion"
                 )
             if embed.title != "New Suggestion":
