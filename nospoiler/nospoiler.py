@@ -321,8 +321,8 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).log_channel.set(channel.id)
             await ctx.send(f"Log channel has been set to {channel.mention}.")
 
-    @nospoiler.command()
-    async def warn(self, ctx: commands.Context) -> None:
+    @nospoiler.command(aliases=["warnmsg"])
+    async def warnmessage(self, ctx: commands.Context) -> None:
         """Toggle warning message when a user tries to use spoiler."""
         spoiler_warn = await self.config.guild(ctx.guild).spoiler_warn()
         if spoiler_warn:
@@ -334,7 +334,7 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     @app_commands.describe(message="The spoiler warning message.")
-    async def warnmessage(self, ctx: commands.Context, *, message: str) -> None:
+    async def message(self, ctx: commands.Context, *, message: str) -> None:
         """Set the spoiler warning message."""
         if len(message) > 1024 or len(message) < 1:
             return await ctx.send("Message must be between 1 and 1024 characters.")
