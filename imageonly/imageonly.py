@@ -90,7 +90,8 @@ class ImageOnly(commands.Cog):
             color=await self.bot.get_embed_color(log_channel),
         )
         embed.set_author(
-            name=f"{message.author} ({message.author.id})",        )
+            name=f"{message.author} ({message.author.id})",
+        )
         embed.add_field(
             name="Channel:",
             value=f"{message.channel.mention} ({message.channel.id})",
