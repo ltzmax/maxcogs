@@ -163,21 +163,21 @@ class RedUpdate(commands.Cog):
     @commands.is_owner()
     @commands.command(aliases=["updatered"])
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def redupdate(self, ctx: commands.Context, dev: Optional[bool] = False):
+    async def redupdate(self, ctx: commands.Context, stable: Optional[bool] = True):
         """
         update [botname] to latest dev/stable changes.
 
         Parameters
         ----------
         - dev : bool
-            - If True, it will update to latest dev changes. If False, it will update to latest stable release.
+            - If True, it will update to latest stable changes. If False, it will update to latest dev release.
         """
-        if dev:
+        if stable:
             package = await self.config.redupdate_url()
-            log.info("Updating to latest dev changes...")
+            log.info("Updating to latest stable changes...")
         else:
             package = "pip install --force-reinstall Red-DiscordBot"
-            log.info("Updating to latest stable release...")
+            log.info("Updating to latest dev release...")
         if not package:
             return await ctx.send("You need to set correct url for your fork first.")
         shell = self.bot.get_cog("Shell")
