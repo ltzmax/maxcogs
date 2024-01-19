@@ -93,7 +93,9 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
     if not data:
         return None
     embed = discord.Embed(
-        title=data.get("title", "No title available.")[:256] if data and data.get("title") else "No title available.",
+        title=data.get("title", "No title available.")[:256]
+        if data and data.get("title")
+        else "No title available.",
         url=f"https://www.themoviedb.org/tv/{tv_id}",
         description=data["overview"][:1048]
         if data["overview"]
@@ -205,7 +207,9 @@ async def build_movie_embed(ctx, data, movie_id, i, results):
     if not data:
         return None
     embed = discord.Embed(
-        title=data.get("title", "No title available.")[:256] if data and data.get("title") else "No title available.",
+        title=data.get("title", "No title available.")[:256]
+        if data and data.get("title")
+        else "No title available.",
         url=f"https://www.themoviedb.org/movie/{movie_id}",
         description=data["overview"][:1048]
         if data["overview"]
