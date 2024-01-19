@@ -52,24 +52,34 @@ async def search_media(ctx, query, media_type):
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     base_url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={api_key}&query={query}"
     params = {"api_key": api_key}
-    async with aiohttp.ClientSession().get(base_url, params=params) as resp:
-        if resp.status != 200:
-            log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
-            return None
-        data = await resp.read()
-        return orjson.loads(data)
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(base_url, params=params) as resp:
+                if resp.status != 200:
+                    log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
+                    return None
+                data = await resp.read()
+                return orjson.loads(data)
+    except Exception as e:
+        # Ignore the exception
+        pass
 
 
 async def get_media_data(ctx, media_id: int, media_type: str):
     """Get data for a movie or TV show from TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     base_url = f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={api_key}"
-    async with aiohttp.ClientSession().get(base_url) as resp:
-        if resp.status != 200:
-            log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
-            return None
-        data = await resp.read()
-        return orjson.loads(data)
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(base_url) as resp:
+                if resp.status != 200:
+                    log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
+                    return None
+                data = await resp.read()
+                return orjson.loads(data)
+    except Exception as e:
+        # Ignore the exception
+        pass
 
 
 # BUILD EMBEDS
