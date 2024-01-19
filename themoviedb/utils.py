@@ -56,7 +56,9 @@ async def search_media(ctx, query, media_type):
         async with aiohttp.ClientSession() as session:
             async with session.get(base_url, params=params) as resp:
                 if resp.status != 200:
-                    log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
+                    log.info(
+                        f"Something went wrong with TMDB. Status code: {resp.status}"
+                    )
                     return None
                 data = await resp.read()
                 return orjson.loads(data)
@@ -73,7 +75,9 @@ async def get_media_data(ctx, media_id: int, media_type: str):
         async with aiohttp.ClientSession() as session:
             async with session.get(base_url) as resp:
                 if resp.status != 200:
-                    log.info(f"Something went wrong with TMDB. Status code: {resp.status}")
+                    log.info(
+                        f"Something went wrong with TMDB. Status code: {resp.status}"
+                    )
                     return None
                 data = await resp.read()
                 return orjson.loads(data)
