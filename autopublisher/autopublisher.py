@@ -91,7 +91,10 @@ class AutoPublisher(commands.Cog):
                     f"AutoPublisher has been disabled in {message.guild} due to News Channel feature is not enabled."
                 )
             return
-        if isinstance(message.channel, discord.TextChannel) and not message.channel.is_news():
+        if (
+            isinstance(message.channel, discord.TextChannel)
+            and not message.channel.is_news()
+        ):
             return
         if isinstance(message.channel, discord.TextChannel):
             if message.channel.is_news():
