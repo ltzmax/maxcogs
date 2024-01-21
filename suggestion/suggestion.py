@@ -133,7 +133,7 @@ class Suggestion(commands.Cog):
         )
         embed.set_author(
             name=f"{message.author} ({message.author.id})",
-            #icon_url=message.author.avatar.url,
+            # icon_url=message.author.avatar.url,
         )
         # Delete the original message
         await asyncio.sleep(0.3)
@@ -192,7 +192,7 @@ class Suggestion(commands.Cog):
         )
         embed.set_author(
             name=f"{ctx.author} ({ctx.author.id})",
-            #icon_url=ctx.author.avatar.url,
+            # icon_url=ctx.author.avatar.url,
         )
         msg = await channel.send(
             f"Suggestion #{next_id}",
