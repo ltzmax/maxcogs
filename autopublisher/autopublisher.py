@@ -93,7 +93,8 @@ class AutoPublisher(commands.Cog):
             return
         if isinstance(message.channel, discord.TextChannel) and not message.channel.is_news():
             return
-        if message.channel.is_news():
+        if isinstance(message.channel, TextChannel):
+            if message.channel.is_news():
             try:
                 await asyncio.sleep(0.5)
                 await asyncio.wait_for(message.publish(), timeout=60)
