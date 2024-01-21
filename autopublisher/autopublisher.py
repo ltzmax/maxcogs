@@ -95,15 +95,15 @@ class AutoPublisher(commands.Cog):
             return
         if isinstance(message.channel, TextChannel):
             if message.channel.is_news():
-            try:
-                await asyncio.sleep(0.5)
-                await asyncio.wait_for(message.publish(), timeout=60)
-            except (
-                discord.HTTPException,
-                discord.Forbidden,
-                asyncio.TimeoutError,
-            ) as e:
-                log.error(e)
+                try:
+                    await asyncio.sleep(0.5)
+                    await asyncio.wait_for(message.publish(), timeout=60)
+                except (
+                    discord.HTTPException,
+                    discord.Forbidden,
+                    asyncio.TimeoutError,
+                ) as e:
+                    log.error(e)
 
     @commands.group(aliases=["aph", "autopub"])
     @commands.guild_only()
