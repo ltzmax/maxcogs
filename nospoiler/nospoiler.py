@@ -99,7 +99,7 @@ class NoSpoiler(commands.Cog):
                 color=await self.bot.get_embed_color(log_channel),
             )
         if attachment is not None:
-            embed.add_field(name="Attachment:", value=attachment.url)
+            embed.add_field(name="Attachment:", value=f"[Attachment URL]({attachment.url})")
             view = discord.ui.View()
             style = discord.ButtonStyle.gray
             attachment = discord.ui.Button(
