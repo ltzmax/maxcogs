@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import logging
 import discord
 from datetime import datetime
@@ -93,13 +94,15 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
     if not data:
         return None
     embed = discord.Embed(
-        title=data.get("title", "No title available.")[:256]
-        if data and data.get("title")
-        else "No title available.",
+        title=(
+            data.get("title", "No title available.")[:256]
+            if data and data.get("title")
+            else "No title available."
+        ),
         url=f"https://www.themoviedb.org/tv/{tv_id}",
-        description=data["overview"][:1048]
-        if data["overview"]
-        else "No description available.",
+        description=(
+            data["overview"][:1048] if data["overview"] else "No description available."
+        ),
         colour=await ctx.embed_colour(),
     )
     if data["poster_path"]:
@@ -207,13 +210,15 @@ async def build_movie_embed(ctx, data, movie_id, i, results):
     if not data:
         return None
     embed = discord.Embed(
-        title=data.get("title", "No title available.")[:256]
-        if data and data.get("title")
-        else "No title available.",
+        title=(
+            data.get("title", "No title available.")[:256]
+            if data and data.get("title")
+            else "No title available."
+        ),
         url=f"https://www.themoviedb.org/movie/{movie_id}",
-        description=data["overview"][:1048]
-        if data["overview"]
-        else "No description available.",
+        description=(
+            data["overview"][:1048] if data["overview"] else "No description available."
+        ),
         colour=await ctx.embed_colour(),
     )
     if data["poster_path"]:
