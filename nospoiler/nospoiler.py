@@ -90,7 +90,7 @@ class NoSpoiler(commands.Cog):
         if message.content:
             embed = discord.Embed(
                 title="Spoiler Message Deleted",
-                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}\n**Message:** {box(message.content), lang='yaml'}",
+                description=f"**Author:** {message.author.mention} ({message.author.id})\n**Channel:** {message.channel.mention}\n**Message:** {box(message.content, lang='yaml')}",
                 color=await self.bot.get_embed_color(log_channel),
             )
         else:
