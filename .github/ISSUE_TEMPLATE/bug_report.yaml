@@ -17,6 +17,7 @@ body:
       options:
         - autopublisher
         - customping
+        - hyperlink
         - nospoiler
         - plaguegame
         - ratings
