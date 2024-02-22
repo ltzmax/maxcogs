@@ -26,7 +26,7 @@ import discord
 import logging
 import re
 
-from typing import Optional, List
+from typing import Optional, List, Any
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_list, box
 
