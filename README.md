@@ -29,7 +29,7 @@ To install any cog you want:
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 2.1.2 | ltzmax | ✅ |
 | CustomPing | Creates a custom ping embed to display latency statistics. | 1.0.4 | phenom4n4n, ltzmax | ✅ |
-| NoSpoiler | Prevent using spoiler messages | 2.0.0 | MAX | ✅ |
+| NoSpoiler | Prevent using spoiler messages | 1.5.3 | MAX | ✅ |
 | Hyperlink | Delete messages with hyperlinks in them | 0.0.1 | MAX | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
 | Ratings | Rate how simp you are or something | 1.0.2 | phenom4n4n, ltzmax | ✅ |
