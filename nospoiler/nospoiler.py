@@ -114,6 +114,12 @@ class NoSpoiler(commands.Cog):
         if await self.bot.is_automod_immune(message.author):
             return
         if NOSPOILER_REGEX.search(message.content):
+            if not message.channel.permissions_for(message.author).manage_messages:
+                log.info(
+                    "No permissions to manage messages in {message.guild.name} ({channel.name})."
+                )
+                return
+            await message.delete()
             if await self.config.guild(message.guild).warnmsg():
                 if await self.config.guild(message.guild).use_embed():
                     if not message.channel.permissions_for(message.author).embed_links:
@@ -131,16 +137,10 @@ class NoSpoiler(commands.Cog):
                         delete_after=await self.config.guild(message.guild).timeout(),
                     )
                 else:
-                    if not message.channel.permissions_for(message.author).send_messages:
-                        log.info(
-                            "No permissions to send messages in {message.guild.name} ({channel.name})."
-                        )
-                        return
                     await message.channel.send(
                         f"{message.author.mention}, {await self.config.guild(message.guild).default_message()}",
                         delete_after=await self.config.guild(message.guild).timeout(),
                     )
-            await message.delete()
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
