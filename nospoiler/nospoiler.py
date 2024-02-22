@@ -131,7 +131,9 @@ class NoSpoiler(commands.Cog):
                         delete_after=await self.config.guild(message.guild).timeout(),
                     )
                 else:
-                    if not message.channel.permissions_for(message.author).send_messages:
+                    if not message.channel.permissions_for(
+                        message.author
+                    ).send_messages:
                         log.info(
                             "No permissions to send messages in {message.guild.name} ({channel.name})."
                         )
