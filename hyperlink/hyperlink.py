@@ -97,8 +97,6 @@ class Hyperlink(commands.Cog):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
-        if message.author.bot:
-            return
         if await self.bot.is_automod_immune(message.author):
             return
         if HYPERLINK_REGEX.search(message.content):
