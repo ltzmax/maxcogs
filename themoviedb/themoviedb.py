@@ -46,7 +46,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.2"
+    __version__ = "1.0.3"
     __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/themoviedb"
 
     def __init__(self, bot):

@@ -63,8 +63,7 @@ async def search_media(ctx, query, media_type):
                     return None
                 data = await resp.read()
                 return orjson.loads(data)
-    except Exception as e:
-        # Ignore the exception
+    except Exception:
         pass
 
 
@@ -82,8 +81,7 @@ async def get_media_data(ctx, media_id: int, media_type: str):
                     return None
                 data = await resp.read()
                 return orjson.loads(data)
-    except Exception as e:
-        # Ignore the exception
+    except Exception:
         pass
 
 
@@ -94,11 +92,7 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
     if not data:
         return None
     embed = discord.Embed(
-        title=(
-            data.get("title")[:256]
-            if data and data.get("title")
-            else "No title available."
-        ),
+        title=data.get("name")[:256] if data else "No title available.",
         url=f"https://www.themoviedb.org/tv/{tv_id}",
         description=(
             data["overview"][:1048] if data["overview"] else "No description available."
@@ -210,11 +204,7 @@ async def build_movie_embed(ctx, data, movie_id, i, results):
     if not data:
         return None
     embed = discord.Embed(
-        title=(
-            data.get("title")[:256]
-            if data and data.get("title")
-            else "No title available."
-        ),
+        title=data.get("title")[:256] if data else "No title available.",
         url=f"https://www.themoviedb.org/movie/{movie_id}",
         description=(
             data["overview"][:1048] if data["overview"] else "No description available."
