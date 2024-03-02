@@ -27,7 +27,7 @@ import logging
 from typing import Any, Dict, Final, Optional, Pattern, Union
 
 import discord
-from redbot.core import Config, commands, app_commands
+from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box
 
@@ -40,7 +40,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.3"
+    __version__: Final[str] = "1.5.4"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/nospoiler"
 
     def __init__(self, bot: Red) -> None:
@@ -53,7 +53,6 @@ class NoSpoiler(commands.Cog):
             "log_channel": None,
             "spoiler_warn": False,
             "spoiler_warn_message": "Usage of spoiler is not allowed in this server.",
-            "spoiler_warn_message_embed": False,
             "timeout": 10,
         }
         self.config.register_guild(**default_guild)
@@ -134,33 +133,14 @@ class NoSpoiler(commands.Cog):
         if await self.bot.is_automod_immune(message.author):
             return
 
-        timeout = await self.config.guild(message.guild).timeout()
-
         if SPOILER_REGEX.search(message.content):
-            if await self.config.guild(message.guild).spoiler_warn():
-                if await self.config.guild(message.guild).spoiler_warn_message_embed():
-                    if not message.channel.permissions_for(
-                        message.guild.me
-                    ).embed_links:
-                        await self.config.guild(message.guild).spoiler_warn.set(False)
-                        log.info(
-                            f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
-                        )
-                        return
-                    embed = discord.Embed(
-                        title="Warning",
-                        description=await self.config.guild(
-                            message.guild
-                        ).spoiler_warn_message(),
-                        color=await self.bot.get_embed_color(message.channel),
-                    )
-                    await message.channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=timeout
-                    )
-                else:
+            if await self.config.guild(message.guild).spoiler_warn_message():
+                if not message.guild.me.guild_permissions.send_messages:
+                    log.info("i do not have permission to send messages.")
+                    return
                     await message.channel.send(
                         f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                        delete_after=timeout,
+                        delete_after=await self.config.guild(message.guild).timeout()
                     )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
@@ -168,101 +148,50 @@ class NoSpoiler(commands.Cog):
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
-                    if await self.config.guild(message.guild).spoiler_warn():
-                        if await self.config.guild(
-                            message.guild
-                        ).spoiler_warn_message_embed():
-                            if not message.channel.permissions_for(
-                                message.guild.me
-                            ).embed_links:
-                                await self.config.guild(message.guild).spoiler_warn.set(
-                                    False
-                                )
-                                log.info(
-                                    f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {message.channel.mention}."
-                                )
-                                return
-                            embed = discord.Embed(
-                                title="Warning",
-                                description=await self.config.guild(
-                                    message.guild
-                                ).spoiler_warn_message(),
-                                color=await self.bot.get_embed_color(message.channel),
-                            )
-                            await message.channel.send(
-                                f"{message.author.mention}",
-                                embed=embed,
-                                delete_after=timeout,
-                            )
-                        else:
+                    if await self.config.guild(message.guild).spoiler_warn_message():
+                        if not message.guild.me.guild_permissions.send_messages:
+                            log.info("i do not have permission to send messages")
+                            return
                             await message.channel.send(
                                 f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                                delete_after=timeout,
+                                delete_after=await self.config.guild(message.guild).timeout(),
                             )
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
 
     @commands.Cog.listener()
-    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
-        """handle edits"""
-        if payload.guild_id is None:
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.content == after.content:
             return
-        guild = self.bot.get_guild(payload.guild_id)
-        if guild is None:
+        if not await self.config.guild(after.guild).enabled():
             return
-        if not await self.config.guild(guild).enabled():
+        if await self.bot.cog_disabled_in_guild(self, after.guild):
             return
-        if not guild.me.guild_permissions.manage_messages:
-            if await self.config.guild(guild).enabled():
-                await self.config.guild(guild).enabled.set(False)
-                log.info(
-                    f"Spoiler filter is now disabled because I don't have manage_messages permission."
+        if after.author.bot:
+            return
+        if await self.bot.is_automod_immune(after.author):
+            return
+        if SPOILER_REGEX.search(after.content):
+            if await self.config.guild(after.guild).log_channel():
+                await self.log_channel_embed(after.guild, after)
+            if await self.config.guild(after.guild).spoiler_warn_message():
+                if not after.channel.permissions_for(after.guild.me).send_messages:
+                    log.info(
+                        f"Unable to send message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
+                    )
+                    return
+                await after.channel.send(
+                    f"{after.author.mention}, {await self.config.guild(after.guild).spoiler_warn_message()}",
+                    delete_after=await self.config.guild(after.guild).timeout(),
                 )
-            return
-        if await self.bot.cog_disabled_in_guild(self, guild):
-            return
-        channel = guild.get_channel(payload.channel_id)
-        if channel is None:
-            return
-        try:
-            message = await channel.fetch_message(payload.message_id)
-        except discord.NotFound:
-            return
-        if await self.bot.is_automod_immune(message.author):
-            return
-        if message.author.bot:
-            return
+            if not after.channel.permissions_for(after.guild.me).manage_messages:
+                log.info(
+                    f"Unable to delete message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
+                )
+                return
+            await after.delete()
 
-        timeout = await self.config.guild(guild).timeout()
-
-        if SPOILER_REGEX.search(message.content):
-            if await self.config.guild(guild).spoiler_warn():
-                if await self.config.guild(guild).spoiler_warn_message_embed():
-                    if not channel.permissions_for(guild.me).embed_links:
-                        await self.config.guild(guild).spoiler_warn.set(False)
-                        log.info(
-                            f"Spoiler warning message embed is now disabled because I don't have embed_links permission in {channel.mention}."
-                        )
-                        return
-                    embed = discord.Embed(
-                        title="Warning",
-                        description=await self.config.guild(
-                            guild
-                        ).spoiler_warn_message(),
-                        color=await self.bot.get_embed_color(channel),
-                    )
-                    await channel.send(
-                        f"{message.author.mention}", embed=embed, delete_after=timeout
-                    )
-                else:
-                    await channel.send(
-                        f"{message.author.mention} {await self.config.guild(guild).spoiler_warn_message()}",
-                        delete_after=timeout,
-                    )
-            await self.log_channel_embed(guild, message)
-            await message.delete()
-
-    @commands.hybrid_group()
+    @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def nospoiler(self, ctx: commands.Context) -> None:
@@ -286,7 +215,6 @@ class NoSpoiler(commands.Cog):
         )
 
     @nospoiler.command()
-    @app_commands.describe(amount="The timeout must be between 5 and 120 seconds.")
     async def deleteafter(
         self, ctx: commands.Context, amount: commands.Range[int, 5, 120]
     ):
@@ -299,9 +227,6 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Timeout set to {amount} seconds!")
 
     @nospoiler.command()
-    @app_commands.describe(
-        channel="The channel where the bot will log the deleted spoiler messages."
-    )
     async def logchannel(
         self, ctx: commands.Context, channel: discord.TextChannel = None
     ) -> None:
@@ -336,7 +261,6 @@ class NoSpoiler(commands.Cog):
             await ctx.send("Spoiler warning message is now enabled.")
 
     @nospoiler.command()
-    @app_commands.describe(message="The spoiler warning message.")
     async def message(self, ctx: commands.Context, *, message: str) -> None:
         """Set the spoiler warning message."""
         if len(message) > 1024 or len(message) < 1:
@@ -351,23 +275,6 @@ class NoSpoiler(commands.Cog):
             "Usage of spoiler is not allowed in this server."
         )
         await ctx.send("Spoiler warning message has been reset.")
-
-    @nospoiler.command()
-    async def embed(self, ctx: commands.Context) -> None:
-        """Toggle the spoiler warning message embed."""
-        if not ctx.bot_permissions.embed_links:
-            return await ctx.send(
-                "I don't have embed_links permission to let you toggle the spoiler warning message embed."
-            )
-        spoiler_warn_message_embed = await self.config.guild(
-            ctx.guild
-        ).spoiler_warn_message_embed()
-        if spoiler_warn_message_embed:
-            await self.config.guild(ctx.guild).spoiler_warn_message_embed.set(False)
-            await ctx.send("Spoiler warning message embed is now disabled.")
-        else:
-            await self.config.guild(ctx.guild).spoiler_warn_message_embed.set(True)
-            await ctx.send("Spoiler warning message embed is now enabled.")
 
     @nospoiler.command(aliases=["view", "views"])
     @commands.bot_has_permissions(embed_links=True)
@@ -389,14 +296,12 @@ class NoSpoiler(commands.Cog):
             "Enabled: {enabled}\n"
             "Log Channel: {log_channel}\n"
             "Spoiler Warn: {spoiler_warn}\n"
-            "Spoiler Warn Message Embed: {spoiler_warn_message_embed}\n"
             "Timeout: {timeout} seconds\n"
             "Spoiler Warn Message: {spoiler_warn_message}"
         ).format(
             enabled=enabled,
             log_channel=log_channel,
             spoiler_warn=spoiler_warn,
-            spoiler_warn_message_embed=spoiler_warn_message_embed,
             timeout=timeout,
             spoiler_warn_message=spoiler_warn_message,
         )
@@ -408,7 +313,7 @@ class NoSpoiler(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
-    @nospoiler.command(with_app_command=False)
+    @nospoiler.command()
     async def version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog."""
         version = self.__version__
