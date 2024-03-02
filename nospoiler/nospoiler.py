@@ -215,13 +215,13 @@ class NoSpoiler(commands.Cog):
         )
 
     @nospoiler.command()
-    async def deleteafter(
-        self, ctx: commands.Context, amount: commands.Range[int, 5, 120]
+    async def timeout(
+        self, ctx: commands.Context, amount: commands.Range[int, 10, 120]
     ):
         """Set the delete after timeout.
 
         Default timeout is 10 seconds.
-        Timeout must be between 5 and 120 seconds.
+        Timeout must be between 10 and 120 seconds.
         """
         await self.config.guild(ctx.guild).timeout.set(amount)
         await ctx.send(f"Timeout set to {amount} seconds!")
@@ -290,7 +290,6 @@ class NoSpoiler(commands.Cog):
 
         spoiler_warn = config["spoiler_warn"]
         spoiler_warn_message = config["spoiler_warn_message"]
-        spoiler_warn_message_embed = config["spoiler_warn_message_embed"]
         timeout = config["timeout"]
         msg = (
             "Enabled: {enabled}\n"
