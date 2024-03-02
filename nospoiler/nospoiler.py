@@ -81,9 +81,8 @@ class NoSpoiler(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            await self.config.guild(guild).log_channel.set(None)
             log.info(
-                f"Log channel is now disabled because I don't have send_messages or embed_links permission in {log_channel.mention}."
+                f"I don't have send_messages or embed_links permission in {log_channel.mention}."
             )
             return
         if message.content:
@@ -120,11 +119,7 @@ class NoSpoiler(commands.Cog):
         if not await self.config.guild(message.guild).enabled():
             return
         if not message.guild.me.guild_permissions.manage_messages:
-            if await self.config.guild(message.guild).enabled():
-                await self.config.guild(message.guild).enabled.set(False)
-                log.info(
-                    f"Spoiler filter is now disabled because I don't have manage_messages permission."
-                )
+            log.info("NoSpoiler is missing permission to manage_messages to do anything")
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
@@ -136,7 +131,7 @@ class NoSpoiler(commands.Cog):
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(message.guild).spoiler_warn_message():
                 if not message.guild.me.guild_permissions.send_messages:
-                    log.info("i do not have permission to send messages.")
+                    log.info("i do not have permission to send_messages.")
                     return
                 await message.channel.send(
                     f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
@@ -150,7 +145,7 @@ class NoSpoiler(commands.Cog):
                 if attachment.is_spoiler():
                     if await self.config.guild(message.guild).spoiler_warn_message():
                         if not message.guild.me.guild_permissions.send_messages:
-                            log.info("i do not have permission to send messages")
+                            log.info("i do not have permission to send_messages")
                             return
                         await message.channel.send(
                             f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
