@@ -138,10 +138,10 @@ class NoSpoiler(commands.Cog):
                 if not message.guild.me.guild_permissions.send_messages:
                     log.info("i do not have permission to send messages.")
                     return
-                    await message.channel.send(
-                        f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                        delete_after=await self.config.guild(message.guild).timeout()
-                    )
+                await message.channel.send(
+                    f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
+                    delete_after=await self.config.guild(message.guild).timeout()
+                )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
             return
@@ -152,10 +152,10 @@ class NoSpoiler(commands.Cog):
                         if not message.guild.me.guild_permissions.send_messages:
                             log.info("i do not have permission to send messages")
                             return
-                            await message.channel.send(
-                                f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                                delete_after=await self.config.guild(message.guild).timeout(),
-                            )
+                        await message.channel.send(
+                            f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
+                            delete_after=await self.config.guild(message.guild).timeout(),
+                        )
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
 
