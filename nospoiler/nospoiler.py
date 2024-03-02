@@ -140,7 +140,7 @@ class NoSpoiler(commands.Cog):
                     return
                 await message.channel.send(
                     f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                    delete_after=await self.config.guild(message.guild).timeout()
+                    delete_after=await self.config.guild(message.guild).timeout(),
                 )
             await self.log_channel_embed(message.guild, message)
             await message.delete()
@@ -154,7 +154,9 @@ class NoSpoiler(commands.Cog):
                             return
                         await message.channel.send(
                             f"{message.author.mention} {await self.config.guild(message.guild).spoiler_warn_message()}",
-                            delete_after=await self.config.guild(message.guild).timeout(),
+                            delete_after=await self.config.guild(
+                                message.guild
+                            ).timeout(),
                         )
                     await self.log_channel_embed(message.guild, message, attachment)
                     await message.delete()
