@@ -100,12 +100,6 @@ class Hyperlink(commands.Cog):
         if await self.bot.is_automod_immune(message.author):
             return
         if HYPERLINK_REGEX.search(message.content):
-            if not message.channel.permissions_for(message.guild.me).manage_messages:
-                log.error(
-                    f"Unable to delete message in {message.channel.mention} in {message.guild.name} ({message.guild.id}) due to missing permissions."
-                )
-                return
-            await message.delete()
             if await self.config.guild(message.guild).log_channel():
                 await self.log_hyperlink(message.guild, message)
             if await self.config.guild(message.guild).delete_message():
@@ -118,6 +112,12 @@ class Hyperlink(commands.Cog):
                     f"{message.author.mention}, {await self.config.guild(message.guild).delete_message()}",
                     delete_after=await self.config.guild(message.guild).timeout(),
                 )
+            if not message.channel.permissions_for(message.guild.me).manage_messages:
+                log.error(
+                    f"Unable to delete message in {message.channel.mention} in {message.guild.name} ({message.guild.id}) due to missing permissions."
+                )
+                return
+            await message.delete()
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -132,12 +132,6 @@ class Hyperlink(commands.Cog):
         if await self.bot.is_automod_immune(after.author):
             return
         if HYPERLINK_REGEX.search(after.content):
-            if not after.channel.permissions_for(after.guild.me).manage_messages:
-                log.info(
-                    f"Unable to delete message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
-                )
-                return
-            await after.delete()
             if await self.config.guild(after.guild).log_channel():
                 await self.log_hyperlink(after.guild, after)
             if await self.config.guild(after.guild).delete_message():
@@ -150,6 +144,12 @@ class Hyperlink(commands.Cog):
                     f"{after.author.mention}, {await self.config.guild(after.guild).delete_message()}",
                     delete_after=await self.config.guild(after.guild).timeout(),
                 )
+            if not after.channel.permissions_for(after.guild.me).manage_messages:
+                log.info(
+                    f"Unable to delete message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
+                )
+                return
+            await after.delete()
 
     @commands.group()
     @commands.guild_only()
