@@ -30,8 +30,10 @@ import aiohttp
 import orjson
 from redbot.core.utils.chat_formatting import humanize_list, humanize_number
 
-log = logging.getLogger("red.maxcogs.themoviedb.converters")
+log = logging.getLogger("red.maxcogs.themoviedb.utils")
 
+BASE_MEDIA = "https://api.themoviedb.org/3/search"
+BASE_URL = "https://api.themoviedb.org/3"
 
 # Taken from flare's Dank memer cog.
 # https://github.com/flaree/flare-cogs/blob/1cc1ef9734f40daf2878f2c9dfe68a61e8767eab/dankmemer/dankmemer.py#L16-L19
@@ -43,19 +45,17 @@ async def apicheck(ctx):
 async def check_results(ctx, data, query):
     if not data["results"]:
         await ctx.send(f"No results found for {query}")
-        log.info(f"{ctx.author} searched for {query} but no results were found.")
         return False
     return True
-
 
 async def search_media(ctx, query, media_type):
     """Search for a movie or TV show on TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
-    base_url = f"https://api.themoviedb.org/3/search/{media_type}?api_key={api_key}&query={query}"
+    base_media = f"{BASE_MEDIA}/{media_type}?api_key={api_key}&query={query}"
     params = {"api_key": api_key}
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(base_url, params=params) as resp:
+            async with session.get(base_media, params=params) as resp:
                 if resp.status != 200:
                     log.info(
                         f"Something went wrong with TMDB. Status code: {resp.status}"
@@ -70,7 +70,7 @@ async def search_media(ctx, query, media_type):
 async def get_media_data(ctx, media_id: int, media_type: str):
     """Get data for a movie or TV show from TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
-    base_url = f"https://api.themoviedb.org/3/{media_type}/{media_id}?api_key={api_key}"
+    base_url = f"{BASE_URL}/{media_type}/{media_id}?api_key={api_key}"
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(base_url) as resp:
@@ -84,11 +84,8 @@ async def get_media_data(ctx, media_id: int, media_type: str):
     except Exception:
         pass
 
-
-# BUILD EMBEDS
-
-
 async def build_tvshow_embed(ctx, data, tv_id, i, results):
+    """Build an embed for a TV show."""
     if not data:
         return None
     embed = discord.Embed(
@@ -201,6 +198,7 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
 
 
 async def build_movie_embed(ctx, data, movie_id, i, results):
+    """Builds an embed for a movie."""
     if not data:
         return None
     embed = discord.Embed(
