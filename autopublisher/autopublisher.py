@@ -79,7 +79,9 @@ class AutoPublisher(commands.Cog):
             not message.guild.me.guild_permissions.manage_messages
             or not message.guild.me.guild_permissions.view_channel
         ):
-            log.info("AutoPublisher is missing the manage_messages and view_channel permission to do anything.")
+            log.info(
+                "AutoPublisher is missing the manage_messages and view_channel permission to do anything."
+            )
             return
         if "NEWS" not in message.guild.features:
             if await self.config.guild(message.guild).toggle():

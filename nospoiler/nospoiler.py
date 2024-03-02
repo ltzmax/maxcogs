@@ -119,7 +119,9 @@ class NoSpoiler(commands.Cog):
         if not await self.config.guild(message.guild).enabled():
             return
         if not message.guild.me.guild_permissions.manage_messages:
-            log.info("NoSpoiler is missing permission to manage_messages to do anything")
+            log.info(
+                "NoSpoiler is missing permission to manage_messages to do anything"
+            )
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
