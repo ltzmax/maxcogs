@@ -35,6 +35,7 @@ log = logging.getLogger("red.maxcogs.themoviedb.utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
 
+
 # Taken from flare's Dank memer cog.
 # https://github.com/flaree/flare-cogs/blob/1cc1ef9734f40daf2878f2c9dfe68a61e8767eab/dankmemer/dankmemer.py#L16-L19
 async def apicheck(ctx):
@@ -47,6 +48,7 @@ async def check_results(ctx, data, query):
         await ctx.send(f"No results found for {query}")
         return False
     return True
+
 
 async def search_media(ctx, query, media_type):
     """Search for a movie or TV show on TMDB."""
@@ -83,6 +85,7 @@ async def get_media_data(ctx, media_id: int, media_type: str):
                 return orjson.loads(data)
     except Exception:
         pass
+
 
 async def build_tvshow_embed(ctx, data, tv_id, i, results):
     """Build an embed for a TV show."""

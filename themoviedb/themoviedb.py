@@ -140,7 +140,9 @@ class TheMovieDB(commands.Cog):
         await ctx.typing()
         data = await search_media(ctx, query, "movie")
         if not data:
-            return await ctx.send("Something went wrong with TMDB. Please try again later.")
+            return await ctx.send(
+                "Something went wrong with TMDB. Please try again later."
+            )
         if not await check_results(ctx, data, query):
             return
         pages = []
@@ -181,7 +183,9 @@ class TheMovieDB(commands.Cog):
         await ctx.typing()
         data = await search_media(ctx, query, "tv")
         if not data:
-            return await ctx.send("Something went wrong with TMDB. Please try again later.")
+            return await ctx.send(
+                "Something went wrong with TMDB. Please try again later."
+            )
         if not await check_results(ctx, data, query):
             return
         pages = []
