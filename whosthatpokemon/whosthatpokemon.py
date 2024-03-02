@@ -231,12 +231,7 @@ class WhosThatPokemon(commands.Cog):
         # This is probably not the best way to do it, but it works perfectly fine.
         timeout = await view.wait()
         if timeout:
-            embed = discord.Embed(
-                title=":x: You ran out of time! :x:",
-                description=f"You took too long to answer.\nThe Pokemon was... **{english_name}**.",
-                color=0x8B0000,
-            )
-            return await ctx.send(f"{ctx.author.mention}", embed=embed)
+            return await ctx.send(f"{ctx.author.mention} You took too long to answer.\nThe Pokemon was... **{english_name}**.")
             log.info(f"{ctx.author} ran out of time to guess the pokemon.")
         if await self.config.user(ctx.author).all():
             await self.config.user(ctx.author).total_correct_guesses.set(
