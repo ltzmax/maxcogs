@@ -99,7 +99,7 @@ class NoSpoiler(commands.Cog):
             )
         if attachment is not None:
             embed.add_field(
-                name="Attachment:", value=f"[Attachment URL]({attachment.url})"
+                name="Attachment:", value=attachment.url
             )
             view = discord.ui.View()
             style = discord.ButtonStyle.gray
