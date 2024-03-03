@@ -261,7 +261,9 @@ class NoSpoiler(commands.Cog):
     async def message(self, ctx: commands.Context, *, message: Optional[str]):
         """Set the spoiler warning message."""
         if message is None:
-            await self.config.guild(ctx.guild).spoiler_warn_message.set("Usage of spoiler is not allowed in this server.")
+            await self.config.guild(ctx.guild).spoiler_warn_message.set(
+                "Usage of spoiler is not allowed in this server."
+            )
             await ctx.send("Spoiler warning message has been reset.")
         else:
             if len(message) > 1024 or len(message) < 3:
@@ -295,6 +297,7 @@ class NoSpoiler(commands.Cog):
             f"> **Timeout**: {timeout} seconds\n"
             f"> **Spoiler Warning Message**: {spoiler_warn_message}\n"
         )
+
     @commands.bot_has_permissions(embed_links=True)
     @nospoiler.command()
     async def version(self, ctx: commands.Context) -> None:
