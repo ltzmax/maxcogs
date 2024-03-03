@@ -28,11 +28,9 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 2.1.2 | ltzmax | ✅ |
-| CustomPing | Creates a custom ping embed to display latency statistics. | 1.0.4 | phenom4n4n, ltzmax | ✅ |
-| NoSpoiler | Prevent using spoiler messages | 1.5.4 | MAX | ✅ |
+| NoSpoiler | Prevent using spoiler messages | 1.5.5 | MAX | ✅ |
 | Hyperlink | Delete messages with hyperlinks in them | 0.0.1 | MAX | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
-| Ratings | Rate how simp you are or something | 1.0.2 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.1 | ltzmax, o-wo | ✅ |
 | RedUpdate | Update your bot to latest dev changes.| 1.4.2 | ltzmax, kuro | ✅ |

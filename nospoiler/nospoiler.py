@@ -40,7 +40,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.4"
+    __version__: Final[str] = "1.5.5"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/nospoiler"
 
     def __init__(self, bot: Red) -> None:
@@ -131,7 +131,7 @@ class NoSpoiler(commands.Cog):
             return
 
         if SPOILER_REGEX.search(message.content):
-            if await self.config.guild(message.guild).spoiler_warn_message():
+            if await self.config.guild(message.guild).spoiler_warn():
                 if not message.guild.me.guild_permissions.send_messages:
                     log.info("i do not have permission to send_messages.")
                     return
@@ -145,7 +145,7 @@ class NoSpoiler(commands.Cog):
         if attachments := message.attachments:
             for attachment in attachments:
                 if attachment.is_spoiler():
-                    if await self.config.guild(message.guild).spoiler_warn_message():
+                    if await self.config.guild(message.guild).spoiler_warn():
                         if not message.guild.me.guild_permissions.send_messages:
                             log.info("i do not have permission to send_messages")
                             return
@@ -173,7 +173,7 @@ class NoSpoiler(commands.Cog):
         if SPOILER_REGEX.search(after.content):
             if await self.config.guild(after.guild).log_channel():
                 await self.log_channel_embed(after.guild, after)
-            if await self.config.guild(after.guild).spoiler_warn_message():
+            if await self.config.guild(after.guild).spoiler_warn():
                 if not after.channel.permissions_for(after.guild.me).send_messages:
                     log.info(
                         f"Unable to send message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
@@ -248,35 +248,28 @@ class NoSpoiler(commands.Cog):
             await self.config.guild(ctx.guild).log_channel.set(channel.id)
             await ctx.send(f"Log channel has been set to {channel.mention}.")
 
-    @nospoiler.command(aliases=["warnmsg"])
-    async def warnmessage(self, ctx: commands.Context) -> None:
-        """Toggle warning message when a user tries to use spoiler."""
-        spoiler_warn = await self.config.guild(ctx.guild).spoiler_warn()
-        if spoiler_warn:
-            await self.config.guild(ctx.guild).spoiler_warn.set(False)
-            await ctx.send("Spoiler warning message is now disabled.")
-        else:
-            await self.config.guild(ctx.guild).spoiler_warn.set(True)
-            await ctx.send("Spoiler warning message is now enabled.")
+    @nospoiler.command()
+    async def togglewarnmsg(self, ctx: commands.Context, toggle: bool = None) -> None:
+        """Toggle the spoiler warning message on or off."""
+        toggle = not await self.config.guild(ctx.guild).spoiler_warn()
+        await self.config.guild(ctx.guild).spoiler_warn.set(toggle)
+        await ctx.send(
+            f"Spoiler warning message is now {'enabled' if toggle else 'disabled'}."
+        )
 
     @nospoiler.command()
-    async def message(self, ctx: commands.Context, *, message: str) -> None:
+    async def message(self, ctx: commands.Context, *, message: Optional[str]):
         """Set the spoiler warning message."""
-        if len(message) > 1024 or len(message) < 1:
-            return await ctx.send("Message must be between 1 and 1024 characters.")
-        await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
-        await ctx.send("Spoiler warning message has been set.")
-
-    @nospoiler.command(aliases=["resetwarnmsg", "resetwarn"])
-    async def resetwarnmessage(self, ctx: commands.Context) -> None:
-        """Reset the spoiler warning message to default."""
-        await self.config.guild(ctx.guild).spoiler_warn_message.set(
-            "Usage of spoiler is not allowed in this server."
-        )
-        await ctx.send("Spoiler warning message has been reset.")
+        if message is None:
+            await self.config.guild(ctx.guild).spoiler_warn_message.set("Usage of spoiler is not allowed in this server.")
+            await ctx.send("Spoiler warning message has been reset.")
+        else:
+            if len(message) > 1024 or len(message) < 3:
+                return await ctx.send("Message must be between 3 and 1024 characters.")
+            await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
+            await ctx.send("Spoiler warning message has been set.")
 
     @nospoiler.command(aliases=["view", "views"])
-    @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx: commands.Context) -> None:
         """Show the settings."""
         config = await self.config.guild(ctx.guild).all()
@@ -288,28 +281,20 @@ class NoSpoiler(commands.Cog):
             log_channel = ctx.guild.get_channel(log_channel).mention
 
         spoiler_warn = config["spoiler_warn"]
+        if spoiler_warn:
+            spoiler_warn = "Enabled"
+        else:
+            spoiler_warn = "Disabled"
         spoiler_warn_message = config["spoiler_warn_message"]
         timeout = config["timeout"]
-        msg = (
-            "Enabled: {enabled}\n"
-            "Log Channel: {log_channel}\n"
-            "Spoiler Warn: {spoiler_warn}\n"
-            "Timeout: {timeout} seconds\n"
-            "Spoiler Warn Message: {spoiler_warn_message}"
-        ).format(
-            enabled=enabled,
-            log_channel=log_channel,
-            spoiler_warn=spoiler_warn,
-            timeout=timeout,
-            spoiler_warn_message=spoiler_warn_message,
+        await ctx.send(
+            "## Nospoiler Settings\n"
+            f"> **Enabled**: {enabled}\n"
+            f"> **Log Channel**: {log_channel}\n"
+            f"> **Spoiler Warning**: {spoiler_warn}\n"
+            f"> **Timeout**: {timeout} seconds\n"
+            f"> **Spoiler Warning Message**: {spoiler_warn_message}\n"
         )
-        embed = discord.Embed(
-            title="Spoiler Filter Settings",
-            description=msg,
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
-
     @commands.bot_has_permissions(embed_links=True)
     @nospoiler.command()
     async def version(self, ctx: commands.Context) -> None:
