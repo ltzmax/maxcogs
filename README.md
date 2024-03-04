@@ -28,7 +28,7 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 2.1.2 | ltzmax | ✅ |
-| NoSpoiler | Prevent using spoiler messages | 1.5.5 | MAX | ✅ |
+| NoSpoiler | Prevent using spoiler messages | 1.5.6 | MAX | ✅ |
 | Hyperlink | Delete messages with hyperlinks in them | 0.0.1 | MAX | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
