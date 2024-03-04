@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import re
 import logging
 from typing import Any, Dict, Final, Optional, Pattern, Union
@@ -73,7 +74,7 @@ class NoSpoiler(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
-    
+
     async def validate_tagscript(self, tagscript: str) -> bool:
         length = len(tagscript)
         if length > TAGSCRIPT_LIMIT:
@@ -134,9 +135,13 @@ class NoSpoiler(commands.Cog):
         if SPOILER_REGEX.search(message.content):
             if await self.config.guild(message.guild).spoiler_warn():
                 if not message.channel.permissions_for(message.guild.me).send_messages:
-                    log.info(f"i do not have permission to send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})")
+                    log.info(
+                        f"i do not have permission to send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
+                    )
                     return
-                warnmessage = await self.config.guild(message.guild).spoiler_warn_message()
+                warnmessage = await self.config.guild(
+                    message.guild
+                ).spoiler_warn_message()
                 delete_after = await self.config.guild(message.guild).timeout()
                 color = await self.bot.get_embed_color(message.channel)
                 kwargs = process_tagscript(
@@ -166,10 +171,16 @@ class NoSpoiler(commands.Cog):
             for attachment in attachments:
                 if attachment.is_spoiler():
                     if await self.config.guild(message.guild).spoiler_warn():
-                        if not message.channel.permissions_for(message.guild.me).send_messages:
-                            log.info(f"i do not have permission to send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})")
+                        if not message.channel.permissions_for(
+                            message.guild.me
+                        ).send_messages:
+                            log.info(
+                                f"i do not have permission to send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
+                            )
                             return
-                        warnmessage = await self.config.guild(message.guild).spoiler_warn_message()
+                        warnmessage = await self.config.guild(
+                            message.guild
+                        ).spoiler_warn_message()
                         delete_after = await self.config.guild(message.guild).timeout()
                         color = await self.bot.get_embed_color(message.channel)
                         kwargs = process_tagscript(
@@ -186,7 +197,9 @@ class NoSpoiler(commands.Cog):
                         )
                         kwargs["delete_after"] = delete_after
                         await message.channel.send(**kwargs)
-                    if not message.channel.permissions_for(message.guild.me).manage_messages:
+                    if not message.channel.permissions_for(
+                        message.guild.me
+                    ).manage_messages:
                         log.info(
                             f"i do not have permission to manage_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
                         )
@@ -214,7 +227,9 @@ class NoSpoiler(commands.Cog):
                         f"Unable to send message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
                     )
                     return
-                warnmessage = await self.config.guild(after.guild).spoiler_warn_message()
+                warnmessage = await self.config.guild(
+                    after.guild
+                ).spoiler_warn_message()
                 delete_after = await self.config.guild(after.guild).timeout()
                 color = await self.bot.get_embed_color(after.channel)
                 kwargs = process_tagscript(
