@@ -80,191 +80,103 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
     if not data:
         return None
     embed = discord.Embed(
-        title=data.get("name")[:256] if data else "No title available.",
+        title=data.get("name", "No title available.")[:256],
         url=f"https://www.themoviedb.org/tv/{tv_id}",
-        description=(
-            data["overview"][:1048] if data["overview"] else "No description available."
-        ),
+        description=data.get("overview", "No description available.")[:1048],
         colour=await ctx.embed_colour(),
     )
-    if data["poster_path"]:
+    fields = {
+        "Original Name": data.get("original_name"),
+        "First Air Date": f"<t:{int(datetime.strptime(data['first_air_date'], '%Y-%m-%d').timestamp())}:D>" if data.get("first_air_date") else None,
+        "Last Episode Air Date": f"<t:{int(datetime.strptime(data['last_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>" if data.get('last_episode_to_air') else None,
+        "Next Episode Air Date": f"<t:{int(datetime.strptime(data['next_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>" if data.get('next_episode_to_air') else None,
+        "Last Air Date": f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>" if data.get('last_air_date') else None,
+        "Episode Run Time": f"{data['episode_run_time'][0]} minutes" if data.get("episode_run_time") else None,
+        "Number of Episodes": humanize_number(data["number_of_episodes"]) if data.get("number_of_episodes") else None,
+        "Number of Seasons": data.get("number_of_seasons"),
+        "Status": data.get("status"),
+        "In Production": "Yes" if data.get("in_production") else "No",
+        "Type": data.get("type"),
+        "Networks": humanize_list([i["name"] for i in data.get("networks", [])]),
+        "Spoken Languages": humanize_list([i["english_name"] for i in data.get("spoken_languages", [])]),
+        "Genres": humanize_list([i["name"] for i in data.get("genres", [])]),
+        "Production Companies": humanize_list([i["name"] for i in data.get("production_companies", [])]),
+        "Production Countries": humanize_list([i["name"] for i in data.get("production_countries", [])]),
+        "Created By": ", ".join([i["name"] for i in data.get("created_by", [])]),
+        "Popularity": humanize_number(data["popularity"]) if data.get("popularity") else None,
+        "Vote Average": data.get("vote_average"),
+        "Vote Count": humanize_number(data["vote_count"]) if data.get("vote_count") else None,
+        "Adult": "Yes" if data.get("adult") is True else "No",
+        "Homepage": data.get("homepage"),
+        "Tagline": data.get("tagline"),
+    }
+    total_length = len(embed.title) + len(embed.description)
+    for name, value in fields.items():
+        if value:
+            field_length = len(name) + len(str(value))
+            if total_length + field_length > 6000:
+                break
+            inline = name not in ["Original Name"]
+            embed.add_field(name=name, value=value, inline=inline)
+            total_length += field_length
+    if data.get("poster_path"):
         embed.set_thumbnail(
             url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
         )
-    if data["backdrop_path"]:
+    if data.get("backdrop_path"):
         embed.set_image(
             url=f"https://image.tmdb.org/t/p/original{data['backdrop_path']}"
         )
-    if data["original_name"]:
-        embed.add_field(
-            name="Original Name:", value=data["original_name"], inline=False
-        )
-    if data["first_air_date"]:
-        embed.add_field(
-            name="First Air Date:",
-            value=f"<t:{int(datetime.strptime(data['first_air_date'], '%Y-%m-%d').timestamp())}:D>",
-        )
-    if data["last_episode_to_air"]:
-        embed.add_field(
-            name="Last Episode Air Date:",  # When the last episode aired.
-            value=f"<t:{int(datetime.strptime(data['last_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>",
-        )
-    if data["next_episode_to_air"]:
-        embed.add_field(
-            name="Next Episode Air Date:",  # When the next episode will air.
-            value=f"<t:{int(datetime.strptime(data['next_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>",
-        )
-    if data["last_air_date"]:
-        embed.add_field(
-            name="Last Air Date:",  # When the show ended.
-            value=f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>",
-        )
-    if data["episode_run_time"]:
-        embed.add_field(
-            name="Episode Run Time:",
-            value=f"{data['episode_run_time'][0]} minutes",
-        )
-    if data["number_of_episodes"]:
-        embed.add_field(
-            name="Number of Episodes:",
-            value=humanize_number(data["number_of_episodes"]),
-        )
-    if data["number_of_seasons"]:
-        embed.add_field(name="Number of Seasons:", value=data["number_of_seasons"])
-    if data["status"]:
-        embed.add_field(name="Status:", value=data["status"])
-    if data["in_production"]:
-        embed.add_field(
-            name="In Production:",
-            value="Yes" if data["in_production"] else "No",
-        )
-    if data["type"]:
-        embed.add_field(name="Type:", value=data["type"])
-    if data["networks"]:
-        embed.add_field(
-            name="Networks:",
-            value=humanize_list([i["name"] for i in data["networks"]]),
-        )
-    if data["spoken_languages"]:
-        embed.add_field(
-            name="Spoken Languages:",
-            value=humanize_list([i["english_name"] for i in data["spoken_languages"]]),
-        )
-    if data["genres"]:
-        embed.add_field(
-            name="Genres:",
-            value=humanize_list([i["name"] for i in data["genres"]]),
-            inline=False,
-        )
-    if data["production_companies"]:
-        embed.add_field(
-            name="Production Companies:",
-            value=humanize_list([i["name"] for i in data["production_companies"]]),
-            inline=False,
-        )
-    if data["production_countries"]:
-        embed.add_field(
-            name="Production Countries:",
-            value=humanize_list([i["name"] for i in data["production_countries"]]),
-            inline=False,
-        )
-    if data["created_by"]:
-        embed.add_field(
-            name="Created By:",
-            value=", ".join([i["name"] for i in data["created_by"]]),
-        )
-    if data["popularity"]:
-        embed.add_field(name="Popularity:", value=humanize_number(data["popularity"]))
-    if data["vote_average"]:
-        embed.add_field(name="Vote Average:", value=data["vote_average"])
-    if data["vote_count"]:
-        embed.add_field(name="Vote Count:", value=humanize_number(data["vote_count"]))
-    embed.add_field(name="Adult:", value="Yes" if data["adult"] is True else "No")
-    if data["homepage"]:
-        embed.add_field(name="Homepage:", value=data["homepage"])
-    if data["tagline"]:
-        embed.add_field(name="Tagline:", value=data["tagline"], inline=False)
     embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
     return embed
-
 
 async def build_movie_embed(ctx, data, movie_id, i, results):
     """Builds an embed for a movie."""
     if not data:
         return None
     embed = discord.Embed(
-        title=data.get("title")[:256] if data else "No title available.",
+        title=data.get("title", "No title available.")[:256],
         url=f"https://www.themoviedb.org/movie/{movie_id}",
         description=(
             data["overview"][:1048] if data["overview"] else "No description available."
         ),
         colour=await ctx.embed_colour(),
     )
-    if data["poster_path"]:
+    fields = {
+        "Original Title": data.get("original_title"),
+        "Release Date": f"<t:{int(datetime.strptime(data['release_date'], '%Y-%m-%d').timestamp())}:D>" if data.get("release_date") else None,
+        "Runtime": f"{data['runtime']} minutes" if data.get("runtime") else None,
+        "Status": data.get("status"),
+        "Belongs to Collection": data.get("belongs_to_collection").get("name") if data.get("belongs_to_collection") else None,
+        "Genres": humanize_list([i["name"] for i in data.get("genres", [])]),
+        "Production Companies": humanize_list([i["name"] for i in data.get("production_companies", [])]),
+        "Production Countries": humanize_list([i["name"] for i in data.get("production_countries", [])]),
+        "Spoken Languages": humanize_list([i["english_name"] for i in data.get("spoken_languages", [])]),
+        "Revenue": f"${humanize_number(data['revenue'])}" if data.get("revenue") else None,
+        "Budget": f"${humanize_number(data['budget'])}" if data.get("budget") else None,
+        "Popularity": humanize_number(data["popularity"]) if data.get("popularity") else None,
+        "Vote Average": data.get("vote_average"),
+        "Vote Count": humanize_number(data["vote_count"]) if data.get("vote_count") else None,
+        "Adult": "Yes" if data.get("adult") is True else "No",
+        "Homepage": data.get("homepage"),
+        "Tagline": data.get("tagline"),
+    }
+    total_length = len(embed.title) + len(embed.description)
+    for name, value in fields.items():
+        if value:
+            field_length = len(name) + len(str(value))
+            if total_length + field_length > 6000:
+                break
+            inline = name not in ["Original Title"]
+            embed.add_field(name=name, value=value, inline=inline)
+            total_length += field_length
+    if data.get("poster_path"):
         embed.set_thumbnail(
             url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
         )
-    if data["backdrop_path"]:
+    if data.get("backdrop_path"):
         embed.set_image(
             url=f"https://image.tmdb.org/t/p/original{data['backdrop_path']}"
         )
-    if data["original_title"]:
-        embed.add_field(
-            name="Original Title:", value=data["original_title"], inline=False
-        )
-    if data["release_date"]:
-        embed.add_field(
-            name="Release Date:",
-            value=f"<t:{int(datetime.strptime(data['release_date'], '%Y-%m-%d').timestamp())}:D>",
-        )
-    if data["runtime"]:
-        embed.add_field(name="Runtime:", value=humanize_number(data["runtime"]))
-    if data["status"]:
-        embed.add_field(name="Status:", value=data["status"])
-    if data["belongs_to_collection"]:
-        embed.add_field(
-            name="Belongs to Collection:",
-            value=data["belongs_to_collection"]["name"],
-        )
-    if data["genres"]:
-        embed.add_field(
-            name="Genres:",
-            value=humanize_list([i["name"] for i in data["genres"]]),
-            inline=False,
-        )
-    if data["production_companies"]:
-        embed.add_field(
-            name="Production Companies:",
-            value=humanize_list([i["name"] for i in data["production_companies"]]),
-            inline=False,
-        )
-    if data["production_countries"]:
-        embed.add_field(
-            name="Production Countries:",
-            value=humanize_list([i["name"] for i in data["production_countries"]]),
-            inline=False,
-        )
-    if data["spoken_languages"]:
-        embed.add_field(
-            name="Spoken Languages:",
-            value=humanize_list([i["english_name"] for i in data["spoken_languages"]]),
-        )
-    if data["original_language"]:
-        embed.add_field(name="Original Language:", value=data["original_language"])
-    if data["revenue"]:
-        embed.add_field(name="Revenue:", value=f"${humanize_number(data['revenue'])}")
-    if data["budget"]:
-        embed.add_field(name="Budget:", value=f"${humanize_number(data['budget'])}")
-    if data["popularity"]:
-        embed.add_field(name="Popularity:", value=humanize_number(data["popularity"]))
-    if data["vote_average"]:
-        embed.add_field(name="Vote Average:", value=data["vote_average"])
-    if data["vote_count"]:
-        embed.add_field(name="Vote Count:", value=humanize_number(data["vote_count"]))
-    embed.add_field(name="Adult:", value="Yes" if data["adult"] is True else "No")
-    if data["homepage"]:
-        embed.add_field(name="Homepage:", value=data["homepage"])
-    if data["tagline"]:
-        embed.add_field(name="Tagline:", value=data["tagline"], inline=False)
     embed.set_footer(text=f"Page {i+1}/{len(results)} | Powered by TMDB")
     return embed
