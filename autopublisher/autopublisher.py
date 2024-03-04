@@ -38,7 +38,7 @@ log = logging.getLogger("red.maxcogs.autopublisher")
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.1.2"
+    __version__: Final[str] = "2.1.3"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/autopublisher"
 
@@ -67,45 +67,46 @@ class AutoPublisher(commands.Cog):
         """Publish message to news channel."""
         if message.guild is None:
             return
-        if not await self.config.guild(message.guild).toggle():
-            return
-        if message.channel.id in (
-            await self.config.guild(message.guild).ignored_channels()
-        ):
-            return
-        if await self.bot.cog_disabled_in_guild(self, message.guild):
-            return
+
+        # Reduce the number of return statements: Having many return statements can make the code harder to follow.
+        # You can combine some of the conditions using logical operators. Cool right?
+        isAutoPublisherEnabled = await self.config.guild(message.guild).toggle()
+        ignoredChannels = await self.config.guild(message.guild).ignored_channels()
+        isCogDisabled = await self.bot.cog_disabled_in_guild(self, message.guild)
+        hasPermissions = (
+            message.guild.me.guild_permissions.manage_messages
+            and message.guild.me.guild_permissions.view_channel
+        )
+        isNewsFeatureEnabled = "NEWS" in message.guild.features
+        isTextChannel = isinstance(message.channel, discord.TextChannel)
+        isNewsChannel = isTextChannel and message.channel.is_news()
+
         if (
-            not message.guild.me.guild_permissions.manage_messages
-            or not message.guild.me.guild_permissions.view_channel
+            not isAutoPublisherEnabled
+            or message.channel.id in ignoredChannels
+            or isCogDisabled
+            or not hasPermissions
         ):
-            log.info(
-                "AutoPublisher is missing the manage_messages and view_channel permission to do anything."
-            )
             return
-        if "NEWS" not in message.guild.features:
-            if await self.config.guild(message.guild).toggle():
+        if not isNewsFeatureEnabled:
+            if isAutoPublisherEnabled:
                 await self.config.guild(message.guild).toggle.set(False)
                 log.info(
                     f"AutoPublisher has been disabled in {message.guild} due to News Channel feature is not enabled."
                 )
             return
-        if (
-            isinstance(message.channel, discord.TextChannel)
-            and not message.channel.is_news()
-        ):
+        if not isNewsChannel and isTextChannel:
             return
-        if isinstance(message.channel, discord.TextChannel):
-            if message.channel.is_news():
-                try:
-                    await asyncio.sleep(0.5)
-                    await asyncio.wait_for(message.publish(), timeout=60)
-                except (
-                    discord.HTTPException,
-                    discord.Forbidden,
-                    asyncio.TimeoutError,
-                ) as e:
-                    log.error(e)
+        if isTextChannel and isNewsChannel:
+            try:
+                await asyncio.sleep(0.5)
+                await asyncio.wait_for(message.publish(), timeout=60)
+            except (
+                discord.HTTPException,
+                discord.Forbidden,
+                asyncio.TimeoutError,
+            ) as e:
+                log.error(e)
 
     @commands.group(aliases=["aph", "autopub"])
     @commands.guild_only()

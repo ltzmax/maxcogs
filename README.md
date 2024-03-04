@@ -27,7 +27,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
-| AutoPublisyher | Automatically push news channel messages. | 2.1.2 | ltzmax | ✅ |
+| AutoPublisyher | Automatically push news channel messages. | 2.1.3 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.6 | MAX | ✅ |
 | Hyperlink | Delete messages with hyperlinks in them | 0.0.1 | MAX | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
