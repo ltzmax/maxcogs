@@ -29,14 +29,10 @@ from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import box
 
 HYPERLINK_REGEX = re.compile("^\[.*\]\(https?://.*\)$")
+PERMISSION_ERROR_SEND = "Unable to send message in {} in {} ({}) due to missing permissions."
+PERMISSION_ERROR_DELETE = "Unable to delete message in {} in {} ({}) due to missing permissions."
 
 log = logging.getLogger("red.maxcogs.hyperlink")
-
-# This is just to avoid people trying to post hyperlinks in channels with scam or other malicious content,
-# This helps prevent that, but it's not foolproof and should not be relied on as a primary method of protection.
-# you should still have a good moderation team and a good moderation bot to help prevent these things from happening in the first place,
-# but this is just a simple cog to help prevent some of the more common scams and malicious links from being posted in big servers with a lot of people.
-# Scam links has become a common issue in big servers and some small servers, They've started to use URL shortners and hyperlinking text to make it look less suspicious.
 
 
 class Hyperlink(commands.Cog):
@@ -89,8 +85,9 @@ class Hyperlink(commands.Cog):
         embed.add_field(name="Channel:", value=message.channel.mention)
         await channel.send(embed=embed)
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    # here i am avoiding Repetition, The code inside on_message and on_message_edit is almost identical. 
+    # I put the common code into a separate method and call it from both listeners.
+    async def process_message(self, message: discord.Message):
         if message.author.bot:
             return
         if not await self.config.guild(message.guild).delete_hyperlinks():
@@ -104,52 +101,25 @@ class Hyperlink(commands.Cog):
                 await self.log_hyperlink(message.guild, message)
             if await self.config.guild(message.guild).delete_message():
                 if not message.channel.permissions_for(message.guild.me).send_messages:
-                    log.error(
-                        f"Unable to send message in {message.channel.mention} in {message.guild.name} ({message.guild.id}) due to missing permissions."
-                    )
+                    log.error(PERMISSION_ERROR_SEND.format(message.channel.mention, message.guild.name, message.guild.id))
                     return
                 await message.channel.send(
                     f"{message.author.mention}, {await self.config.guild(message.guild).delete_message()}",
                     delete_after=await self.config.guild(message.guild).timeout(),
                 )
             if not message.channel.permissions_for(message.guild.me).manage_messages:
-                log.error(
-                    f"Unable to delete message in {message.channel.mention} in {message.guild.name} ({message.guild.id}) due to missing permissions."
-                )
+                log.error(PERMISSION_ERROR_DELETE.format(message.channel.mention, message.guild.name, message.guild.id))
                 return
             await message.delete()
 
     @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        await self.process_message(message)
+
+    @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        if before.content == after.content:
-            return
-        if not await self.config.guild(after.guild).delete_hyperlinks():
-            return
-        if await self.bot.cog_disabled_in_guild(self, after.guild):
-            return
-        if after.author.bot:
-            return
-        if await self.bot.is_automod_immune(after.author):
-            return
-        if HYPERLINK_REGEX.search(after.content):
-            if await self.config.guild(after.guild).log_channel():
-                await self.log_hyperlink(after.guild, after)
-            if await self.config.guild(after.guild).delete_message():
-                if not after.channel.permissions_for(after.guild.me).send_messages:
-                    log.info(
-                        f"Unable to send message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
-                    )
-                    return
-                await after.channel.send(
-                    f"{after.author.mention}, {await self.config.guild(after.guild).delete_message()}",
-                    delete_after=await self.config.guild(after.guild).timeout(),
-                )
-            if not after.channel.permissions_for(after.guild.me).manage_messages:
-                log.info(
-                    f"Unable to delete message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
-                )
-                return
-            await after.delete()
+        if before.content != after.content:
+            await self.process_message(after)
 
     @commands.group()
     @commands.guild_only()
