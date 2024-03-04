@@ -49,7 +49,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.6"
+    __version__: Final[str] = "1.5.7"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/nospoiler"
 
     def __init__(self, bot: Red) -> None:
@@ -101,160 +101,92 @@ class NoSpoiler(commands.Cog):
             )
             return
         color = await self.bot.get_embed_color(log_channel)
-        embed = discord.Embed(
-            title="Deleted Spoiler Message",
-            color=color,
-            description=f"**Message:**\n{box(message.content, lang='yaml') if len(message.content) < 2024 else 'Message too long to display.'}",
-        )
-        embed.add_field(name="Member:", value=message.author.mention)
-        embed.add_field(name="Channel:", value=message.channel.mention)
+        if message.content:
+            embed = discord.Embed(
+                title="Spoiler Message Deleted",
+                description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.\n{box(message.content, lang='yaml')}",
+                color=color,
+            )
+        else:
+            embed = discord.Embed(
+                title="Spoiler Message Deleted",
+                description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.",
+                color=color,
+            )
         if attachment:
-            embed.add_field(name="Attachment:", value=attachment.url, inline=False)
-        embed.set_footer(text=f"Author ID: {message.author.id}")
+            embed.add_field(
+                name="Attachment:",
+                value=attachment.url,
+                inline=False,
+            )
+        embed.set_footer(text=f"Message ID: {message.id}")
         await log_channel.send(embed=embed)
+
+    async def handle_spoiler_message(self, message: discord.Message, attachment=None):
+        if not message.channel.permissions_for(message.guild.me).manage_messages or not message.channel.permissions_for(message.guild.me).send_messages:
+            log.info(
+                f"i do not have permission to manage_messages or send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
+            )
+            return
+
+        if await self.config.guild(message.guild).log_channel():
+            await self.log_channel_embed(message.guild, message, attachment)
+        if await self.config.guild(message.guild).spoiler_warn():
+            await self.send_warning_message(message)
+        await message.delete()
+
+    async def send_warning_message(self, message: discord.Message):
+        warnmessage = await self.config.guild(message.guild).spoiler_warn_message()
+        delete_after = await self.config.guild(message.guild).timeout()
+        color = await self.bot.get_embed_color(message.channel)
+        kwargs = process_tagscript(
+            warnmessage,
+            {
+                "server": tse.GuildAdapter(message.guild),
+                "member": tse.MemberAdapter(message.author),
+                "author": tse.MemberAdapter(message.author),
+                "color": tse.StringAdapter(str(color)),
+            },
+        )
+        kwargs["allowed_mentions"] = discord.AllowedMentions(everyone=False, roles=False)
+        kwargs["delete_after"] = delete_after
+        await message.channel.send(**kwargs)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """handle spoiler messages"""
         if message.guild is None:
             return
-        if not await self.config.guild(message.guild).enabled():
+        if message.author.bot:
             return
-        if not message.guild.me.guild_permissions.manage_messages:
-            log.info(
-                f"NoSpoiler is missing permission to manage_messages to do anything in {message.guild.name} ({message.guild.id})"
-            )
+        if not await self.config.guild(message.guild).enabled():
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
-        if message.author.bot:
-            return
         if await self.bot.is_automod_immune(message.author):
             return
-
         if SPOILER_REGEX.search(message.content):
-            if await self.config.guild(message.guild).spoiler_warn():
-                if not message.channel.permissions_for(message.guild.me).send_messages:
-                    log.info(
-                        f"i do not have permission to send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
-                    )
-                    return
-                warnmessage = await self.config.guild(
-                    message.guild
-                ).spoiler_warn_message()
-                delete_after = await self.config.guild(message.guild).timeout()
-                color = await self.bot.get_embed_color(message.channel)
-                kwargs = process_tagscript(
-                    warnmessage,
-                    {
-                        "server": tse.GuildAdapter(message.guild),
-                        "member": tse.MemberAdapter(message.author),
-                        "author": tse.MemberAdapter(message.author),
-                        "color": tse.StringAdapter(str(color)),
-                    },
-                )
-                kwargs["allowed_mentions"] = discord.AllowedMentions(
-                    everyone=False, roles=False
-                )
-                kwargs["delete_after"] = delete_after
-                await message.channel.send(**kwargs)
-            if not message.channel.permissions_for(message.guild.me).manage_messages:
-                log.info(
-                    f"i do not have permission to manage_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
-                )
-                return
-            if await self.config.guild(message.guild).log_channel():
-                await self.log_channel_embed(message.guild, message)
-            await message.delete()
-            return
-        if attachments := message.attachments:
-            for attachment in attachments:
+            await self.handle_spoiler_message(message)
+        elif message.attachments:
+            for attachment in message.attachments:
                 if attachment.is_spoiler():
-                    if await self.config.guild(message.guild).spoiler_warn():
-                        if not message.channel.permissions_for(
-                            message.guild.me
-                        ).send_messages:
-                            log.info(
-                                f"i do not have permission to send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
-                            )
-                            return
-                        warnmessage = await self.config.guild(
-                            message.guild
-                        ).spoiler_warn_message()
-                        delete_after = await self.config.guild(message.guild).timeout()
-                        color = await self.bot.get_embed_color(message.channel)
-                        kwargs = process_tagscript(
-                            warnmessage,
-                            {
-                                "server": tse.GuildAdapter(message.guild),
-                                "member": tse.MemberAdapter(message.author),
-                                "author": tse.MemberAdapter(message.author),
-                                "color": tse.StringAdapter(str(color)),
-                            },
-                        )
-                        kwargs["allowed_mentions"] = discord.AllowedMentions(
-                            everyone=False, roles=False
-                        )
-                        kwargs["delete_after"] = delete_after
-                        await message.channel.send(**kwargs)
-                    if not message.channel.permissions_for(
-                        message.guild.me
-                    ).manage_messages:
-                        log.info(
-                            f"i do not have permission to manage_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
-                        )
-                        return
-                    if await self.config.guild(message.guild).log_channel():
-                        await self.log_channel_embed(message.guild, message, attachment)
-                    await message.delete()
+                    await self.handle_spoiler_message(message, attachment)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         if before.content == after.content:
             return
+        if after.author.bot:
+            return
         if not await self.config.guild(after.guild).enabled():
             return
         if await self.bot.cog_disabled_in_guild(self, after.guild):
             return
-        if after.author.bot:
-            return
         if await self.bot.is_automod_immune(after.author):
             return
         if SPOILER_REGEX.search(after.content):
-            if await self.config.guild(after.guild).spoiler_warn():
-                if not after.channel.permissions_for(after.guild.me).send_messages:
-                    log.info(
-                        f"Unable to send message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
-                    )
-                    return
-                warnmessage = await self.config.guild(
-                    after.guild
-                ).spoiler_warn_message()
-                delete_after = await self.config.guild(after.guild).timeout()
-                color = await self.bot.get_embed_color(after.channel)
-                kwargs = process_tagscript(
-                    warnmessage,
-                    {
-                        "server": tse.GuildAdapter(after.guild),
-                        "member": tse.MemberAdapter(after.author),
-                        "author": tse.MemberAdapter(after.author),
-                        "color": tse.StringAdapter(str(color)),
-                    },
-                )
-                kwargs["allowed_mentions"] = discord.AllowedMentions(
-                    everyone=False, roles=False
-                )
-                kwargs["delete_after"] = delete_after
-                await after.channel.send(**kwargs)
-            if not after.channel.permissions_for(after.guild.me).manage_messages:
-                log.info(
-                    f"Unable to delete message in {after.channel.mention} in {after.guild.name} ({after.guild.id}) due to missing permissions."
-                )
-                return
-            if await self.config.guild(after.guild).log_channel():
-                await self.log_channel_embed(after.guild, after)
-            await after.delete()
-
+            await self.handle_spoiler_message(after)
+            
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
