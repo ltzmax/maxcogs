@@ -29,8 +29,12 @@ from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import box
 
 HYPERLINK_REGEX = re.compile("^\[.*\]\(https?://.*\)$")
-PERMISSION_ERROR_SEND = "Unable to send message in {} in {} ({}) due to missing permissions."
-PERMISSION_ERROR_DELETE = "Unable to delete message in {} in {} ({}) due to missing permissions."
+PERMISSION_ERROR_SEND = (
+    "Unable to send message in {} in {} ({}) due to missing permissions."
+)
+PERMISSION_ERROR_DELETE = (
+    "Unable to delete message in {} in {} ({}) due to missing permissions."
+)
 
 log = logging.getLogger("red.maxcogs.hyperlink")
 
@@ -85,7 +89,7 @@ class Hyperlink(commands.Cog):
         embed.add_field(name="Channel:", value=message.channel.mention)
         await channel.send(embed=embed)
 
-    # here i am avoiding Repetition, The code inside on_message and on_message_edit is almost identical. 
+    # here i am avoiding Repetition, The code inside on_message and on_message_edit is almost identical.
     # I put the common code into a separate method and call it from both listeners.
     async def process_message(self, message: discord.Message):
         if message.author.bot:
@@ -101,14 +105,24 @@ class Hyperlink(commands.Cog):
                 await self.log_hyperlink(message.guild, message)
             if await self.config.guild(message.guild).delete_message():
                 if not message.channel.permissions_for(message.guild.me).send_messages:
-                    log.error(PERMISSION_ERROR_SEND.format(message.channel.mention, message.guild.name, message.guild.id))
+                    log.error(
+                        PERMISSION_ERROR_SEND.format(
+                            message.channel.mention,
+                            message.guild.name,
+                            message.guild.id,
+                        )
+                    )
                     return
                 await message.channel.send(
                     f"{message.author.mention}, {await self.config.guild(message.guild).delete_message()}",
                     delete_after=await self.config.guild(message.guild).timeout(),
                 )
             if not message.channel.permissions_for(message.guild.me).manage_messages:
-                log.error(PERMISSION_ERROR_DELETE.format(message.channel.mention, message.guild.name, message.guild.id))
+                log.error(
+                    PERMISSION_ERROR_DELETE.format(
+                        message.channel.mention, message.guild.name, message.guild.id
+                    )
+                )
                 return
             await message.delete()
 
