@@ -49,43 +49,31 @@ async def check_results(ctx, data, query):
         return False
     return True
 
+async def fetch_data(ctx, url):
+    """Fetch data from a URL."""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    log.error(f"An error occurred: {resp.status}")
+                    return
+                data = await resp.read()
+                return orjson.loads(data)
+    except Exception as e:
+        log.error(f"An error occurred: {e}")
+        return None
 
 async def search_media(ctx, query, media_type):
     """Search for a movie or TV show on TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     base_media = f"{BASE_MEDIA}/{media_type}?api_key={api_key}&query={query}"
-    params = {"api_key": api_key}
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(base_media, params=params) as resp:
-                if resp.status != 200:
-                    log.info(
-                        f"Something went wrong with TMDB. Status code: {resp.status}"
-                    )
-                    return None
-                data = await resp.read()
-                return orjson.loads(data)
-    except Exception:
-        pass
-
+    return await fetch_data(ctx, base_media)
 
 async def get_media_data(ctx, media_id: int, media_type: str):
     """Get data for a movie or TV show from TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     base_url = f"{BASE_URL}/{media_type}/{media_id}?api_key={api_key}"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(base_url) as resp:
-                if resp.status != 200:
-                    log.info(
-                        f"Something went wrong with TMDB. Status code: {resp.status}"
-                    )
-                    return None
-                data = await resp.read()
-                return orjson.loads(data)
-    except Exception:
-        pass
-
+    return await fetch_data(ctx, base_url)
 
 async def build_tvshow_embed(ctx, data, tv_id, i, results):
     """Build an embed for a TV show."""

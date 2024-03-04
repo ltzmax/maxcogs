@@ -42,11 +42,17 @@ from .utils import (
 log = logging.getLogger("red.maxcogs.themoviedb")
 
 
+# This is to prevent the cog from being used to search for movies and TV shows related to the 2011 Norway attacks.
+# TheMovieDB has a lot of movies and TV shows related to this event, and it's not appropriate to use this cog to search for them.
+# As a norwegian, I don't want to see movies and TV shows related to this event, and I don't want to see this cog being used to search for them,
+# the attack was very tragic and it hurts me to see movies and TV shows related to this event, those should never have been made in the first place.
+BLOCKED_SEARCH = {"utoya: july 22", "utøya: july 22", "22 july", "22 juli"}
+
 class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.3"
+    __version__ = "1.0.4"
     __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/themoviedb"
 
     def __init__(self, bot):
@@ -132,11 +138,9 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The movie you want to search for.
         """
-        # This is to prevent people from searching for the movie "Utøya: July 22", "Utoya: July 22 or "22 July"
-        blocked_search = ("utoya: july 22", "utøya: july 22", "22 july")
-        if query.lower() in blocked_search:
-            await ctx.send(f"The term '{query}' is blocked from search.")
-            return
+        if query.lower() in BLOCKED_SEARCH:
+            return await ctx.send(f"The term '{query}' is blocked from search.")
+            
         await ctx.typing()
         data = await search_media(ctx, query, "movie")
         if not data:
@@ -175,11 +179,9 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The serie you want to search for.
         """
-        # This is to prevent people from searching for the mini serie of "22 July"
-        blocked_search = ("22 juli", "22 july")
-        if query.lower() in blocked_search:
-            await ctx.send(f"The term '{query}' is blocked from search.")
-            return
+        if query.lower() in BLOCKED_SEARCH:
+            return await ctx.send(f"The term '{query}' is blocked from search.")
+            
         await ctx.typing()
         data = await search_media(ctx, query, "tv")
         if not data:
