@@ -48,6 +48,7 @@ log = logging.getLogger("red.maxcogs.themoviedb")
 # the attack was very tragic and it hurts me to see movies and TV shows related to this event, those should never have been made in the first place.
 BLOCKED_SEARCH = {"utoya: july 22", "utøya: july 22", "22 july", "22 juli"}
 
+
 class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
@@ -140,7 +141,7 @@ class TheMovieDB(commands.Cog):
         """
         if query.lower() in BLOCKED_SEARCH:
             return await ctx.send(f"The term '{query}' is blocked from search.")
-            
+
         await ctx.typing()
         data = await search_media(ctx, query, "movie")
         if not data:
@@ -181,7 +182,7 @@ class TheMovieDB(commands.Cog):
         """
         if query.lower() in BLOCKED_SEARCH:
             return await ctx.send(f"The term '{query}' is blocked from search.")
-            
+
         await ctx.typing()
         data = await search_media(ctx, query, "tv")
         if not data:
