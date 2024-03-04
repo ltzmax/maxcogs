@@ -123,7 +123,10 @@ class NoSpoiler(commands.Cog):
         await log_channel.send(embed=embed)
 
     async def handle_spoiler_message(self, message: discord.Message, attachment=None):
-        if not message.channel.permissions_for(message.guild.me).manage_messages or not message.channel.permissions_for(message.guild.me).send_messages:
+        if (
+            not message.channel.permissions_for(message.guild.me).manage_messages
+            or not message.channel.permissions_for(message.guild.me).send_messages
+        ):
             log.info(
                 f"i do not have permission to manage_messages or send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
             )
@@ -148,7 +151,9 @@ class NoSpoiler(commands.Cog):
                 "color": tse.StringAdapter(str(color)),
             },
         )
-        kwargs["allowed_mentions"] = discord.AllowedMentions(everyone=False, roles=False)
+        kwargs["allowed_mentions"] = discord.AllowedMentions(
+            everyone=False, roles=False
+        )
         kwargs["delete_after"] = delete_after
         await message.channel.send(**kwargs)
 
@@ -186,7 +191,7 @@ class NoSpoiler(commands.Cog):
             return
         if SPOILER_REGEX.search(after.content):
             await self.handle_spoiler_message(after)
-            
+
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
