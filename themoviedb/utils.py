@@ -145,7 +145,7 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
             inline = name not in ["Original Name"]
             embed.add_field(name=name, value=value, inline=inline)
             total_length += field_length
-    if data.get("poster_path"):
+    if data.get("poster_path", "tagline"):
         embed.set_thumbnail(
             url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
         )
@@ -213,7 +213,7 @@ async def build_movie_embed(ctx, data, movie_id, i, results):
             inline = name not in ["Original Title"]
             embed.add_field(name=name, value=value, inline=inline)
             total_length += field_length
-    if data.get("poster_path"):
+    if data.get("poster_path", "tagline"):
         embed.set_thumbnail(
             url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
         )
