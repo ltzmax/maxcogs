@@ -142,10 +142,10 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
             field_length = len(name) + len(str(value))
             if total_length + field_length > 6000:
                 break
-            inline = name not in ["Original Name"]
+            inline = name not in ["Original Name", "Tagline"]
             embed.add_field(name=name, value=value, inline=inline)
             total_length += field_length
-    if data.get("poster_path", "tagline"):
+    if data.get("poster_path"):
         embed.set_thumbnail(
             url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
         )
@@ -210,10 +210,10 @@ async def build_movie_embed(ctx, data, movie_id, i, results):
             field_length = len(name) + len(str(value))
             if total_length + field_length > 6000:
                 break
-            inline = name not in ["Original Title"]
+            inline = name not in ["Original Title", "Tagline"]
             embed.add_field(name=name, value=value, inline=inline)
             total_length += field_length
-    if data.get("poster_path", "tagline"):
+    if data.get("poster_path"):
         embed.set_thumbnail(
             url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
         )
