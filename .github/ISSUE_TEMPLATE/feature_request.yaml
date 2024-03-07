@@ -16,6 +16,7 @@ body:
       description: What cog are you feature requesting to?
       options:
         - autopublisher
+        - emojispam
         - nospoiler
         - plaguegame
         - nekosbest
