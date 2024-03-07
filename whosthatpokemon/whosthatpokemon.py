@@ -235,13 +235,10 @@ class WhosThatPokemon(commands.Cog):
                 f"{ctx.author.mention} You took too long to answer.\nThe Pokemon was... **{english_name}**."
             )
             log.info(f"{ctx.author} ran out of time to guess the pokemon.")
-        if await self.config.user(ctx.author).all():
-            await self.config.user(ctx.author).total_correct_guesses.set(
-                await self.config.user(ctx.author).total_correct_guesses() + 1
-            )
-            log.info(
-                f"{ctx.author} guessed the pokemon correctly and got a point added to their total correct guesses."
-            )
+        user_config = self.config.user(ctx.author)
+        if await user_config.all():
+            total_correct_guesses = await user_config.total_correct_guesses()
+            await user_config.total_correct_guesses.set(total_correct_guesses + 1)
         await ctx.send(file=revealed_img, embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
@@ -255,29 +252,35 @@ class WhosThatPokemon(commands.Cog):
         """
         pages = []
         users = await self.config.all_users()
+
+        # Sort and reverse in one step
         sorted_users = sorted(
-            users.items(), key=lambda x: x[1]["total_correct_guesses"]
+            users.items(), key=lambda x: x[1]["total_correct_guesses"], reverse=True
         )
-        sorted_users.reverse()
+
         if not sorted_users:
-            return await ctx.send(
+            await ctx.send(
                 "No one has played whosthatpokemon yet. Use `[p]whosthatpokemon` to start!"
             )
-            log.info("No one has played whosthatpokemon yet so nothing to show.")
+            return
+
         embed = discord.Embed(
             title="WhosThatPokemon Leaderboard",
             description="Top 10 users with most correct guesses.",
             color=await ctx.embed_color(),
         )
-        for index, user in enumerate(sorted_users[:10], start=1):
-            user_id = int(user[0])
-            total_correct_guesses = await self.config.user_from_id(
-                user_id
-            ).total_correct_guesses()
+        # Filter out None user objects before creating the embed fields
+        sorted_users = [
+            (
+                user_id,
+                await self.config.user_from_id(int(user_id)).total_correct_guesses(),
+            )
+            for user_id, _ in sorted_users[:10]
+            if self.bot.get_user(int(user_id)) is not None
+        ]
+        for index, (user_id, total_correct_guesses) in enumerate(sorted_users, start=1):
             total = humanize_number(total_correct_guesses)
-            user_obj = self.bot.get_user(user_id)
-            if user_obj is None:
-                continue
+            user_obj = self.bot.get_user(int(user_id))
             embed.add_field(
                 name=f"{index}. {user_obj}",
                 value=f"Total correct guesses: **{total}**",
