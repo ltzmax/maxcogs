@@ -257,17 +257,19 @@ class NoSpoiler(commands.Cog):
         """
         Set the spoiler warning message.
 
+        Leave it empty to reset the message to the default message.
+
         (Supports Tagscript)
 
         **Blocks:**
-        - [Assugnment Block](https://phen-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#assignment-block)
-        - [If Block](https://phen-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#if-block)
-        - [Embed Block](https://phen-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#embed-block)
-        - [Command Block](https://phen-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#command-block)
+        - [Assugnment Block](https://seina-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#assignment-block)
+        - [If Block](https://seina-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#if-block)
+        - [Embed Block](https://seina-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#embed-block)
+        - [Command Block](https://seina-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#command-block)
 
         **Variable:**
-        - `{server}`: [Your guild/server.](https://phen-cogs.readthedocs.io/en/latest/tags/default_variables.html#server-block)
-        - `{member}`: [Author of the message.](https://phen-cogs.readthedocs.io/en/latest/tags/default_variables.html#author-block)
+        - `{server}`: [Your guild/server.](https://seina-cogs.readthedocs.io/en/latest/tags/default_variables.html#server-block)
+        - `{member}`: [Author of the message.](https://seina-cogs.readthedocs.io/en/latest/tags/default_variables.html#author-block)
         - `{color}`: [botname]'s default color.
 
         **Example:**
@@ -276,7 +278,7 @@ class NoSpoiler(commands.Cog):
         {embed(description):{member(mention)} Usage of spoiler is not allowed in this server.}
         {embed(color):{color}}
         ```
-        **Without embed:**
+        Or you can use the default message without embed:
         ```
         {member(mention)} Usage of spoiler is not allowed in this server.
         ```
