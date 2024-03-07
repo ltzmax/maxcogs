@@ -278,10 +278,6 @@ class NoSpoiler(commands.Cog):
         {embed(description):{member(mention)} Usage of spoiler is not allowed in this server.}
         {embed(color):{color}}
         ```
-        Or you can use the default message without embed:
-        ```
-        {member(mention)} Usage of spoiler is not allowed in this server.
-        ```
         """
         if message:
             await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
