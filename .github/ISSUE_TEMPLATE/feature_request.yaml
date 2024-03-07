@@ -16,11 +16,8 @@ body:
       description: What cog are you feature requesting to?
       options:
         - autopublisher
-        - customping
-        - hyperlink
         - nospoiler
         - plaguegame
-        - ratings
         - nekosbest
         - redupdate
         - tcgcard
