@@ -180,16 +180,14 @@ class EmojiSpam(commands.Cog):
         """Manage the emoji spam filter."""
 
     @emojispam.command()
-    async def toggle(self, ctx: commands.Context):
-        """Toggle the emoji spam filter.
-
-        If no enabled state is provided, the current state will be toggled.
-        """
-        state = await self.config.guild(ctx.guild).enabled()
-        await self.config.guild(ctx.guild).enabled.set(not state)
-        await ctx.send(
-            f"Emoji spam filter is now {'enabled' if not state else 'disabled'}!"
-        )
+    async def toggle(self, ctx: commands.Context, toggle: bool):
+        """Toggle the emoji spam filter."""
+        if toggle:
+            await self.config.guild(ctx.guild).enabled.set(True)
+            await ctx.send("Emoji spam filter enabled!")
+        else:
+            await self.config.guild(ctx.guild).enabled.set(False)
+            await ctx.send("Emoji spam filter disabled!")
 
     @emojispam.command()
     async def logchannel(
