@@ -36,7 +36,7 @@ except ImportError:
     from emoji import EMOJI_DATA  # emoji>=2.0.0
 
 from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import box, humanize_list
+from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
 from ._tagscript import (
