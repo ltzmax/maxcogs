@@ -313,7 +313,7 @@ class EmojiSpam(commands.Cog):
             ),
             color=await ctx.embed_color(),
         )
-        await ctx.send(embed=embed, view=view)
+        await ctx.send(embed=embed)
 
     @emojispam.command()
     @commands.bot_has_permissions(embed_links=True)
