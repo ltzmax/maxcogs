@@ -68,7 +68,7 @@ async def validate_tagscriptengine(
         import TagScriptEngine as tse
     except ImportError as exc:
         raise CogLoadError(
-            "The NoSpoiler cog failed to install TagScriptEngine. Reinstall the cog and restart your "
+            "The EmojiSpam cog failed to install TagScriptEngine. Reinstall the cog and restart your "
             "bot. If it continues to fail to load contact the cog author."
         ) from exc
 
@@ -80,7 +80,7 @@ async def validate_tagscriptengine(
     commands = "\n".join(commands)
 
     message = (
-        "The NoSpoiler cog attempted to install AdvancedTagScriptEngine, but the version installed "
+        "The EmojiSpam cog attempted to install AdvancedTagScriptEngine, but the version installed "
         "is outdated. Shut down your bot, then in shell in your venv, run the following "
         f"commands:\n{commands}\nAfter running these commands, restart your bot and reload "
         "Tags. If it continues to fail to load, contact the cog author."
