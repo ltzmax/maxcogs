@@ -119,7 +119,6 @@ class NoSpoiler(commands.Cog):
                 value=attachment.url,
                 inline=False,
             )
-        embed.set_footer(text=f"Message ID: {message.id}")
         await log_channel.send(embed=embed)
 
     async def handle_spoiler_message(self, message: discord.Message, attachment=None):
