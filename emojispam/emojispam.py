@@ -112,9 +112,6 @@ class EmojiSpam(commands.Cog):
             description=f"**Member:** {message.author.mention}\n**Channel:** {message.channel.mention}\n**Message:** {message.content}",
             color=await self.bot.get_embed_color(log_channel),
         )
-        embed.set_footer(
-            text=f"User ID: {message.author.id} | Message ID: {message.id}"
-        )
         await log_channel.send(embed=embed)
 
     async def process_message(self, message: discord.Message):
