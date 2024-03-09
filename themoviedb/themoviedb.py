@@ -37,6 +37,8 @@ from .utils import (
     check_results,
     build_tvshow_embed,
     build_movie_embed,
+    build_people_embed,
+    get_people_data,
 )
 
 log = logging.getLogger("red.maxcogs.themoviedb")
@@ -53,7 +55,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.4"
+    __version__ = "1.0.5"
     __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/themoviedb"
 
     def __init__(self, bot):
@@ -197,6 +199,44 @@ class TheMovieDB(commands.Cog):
             data = await get_media_data(ctx, results[i]["id"], "tv")
             tv_id = results[i]["id"]
             embed = await build_tvshow_embed(ctx, data, tv_id, i, results)
+            pages.append(embed)
+        await SimpleMenu(
+            pages,
+            use_select_menu=True,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
+
+    @commands.check(apicheck)
+    @commands.hybrid_command(aliases=["person"])
+    @app_commands.describe(query="The person you want to search for.")
+    @commands.bot_has_permissions(embed_links=True)
+    async def people(self, ctx: commands.Context, *, query: str):
+        """Search for a person.
+
+        You can write the full name of the person to get more accurate results.
+
+        **Examples:**
+        - `[p]people tom hanks`
+        - `[p]people meryl streep`
+
+        **Arguments:**
+        - `<query>` - The person you want to search for.
+        """
+        await ctx.typing()
+        data = await search_media(ctx, query, "person")
+        if not data:
+            return await ctx.send(
+                "Something went wrong with TMDB. Please try again later."
+            )
+        if not await check_results(ctx, data, query):
+            return
+        pages = []
+        results = data["results"]
+        for i in range(len(results)):
+            data = await get_people_data(ctx, results[i]["id"])
+            people_id = results[i]["id"]
+            embed = await build_people_embed(ctx, data, people_id)
             pages.append(embed)
         await SimpleMenu(
             pages,
