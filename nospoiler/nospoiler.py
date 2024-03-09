@@ -89,8 +89,10 @@ class NoSpoiler(commands.Cog):
     ) -> None:
         """Send embed to log channel."""
         log_channel = await self.config.guild(guild).log_channel()
+        if not log_channel:
+            return
         log_channel = guild.get_channel(log_channel)
-        if log_channel is None:
+        if not log_channel:
             return
         if (
             not log_channel.permissions_for(guild.me).send_messages
@@ -130,9 +132,7 @@ class NoSpoiler(commands.Cog):
                 f"i do not have permission to manage_messages or send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
             )
             return
-
-        if await self.config.guild(message.guild).log_channel():
-            await self.log_channel_embed(message.guild, message, attachment)
+        await self.log_channel_embed(message.guild, message, attachment)
         if await self.config.guild(message.guild).spoiler_warn():
             await self.send_warning_message(message)
         await message.delete()

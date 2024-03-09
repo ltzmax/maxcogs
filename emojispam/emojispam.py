@@ -102,7 +102,6 @@ class EmojiSpam(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            await self.config.guild(guild).log_channel.set(None)
             return
             log.info(
                 f"I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel in {guild.name}. Disabling log channel."
@@ -151,8 +150,7 @@ class EmojiSpam(commands.Cog):
                     )
                     kwargs["delete_after"] = delete_after
                     await message.channel.send(**kwargs)
-                if data["log_channel"]:
-                    await self.log_channel_embed(message.guild, message)
+                await self.log_channel_embed(message.guild, message)
                 if not message.channel.permissions_for(
                     message.guild.me
                 ).manage_messages:
