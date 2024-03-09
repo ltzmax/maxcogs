@@ -26,6 +26,7 @@ import logging
 
 import aiohttp
 import discord
+from rapidfuzz import fuzz
 from redbot.core import app_commands, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SetApiView, SimpleMenu
@@ -55,7 +56,7 @@ class TheMovieDB(commands.Cog):
     """Search for informations of movies and TV shows from themoviedb.org."""
 
     __author__ = "MAX"
-    __version__ = "1.0.5"
+    __version__ = "1.0.6"
     __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/themoviedb"
 
     def __init__(self, bot):
@@ -154,6 +155,12 @@ class TheMovieDB(commands.Cog):
             return
         pages = []
         results = data["results"]
+
+        # Normalize popularity scores
+        max_popularity = max(result['popularity'] for result in results)
+        results = [{**result, 'popularity': (result['popularity'] / max_popularity) * 100} for result in results]
+        # Sort results by a combination of normalized popularity and similarity to the query
+        results = sorted(results, key=lambda x: (fuzz.token_set_ratio(query, x['title']) + x['popularity']), reverse=True)
         for i in range(len(results)):
             data = await get_media_data(ctx, results[i]["id"], "movie")
             movie_id = results[i]["id"]
@@ -195,6 +202,12 @@ class TheMovieDB(commands.Cog):
             return
         pages = []
         results = data["results"]
+
+        # Normalize popularity scores
+        max_popularity = max(result['popularity'] for result in results)
+        results = [{**result, 'popularity': (result['popularity'] / max_popularity) * 100} for result in results]
+        # Sort results by a combination of normalized popularity and similarity to the query
+        results = sorted(results, key=lambda x: (fuzz.token_set_ratio(query, x['name']) + x['popularity']), reverse=True)
         for i in range(len(results)):
             data = await get_media_data(ctx, results[i]["id"], "tv")
             tv_id = results[i]["id"]
@@ -233,6 +246,12 @@ class TheMovieDB(commands.Cog):
             return
         pages = []
         results = data["results"]
+
+        # Normalize popularity scores
+        max_popularity = max(result['popularity'] for result in results)
+        results = [{**result, 'popularity': (result['popularity'] / max_popularity) * 100} for result in results]
+        # Sort results by a combination of normalized popularity and similarity to the query
+        results = sorted(results, key=lambda x: (fuzz.token_set_ratio(query, x['name']) + x['popularity']), reverse=True)
         for i in range(len(results)):
             data = await get_people_data(ctx, results[i]["id"])
             people_id = results[i]["id"]
