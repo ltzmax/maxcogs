@@ -112,7 +112,8 @@ async def build_people_embed(ctx, data, people_id):
         if data.get("popularity")
         else None,
         "Known For:": data["known_for_department"]
-        if data.get("known_for_department") in ["Acting", "Directing", "Writing", "Production", "Crew"]
+        if data.get("known_for_department")
+        in ["Acting", "Directing", "Writing", "Production", "Crew"]
         else None,
         "Also Known As:": humanize_list(data.get("also_known_as", [])),
         "Last Updated:": f"<t:{int(datetime.strptime(data['last_updated_at'], '%Y-%m-%d %H:%M:%S').timestamp())}:R>"
