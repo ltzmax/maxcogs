@@ -288,6 +288,7 @@ class EmojiSpam(commands.Cog):
             f"**Enabled:** {all['enabled']}\n"
             f"**Timeout:** {all['timeout']}\n"
             f"**Emoji Limit:** {all['emoji_limit']}\n"
+            f"**Toggle Custom Message:** {all['toggle_emoji_message']}\n"
             f"**Log Channel:** {ctx.guild.get_channel(all['log_channel']).mention if all['log_channel'] else 'Not Set'}\n"
             f"**Message:**\n{box(all['emoji_message'], lang='yaml') if len(all['emoji_message']) < 2000 else 'Message too long to display.'}"
         )

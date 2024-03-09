@@ -289,30 +289,13 @@ class NoSpoiler(commands.Cog):
     async def settings(self, ctx: commands.Context) -> None:
         """Show the settings."""
         all = await self.config.guild(ctx.guild).all()
-        enabled = all["enabled"]
-        if enabled:
-            enabled = "Enabled"
-        else:
-            enabled = "Disabled"
-        log_channel = all["log_channel"]
-        if log_channel:
-            log_channel = ctx.guild.get_channel(log_channel).mention
-        else:
-            log_channel = "Not set"
-        spoiler_warn = all["spoiler_warn"]
-        if spoiler_warn:
-            spoiler_warn = "Enabled"
-        else:
-            spoiler_warn = "Disabled"
-        timeout = all["timeout"]
-        spoiler_warn_message = all["spoiler_warn_message"]
         await ctx.send(
-            "## Nospoiler Settings\n"
-            f"> **Toggle**: {enabled}\n"
-            f"> **Log Channel**: {log_channel}\n"
-            f"> **Spoiler Warning**: {spoiler_warn}\n"
-            f"> **Timeout**: {timeout} seconds\n"
-            f"> **Spoiler Warning Message**:\n{box(f'{spoiler_warn_message}', lang='yaml')}"
+            "## NoSpoiler Settings\n"
+            f"**Enabled**: {all['enabled']}\n"
+            f"**Log Channel**: {ctx.guild.get_channel(all['log_channel']).mention if all['log_channel'] else 'Not Set'}\n"
+            f"**Spoiler Warning**: {all['spoiler_warn']}\n"
+            f"**Timeout**: {all['timeout']} seconds\n"
+            f"**Spoiler Warning Message**:\n{box(all['spoiler_warn_message'], lang='yaml') if len(all['spoiler_warn_message']) < 2000 else 'Message too long to display.'}"
         )
 
     @commands.bot_has_permissions(embed_links=True)
