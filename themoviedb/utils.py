@@ -101,18 +101,18 @@ async def build_people_embed(ctx, data, people_id):
         "Birthday:": f"<t:{int(datetime.strptime(data['birthday'], '%Y-%m-%d').timestamp())}:D>"
         if data.get("birthday")
         else None,
-        "Age:": f"{((datetime.strptime(data['deathday'], '%Y-%m-%d') if data.get('deathday') else datetime.now()) - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365} years old"
-        if data.get("birthday")
-        else None,
-        "Death:": f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D>"
+        "Died:": f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D> ({((datetime.strptime(data['deathday'], '%Y-%m-%d') - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365) if data.get('deathday') else 'N/A'} years old)"
         if data.get("deathday")
+        else None,
+        "Age: ": f"{((datetime.now() - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365)} years old"
+        if data.get("birthday")
         else None,
         "Place of Birth:": data.get("place_of_birth"),
         "Popularity:": humanize_number(data["popularity"])
         if data.get("popularity")
         else None,
         "Known For:": data["known_for_department"]
-        if data.get("known_for_department")
+        if data.get("known_for_department") in ["Acting", "Directing", "Writing", "Production", "Crew"]
         else None,
         "Also Known As:": humanize_list(data.get("also_known_as", [])),
         "Last Updated:": f"<t:{int(datetime.strptime(data['last_updated_at'], '%Y-%m-%d %H:%M:%S').timestamp())}:R>"
@@ -127,7 +127,7 @@ async def build_people_embed(ctx, data, people_id):
                 break
             inline = name not in [
                 "Birthday:",
-                "Death:",
+                "Died:",
                 "Place of Birth:",
                 "Also Known As:",
                 "Known For:",
