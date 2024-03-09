@@ -99,7 +99,7 @@ async def build_people_embed(ctx, data, people_id):
         "Birthday:": f"<t:{int(datetime.strptime(data['birthday'], '%Y-%m-%d').timestamp())}:D>"
         if data.get("birthday")
         else None,
-        "Age:": f"{(datetime.now() - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365} years old" if data.get("birthday") else None,
+        "Age:": f"{((datetime.strptime(data['deathday'], '%Y-%m-%d') if data.get('deathday') else datetime.now()) - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365} years old" if data.get("birthday") else None,
         "Death:": f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D>"
         if data.get("deathday")
         else None,
