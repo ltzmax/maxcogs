@@ -157,10 +157,17 @@ class TheMovieDB(commands.Cog):
         results = data["results"]
 
         # Normalize popularity scores
-        max_popularity = max(result['popularity'] for result in results)
-        results = [{**result, 'popularity': (result['popularity'] / max_popularity) * 100} for result in results]
+        max_popularity = max(result["popularity"] for result in results)
+        results = [
+            {**result, "popularity": (result["popularity"] / max_popularity) * 100}
+            for result in results
+        ]
         # Sort results by a combination of normalized popularity and similarity to the query
-        results = sorted(results, key=lambda x: (fuzz.token_set_ratio(query, x['title']) + x['popularity']), reverse=True)
+        results = sorted(
+            results,
+            key=lambda x: (fuzz.token_set_ratio(query, x["title"]) + x["popularity"]),
+            reverse=True,
+        )
         for i in range(len(results)):
             data = await get_media_data(ctx, results[i]["id"], "movie")
             movie_id = results[i]["id"]
@@ -204,10 +211,17 @@ class TheMovieDB(commands.Cog):
         results = data["results"]
 
         # Normalize popularity scores
-        max_popularity = max(result['popularity'] for result in results)
-        results = [{**result, 'popularity': (result['popularity'] / max_popularity) * 100} for result in results]
+        max_popularity = max(result["popularity"] for result in results)
+        results = [
+            {**result, "popularity": (result["popularity"] / max_popularity) * 100}
+            for result in results
+        ]
         # Sort results by a combination of normalized popularity and similarity to the query
-        results = sorted(results, key=lambda x: (fuzz.token_set_ratio(query, x['name']) + x['popularity']), reverse=True)
+        results = sorted(
+            results,
+            key=lambda x: (fuzz.token_set_ratio(query, x["name"]) + x["popularity"]),
+            reverse=True,
+        )
         for i in range(len(results)):
             data = await get_media_data(ctx, results[i]["id"], "tv")
             tv_id = results[i]["id"]
@@ -248,10 +262,17 @@ class TheMovieDB(commands.Cog):
         results = data["results"]
 
         # Normalize popularity scores
-        max_popularity = max(result['popularity'] for result in results)
-        results = [{**result, 'popularity': (result['popularity'] / max_popularity) * 100} for result in results]
+        max_popularity = max(result["popularity"] for result in results)
+        results = [
+            {**result, "popularity": (result["popularity"] / max_popularity) * 100}
+            for result in results
+        ]
         # Sort results by a combination of normalized popularity and similarity to the query
-        results = sorted(results, key=lambda x: (fuzz.token_set_ratio(query, x['name']) + x['popularity']), reverse=True)
+        results = sorted(
+            results,
+            key=lambda x: (fuzz.token_set_ratio(query, x["name"]) + x["popularity"]),
+            reverse=True,
+        )
         for i in range(len(results)):
             data = await get_people_data(ctx, results[i]["id"])
             people_id = results[i]["id"]
