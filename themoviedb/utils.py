@@ -78,11 +78,13 @@ async def get_media_data(ctx, media_id: int, media_type: str):
     base_url = f"{BASE_URL}/{media_type}/{media_id}?api_key={api_key}"
     return await fetch_data(ctx, base_url)
 
+
 async def get_people_data(ctx, people_id: int):
     """Get data for a person from TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     base_url = f"{BASE_URL}/person/{people_id}?api_key={api_key}"
     return await fetch_data(ctx, base_url)
+
 
 ## People Embed
 async def build_people_embed(ctx, data, people_id):
@@ -99,7 +101,9 @@ async def build_people_embed(ctx, data, people_id):
         "Birthday:": f"<t:{int(datetime.strptime(data['birthday'], '%Y-%m-%d').timestamp())}:D>"
         if data.get("birthday")
         else None,
-        "Age:": f"{((datetime.strptime(data['deathday'], '%Y-%m-%d') if data.get('deathday') else datetime.now()) - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365} years old" if data.get("birthday") else None,
+        "Age:": f"{((datetime.strptime(data['deathday'], '%Y-%m-%d') if data.get('deathday') else datetime.now()) - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365} years old"
+        if data.get("birthday")
+        else None,
         "Death:": f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D>"
         if data.get("deathday")
         else None,
@@ -107,9 +111,13 @@ async def build_people_embed(ctx, data, people_id):
         "Popularity:": humanize_number(data["popularity"])
         if data.get("popularity")
         else None,
-        "Known For:": data["known_for_department"] if data.get("known_for_department") else None,
+        "Known For:": data["known_for_department"]
+        if data.get("known_for_department")
+        else None,
         "Also Known As:": humanize_list(data.get("also_known_as", [])),
-        "Last Updated:": f"<t:{int(datetime.strptime(data['last_updated_at'], '%Y-%m-%d %H:%M:%S').timestamp())}:R>" if data.get('last_updated_at') else None,
+        "Last Updated:": f"<t:{int(datetime.strptime(data['last_updated_at'], '%Y-%m-%d %H:%M:%S').timestamp())}:R>"
+        if data.get("last_updated_at")
+        else None,
     }
     total_length = len(embed.title) + len(embed.description)
     for name, value in fields.items():
@@ -117,7 +125,16 @@ async def build_people_embed(ctx, data, people_id):
             field_length = len(name) + len(str(value))
             if total_length + field_length > 6000:
                 break
-            inline = name not in ["Birthday:", "Death:", "Place of Birth:", "Also Known As:", "Known For:", "Popularity:", "Age:", "Last Updated:"]
+            inline = name not in [
+                "Birthday:",
+                "Death:",
+                "Place of Birth:",
+                "Also Known As:",
+                "Known For:",
+                "Popularity:",
+                "Age:",
+                "Last Updated:",
+            ]
             embed.add_field(name=name, value=value, inline=inline)
             total_length += field_length
     if data.get("profile_path"):
@@ -130,6 +147,7 @@ async def build_people_embed(ctx, data, people_id):
         )
     embed.set_footer(text="Powered by TMDB")
     return embed
+
 
 ## Tv and Movie Embeds
 async def build_tvshow_embed(ctx, data, tv_id, i, results):
