@@ -214,7 +214,7 @@ class EmojiSpam(commands.Cog):
         Default limit is 5.
         Limit must be between 1 and 25.
  
-        NOTE: Some emojis may count more than 1. These are usually normal emojis that are combined to form a single emoji (e.g. face_with_spiral_eyes) This one count as 3 emojis in the limit of 5. (5-3=2).
+        NOTE: Some emojis may count more than 1. These are usually normal emojis that are combined to form a single emoji (e.g. face_with_spiral_eyes) This one count as 3 emojis in the limit of 5.
         """
         if limit < 1 or limit > 25:
             return await ctx.send("Limit must be between 1 and 25!")
