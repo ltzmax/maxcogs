@@ -36,7 +36,7 @@ To install any cog you want:
 | RedUpdate | Update your bot to latest dev changes.| 1.4.2 | ltzmax, kuro | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.2.1| ltzmax | ✅ |
 | TheMovieDB | Search for informatio of movies and tv shows from themoviedb.org. | 1.0.6 | ltzmax | ✅ |
-| WhosThatPokemon | Guess whos that pokemon? | 1.4.5 | ltzmax, o-wo | ✅ |
+| WhosThatPokemon | Guess whos that pokemon? | 1.4.6 | ltzmax, o-wo | ✅ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.

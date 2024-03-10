@@ -56,7 +56,7 @@ class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.4.5"
+    __version__: Final[str] = "1.4.6"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
     def __init__(self, bot: Red):
@@ -218,10 +218,14 @@ class WhosThatPokemon(commands.Cog):
         await self.add_to_stats(ctx.author)
         await ctx.send(file=revealed_img, embed=embed)
 
+
+    @commands.group(name="wtpset", aliases=["whosthatpokemonset"])
+    async def whosthatpokemon_set(self, ctx: commands.Context) -> None:
+        """Group commands for whosthatpokemon"""
+
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    @commands.command(name="wtpleaderboard", aliases=["wtplb"])
-    async def whosthatpokemon_leaderboard(self, ctx: commands.Context):
+    @whosthatpokemon_set.command(name="leaderboard", aliases=["lb"])
+    async def whosthatpokemon_leaderboard(self, ctx: commands.Context) -> None:
         """Shows the leaderboard for whosthatpokemon.
 
         This is global leaderboard and not per server.
@@ -264,10 +268,9 @@ class WhosThatPokemon(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.command(name="wtpstats")
+    @whosthatpokemon_set.command(name="stats")
     @commands.bot_has_permissions(embed_links=True)
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def whosthatpokemon_stats(self, ctx: commands.Context):
+    async def whosthatpokemon_stats(self, ctx: commands.Context) -> None:
         """Shows your stats for whosthatpokemon.
 
         This will show your total correct guesses.
@@ -292,9 +295,8 @@ class WhosThatPokemon(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.is_owner()
-    @commands.command(name="wtpreset")
-    @commands.cooldown(2, 43200, commands.BucketType.user)
-    async def whosthatpokemon_preset(self, ctx: commands.Context):
+    @whosthatpokemon_set.command(name="reset")
+    async def whosthatpokemon_reset(self, ctx: commands.Context) -> None:
         """Resets the whosthatpokemon leaderboard.
 
         This will reset the leaderboard globally.
@@ -317,7 +319,7 @@ class WhosThatPokemon(commands.Cog):
         else:
             await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")
 
-    @commands.command(name="wtpversion", hidden=True)
+    @whosthatpokemon_set.command(name="version")
     @commands.bot_has_permissions(embed_links=True)
     async def whosthatpokemon_version(self, ctx: commands.Context) -> None:
         """Shows the version of the cog"""
