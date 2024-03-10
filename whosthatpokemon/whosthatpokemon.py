@@ -56,7 +56,7 @@ class WhosThatPokemon(commands.Cog):
     """Can you guess Who's That Pokémon?"""
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.4.4"
+    __version__: Final[str] = "1.4.5"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
 
     def __init__(self, bot: Red):
@@ -82,7 +82,6 @@ class WhosThatPokemon(commands.Cog):
         """Nothing to delete."""
         return
 
-    @perf(max_entries=1000)
     async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
         base_image = Image.open(bundled_data_path(self) / "template.webp").convert(
             "RGBA"
@@ -126,29 +125,10 @@ class WhosThatPokemon(commands.Cog):
         poke_image.close()
         return temp
 
-    @commands.command(name="wtpversion", hidden=True)
-    @commands.bot_has_permissions(embed_links=True)
-    async def whosthatpokemon_version(self, ctx: commands.Context) -> None:
-        """Shows the version of the cog"""
-        version = self.__version__
-        author = self.__author__
-        embed = discord.Embed(
-            title="Cog Information",
-            description=box(
-                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
-                lang="yaml",
-            ),
-            color=await ctx.embed_color(),
+    async def add_to_stats(self, user: discord.User) -> None:
+        await self.config.user(user).total_correct_guesses.set(
+            await self.config.user(user).total_correct_guesses() + 1
         )
-        view = discord.ui.View()
-        style = discord.ButtonStyle.gray
-        docs = discord.ui.Button(
-            style=style,
-            label="Cog Documentations",
-            url=self.__docs__,
-        )
-        view.add_item(item=docs)
-        await ctx.send(embed=embed, view=view)
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(
@@ -235,10 +215,7 @@ class WhosThatPokemon(commands.Cog):
                 f"{ctx.author.mention} You took too long to answer.\nThe Pokemon was... **{english_name}**."
             )
             log.info(f"{ctx.author} ran out of time to guess the pokemon.")
-        user_config = self.config.user(ctx.author)
-        if await user_config.all():
-            total_correct_guesses = await user_config.total_correct_guesses()
-            await user_config.total_correct_guesses.set(total_correct_guesses + 1)
+        await self.add_to_stats(ctx.author)
         await ctx.send(file=revealed_img, embed=embed)
 
     @commands.bot_has_permissions(embed_links=True)
@@ -250,7 +227,6 @@ class WhosThatPokemon(commands.Cog):
         This is global leaderboard and not per server.
         This will show the top 10 users with most correct guesses.
         """
-        pages = []
         users = await self.config.all_users()
 
         # Sort and reverse in one step
@@ -286,12 +262,7 @@ class WhosThatPokemon(commands.Cog):
                 value=f"Total correct guesses: **{total}**",
                 inline=False,
             )
-        pages.append(embed)
-        await SimpleMenu(
-            pages,
-            disable_after_timeout=True,
-            timeout=60,
-        ).start(ctx)
+            await ctx.send(embed=embed)
 
     @commands.command(name="wtpstats")
     @commands.bot_has_permissions(embed_links=True)
@@ -312,10 +283,13 @@ class WhosThatPokemon(commands.Cog):
                 f"{ctx.author} tried to check their stats but they have not played whosthatpokemon yet."
             )
         human = humanize_number(total_correct_guesses)
-        await ctx.send(
-            f"{ctx.author.mention} you have **{human}** correct guesses in whosthatpokemon.",
-            allowed_mentions=discord.AllowedMentions(users=False),
+        guess = "guess" if total_correct_guesses == 1 else "guesses"
+        embed = discord.Embed(
+            title=f"{ctx.author}'s WhosThatPokemon Stats",
+            description=f"Total correct {guess}: **{human}**",
+            color=await ctx.embed_color(),
         )
+        await ctx.send(embed=embed)
 
     @commands.is_owner()
     @commands.command(name="wtpreset")
@@ -343,17 +317,26 @@ class WhosThatPokemon(commands.Cog):
         else:
             await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")
 
-    @commands.is_owner()
-    @commands.command(name="wtpperformance", hidden=True)
-    async def whosthatpokemon_performance(self, ctx):
-        """Shows performance."""
-        stats = get_stats()
-        record = stats.get(self.generate_image)
-        if record:
-            avg_time = stats.avg_time(self.generate_image)
-            cpm = stats.cpm(self.generate_image)
-            await ctx.send(
-                f"Average Time: {avg_time:.3f}s | Calls per minute: {cpm:.3f}"
-            )
-        else:
-            await ctx.send("No performance found yet.")
+    @commands.command(name="wtpversion", hidden=True)
+    @commands.bot_has_permissions(embed_links=True)
+    async def whosthatpokemon_version(self, ctx: commands.Context) -> None:
+        """Shows the version of the cog"""
+        version = self.__version__
+        author = self.__author__
+        embed = discord.Embed(
+            title="Cog Information",
+            description=box(
+                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
+                lang="yaml",
+            ),
+            color=await ctx.embed_color(),
+        )
+        view = discord.ui.View()
+        style = discord.ButtonStyle.gray
+        docs = discord.ui.Button(
+            style=style,
+            label="Cog Documentations",
+            url=self.__docs__,
+        )
+        view.add_item(item=docs)
+        await ctx.send(embed=embed, view=view)
