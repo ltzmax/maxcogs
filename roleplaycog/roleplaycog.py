@@ -83,7 +83,7 @@ class RolePlayCog(commands.Cog):
         emb = discord.Embed(
             colour=await ctx.embed_color(),
             description=(
-                f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member else 'themselves!'}\n"
+                f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member and member != ctx.author else 'themselves!'}"
             ),
         )
         emb.set_footer(
