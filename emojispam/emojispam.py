@@ -212,12 +212,10 @@ class EmojiSpam(commands.Cog):
         """Set the emoji limit.
 
         Default limit is 5.
-        Limit must be between 2 and 20.
-
-        If limit is set to 4, a user can send 4 emojis, but not 5.
+        Limit must be between 1 and 25.
         """
-        if limit < 2 or limit > 20:
-            return await ctx.send("Limit must be between 2 and 20!")
+        if limit < 1 or limit > 25:
+            return await ctx.send("Limit must be between 1 and 25!")
         await self.config.guild(ctx.guild).emoji_limit.set(limit)
         await ctx.send(f"Emoji limit set to {limit}!")
 
