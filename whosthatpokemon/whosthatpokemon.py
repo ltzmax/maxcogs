@@ -218,7 +218,6 @@ class WhosThatPokemon(commands.Cog):
         await self.add_to_stats(ctx.author)
         await ctx.send(file=revealed_img, embed=embed)
 
-
     @commands.group(name="wtpset", aliases=["whosthatpokemonset"])
     async def whosthatpokemon_set(self, ctx: commands.Context) -> None:
         """Group commands for whosthatpokemon"""
