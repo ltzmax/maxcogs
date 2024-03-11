@@ -108,7 +108,7 @@ class EmojiSpam(commands.Cog):
             )
         embed = discord.Embed(
             title="Emoji Spam Filter",
-            description=f"**Member:** {message.author.mention}\n**Channel:** {message.channel.mention}\n**Message:** {message.content}",
+            description=f"**Member:** {message.author.mention}\n**Channel:** {message.channel.mention}\n**Message:**\n{message.content}",
             color=await self.bot.get_embed_color(log_channel),
         )
         await log_channel.send(embed=embed)
