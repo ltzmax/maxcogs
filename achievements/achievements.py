@@ -36,7 +36,7 @@ log = logging.getLogger("red.maxcogs.achievements")
 class Achievements(commands.Cog):
     """Earn achievements by chatting in channels."""
 
-    __version__: Final[str] = "0.0.1b"
+    __version__: Final[str] = "0.0.2b"
     __author__: Final[str] = "MAX"
 
     def __init__(self, bot):
@@ -391,6 +391,11 @@ class Achievements(commands.Cog):
 
         This will reset the message count and unlocked achievements and cannot be undone without a backup.
         """
+        if (
+            not await self.config.member(member).unlocked_achievements()
+            and not await self.config.member(member).message_count()
+        ):
+            return await ctx.send(f"{member} has no profile to reset.")
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             f"## [WARNING] You are about to reset {member}'s profile. Are you sure you want to continue?",
@@ -413,6 +418,8 @@ class Achievements(commands.Cog):
 
         This will reset all message counts and unlocked achievements and cannot be undone without a backup.
         """
+        if not await self.config.all_members():
+            return await ctx.send("There are no profiles to reset.")
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             "## [WARNING] You are about to reset all profiles. Are you sure you want to continue?",
@@ -517,6 +524,8 @@ class Achievements(commands.Cog):
     @custom.command()
     async def clear(self, ctx):
         """Clear all custom achievements."""
+        if not await self.config.guild(ctx.guild).custom_achievements():
+            return await ctx.send("There are no custom achievements to clear.")
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             "## [WARNING] You are about to clear all custom achievements. Are you sure you want to continue?",
