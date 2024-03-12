@@ -36,7 +36,7 @@ log = logging.getLogger("red.maxcogs.achievements")
 class Achievements(commands.Cog):
     """Earn achievements by chatting in channels."""
 
-    __version__: Final[str] = "0.0.2b"
+    __version__: Final[str] = "0.0.3b"
     __author__: Final[str] = "MAX"
 
     def __init__(self, bot):
@@ -252,8 +252,13 @@ class Achievements(commands.Cog):
             # Use custom achievements
             achievements = await self.config.guild(ctx.guild).custom_achievements()
 
+        # Fetch the author's unlocked achievements
+        unlocked_achievements = await self.config.member(ctx.author).unlocked_achievements()
+        if unlocked_achievements is None:
+            unlocked_achievements = []
+
         achievements_list = [
-            f"`{key}`: {value} messages" for key, value in achievements.items()
+            f"{'✅' if key in unlocked_achievements else '❌'} `{key}`: {value} messages" for key, value in achievements.items()
         ]
         if not achievements_list:
             return await ctx.send("No achievements available.")
@@ -362,8 +367,10 @@ class Achievements(commands.Cog):
         if unlocked_achievements is None:
             unlocked_achievements = []
         unlocked = ""
+        use_default_achievements = await self.config.guild(ctx.guild).use_default_achievements()
         for achievement in unlocked_achievements:
-            unlocked += f"✅ `{achievement}`\n"
+            if (use_default_achievements and not self.achievements or (not use_default_achievements and self.achievements)):
+                unlocked += f"✅ `{achievement}`\n"
         if unlocked:
             for page in range(0, len(unlocked), 1024):
                 embed = discord.Embed(

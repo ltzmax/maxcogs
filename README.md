@@ -27,7 +27,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
-| Achievements | Earn achievements by chatting in channels. | 0.0.2b | ltzmax | ❌ |
+| Achievements | Earn achievements by chatting in channels. | 0.0.3b | ltzmax | ❌ |
 | AutoPublisyher | Automatically push news channel messages. | 2.1.3 | ltzmax | ✅ |
 | emojispam | Prevent users from spamming emojis. | 0.0.1 | MAX | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.7 | MAX | ✅ |
