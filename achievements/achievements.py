@@ -253,12 +253,15 @@ class Achievements(commands.Cog):
             achievements = await self.config.guild(ctx.guild).custom_achievements()
 
         # Fetch the author's unlocked achievements
-        unlocked_achievements = await self.config.member(ctx.author).unlocked_achievements()
+        unlocked_achievements = await self.config.member(
+            ctx.author
+        ).unlocked_achievements()
         if unlocked_achievements is None:
             unlocked_achievements = []
 
         achievements_list = [
-            f"{'✅' if key in unlocked_achievements else '❌'} `{key}`: {value} messages" for key, value in achievements.items()
+            f"{'✅' if key in unlocked_achievements else '❌'} `{key}`: {value} messages"
+            for key, value in achievements.items()
         ]
         if not achievements_list:
             return await ctx.send("No achievements available.")
@@ -367,9 +370,15 @@ class Achievements(commands.Cog):
         if unlocked_achievements is None:
             unlocked_achievements = []
         unlocked = ""
-        use_default_achievements = await self.config.guild(ctx.guild).use_default_achievements()
+        use_default_achievements = await self.config.guild(
+            ctx.guild
+        ).use_default_achievements()
         for achievement in unlocked_achievements:
-            if (use_default_achievements and not self.achievements or (not use_default_achievements and self.achievements)):
+            if (
+                use_default_achievements
+                and not self.achievements
+                or (not use_default_achievements and self.achievements)
+            ):
                 unlocked += f"✅ `{achievement}`\n"
         if unlocked:
             for page in range(0, len(unlocked), 1024):
