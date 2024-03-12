@@ -27,6 +27,7 @@ import logging
 
 from typing import Optional, Any, Final
 from redbot.core import commands, Config
+from redbot.core.utils.chat_formatting import humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .unlock import achievements
 
@@ -36,7 +37,7 @@ log = logging.getLogger("red.maxcogs.achievements")
 class Achievements(commands.Cog):
     """Earn achievements by chatting in channels."""
 
-    __version__: Final[str] = "0.0.3b"
+    __version__: Final[str] = "0.0.4b"
     __author__: Final[str] = "MAX"
 
     def __init__(self, bot):
@@ -164,7 +165,7 @@ class Achievements(commands.Cog):
                         return
                     embed = discord.Embed(
                         title="Achievement Unlocked",
-                        description=f"{message.author.mention} have unlocked the `{unlocked_achievement}` achievement for sending {await self.message_count(message.author)} messages!",
+                        description=f"{message.author.mention} have unlocked the `{unlocked_achievement}` achievement for sending {humanize_number(await self.get_message_count(message.author))} messages!",
                         color=discord.Color.green(),
                     )
 
@@ -253,12 +254,15 @@ class Achievements(commands.Cog):
             achievements = await self.config.guild(ctx.guild).custom_achievements()
 
         # Fetch the author's unlocked achievements
-        unlocked_achievements = await self.config.member(ctx.author).unlocked_achievements()
+        unlocked_achievements = await self.config.member(
+            ctx.author
+        ).unlocked_achievements()
         if unlocked_achievements is None:
             unlocked_achievements = []
 
         achievements_list = [
-            f"{'✅' if key in unlocked_achievements else '❌'} `{key}`: {value} messages" for key, value in achievements.items()
+            f"{'✅' if key in unlocked_achievements else '❌'} `{key}`: {humanize_number(value)} messages"
+            for key, value in achievements.items()
         ]
         if not achievements_list:
             return await ctx.send("No achievements available.")
@@ -320,11 +324,11 @@ class Achievements(commands.Cog):
         embed = discord.Embed(
             title=f"{member}'s Profile", color=await ctx.embed_color()
         )
-        embed.add_field(name="Messages:", value=count, inline=False)
+        embed.add_field(name="Messages:", value=humanize_number(count), inline=False)
         if next_rank:
             embed.add_field(
                 name="Next Rank:",
-                value=f"`{next_rank}` ({rank_count - count} messages left)",
+                value=f"`{next_rank}`: {rank_count - count} Messages Left\n`Required`: {rank_count} Messages",
                 inline=False,
             )
         embed.set_thumbnail(
@@ -341,19 +345,31 @@ class Achievements(commands.Cog):
     async def leaderboard(self, ctx):
         """Check the leaderboard."""
         members = await self.config.all_members(ctx.guild)
+        pages = []
         sorted_members = sorted(
             members.items(), key=lambda x: x[1]["message_count"], reverse=True
         )
         leaderboard = ""
-        for member_id, data in sorted_members[:15]:
+        for member_id, data in sorted_members[:20]:
             member = ctx.guild.get_member(member_id)
             if member is not None:
-                leaderboard += f"{member.mention}: {data['message_count']} {'messages' if data['message_count'] != 1 else 'message'}\n"
-        embed = discord.Embed(
-            title="Leaderboard", description=leaderboard, color=await ctx.embed_color()
-        )
-        embed.set_footer(text=f"Top 15 members by message count.")
-        await ctx.send(embed=embed)
+
+                leaderboard += f"{sorted_members.index((member_id, data)) + 1}. {member.mention}: {humanize_number(data['message_count'])} {'messages' if data['message_count'] != 1 else 'message'}\n"
+        for page in range(0, len(leaderboard), 1024):
+            embed = discord.Embed(
+                title="Leaderboard",
+                description=leaderboard[page : page + 1024],
+                color=await ctx.embed_color(),
+            )
+            embed.set_footer(
+                text=f"Page: {page//1024 + 1}/{len(leaderboard)//1024 + 1}"
+            )
+            pages.append(embed)
+        await SimpleMenu(
+            pages,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
 
     @achievement.command()
     @commands.guild_only()
@@ -367,9 +383,15 @@ class Achievements(commands.Cog):
         if unlocked_achievements is None:
             unlocked_achievements = []
         unlocked = ""
-        use_default_achievements = await self.config.guild(ctx.guild).use_default_achievements()
+        use_default_achievements = await self.config.guild(
+            ctx.guild
+        ).use_default_achievements()
         for achievement in unlocked_achievements:
-            if (use_default_achievements and not self.achievements or (not use_default_achievements and self.achievements)):
+            if (
+                use_default_achievements
+                and not self.achievements
+                or (not use_default_achievements and self.achievements)
+            ):
                 unlocked += f"✅ `{achievement}`\n"
         if unlocked:
             for page in range(0, len(unlocked), 1024):
