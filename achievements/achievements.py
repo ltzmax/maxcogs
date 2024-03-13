@@ -388,6 +388,10 @@ class Achievements(commands.Cog):
             member = ctx.guild.get_member(member_id)
             if member is not None:
                 leaderboard += f"{sorted_members.index((member_id, data)) + 1}. {member.mention}: {humanize_number(data['message_count'])} {'messages' if data['message_count'] != 1 else 'message'}\n"
+        
+        if not leaderboard:
+            return await ctx.send("No leaderboard available.")
+        
         for page in range(0, len(leaderboard), 1024):
             embed = discord.Embed(
                 title="Leaderboard",
