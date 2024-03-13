@@ -207,13 +207,13 @@ class Achievements(commands.Cog):
                 message.author, unlocked_achievement, message.channel
             )
 
-    @commands.group(aliases=["achievements", "achieve"])
-    async def achievement(self, ctx):
+    @commands.group(aliases=["achieve"])
+    async def achievements(self, ctx):
         """Achievements commands."""
 
     @commands.admin()
     @commands.guild_only()
-    @achievement.command()
+    @achievements.command()
     async def toggle(self, ctx):
         """Toggle achievements."""
         toggle = await self.config.guild(ctx.guild).toggle()
@@ -223,7 +223,7 @@ class Achievements(commands.Cog):
         else:
             await ctx.send("Achievements are now enabled.")
 
-    @achievement.command()
+    @achievements.command()
     @commands.guild_only()
     async def ignoreme(self, ctx):
         """Ignore yourself from earning achievements.
@@ -241,7 +241,7 @@ class Achievements(commands.Cog):
             await self.config.member(ctx.author).ignore_me.set(ignore_me)
             await ctx.send("You will no longer earn achievements.")
 
-    @achievement.command()
+    @achievements.command()
     @commands.guild_only()
     async def notify(self, ctx):
         """Toggle achievement notifications.
@@ -259,7 +259,7 @@ class Achievements(commands.Cog):
 
     @commands.admin()
     @commands.guild_only()
-    @achievement.command()
+    @achievements.command()
     async def channel(self, ctx, channel: Optional[discord.TextChannel]):
         """Set the channel to notify about achievements."""
         if channel is None:
@@ -270,7 +270,7 @@ class Achievements(commands.Cog):
             await ctx.send(f"Channel set to {channel.mention}.")
 
     @commands.guild_only()
-    @achievement.command(name="list")
+    @achievements.command(name="list")
     @commands.bot_has_permissions(embed_links=True)
     async def list_achievements(self, ctx):
         """List all available achievements."""
@@ -322,7 +322,7 @@ class Achievements(commands.Cog):
             timeout=120,
         ).start(ctx)
 
-    @achievement.command()
+    @achievements.command()
     @commands.guild_only()
     @commands.bot_has_permissions(embed_links=True)
     async def profile(self, ctx, member: discord.Member = None):
@@ -374,7 +374,7 @@ class Achievements(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.guild_only()
-    @achievement.command(aliases=["lb"])
+    @achievements.command(aliases=["lb"])
     @commands.bot_has_permissions(embed_links=True)
     async def leaderboard(self, ctx):
         """Check the leaderboard."""
@@ -408,7 +408,7 @@ class Achievements(commands.Cog):
             timeout=120,
         ).start(ctx)
 
-    @achievement.command()
+    @achievements.command()
     @commands.guild_only()
     @commands.bot_has_permissions(embed_links=True)
     async def unlocked(self, ctx, member: discord.Member = None):
@@ -451,7 +451,7 @@ class Achievements(commands.Cog):
 
     @commands.is_owner()
     @commands.guild_only()
-    @achievement.command()
+    @achievements.command()
     async def reset(self, ctx, member: discord.Member):
         """Reset a member's profile.
 
@@ -478,7 +478,7 @@ class Achievements(commands.Cog):
 
     @commands.is_owner()
     @commands.guild_only()
-    @achievement.command(hidden=True)
+    @achievements.command(hidden=True)
     async def resetall(self, ctx):
         """Reset all profiles.
 
@@ -500,7 +500,7 @@ class Achievements(commands.Cog):
         else:
             await ctx.send("Not resetting.")
 
-    @achievement.group()
+    @achievements.group()
     @commands.guild_only()
     @commands.guildowner()
     async def custom(self, ctx):
@@ -607,7 +607,7 @@ class Achievements(commands.Cog):
             await ctx.send("Not clearing.")
 
     @commands.guild_only()
-    @achievement.command()
+    @achievements.command()
     @commands.admin_or_permissions(manage_guild=True)
     async def settings(self, ctx):
         """Check the current settings."""
