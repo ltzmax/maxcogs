@@ -37,8 +37,9 @@ log = logging.getLogger("red.maxcogs.achievements")
 class Achievements(commands.Cog):
     """Earn achievements by chatting in channels."""
 
-    __version__: Final[str] = "0.0.4b"
+    __version__: Final[str] = "1.0.0"
     __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/achievements"
 
     def __init__(self, bot):
         self.bot = bot
@@ -48,6 +49,7 @@ class Achievements(commands.Cog):
             "use_default_achievements": True,
             "custom_achievements": {},
             "toggle": False,
+            "toggle_achievements_notifications": False,
         }
         default_member = {
             "message_count": 0,
@@ -61,7 +63,7 @@ class Achievements(commands.Cog):
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def red_delete_data_for_user(self, *, requester: Any, user_id: int) -> None:
         await self.config.member_from_ids(user_id).clear()
@@ -128,6 +130,50 @@ class Achievements(commands.Cog):
             await check_message_count(member),
         )
 
+    async def notification(self, member, unlocked_achievement, default_channel):
+        # Check if achievement notifications are enabled
+        if not await self.config.guild(member.guild).toggle_achievement_notification():
+            return
+
+        channel_id = await self.config.guild(member.guild).channel_notify()
+        channel = self.bot.get_channel(channel_id) if channel_id is not None else default_channel
+
+        if channel is not None:
+            if (
+                not channel.permissions_for(member.guild.me).send_messages
+                or not channel.permissions_for(member.guild.me).embed_links
+            ):
+                log.info(
+                    f"I don't have permissions to send messages or embed links in {channel}."
+                )
+                return
+            # Todo: Add option to send without embed if embed links are disabled.
+            embed = discord.Embed(
+                title="Achievement Unlocked",
+                description=f"{member.mention} have unlocked the `{unlocked_achievement}` achievement for sending {humanize_number(await self.get_message_count(member))} messages!",
+                color=discord.Color.green(),
+            )
+
+            # Check if we should use default achievements or custom ones
+            use_default_achievements = await self.config.guild(member.guild).use_default_achievements()
+
+            if use_default_achievements:
+                # Use default achievements
+                achievements = self.achievements
+            else:
+                # Use custom achievements
+                achievements = await self.config.guild(member.guild).custom_achievements()
+
+            achievement_keys = list(achievements.keys())
+            achievement_index = achievement_keys.index(unlocked_achievement)
+
+            if achievement_index + 1 < len(achievement_keys):
+                next_rank = achievement_keys[achievement_index + 1]
+            else:
+                next_rank = "No more ranks"
+            embed.set_footer(text=f"Next rank: {next_rank}")
+            await channel.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
         if message.author.bot:
@@ -149,49 +195,8 @@ class Achievements(commands.Cog):
         if (
             unlocked_achievement is not None
         ):  # Only send the embed message if an achievement was unlocked
-            if await self.config.guild(message.guild).channel_notify() is not None:
-                channel = self.bot.get_channel(
-                    await self.config.guild(message.guild).channel_notify()
-                )
-                if channel is not None:
-                    if (
-                        not message.channel.permissions_for(
-                            message.guild.me
-                        ).send_messages
-                        or not message.channel.permissions_for(
-                            message.guild.me
-                        ).embed_links
-                    ):
-                        return
-                    embed = discord.Embed(
-                        title="Achievement Unlocked",
-                        description=f"{message.author.mention} have unlocked the `{unlocked_achievement}` achievement for sending {humanize_number(await self.get_message_count(message.author))} messages!",
-                        color=discord.Color.green(),
-                    )
+            await self.notification(message.author, unlocked_achievement, message.channel)
 
-                    # Check if we should use default achievements or custom ones
-                    use_default_achievements = await self.config.guild(
-                        message.guild
-                    ).use_default_achievements()
-
-                    if use_default_achievements:
-                        # Use default achievements
-                        achievements = self.achievements
-                    else:
-                        # Use custom achievements
-                        achievements = await self.config.guild(
-                            message.guild
-                        ).custom_achievements()
-
-                    achievement_keys = list(achievements.keys())
-                    achievement_index = achievement_keys.index(unlocked_achievement)
-
-                    if achievement_index + 1 < len(achievement_keys):
-                        next_rank = achievement_keys[achievement_index + 1]
-                    else:
-                        next_rank = "No more ranks"
-                    embed.set_footer(text=f"Next rank: {next_rank}")
-                    await channel.send(embed=embed)
 
     @commands.group(aliases=["achievements", "achieve"])
     async def achievement(self, ctx):
@@ -212,7 +217,11 @@ class Achievements(commands.Cog):
     @achievement.command()
     @commands.guild_only()
     async def ignoreme(self, ctx):
-        """Ignore yourself from earning achievements."""
+        """Ignore yourself from earning achievements.
+
+        This will prevent you from earning achievements until you run the command again.
+        It will stop from counting your messages and unlocking achievements.
+        """
         ignore_me = await self.config.member(ctx.author).ignore_me()
         if ctx.author.id in ignore_me:
             ignore_me.remove(ctx.author.id)
@@ -222,6 +231,20 @@ class Achievements(commands.Cog):
             ignore_me.append(ctx.author.id)
             await self.config.member(ctx.author).ignore_me.set(ignore_me)
             await ctx.send("You will no longer earn achievements.")
+
+    @achievement.command()
+    @commands.guild_only()
+    async def notify(self, ctx):
+        """Toggle achievement notifications.
+
+        If channel is not set, it will use channels where they unlocked the achievement.
+        """
+        toggle = await self.config.guild(ctx.guild).toggle_achievement_notification()
+        await self.config.guild(ctx.guild).toggle_achievement_notification.set(not toggle)
+        if toggle:
+            await ctx.send("Achievement notifications are now disabled.")
+        else:
+            await ctx.send("Achievement notifications are now enabled.")
 
     @commands.admin()
     @commands.guild_only()
@@ -579,9 +602,13 @@ class Achievements(commands.Cog):
         use_default_achievements = await self.config.guild(
             ctx.guild
         ).use_default_achievements()
-        embed = discord.Embed(
-            title="Achievements Settings",
-            description=f"Toggle: {'Enabled' if toggle else 'Disabled'}\nChannel: {ctx.guild.get_channel(channel).mention if channel is not None else 'Not set'}\nUse Default Achievements: {'Yes' if use_default_achievements else 'No'}",
-            color=await ctx.embed_color(),
+        toggle_achievement_notification = await self.config.guild(
+            ctx.guild
+        ).toggle_achievement_notification()
+        await ctx.send(
+            "## Achievement Settings\n"
+            f"**Toggle**: {'Enabled' if toggle else 'Disabled'}\n"
+            f"**Channel**: {ctx.guild.get_channel(channel).mention if channel else 'None'}\n"
+            f"**Use Custom Achievements**: {'Enabled' if use_default_achievements else 'Disabled'}\n"
+            f"**Achievement Notifications**: {'Enabled' if toggle_achievement_notification else 'Disabled'}"
         )
-        await ctx.send(embed=embed)
