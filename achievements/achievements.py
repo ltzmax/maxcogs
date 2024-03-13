@@ -195,7 +195,9 @@ class Achievements(commands.Cog):
             return
 
         # Get the list of blacklisted channels
-        blacklisted_channels = await self.config.guild(message.guild).blacklisted_channels()
+        blacklisted_channels = await self.config.guild(
+            message.guild
+        ).blacklisted_channels()
         # If the message's channel is in the list of blacklisted channels, return
         if message.channel.id in blacklisted_channels:
             return
@@ -233,7 +235,12 @@ class Achievements(commands.Cog):
     @commands.admin()
     @commands.guild_only()
     @achievements.command()
-    async def blacklist(self, ctx: commands.Context, add_or_remove: Literal["add", "remove"], channel: discord.TextChannel):
+    async def blacklist(
+        self,
+        ctx: commands.Context,
+        add_or_remove: Literal["add", "remove"],
+        channel: discord.TextChannel,
+    ):
         """Add or remove a channel from the blacklisted channels list.
 
         This will prevent the bot from counting messages in the blacklisted channels.
@@ -243,13 +250,17 @@ class Achievements(commands.Cog):
             if channel.id in blacklisted_channels:
                 return await ctx.send(f"{channel.mention} is already blacklisted.")
             blacklisted_channels.append(channel.id)
-            await self.config.guild(ctx.guild).blacklisted_channels.set(blacklisted_channels)
+            await self.config.guild(ctx.guild).blacklisted_channels.set(
+                blacklisted_channels
+            )
             await ctx.send(f"{channel.mention} is now blacklisted.")
         else:
             if channel.id not in blacklisted_channels:
                 return await ctx.send(f"{channel.mention} is not blacklisted.")
             blacklisted_channels.remove(channel.id)
-            await self.config.guild(ctx.guild).blacklisted_channels.set(blacklisted_channels)
+            await self.config.guild(ctx.guild).blacklisted_channels.set(
+                blacklisted_channels
+            )
             await ctx.send(f"{channel.mention} is no longer blacklisted.")
 
     @commands.admin()
@@ -260,7 +271,9 @@ class Achievements(commands.Cog):
         blacklisted_channels = await self.config.guild(ctx.guild).blacklisted_channels()
         if not blacklisted_channels:
             return await ctx.send("No blacklisted channels.")
-        channels = [ctx.guild.get_channel(channel).mention for channel in blacklisted_channels]
+        channels = [
+            ctx.guild.get_channel(channel).mention for channel in blacklisted_channels
+        ]
         await ctx.send(f"Blacklisted Channels:\n{humanize_list(channels)}")
 
     @achievements.command()
@@ -428,10 +441,10 @@ class Achievements(commands.Cog):
             member = ctx.guild.get_member(member_id)
             if member is not None:
                 leaderboard += f"{sorted_members.index((member_id, data)) + 1}. {member.mention}: {humanize_number(data['message_count'])} {'messages' if data['message_count'] != 1 else 'message'}\n"
-        
+
         if not leaderboard:
             return await ctx.send("No leaderboard available.")
-        
+
         for page in range(0, len(leaderboard), 1024):
             embed = discord.Embed(
                 title="Leaderboard",
