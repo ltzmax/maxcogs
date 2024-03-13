@@ -25,9 +25,9 @@ SOFTWARE.
 import discord
 import logging
 
-from typing import Optional, Any, Final
+from typing import Optional, Any, Final, Literal
 from redbot.core import commands, Config
-from redbot.core.utils.chat_formatting import humanize_number
+from redbot.core.utils.chat_formatting import humanize_number, humanize_list
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .unlock import achievements
 
@@ -37,7 +37,7 @@ log = logging.getLogger("red.maxcogs.achievements")
 class Achievements(commands.Cog):
     """Earn achievements by chatting in channels."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/achievements"
 
@@ -50,6 +50,7 @@ class Achievements(commands.Cog):
             "custom_achievements": {},
             "toggle": False,
             "toggle_achievements_notifications": False,
+            "blacklisted_channels": [],
         }
         default_member = {
             "message_count": 0,
@@ -193,6 +194,12 @@ class Achievements(commands.Cog):
         if message.guild is None:
             return
 
+        # Get the list of blacklisted channels
+        blacklisted_channels = await self.config.guild(message.guild).blacklisted_channels()
+        # If the message's channel is in the list of blacklisted channels, return
+        if message.channel.id in blacklisted_channels:
+            return
+
         if message.author.id in await self.config.member(message.author).ignore_me():
             return
 
@@ -222,6 +229,39 @@ class Achievements(commands.Cog):
             await ctx.send("Achievements are now disabled.")
         else:
             await ctx.send("Achievements are now enabled.")
+
+    @commands.admin()
+    @commands.guild_only()
+    @achievements.command()
+    async def blacklist(self, ctx: commands.Context, add_or_remove: Literal["add", "remove"], channel: discord.TextChannel):
+        """Add or remove a channel from the blacklisted channels list.
+
+        This will prevent the bot from counting messages in the blacklisted channels.
+        """
+        blacklisted_channels = await self.config.guild(ctx.guild).blacklisted_channels()
+        if add_or_remove == "add":
+            if channel.id in blacklisted_channels:
+                return await ctx.send(f"{channel.mention} is already blacklisted.")
+            blacklisted_channels.append(channel.id)
+            await self.config.guild(ctx.guild).blacklisted_channels.set(blacklisted_channels)
+            await ctx.send(f"{channel.mention} is now blacklisted.")
+        else:
+            if channel.id not in blacklisted_channels:
+                return await ctx.send(f"{channel.mention} is not blacklisted.")
+            blacklisted_channels.remove(channel.id)
+            await self.config.guild(ctx.guild).blacklisted_channels.set(blacklisted_channels)
+            await ctx.send(f"{channel.mention} is no longer blacklisted.")
+
+    @commands.admin()
+    @commands.guild_only()
+    @achievements.command()
+    async def listblacklisted(self, ctx):
+        """List all blacklisted channels."""
+        blacklisted_channels = await self.config.guild(ctx.guild).blacklisted_channels()
+        if not blacklisted_channels:
+            return await ctx.send("No blacklisted channels.")
+        channels = [ctx.guild.get_channel(channel).mention for channel in blacklisted_channels]
+        await ctx.send(f"Blacklisted Channels:\n{humanize_list(channels)}")
 
     @achievements.command()
     @commands.guild_only()
