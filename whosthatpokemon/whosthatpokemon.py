@@ -62,13 +62,6 @@ class WhosThatPokemon(commands.Cog):
     def __init__(self, bot: Red):
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
-        self.config = Config.get_conf(
-            self, identifier=1234567890, force_registration=True
-        )
-        default_user = {
-            "total_correct_guesses": 0,
-        }
-        self.config.register_user(**default_user)
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -124,11 +117,6 @@ class WhosThatPokemon(commands.Cog):
         base_image.close()
         poke_image.close()
         return temp
-
-    async def add_to_stats(self, user: discord.User) -> None:
-        await self.config.user(user).total_correct_guesses.set(
-            await self.config.user(user).total_correct_guesses() + 1
-        )
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(
@@ -215,108 +203,11 @@ class WhosThatPokemon(commands.Cog):
                 f"{ctx.author.mention} You took too long to answer.\nThe Pokemon was... **{english_name}**."
             )
             log.info(f"{ctx.author} ran out of time to guess the pokemon.")
-        await self.add_to_stats(ctx.author)
         await ctx.send(file=revealed_img, embed=embed)
 
-    @commands.group(name="wtpset", aliases=["whosthatpokemonset"])
+    @commands.group(name="wtpset", aliases=["whosthatpokemonset"], hidden=True)
     async def whosthatpokemon_set(self, ctx: commands.Context) -> None:
         """Group commands for whosthatpokemon"""
-
-    @commands.bot_has_permissions(embed_links=True)
-    @whosthatpokemon_set.command(name="leaderboard", aliases=["lb"])
-    async def whosthatpokemon_leaderboard(self, ctx: commands.Context) -> None:
-        """Shows the leaderboard for whosthatpokemon.
-
-        This is global leaderboard and not per server.
-        This will show the top 10 users with most correct guesses.
-        """
-        users = await self.config.all_users()
-
-        # Sort and reverse in one step
-        sorted_users = sorted(
-            users.items(), key=lambda x: x[1]["total_correct_guesses"], reverse=True
-        )
-
-        if not sorted_users:
-            await ctx.send(
-                "No one has played whosthatpokemon yet. Use `[p]whosthatpokemon` to start!"
-            )
-            return
-
-        embed = discord.Embed(
-            title="WhosThatPokemon Leaderboard",
-            description="Top 10 users with most correct guesses.",
-            color=await ctx.embed_color(),
-        )
-        # Filter out None user objects before creating the embed fields
-        sorted_users = [
-            (
-                user_id,
-                await self.config.user_from_id(int(user_id)).total_correct_guesses(),
-            )
-            for user_id, _ in sorted_users[:10]
-            if self.bot.get_user(int(user_id)) is not None
-        ]
-        for index, (user_id, total_correct_guesses) in enumerate(sorted_users, start=1):
-            total = humanize_number(total_correct_guesses)
-            user_obj = self.bot.get_user(int(user_id))
-            embed.add_field(
-                name=f"{index}. {user_obj}",
-                value=f"Total correct guesses: **{total}**",
-                inline=False,
-            )
-            await ctx.send(embed=embed)
-
-    @whosthatpokemon_set.command(name="stats")
-    @commands.bot_has_permissions(embed_links=True)
-    async def whosthatpokemon_stats(self, ctx: commands.Context) -> None:
-        """Shows your stats for whosthatpokemon.
-
-        This will show your total correct guesses.
-        """
-        total_correct_guesses = await self.config.user(
-            ctx.author
-        ).total_correct_guesses()
-        if not total_correct_guesses:
-            return await ctx.send(
-                f"You have not played whosthatpokemon yet. Use `{ctx.clean_prefix}whosthatpokemon` to start!"
-            )
-            log.info(
-                f"{ctx.author} tried to check their stats but they have not played whosthatpokemon yet."
-            )
-        human = humanize_number(total_correct_guesses)
-        guess = "guess" if total_correct_guesses == 1 else "guesses"
-        embed = discord.Embed(
-            title=f"{ctx.author}'s WhosThatPokemon Stats",
-            description=f"Total correct {guess}: **{human}**",
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
-
-    @commands.is_owner()
-    @whosthatpokemon_set.command(name="reset")
-    async def whosthatpokemon_reset(self, ctx: commands.Context) -> None:
-        """Resets the whosthatpokemon leaderboard.
-
-        This will reset the leaderboard globally.
-        This can only be used by the bot owner and 2 times per 12 hours.
-        """
-        if not await self.config.all_users():
-            return await ctx.send(
-                "No one has played whosthatpokemon yet so nothing to reset."
-            )
-        view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(
-            "Are you sure you want to reset the leaderboard?\n**This will reset the leaderboard globally**.",
-            view=view,
-        )
-        await view.wait()
-        if view.result:
-            await self.config.clear_all_users()
-            await ctx.send("✅ WhosThatPokemon leaderboard has been reset.")
-            log.info(f"{ctx.author} reset the whosthatpokemon leaderboard globally.")
-        else:
-            await ctx.send("❌ WhosThatPokemon leaderboard reset has been cancelled.")
 
     @whosthatpokemon_set.command(name="version")
     @commands.bot_has_permissions(embed_links=True)
