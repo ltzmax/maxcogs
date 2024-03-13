@@ -136,7 +136,11 @@ class Achievements(commands.Cog):
             return
 
         channel_id = await self.config.guild(member.guild).channel_notify()
-        channel = self.bot.get_channel(channel_id) if channel_id is not None else default_channel
+        channel = (
+            self.bot.get_channel(channel_id)
+            if channel_id is not None
+            else default_channel
+        )
 
         if channel is not None:
             if (
@@ -155,14 +159,18 @@ class Achievements(commands.Cog):
             )
 
             # Check if we should use default achievements or custom ones
-            use_default_achievements = await self.config.guild(member.guild).use_default_achievements()
+            use_default_achievements = await self.config.guild(
+                member.guild
+            ).use_default_achievements()
 
             if use_default_achievements:
                 # Use default achievements
                 achievements = self.achievements
             else:
                 # Use custom achievements
-                achievements = await self.config.guild(member.guild).custom_achievements()
+                achievements = await self.config.guild(
+                    member.guild
+                ).custom_achievements()
 
             achievement_keys = list(achievements.keys())
             achievement_index = achievement_keys.index(unlocked_achievement)
@@ -195,8 +203,9 @@ class Achievements(commands.Cog):
         if (
             unlocked_achievement is not None
         ):  # Only send the embed message if an achievement was unlocked
-            await self.notification(message.author, unlocked_achievement, message.channel)
-
+            await self.notification(
+                message.author, unlocked_achievement, message.channel
+            )
 
     @commands.group(aliases=["achievements", "achieve"])
     async def achievement(self, ctx):
@@ -240,7 +249,9 @@ class Achievements(commands.Cog):
         If channel is not set, it will use channels where they unlocked the achievement.
         """
         toggle = await self.config.guild(ctx.guild).toggle_achievement_notification()
-        await self.config.guild(ctx.guild).toggle_achievement_notification.set(not toggle)
+        await self.config.guild(ctx.guild).toggle_achievement_notification.set(
+            not toggle
+        )
         if toggle:
             await ctx.send("Achievement notifications are now disabled.")
         else:
