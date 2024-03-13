@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Achievements",
-    "install_msg": "Thanks for installing. **NOTE** This cog is currently in beta version and is not fully finished.\nif you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
+    "install_msg": "Thanks for installing.\nif you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
     "description": "Earn achievements by chatting in channels.",
     "short": "Earn achievements by chatting in channels.",
     "hidden": false,
