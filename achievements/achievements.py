@@ -25,7 +25,7 @@ SOFTWARE.
 import discord
 import logging
 
-from typing import Optional, Any, Final, Literal
+from typing import Optional, Any, Final, Literal, Union
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_number, humanize_list
 from redbot.core.utils.views import ConfirmView, SimpleMenu
@@ -37,7 +37,7 @@ log = logging.getLogger("red.maxcogs.achievements")
 class Achievements(commands.Cog):
     """Earn achievements by chatting in channels."""
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/achievements"
 
@@ -136,82 +136,88 @@ class Achievements(commands.Cog):
         if not await self.config.guild(member.guild).toggle_achievement_notification():
             return
 
+        # Get the notification channel
         channel_id = await self.config.guild(member.guild).channel_notify()
-        channel = (
-            self.bot.get_channel(channel_id)
-            if channel_id is not None
-            else default_channel
+        channel = self.bot.get_channel(channel_id) if channel_id else default_channel
+
+        # Determine whether to use default or custom achievements
+        use_default_achievements = await self.config.guild(
+            member.guild
+        ).use_default_achievements()
+        achievements = (
+            self.achievements
+            if use_default_achievements
+            else await self.config.guild(member.guild).custom_achievements()
         )
 
-        if channel is not None:
+        # Determine the next rank
+        achievement_keys = list(achievements.keys())
+        achievement_index = achievement_keys.index(unlocked_achievement)
+        next_rank = (
+            achievement_keys[achievement_index + 1]
+            if achievement_index + 1 < len(achievement_keys)
+            else "No more ranks"
+        )
+
+        if channel.permissions_for(member.guild.me).embed_links:
             if (
-                not channel.permissions_for(member.guild.me).send_messages
-                or not channel.permissions_for(member.guild.me).embed_links
+                not channel.permissions_for(member.guild.me).embed_links
+                and not channel.permissions_for(member.guild.me).send_messages
             ):
                 log.info(
-                    f"I don't have permissions to send messages or embed links in {channel}."
+                    "I don't have permissions to send messages and embed links in channel {channel}".format(
+                        channel=channel
+                    )
                 )
                 return
-            # Todo: Add option to send without embed if embed links are disabled.
             embed = discord.Embed(
                 title="Achievement Unlocked",
                 description=f"{member.mention} have unlocked the `{unlocked_achievement}` achievement for sending {humanize_number(await self.get_message_count(member))} messages!",
                 color=discord.Color.green(),
             )
-
-            # Check if we should use default achievements or custom ones
-            use_default_achievements = await self.config.guild(
-                member.guild
-            ).use_default_achievements()
-
-            if use_default_achievements:
-                # Use default achievements
-                achievements = self.achievements
-            else:
-                # Use custom achievements
-                achievements = await self.config.guild(
-                    member.guild
-                ).custom_achievements()
-
-            achievement_keys = list(achievements.keys())
-            achievement_index = achievement_keys.index(unlocked_achievement)
-
-            if achievement_index + 1 < len(achievement_keys):
-                next_rank = achievement_keys[achievement_index + 1]
-            else:
-                next_rank = "No more ranks"
             embed.set_footer(text=f"Next rank: {next_rank}")
             await channel.send(embed=embed)
+        else:
+            await channel.send(
+                f"{member.mention} have unlocked the `{unlocked_achievement}` achievement for sending {humanize_number(await self.get_message_count(member))} messages!",
+                allowed_mentions=discord.AllowedMentions(users=False),
+            )
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
-        if message.author.bot:
-            return
-        if await self.bot.cog_disabled_in_guild(self, message.guild):
-            return
-        if not await self.config.guild(message.guild).toggle():
-            return
-        if message.guild is None:
+        # Check if the message is from a bot, or if the cog is disabled in the guild, or if the guild toggle is off, or if the guild is None
+        if (
+            message.author.bot
+            or await self.bot.cog_disabled_in_guild(self, message.guild)
+            or not await self.config.guild(message.guild).toggle()
+            or message.guild is None
+        ):
             return
 
-        # Get the list of blacklisted channels
+        # Check if the message's channel is blacklisted or if the author is ignored
         blacklisted_channels = await self.config.guild(
             message.guild
         ).blacklisted_channels()
-        # If the message's channel is in the list of blacklisted channels, return
-        if message.channel.id in blacklisted_channels:
-            return
 
-        if message.author.id in await self.config.member(message.author).ignore_me():
-            return
-
-        await self.check_message_count(message.author)
-        unlocked_achievement = await self.check_achievements(
-            message.author
-        )  # Get the unlocked achievement, if any
+        if isinstance(
+            message.channel,
+            discord.Thread,
+            discord.ForumChannel,
+            discord.VoiceChannel,
+            discord.TextChannel,
+        ):
+            if message.channel.parent_id in blacklisted_channels:
+                return
         if (
-            unlocked_achievement is not None
-        ):  # Only send the embed message if an achievement was unlocked
+            message.channel.id in blacklisted_channels
+            or message.author.id in await self.config.member(message.author).ignore_me()
+        ):
+            return
+        await self.check_message_count(message.author)
+        unlocked_achievement = await self.check_achievements(message.author)
+
+        # Only send the embed message if an achievement was unlocked
+        if unlocked_achievement is not None:
             await self.notification(
                 message.author, unlocked_achievement, message.channel
             )
@@ -234,47 +240,68 @@ class Achievements(commands.Cog):
 
     @commands.admin()
     @commands.guild_only()
-    @achievements.command()
+    @achievements.command(usage="<add|remove> <channel>", aliases=["bl"])
     async def blacklist(
         self,
         ctx: commands.Context,
         add_or_remove: Literal["add", "remove"],
-        channel: discord.TextChannel,
+        channels: Union[
+            discord.TextChannel,
+            discord.ForumChannel,
+            discord.Thread,
+            discord.VoiceChannel,
+        ],
     ):
         """Add or remove a channel from the blacklisted channels list.
 
         This will prevent the bot from counting messages in the blacklisted channels.
+
+        **Examples:**
+        - `[p]achievement blacklist add #general`
+        - `[p]achievement blacklist remove #general`
+
+        **Arguments:**
+        - `<add_or_remove>`: Whether to add or remove the channel from the blacklisted channels list.
+        - `<channel>`: The channel to add or remove from the blacklisted channels list.
         """
-        blacklisted_channels = await self.config.guild(ctx.guild).blacklisted_channels()
+        blacklisted = await self.config.guild(ctx.guild).blacklisted_channels()
         if add_or_remove == "add":
-            if channel.id in blacklisted_channels:
-                return await ctx.send(f"{channel.mention} is already blacklisted.")
-            blacklisted_channels.append(channel.id)
-            await self.config.guild(ctx.guild).blacklisted_channels.set(
-                blacklisted_channels
-            )
-            await ctx.send(f"{channel.mention} is now blacklisted.")
+            if channels.id in blacklisted:
+                return await ctx.send("That channel is already blacklisted.")
+            blacklisted.append(channels.id)
+            await self.config.guild(ctx.guild).blacklisted_channels.set(blacklisted)
+            await ctx.send(f"{channels.mention} has been blacklist.")
         else:
-            if channel.id not in blacklisted_channels:
-                return await ctx.send(f"{channel.mention} is not blacklisted.")
-            blacklisted_channels.remove(channel.id)
-            await self.config.guild(ctx.guild).blacklisted_channels.set(
-                blacklisted_channels
-            )
-            await ctx.send(f"{channel.mention} is no longer blacklisted.")
+            if channels.id not in blacklisted:
+                return await ctx.send("That channel is not blacklisted.")
+            blacklisted.remove(channels.id)
+            await self.config.guild(ctx.guild).blacklisted_channels.set(blacklisted)
+            await ctx.send(f"Removed {channels.mention} from the blacklist.")
 
     @commands.admin()
     @commands.guild_only()
-    @achievements.command()
+    @achievements.command(aliases=["listbl"])
+    @commands.bot_has_permissions(embed_links=True)
     async def listblacklisted(self, ctx):
         """List all blacklisted channels."""
         blacklisted_channels = await self.config.guild(ctx.guild).blacklisted_channels()
         if not blacklisted_channels:
             return await ctx.send("No blacklisted channels.")
-        channels = [
-            ctx.guild.get_channel(channel).mention for channel in blacklisted_channels
-        ]
-        await ctx.send(f"Blacklisted Channels:\n{humanize_list(channels)}")
+        pages = []
+        channels = humanize_list([f"<#{channel}>" for channel in blacklisted_channels])
+        for page in range(0, len(channels), 1024):
+            embed = discord.Embed(
+                title="Blacklisted Channels",
+                description=channels[page : page + 1024],
+                color=await ctx.embed_color(),
+            )
+            embed.set_footer(text=f"Page: {page//1024 + 1}/{len(channels)//1024 + 1}")
+            pages.append(embed)
+        await SimpleMenu(
+            pages,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
 
     @achievements.command()
     @commands.guild_only()
