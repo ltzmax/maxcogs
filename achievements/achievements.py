@@ -262,8 +262,14 @@ class Achievements(commands.Cog):
     async def listblacklisted(self, ctx):
         """List all blacklisted channels."""
         blacklisted_channels = await self.config.guild(ctx.guild).blacklisted_channels()
+        # Fetch all channel IDs in the guild
+        guild_channel_ids = {channel.id for channel in ctx.guild.channels}
+        # Remove deleted channels from the blacklisted channels
+        blacklisted_channels = [channel_id for channel_id in blacklisted_channels if channel_id in guild_channel_ids]
+        # Update the blacklisted channels in the config
+        await self.config.guild(ctx.guild).blacklisted_channels.set(blacklisted_channels)
         if not blacklisted_channels:
-            return await ctx.send("No blacklisted channels.")
+            return await ctx.send("No blacklisted channels in this server.")
         pages = []
         channels = humanize_list([f"<#{channel}>" for channel in blacklisted_channels])
         for page in range(0, len(channels), 1024):
