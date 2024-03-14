@@ -30,6 +30,7 @@ from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_number, humanize_list
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .unlock import achievements
+from .converters import EmojiConverter
 
 DEFAULT_EMOJI_CHECK = "✅"
 DEFAULT_EMOJI_X = "❌"
@@ -332,7 +333,7 @@ class Achievements(commands.Cog):
         """Emoji settings."""
 
     @emoji.command()
-    async def check(self, ctx, emoji: Optional[discord.Emoji]):
+    async def check(self, ctx, emoji: Optional[EmojiConverter]):
         """Set the check emoji.
 
         This only shows in `[p]achievements list` and `[p]achievements unlocked` commands.
@@ -354,7 +355,7 @@ class Achievements(commands.Cog):
             await ctx.send(f"Check emoji set to {str(emoji)}.")
 
     @emoji.command()
-    async def cross(self, ctx, emoji: Optional[discord.Emoji]):
+    async def cross(self, ctx, emoji: Optional[EmojiConverter]):
         """Set the cross emoji.
 
         This only shows in `[p]achievements list` and `[p]achievements unlocked` commands.
@@ -734,4 +735,6 @@ class Achievements(commands.Cog):
             f"**Channel**: {ctx.guild.get_channel(channel).mention if channel else 'None'}\n"
             f"**Use Custom Achievements**: {'Enabled' if use_default_achievements else 'Disabled'}\n"
             f"**Achievement Notifications**: {'Enabled' if toggle_achievement_notification else 'Disabled'}"
+            f"**Default Check Emoji**: {await self.config.guild(ctx.guild).default_emoji_check()}\n"
+            f"**Default Cross Emoji**: {await self.config.guild(ctx.guild).default_emoji_x()}"
         )
