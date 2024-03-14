@@ -31,13 +31,16 @@ from redbot.core.utils.chat_formatting import humanize_number, humanize_list
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .unlock import achievements
 
+DEFAULT_EMOJI_CHECK = "✅"
+DEFAULT_EMOJI_X = "❌"
+
 log = logging.getLogger("red.maxcogs.achievements")
 
 
 class Achievements(commands.Cog):
     """Earn achievements by chatting in channels."""
 
-    __version__: Final[str] = "1.2.0"
+    __version__: Final[str] = "1.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/achievements"
 
@@ -51,6 +54,8 @@ class Achievements(commands.Cog):
             "toggle": False,
             "toggle_achievements_notifications": False,
             "blacklisted_channels": [],
+            "default_emoji_check": DEFAULT_EMOJI_CHECK,
+            "default_emoji_x": DEFAULT_EMOJI_X,
         }
         default_member = {
             "message_count": 0,
@@ -233,10 +238,7 @@ class Achievements(commands.Cog):
         """Toggle achievements."""
         toggle = await self.config.guild(ctx.guild).toggle()
         await self.config.guild(ctx.guild).toggle.set(not toggle)
-        if toggle:
-            await ctx.send("Achievements are now disabled.")
-        else:
-            await ctx.send("Achievements are now enabled.")
+        await ctx.send(f"Achievements are now {'enabled' if not toggle else 'disabled'}.")
 
     @commands.admin()
     @commands.guild_only()
@@ -349,6 +351,52 @@ class Achievements(commands.Cog):
             await self.config.guild(ctx.guild).channel_notify.set(channel.id)
             await ctx.send(f"Channel set to {channel.mention}.")
 
+    @commands.admin()
+    @commands.guild_only()
+    @achievements.group()
+    async def emoji(self, ctx):
+        """Emoji settings."""
+
+    @emoji.command()
+    async def check(self, ctx, emoji: Optional[discord.Emoji]):
+        """Set the check emoji.
+
+        This only shows in `[p]achievements list` and `[p]achievements unlocked` commands.
+        
+        **Examples:**
+        - `[p]achievements emoji check :white_check_mark:`
+        - `[p]achievements emoji check :heavy_check_mark:`
+
+        **Arguments:**
+        - `<emoji>`: The emoji to set as the check emoji.
+        """
+        if emoji is None:
+            await self.config.guild(ctx.guild).default_emoji_check.set(DEFAULT_EMOJI_CHECK)
+            await ctx.send("I've reset the check emoji to the default.")
+        else:
+            await self.config.guild(ctx.guild).default_emoji_check.set(str(emoji))
+            await ctx.send(f"Check emoji set to {str(emoji)}.")
+
+    @emoji.command()
+    async def cross(self, ctx, emoji: Optional[discord.Emoji]):
+        """Set the cross emoji.
+
+        This only shows in `[p]achievements list` and `[p]achievements unlocked` commands.
+
+        **Examples:**
+        - `[p]achievements emoji cross :x:`
+        - `[p]achievements emoji cross :heavy_multiplication_x:`
+
+        **Arguments:**
+        - `<emoji>`: The emoji to set as the cross emoji.
+        """
+        if emoji is None:
+            await self.config.guild(ctx.guild).default_emoji_x.set(DEFAULT_EMOJI_X)
+            await ctx.send("I've reset the cross emoji to the default.")
+        else:
+            await self.config.guild(ctx.guild).default_emoji_x.set(str(emoji))
+            await ctx.send(f"Cross emoji set to {str(emoji)}.")
+
     @commands.guild_only()
     @achievements.command(name="list")
     @commands.bot_has_permissions(embed_links=True)
@@ -374,8 +422,11 @@ class Achievements(commands.Cog):
         if unlocked_achievements is None:
             unlocked_achievements = []
 
+        default_emoji_check = await self.config.guild(ctx.guild).default_emoji_check()
+        default_emoji_x = await self.config.guild(ctx.guild).default_emoji_x()
+
         achievements_list = [
-            f"{'✅' if key in unlocked_achievements else '❌'} `{key}`: {humanize_number(value)} messages"
+            f"{default_emoji_check if key in unlocked_achievements else default_emoji_x} `{key}`: {humanize_number(value)} messages"
             for key, value in achievements.items()
         ]
         if not achievements_list:
@@ -503,13 +554,14 @@ class Achievements(commands.Cog):
         use_default_achievements = await self.config.guild(
             ctx.guild
         ).use_default_achievements()
+        default_emoji_check = await self.config.guild(ctx.guild).default_emoji_check()
         for achievement in unlocked_achievements:
             if (
                 use_default_achievements
                 and not self.achievements
                 or (not use_default_achievements and self.achievements)
             ):
-                unlocked += f"✅ `{achievement}`\n"
+                unlocked += f"{default_emoji_check} `{achievement}`\n"
         if unlocked:
             for page in range(0, len(unlocked), 1024):
                 embed = discord.Embed(
