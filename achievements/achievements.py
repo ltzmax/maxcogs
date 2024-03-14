@@ -238,7 +238,9 @@ class Achievements(commands.Cog):
         """Toggle achievements."""
         toggle = await self.config.guild(ctx.guild).toggle()
         await self.config.guild(ctx.guild).toggle.set(not toggle)
-        await ctx.send(f"Achievements are now {'enabled' if not toggle else 'disabled'}.")
+        await ctx.send(
+            f"Achievements are now {'enabled' if not toggle else 'disabled'}."
+        )
 
     @commands.admin()
     @commands.guild_only()
@@ -362,7 +364,7 @@ class Achievements(commands.Cog):
         """Set the check emoji.
 
         This only shows in `[p]achievements list` and `[p]achievements unlocked` commands.
-        
+
         **Examples:**
         - `[p]achievements emoji check :white_check_mark:`
         - `[p]achievements emoji check :heavy_check_mark:`
@@ -371,7 +373,9 @@ class Achievements(commands.Cog):
         - `<emoji>`: The emoji to set as the check emoji.
         """
         if emoji is None:
-            await self.config.guild(ctx.guild).default_emoji_check.set(DEFAULT_EMOJI_CHECK)
+            await self.config.guild(ctx.guild).default_emoji_check.set(
+                DEFAULT_EMOJI_CHECK
+            )
             await ctx.send("I've reset the check emoji to the default.")
         else:
             await self.config.guild(ctx.guild).default_emoji_check.set(str(emoji))
