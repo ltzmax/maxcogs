@@ -77,8 +77,7 @@ class Achievements(commands.Cog):
     async def check_message_count(self, member):
         """Add a message to the message count for a member."""
         count = await self.config.member(member).message_count()
-        count += 1
-        await self.config.member(member).message_count.set(count)
+        await self.config.member(member).message_count.set(count + 1)
         return count
 
     async def get_message_count(self, member):
@@ -109,32 +108,6 @@ class Achievements(commands.Cog):
                 )
                 return achievement
         return None
-
-    async def achievement_fuction(
-        self,
-        member: discord.Member,
-        get_message_count,
-        check_message_count,
-        check_achievements,
-    ):
-        """Allow other cogs to use the achievement functions.
-
-         This is useful for example giveaways, leveling, and other cogs that want to use the achievements.
-
-        Example:
-             - `await self.bot.get_cog("Achievements").achievement_fuction(member, get_message_count, check_message_count, check_achievements)`
-
-         Arguments:
-             - `member`: The discord.Member object to check.
-             - `get_message_count`: The get_message_count function to get the message count for a member.
-             - `check_message_count`: The check_message_count function to check the message count for a member.
-             - `check_achievements`: The check_achievements function to check the achievements for a member.
-        """
-        return (
-            await check_achievements(member),
-            await get_message_count(member),
-            await check_message_count(member),
-        )
 
     async def notification(self, member, unlocked_achievement, default_channel):
         # Check if achievement notifications are enabled
@@ -190,7 +163,6 @@ class Achievements(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
-        # Check if the message is from a bot, or if the cog is disabled in the guild, or if the guild toggle is off, or if the guild is None
         if (
             message.author.bot
             or await self.bot.cog_disabled_in_guild(self, message.guild)
@@ -199,19 +171,19 @@ class Achievements(commands.Cog):
         ):
             return
 
-        # Check if the message's channel is blacklisted or if the author is ignored
         blacklisted_channels = await self.config.guild(
             message.guild
         ).blacklisted_channels()
-
         if isinstance(
             message.channel,
-            discord.Thread,
-            discord.ForumChannel,
-            discord.VoiceChannel,
-            discord.TextChannel,
+            (
+                discord.TextChannel,
+                discord.ForumChannel,
+                discord.Thread,
+                discord.VoiceChannel,
+            ),
         ):
-            if message.channel.parent_id in blacklisted_channels:
+            if message.channel.id in blacklisted_channels:
                 return
         if (
             message.channel.id in blacklisted_channels
@@ -238,7 +210,9 @@ class Achievements(commands.Cog):
         """Toggle achievements."""
         toggle = await self.config.guild(ctx.guild).toggle()
         await self.config.guild(ctx.guild).toggle.set(not toggle)
-        await ctx.send(f"Achievements are now {'enabled' if not toggle else 'disabled'}.")
+        await ctx.send(
+            f"Achievements are now {'enabled' if not toggle else 'disabled'}."
+        )
 
     @commands.admin()
     @commands.guild_only()
@@ -362,7 +336,7 @@ class Achievements(commands.Cog):
         """Set the check emoji.
 
         This only shows in `[p]achievements list` and `[p]achievements unlocked` commands.
-        
+
         **Examples:**
         - `[p]achievements emoji check :white_check_mark:`
         - `[p]achievements emoji check :heavy_check_mark:`
@@ -371,7 +345,9 @@ class Achievements(commands.Cog):
         - `<emoji>`: The emoji to set as the check emoji.
         """
         if emoji is None:
-            await self.config.guild(ctx.guild).default_emoji_check.set(DEFAULT_EMOJI_CHECK)
+            await self.config.guild(ctx.guild).default_emoji_check.set(
+                DEFAULT_EMOJI_CHECK
+            )
             await ctx.send("I've reset the check emoji to the default.")
         else:
             await self.config.guild(ctx.guild).default_emoji_check.set(str(emoji))
@@ -616,8 +592,8 @@ class Achievements(commands.Cog):
 
         This will reset all message counts and unlocked achievements and cannot be undone without a backup.
         """
-        if not await self.config.all_members():
-            return await ctx.send("There are no profiles to reset.")
+        if not await self.config.all_members() and not await self.config.all_guilds():
+            return await ctx.send("Nothing to reset really.")
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             "## [WARNING] You are about to reset all profiles. Are you sure you want to continue?",
@@ -627,6 +603,7 @@ class Achievements(commands.Cog):
         if view.result:
             await ctx.typing()
             await self.config.clear_all_members()
+            await self.config.guild(ctx.guild).clear()
             await ctx.send("All profiles reset.")
             log.info(f"{ctx.author} reset all profiles in {ctx.guild}.")
         else:
