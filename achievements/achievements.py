@@ -262,7 +262,7 @@ class Achievements(commands.Cog):
 
         **Arguments:**
         - `<add_or_remove>`: Whether to add or remove the channel from the blacklisted channels list.
-        - `<channel>`: The channel to add or remove from the blacklisted channels list.
+        - `<channels>`: The channels to add or remove from the blacklisted channels list.
         """
         blacklisted = await self.config.guild(ctx.guild).blacklisted_channels()
         if add_or_remove == "add":
