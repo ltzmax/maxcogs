@@ -423,7 +423,7 @@ class Achievements(commands.Cog):
         pages = []
         page = ""
         for achievement in achievements_list:
-            if len(page + achievement + "\n") > 1024:
+            if len(page + achievement + "\n") > 2024:
                 pages.append(page)
                 page = achievement + "\n"
             else:
