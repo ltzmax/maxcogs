@@ -108,7 +108,11 @@ class EmojiSpam(commands.Cog):
                 f"I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel in {guild.name}. Disabling log channel."
             )
         description_content = f"**Member:** {message.author.mention}\n**Channel:** {message.channel.mention}\n**Message:**\n{message.content}"
-        description_content = (description_content[:4093] + '...') if len(description_content) > 4096 else description_content
+        description_content = (
+            (description_content[:4093] + "...")
+            if len(description_content) > 4096
+            else description_content
+        )
         embed = discord.Embed(
             title="Emoji Spam Filter",
             description=description_content,
