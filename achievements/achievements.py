@@ -499,29 +499,30 @@ class Achievements(commands.Cog):
     async def leaderboard(self, ctx):
         """Check the leaderboard."""
         members = await self.config.all_members(ctx.guild)
-        pages = []
         sorted_members = sorted(
             members.items(), key=lambda x: x[1]["message_count"], reverse=True
         )
-        leaderboard = ""
-        for member_id, data in sorted_members[:20]:
-            member = ctx.guild.get_member(member_id)
-            if member is not None:
-                leaderboard += f"{sorted_members.index((member_id, data)) + 1}. {member.mention}: {humanize_number(data['message_count'])} {'messages' if data['message_count'] != 1 else 'message'}\n"
+        pages = []
+        for i in range(0, len(sorted_members), 20):
+            leaderboard = ""
+            for member_id, data in sorted_members[i:i+20]:
+                member = ctx.guild.get_member(member_id)
+                if member is not None:
+                    leaderboard += f"{sorted_members.index((member_id, data)) + 1}. {member.mention}: {humanize_number(data['message_count'])} {'messages' if data['message_count'] != 1 else 'message'}\n"
+            if leaderboard:
+                embed = discord.Embed(
+                    title="Leaderboard",
+                    description=leaderboard,
+                    color=await ctx.embed_color(),
+                )
+                embed.set_footer(
+                    text=f"Page: {i//20 + 1}/{len(sorted_members)//20 + 1}"
+                )
+                pages.append(embed)
 
-        if not leaderboard:
+        if not pages:
             return await ctx.send("No leaderboard available.")
 
-        for page in range(0, len(leaderboard), 1024):
-            embed = discord.Embed(
-                title="Leaderboard",
-                description=leaderboard[page : page + 1024],
-                color=await ctx.embed_color(),
-            )
-            embed.set_footer(
-                text=f"Page: {page//1024 + 1}/{len(leaderboard)//1024 + 1}"
-            )
-            pages.append(embed)
         await SimpleMenu(
             pages,
             disable_after_timeout=True,
