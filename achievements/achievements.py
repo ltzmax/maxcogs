@@ -220,14 +220,18 @@ class Achievements(
         """Check the leaderboard."""
         members = await self.config.all_members(ctx.guild)
 
-        members = {member_id: data for member_id, data in members.items() if ctx.guild.get_member(member_id) is not None}
+        members = {
+            member_id: data
+            for member_id, data in members.items()
+            if ctx.guild.get_member(member_id) is not None
+        }
         sorted_members = sorted(
             members.items(), key=lambda x: x[1]["message_count"], reverse=True
         )
         pages = []
         for i in range(0, len(sorted_members), 20):
             leaderboard = ""
-            for member_id, data in sorted_members[i:i+20]:
+            for member_id, data in sorted_members[i : i + 20]:
                 member = ctx.guild.get_member(member_id)
                 leaderboard += f"{sorted_members.index((member_id, data)) + 1}. {member.mention}: {humanize_number(data['message_count'])} {'messages' if data['message_count'] != 1 else 'message'}\n"
             if leaderboard:
