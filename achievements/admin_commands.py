@@ -35,6 +35,7 @@ from redbot.core.utils.menus import SimpleMenu
 
 log = logging.getLogger("red.maxcogs.achievements.admin_commands")
 
+
 class AdminCommands(MixinMeta, metaclass=CompositeMetaClass):
     @commands.group(aliases=["achieveset"])
     @commands.guild_only()
@@ -215,7 +216,6 @@ class AdminCommands(MixinMeta, metaclass=CompositeMetaClass):
         else:
             await self.config.guild(ctx.guild).default_emoji_x.set(str(emoji))
             await ctx.send(f"Cross emoji set to {str(emoji)}.")
-
 
     ## OWNRER COMMANDS
 
