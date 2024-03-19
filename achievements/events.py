@@ -31,6 +31,7 @@ from .abc import MixinMeta, CompositeMetaClass
 
 log = logging.getLogger("red.maxcogs.achievements.events")
 
+
 class EventsMixin(MixinMeta, metaclass=CompositeMetaClass):
     async def check_message_count(self, member):
         """Add a message to the message count for a member."""
