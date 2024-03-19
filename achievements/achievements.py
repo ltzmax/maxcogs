@@ -28,7 +28,7 @@ import logging
 from typing import Any, Final
 from redbot.core import commands, Config
 from redbot.core.utils.chat_formatting import humanize_number
-from redbot.core.utils.views import ConfirmView, SimpleMenu
+from redbot.core.utils.views import SimpleMenu
 from .abc import CompositeMetaClass
 from .unlock import achievements
 from .events import EventsMixin

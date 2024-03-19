@@ -31,7 +31,7 @@ from typing import Union, Literal, Optional
 
 from .converters import EmojiConverter
 from .abc import MixinMeta, CompositeMetaClass
-from redbot.core.utils.menus import SimpleMenu
+from redbot.core.utils.menus import SimpleMenu, ConfirmView
 
 log = logging.getLogger("red.maxcogs.achievements.admin_commands")
 
