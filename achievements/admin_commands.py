@@ -35,6 +35,8 @@ from redbot.core.utils.views import SimpleMenu, ConfirmView
 
 log = logging.getLogger("red.maxcogs.achievements.admin_commands")
 
+DEFAULT_EMOJI_CHECK = "✅"
+DEFAULT_EMOJI_X = "❌"
 
 class AdminCommands(MixinMeta, metaclass=CompositeMetaClass):
     @commands.group(aliases=["achieveset"])
