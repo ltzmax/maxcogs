@@ -37,7 +37,6 @@ from redbot.core.utils.views import SimpleMenu, ConfirmView
 log = logging.getLogger("red.maxcogs.achievements.admin_commands")
 
 
-
 class AdminCommands(MixinMeta, metaclass=CompositeMetaClass):
     @commands.group(aliases=["achieveset"])
     @commands.guild_only()

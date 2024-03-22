@@ -34,6 +34,7 @@ log = logging.getLogger("red.maxcogs.achievements.events")
 DEFAULT_EMOJI_CHECK = "✅"
 DEFAULT_EMOJI_X = "❌"
 
+
 class EventsMixin(MixinMeta, metaclass=CompositeMetaClass):
     async def check_message_count(self, member):
         """Add a message to the message count for a member."""
