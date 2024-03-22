@@ -31,6 +31,8 @@ from .abc import MixinMeta, CompositeMetaClass
 
 log = logging.getLogger("red.maxcogs.achievements.events")
 
+DEFAULT_EMOJI_CHECK = "✅"
+DEFAULT_EMOJI_X = "❌"
 
 class EventsMixin(MixinMeta, metaclass=CompositeMetaClass):
     async def check_message_count(self, member):

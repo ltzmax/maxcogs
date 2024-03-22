@@ -31,12 +31,9 @@ from redbot.core.utils.chat_formatting import humanize_number
 from redbot.core.utils.views import SimpleMenu
 from .abc import CompositeMetaClass
 from .unlock import achievements
-from .events import EventsMixin
+from .events import EventsMixin, DEFAULT_EMOJI_CHECK, DEFAULT_EMOJI_X
 from .admin_commands import AdminCommands
 from .custom_commands import CustomCommands
-
-DEFAULT_EMOJI_CHECK = "✅"
-DEFAULT_EMOJI_X = "❌"
 
 log = logging.getLogger("red.maxcogs.achievements")
 

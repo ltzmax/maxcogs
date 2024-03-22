@@ -30,13 +30,12 @@ from redbot.core.utils.chat_formatting import humanize_list, humanize_number
 from typing import Union, Literal, Optional
 
 from .converters import EmojiConverter
+from .events import DEFAULT_EMOJI_CHECK, DEFAULT_EMOJI_X
 from .abc import MixinMeta, CompositeMetaClass
 from redbot.core.utils.views import SimpleMenu, ConfirmView
 
 log = logging.getLogger("red.maxcogs.achievements.admin_commands")
 
-DEFAULT_EMOJI_CHECK = "✅"
-DEFAULT_EMOJI_X = "❌"
 
 
 class AdminCommands(MixinMeta, metaclass=CompositeMetaClass):
