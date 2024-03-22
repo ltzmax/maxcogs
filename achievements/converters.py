@@ -1,8 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2022-2023 phenom4n4n
-Copyright (c) 2022-present ltzmax
+Copyright (c) 2022-present Kuro
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 # Original source:
-# https://github.com/phenom4n4n/phen-cogs/blob/5b12bd42831bded0e52a67a4eef19616f10bbe25/roleutils/converters.py#L112-L123
-import discord
-import logging
-from typing import Union
+# https://github.com/Kuro-Rui/Kuro-Utils/blob/4b172cab875cdc3308b06b09bde48a6b9da182ea/kuroutils/converters.py#L1-L12
+try:
+    from emoji import UNICODE_EMOJI_ENGLISH as EMOJI_DATA  # emoji<2.0.0
+except ImportError:
+    from emoji import EMOJI_DATA  # emoji>=2.0.0
 from redbot.core import commands
 
-log = logging.getLogger("red.maxcogs.achievements.converters")
-
-
 class EmojiConverter(commands.EmojiConverter):
-    async def convert(
-        self, ctx: commands.Context, argument: str
-    ) -> Union[discord.Emoji, str]:
-        try:
-            emoji = await super().convert(ctx, argument)
-        except commands.BadArgument:
-            try:
-                await ctx.message.add_reaction(argument)
-            except discord.HTTPException as e:
-                log.error(e)
-                raise commands.EmojiNotFound(argument)
-            else:
-                emoji = argument
-        return emoji
+    async def convert(self, ctx: commands.Context, argument: str) -> str:
+        if argument in EMOJI_DATA:
+            return argument
+        return str(await super().convert(ctx, argument))
