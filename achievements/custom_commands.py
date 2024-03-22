@@ -25,6 +25,7 @@ SOFTWARE.
 import logging
 import discord
 from redbot.core import commands
+from redbot.core.utils.views import ConfirmView
 
 from .abc import MixinMeta, CompositeMetaClass
 
