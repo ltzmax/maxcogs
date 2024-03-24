@@ -171,7 +171,7 @@ class RedUpdate(commands.Cog):
         Parameters
         ----------
         - dev : bool
-            - If False, it will update to latest dev changes. If True, it will update to latest stable release.
+            - If True, it will update to latest dev changes. If False, it will update to latest stable release.
         """
         if dev:
             package = await self.config.redupdate_url()
