@@ -4,7 +4,7 @@
         "kuro"
     ],
     "name": "RedUpdate",
-    "install_msg": "Thanks for installing.",
+    "install_msg": "Thanks for installing. Use `[p]updatestable` to update your bot.",
     "description": "Update your bot to latest dev version of red.",
     "short": "Update your bot to latest dev version of red.",
     "hidden": false,

@@ -162,23 +162,14 @@ class RedUpdate(commands.Cog):
         await ctx.send(embed=embed, view=view)
 
     @commands.is_owner()
-    @commands.command(aliases=["updatered"])
+    @commands.command(aliases=["devupdate"])
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def redupdate(self, ctx: commands.Context, dev: Optional[bool] = True):
+    async def updatedev(self, ctx: commands.Context):
         """
-        update [botname] to latest dev/stable changes.
-
-        Parameters
-        ----------
-        - dev : bool
-            - If False, it will update to latest dev changes. If True, it will update to latest stable release.
+        update [botname] to latest dev changes.
         """
-        if dev:
-            package = await self.config.redupdate_url()
-            log.info("Updating to latest dev changes...")
-        else:
-            package = "pip install --force-reinstall Red-DiscordBot"
-            log.info("Updating to latest stable release...")
+        package = await self.config.redupdate_url()
+        log.info("Updating to latest dev changes...")
         if not package:
             return await ctx.send("You need to set correct url for your fork first.")
         shell = self.bot.get_cog("Shell")
@@ -192,11 +183,30 @@ class RedUpdate(commands.Cog):
             return await failedupdate(self, ctx)
         await redupdate(self, ctx)
 
-    # This command is for updating discord.py to latest dev changes.
-    # It is hidden because it is not recommended to use this as it may break your bot
-    # if there are breaking changes that are not yet on red and you are using them on your bot.
-    # if you want to use this, you need to ensure that you know what you are doing and you know how to fix your bot if it breaks.
-    # I will not provide any support for this command.
+    @commands.is_owner()
+    @commands.command(aliases=["stableupdate"])
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    async def updatestable(self, ctx: commands.Context):
+        """
+        update [botname] to latest stable changes.
+        """
+
+        package = "pip install --force-reinstall Red-DiscordBot"
+        log.info("Updating to latest stable release...")
+        if not package:
+            return await ctx.send("You need to set correct url for your fork first.")
+        shell = self.bot.get_cog("Shell")
+        try:
+            await shell._shell_command(
+                ctx,
+                f"pip install -U --force-reinstall {package}",
+                send_message_on_success=False,
+            )
+        except AttributeError:
+            return await failedupdate(self, ctx)
+        await redupdate(self, ctx)
+
+
     @commands.is_owner()
     @commands.command(aliases=["dpydevupdate"], hidden=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
@@ -209,7 +219,7 @@ class RedUpdate(commands.Cog):
         view = ConfirmView(ctx.author, disable_buttons=True)
         embed = discord.Embed(
             title="Discord.py Update Information",
-            description="This will update discord.py to latest dev changes and not to latest stable release. There may be breaking changes that will break your bot and are not yet on red.\n\nDo you want to continue?",
+            description="This will update discord.py to latest dev changes and not to latest stable release. There may be breaking changes that will break your bot and are not yet on red and may fail to start your bot.\n\nDo you want to continue?",
             color=await ctx.embed_color(),
         )
         view.message = await ctx.send(embed=embed, view=view)
