@@ -206,7 +206,6 @@ class RedUpdate(commands.Cog):
             log.error(e)
         await redupdate(self, ctx)
 
-
     @commands.is_owner()
     @commands.command(aliases=["dpydevupdate"], hidden=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
