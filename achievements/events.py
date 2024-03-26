@@ -104,7 +104,7 @@ class EventsMixin(MixinMeta, metaclass=CompositeMetaClass):
                 not channel.permissions_for(member.guild.me).embed_links
                 and not channel.permissions_for(member.guild.me).send_messages
             ):
-                log.info(
+                log.warning(
                     "I don't have permissions to send messages and embed links in channel {channel}".format(
                         channel=channel
                     )

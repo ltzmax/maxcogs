@@ -107,10 +107,8 @@ class RedUpdate(commands.Cog):
             "git+https://github.com"
         ):
             return await ctx.send("This is not a valid url for your fork.")
-            log.info("You need to set correct url for your fork first.")
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
-            log.info("You need to set correct url for your fork first.")
         data = await self.config.redupdate_url()
         if data == url:
             return await ctx.send("This url is already set.")
@@ -179,8 +177,9 @@ class RedUpdate(commands.Cog):
                 f"pip install -U --force-reinstall {package}",
                 send_message_on_success=False,
             )
-        except AttributeError:
+        except AttributeError as e:
             return await failedupdate(self, ctx)
+            log.error(e)
         await redupdate(self, ctx)
 
     @commands.is_owner()
@@ -202,8 +201,9 @@ class RedUpdate(commands.Cog):
                 f"pip install -U --force-reinstall {package}",
                 send_message_on_success=False,
             )
-        except AttributeError:
+        except AttributeError as e:
             return await failedupdate(self, ctx)
+            log.error(e)
         await redupdate(self, ctx)
 
 
@@ -232,8 +232,9 @@ class RedUpdate(commands.Cog):
                     f"pip install -U --force-reinstall {package}",
                     send_message_on_success=False,
                 )
-            except AttributeError:
+            except AttributeError as e:
                 return await failedupdate(self, ctx)
+                log.error(e)
             await redupdate(self, ctx)
         else:
             embed = discord.Embed(

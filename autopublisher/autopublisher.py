@@ -91,7 +91,7 @@ class AutoPublisher(commands.Cog):
         if not isNewsFeatureEnabled:
             if isAutoPublisherEnabled:
                 await self.config.guild(message.guild).toggle.set(False)
-                log.info(
+                log.warning(
                     f"AutoPublisher has been disabled in {message.guild} due to News Channel feature is not enabled."
                 )
             return

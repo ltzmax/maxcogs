@@ -104,7 +104,7 @@ class EmojiSpam(commands.Cog):
             or not log_channel.permissions_for(guild.me).embed_links
         ):
             return
-            log.info(
+            log.warning(
                 f"I don't have the ``send_messages`` or ``embed_links`` permission to let you set the log channel in {guild.name}. Disabling log channel."
             )
         description_content = f"**Member:** {message.author.mention}\n**Channel:** {message.channel.mention}\n**Message:**\n{message.content}"
@@ -161,7 +161,7 @@ class EmojiSpam(commands.Cog):
                 if not message.channel.permissions_for(
                     message.guild.me
                 ).manage_messages:
-                    log.info(
+                    log.warning(
                         f"I don't have permission to delete messages in {message.channel.name}."
                     )
                     return

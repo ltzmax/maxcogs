@@ -98,7 +98,7 @@ class NoSpoiler(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            log.info(
+            log.warning(
                 f"I don't have send_messages or embed_links permission in {log_channel.mention}."
             )
             return
@@ -128,7 +128,7 @@ class NoSpoiler(commands.Cog):
             not message.channel.permissions_for(message.guild.me).manage_messages
             or not message.channel.permissions_for(message.guild.me).send_messages
         ):
-            log.info(
+            log.warning(
                 f"i do not have permission to manage_messages or send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
             )
             return
