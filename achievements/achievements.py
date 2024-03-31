@@ -193,7 +193,7 @@ class Achievements(
         embed = discord.Embed(
             title=f"{member}'s Profile", color=await ctx.embed_color()
         )
-        embed.add_field(name="Messages:", value=humanize_number(count), inline=False)
+        embed.add_field(name="Messages sent:", value=humanize_number(count), inline=False)
         if next_rank:
             embed.add_field(
                 name="Next Rank:",
