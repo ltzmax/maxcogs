@@ -81,12 +81,12 @@ class Achievements(
     async def red_delete_data_for_user(self, *, requester: Any, user_id: int) -> None:
         await self.config.member_from_ids(user_id).clear()
 
+    @commands.guild_only()
     @commands.group(aliases=["achieve"])
     async def achievements(self, ctx):
         """Achievements commands."""
 
     @achievements.command()
-    @commands.guild_only()
     async def ignoreme(self, ctx):
         """Ignore yourself from earning achievements.
 
@@ -103,7 +103,6 @@ class Achievements(
             await self.config.member(ctx.author).ignore_me.set(ignore_me)
             await ctx.send("You will no longer earn achievements.")
 
-    @commands.guild_only()
     @achievements.command(name="list")
     @commands.bot_has_permissions(embed_links=True)
     async def list_achievements(self, ctx):
@@ -160,7 +159,6 @@ class Achievements(
         ).start(ctx)
 
     @achievements.command()
-    @commands.guild_only()
     @commands.bot_has_permissions(embed_links=True)
     async def profile(self, ctx, member: discord.Member = None):
         """Check your profile or someone else's."""
@@ -210,7 +208,6 @@ class Achievements(
             embed.set_footer(text="This member is ignoring from earning achievements.")
         await ctx.send(embed=embed)
 
-    @commands.guild_only()
     @achievements.command(aliases=["lb"])
     @commands.bot_has_permissions(embed_links=True)
     async def leaderboard(self, ctx):
@@ -252,7 +249,6 @@ class Achievements(
         ).start(ctx)
 
     @achievements.command()
-    @commands.guild_only()
     @commands.bot_has_permissions(embed_links=True)
     async def unlocked(self, ctx, member: discord.Member = None):
         """Check your unlocked achievements or someone else's."""

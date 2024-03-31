@@ -125,11 +125,12 @@ class EventsMixin(MixinMeta, metaclass=CompositeMetaClass):
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message):
+        if not message.guild:
+            return
         if (
             message.author.bot
             or await self.bot.cog_disabled_in_guild(self, message.guild)
             or not await self.config.guild(message.guild).toggle()
-            or message.guild is None
         ):
             return
 
