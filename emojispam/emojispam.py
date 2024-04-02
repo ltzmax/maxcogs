@@ -184,6 +184,10 @@ class EmojiSpam(commands.Cog):
     @emojispam.command()
     async def toggle(self, ctx: commands.Context, toggle: bool):
         """Toggle the emoji spam filter."""
+        if not ctx.bot_permissions.manage_messages:
+            return await ctx.send(
+                "I don't have manage_messages permission to let you toggle emojispam filter."
+            )
         if toggle:
             await self.config.guild(ctx.guild).enabled.set(True)
             await ctx.send("Emoji spam filter enabled!")

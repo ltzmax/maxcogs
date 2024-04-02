@@ -205,7 +205,7 @@ class NoSpoiler(commands.Cog):
         """
         if not ctx.bot_permissions.manage_messages:
             return await ctx.send(
-                "I don't have manage_messages permission to let you toggle the spoiler filter."
+                "I don't have manage_messages permission to let you toggle spoiler filter."
             )
         await self.config.guild(ctx.guild).enabled.set(
             not await self.config.guild(ctx.guild).enabled()
