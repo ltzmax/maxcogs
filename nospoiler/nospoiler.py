@@ -199,10 +199,7 @@ class NoSpoiler(commands.Cog):
 
     @nospoiler.command()
     async def toggle(self, ctx: commands.Context) -> None:
-        """Toggle the spoiler filter on or off.
-
-        Spoiler filter is disabled by default.
-        """
+        """Toggle NoSpoiler filter on/off."""
         if not ctx.bot_permissions.manage_messages:
             return await ctx.send(
                 "I don't have ``manage_messages`` permission to let you toggle spoiler filter."

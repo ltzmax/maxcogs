@@ -183,7 +183,7 @@ class EmojiSpam(commands.Cog):
 
     @emojispam.command()
     async def toggle(self, ctx: commands.Context, toggle: bool):
-        """Toggle the emoji spam filter."""
+        """Toggle EmojiSpam filter on/off."""
         if not ctx.bot_permissions.manage_messages:
             return await ctx.send(
                 "I don't have ``manage_messages`` permission to let you toggle emojispam filter."
