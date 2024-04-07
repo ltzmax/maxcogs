@@ -212,16 +212,16 @@ class NoSpoiler(commands.Cog):
         )
 
     @nospoiler.command()
-    async def timeout(
-        self, ctx: commands.Context, amount: commands.Range[int, 10, 120]
+    async def deleteafter(
+        self, ctx: commands.Context, seconds: commands.Range[int, 10, 120]
     ):
-        """Set the delete after timeout.
+        """Set when the warn message should delete.
 
         Default timeout is 10 seconds.
         Timeout must be between 10 and 120 seconds.
         """
-        await self.config.guild(ctx.guild).timeout.set(amount)
-        await ctx.send(f"Timeout has been set to {amount} seconds.")
+        await self.config.guild(ctx.guild).timeout.set(seconds)
+        await ctx.send(f"Timeout has been set to {seconds} seconds.")
 
     @nospoiler.command()
     async def logchannel(

@@ -233,10 +233,10 @@ class EmojiSpam(commands.Cog):
         await ctx.send(f"Emoji limit set to {limit}!")
 
     @emojispam.command()
-    async def timeout(
+    async def deleteafter(
         self, ctx: commands.Context, seconds: commands.Range[int, 10, 120]
     ):
-        """Set the timeout for the warning message.
+        """Set when the warn message should delete.
 
         Default timeout is 10 seconds.
         Timeout must be between 10 and 120 seconds.
