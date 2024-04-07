@@ -297,7 +297,7 @@ class EmojiSpam(commands.Cog):
         await ctx.send(
             "## Emoji Spam Filter Settings\n"
             f"**Enabled:** {all['enabled']}\n"
-            f"**Timeout:** {all['timeout']}\n"
+            f"**Delete After:** {all['timeout']}\n"
             f"**Emoji Limit:** {all['emoji_limit']}\n"
             f"**Toggle Custom Message:** {all['toggle_emoji_message']}\n"
             f"**Log Channel:** {ctx.guild.get_channel(all['log_channel']).mention if all['log_channel'] else 'Not Set'}\n"

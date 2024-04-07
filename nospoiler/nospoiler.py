@@ -291,7 +291,7 @@ class NoSpoiler(commands.Cog):
             f"**Enabled**: {all['enabled']}\n"
             f"**Log Channel**: {ctx.guild.get_channel(all['log_channel']).mention if all['log_channel'] else 'Not Set'}\n"
             f"**Spoiler Warning**: {all['spoiler_warn']}\n"
-            f"**Timeout**: {all['timeout']} seconds\n"
+            f"**Delete After**: {all['timeout']} seconds\n"
             f"**Spoiler Warning Message**:\n{box(all['spoiler_warn_message'], lang='yaml') if len(all['spoiler_warn_message']) < 2000 else 'Message too long to display.'}"
         )
 
