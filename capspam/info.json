@@ -1,0 +1,22 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Cog-Creators/Red-DiscordBot/V3/develop/schema/red_cog.schema.json",
+    "name": "CapSpam",
+    "author": [
+        "Predeactor",
+        "MAX"
+    ],
+    "tags": [
+        "spam",
+        "censor",
+        "filter",
+        "moderation"
+    ],
+    "short": "Prevent users from sending messages with too many caps.",
+    "description": "Prevent users from sending messages with too many caps.",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any capspam filter without setting up autoimmune.\nif you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
+    "min_bot_version": "3.5.0",
+    "hidden": false,
+    "disabled": false,
+    "type": "COG",
+    "end_user_data_statement": "This cog does not persistently store data or metadata about users."
+}

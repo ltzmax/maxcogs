@@ -17,6 +17,7 @@ body:
       options:
         - achievements
         - autopublisher
+        - capspam
         - emojispam
         - nospoiler
         - plaguegame
