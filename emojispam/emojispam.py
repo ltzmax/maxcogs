@@ -167,8 +167,8 @@ class EmojiSpam(commands.Cog):
                     return
                 try:
                     await message.delete()
-                except discord.NotFound:
-                    log.info("The message was deleted before I could delete it.")
+                except discord.NotFound as e:
+                    log.error(e)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
