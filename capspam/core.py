@@ -308,7 +308,7 @@ class CapSpam(commands.Cog):
             f"**Limit**: {all['limit']}\n"
             f"**Warn Message Toggle**: {all['warn_msg_toggle']}\n"
             f"**Modlog Channel**: {ctx.guild.get_channel(all['modlog_channel']).mention if all['modlog_channel'] else 'Not Set'}\n"
-            f"**Delete After**: {all['timeout']} secounds\n"
+            f"**Delete After**: {all['timeout']} seconds\n"
             f"**Allowed Mentions**: {all['allowed_mentions']}\n"
             f"**Warn Message**: {all['warn_message']}\n"
             f"**Ignored Channels**: {humanize_list([ctx.guild.get_channel(c).mention for c in all['ignored_channels']]) if all['ignored_channels'] else 'None'}"
