@@ -60,7 +60,7 @@ class EmojiSpam(commands.Cog):
     """Prevent users from spamming emojis."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "0.0.1"
+    __version__: Final[str] = "1.4.0"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/emojispam"
 
     def __init__(self, bot: Red):
