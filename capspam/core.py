@@ -40,10 +40,12 @@ WARN_MESSAGE_DELETE_COOLDOWN = 10
 
 log = logging.getLogger("red.maxcogs.capspam")
 
+
 # Respect link detection with discord.gg links as well.
 def get_non_discord_urls(text):
     urls = URL_DETECTOR.findall(text)
-    return [url for url in urls if 'discord.gg' not in url]
+    return [url for url in urls if "discord.gg" not in url]
+
 
 class CapSpam(commands.Cog):
     """Prevent users from sending messages with too many caps."""
@@ -126,7 +128,11 @@ class CapSpam(commands.Cog):
 
         # Ignore messages with links or attachments
         if await self.config.guild(message.guild).ignore_links():
-            if URL_DETECTOR.search(message.content) or message.attachments or get_non_discord_urls(message.content):
+            if (
+                URL_DETECTOR.search(message.content)
+                or message.attachments
+                or get_non_discord_urls(message.content)
+            ):
                 return
 
         # Check for caps
@@ -176,7 +182,11 @@ class CapSpam(commands.Cog):
 
         # Ignore messages with links or attachments
         if await self.config.guild(before.guild).ignore_links():
-            if URL_DETECTOR.search(after.content) or after.attachments or get_non_discord_urls(after.content):
+            if (
+                URL_DETECTOR.search(after.content)
+                or after.attachments
+                or get_non_discord_urls(after.content)
+            ):
                 return
 
         # Check for caps
