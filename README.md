@@ -29,7 +29,7 @@ To install any cog you want:
 |:---:|---|:---:|:---:|:---:|
 | Achievements | Earn achievements by chatting in channels. | 1.4.0 | ltzmax | ✅ |
 | AutoPublisyher | Automatically push news channel messages. | 2.1.3 | ltzmax | ✅ |
-| CapSpam | Prevent users from sending messages with too many caps. | 1.0.0 | ltzmax | ✅ |
+| CapSpam | Prevent users from sending messages with too many caps. | 1.2.0 | ltzmax | ✅ |
 | emojispam | Prevent users from spamming emojis. | 1.4.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.7 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |

@@ -34,12 +34,16 @@ from redbot.core.utils.chat_formatting import box, humanize_list
 
 CAP_DETECTOR = re.compile(r"[A-Z]", re.MULTILINE)
 URL_DETECTOR = re.compile(
-    r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+    r"(?:http[s]?://)?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 )
 WARN_MESSAGE_DELETE_COOLDOWN = 10
 
 log = logging.getLogger("red.maxcogs.capspam")
 
+# Respect link detection with discord.gg links as well.
+def get_non_discord_urls(text):
+    urls = URL_DETECTOR.findall(text)
+    return [url for url in urls if 'discord.gg' not in url]
 
 class CapSpam(commands.Cog):
     """Prevent users from sending messages with too many caps."""
@@ -58,10 +62,11 @@ class CapSpam(commands.Cog):
             "ignored_channels": [],
             "timeout": WARN_MESSAGE_DELETE_COOLDOWN,
             "allowed_mentions": True,
+            "ignore_links": True,
         }
         self.config.register_guild(**default_guild)
 
-    __version__ = "1.0.0"
+    __version__ = "1.2.0"
     __author__ = "MAX, Predeactor"
     __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/capspam"
 
@@ -120,8 +125,9 @@ class CapSpam(commands.Cog):
             return
 
         # Ignore messages with links or attachments
-        if URL_DETECTOR.search(message.content) or message.attachments:
-            return
+        if await self.config.guild(message.guild).ignore_links():
+            if URL_DETECTOR.search(message.content) or message.attachments or get_non_discord_urls(message.content):
+                return
 
         # Check for caps
         caps = CAP_DETECTOR.findall(message.content)
@@ -169,8 +175,9 @@ class CapSpam(commands.Cog):
             return
 
         # Ignore messages with links or attachments
-        if URL_DETECTOR.search(after.content) or after.attachments:
-            return
+        if await self.config.guild(before.guild).ignore_links():
+            if URL_DETECTOR.search(after.content) or after.attachments or get_non_discord_urls(after.content):
+                return
 
         # Check for caps
         caps = CAP_DETECTOR.findall(after.content)
@@ -221,6 +228,18 @@ class CapSpam(commands.Cog):
             await self.config.guild(ctx.guild).enabled.set(False)
             await ctx.send("CapSpam has been disabled.")
 
+    @capspam.command(name="ignorelinks")
+    async def capspam_ignorelinks(self, ctx: commands.GuildContext, toggle: bool):
+        """
+        Toggle ignoring messages with links or attachments.
+
+        Default is enabled.
+        If enabled, the bot will ignore messages with links or attachments that contain caps in the url.
+        """
+        await self.config.guild(ctx.guild).ignore_links.set(toggle)
+        en = "enabled" if toggle else "disabled"
+        await ctx.send(f"Ignoring messages with links or attachments has been {en}.")
+
     @capspam.command(name="allowedmentions", aliases=["allowedmention", "mention"])
     async def capspam_allowedmentions(self, ctx: commands.GuildContext, toggle: bool):
         """
@@ -230,7 +249,8 @@ class CapSpam(commands.Cog):
         If allowed mentions are enabled, the bot will mention the user when sending the warning message.
         """
         await self.config.guild(ctx.guild).allowed_mentions.set(toggle)
-        await ctx.send(f"Allowed mentions has been set to `{toggle}`.")
+        en = "enabled" if toggle else "disabled"
+        await ctx.send(f"Allowed mentions has been {en}.")
 
     @capspam.command(name="deleteafter")
     async def capspam_deleteafter(
