@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Final, Optional
+from typing import Any, Final, Optional, Literal
 
 import discord
 import logging
@@ -115,14 +115,6 @@ class RedUpdate(commands.Cog):
         await self.config.redupdate_url.set(url)
         await ctx.tick()
 
-    @redupdateset.command(name="reset")
-    async def redupdateset_reset(self, ctx: commands.Context):
-        """Reset the url back to default."""
-        await self.config.redupdate_url.set(
-            "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
-        )
-        await ctx.tick()
-
     @redupdateset.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
     async def redupdateset_settings(self, ctx: commands.Context):
@@ -160,38 +152,19 @@ class RedUpdate(commands.Cog):
         await ctx.send(embed=embed, view=view)
 
     @commands.is_owner()
-    @commands.command(aliases=["devupdate"])
+    @commands.command(aliases=["devupdate", "updatered"], usage="[version]")
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def updatedev(self, ctx: commands.Context):
+    async def redupdate(self, ctx: commands.Context, version: Optional[Literal["dev", "stable"]] = "dev"):
         """
-        update [botname] to latest dev changes.
-        """
-        package = await self.config.redupdate_url()
-        log.info("Updating to latest dev changes...")
-        if not package:
-            return await ctx.send("You need to set correct url for your fork first.")
-        shell = self.bot.get_cog("Shell")
-        try:
-            await shell._shell_command(
-                ctx,
-                f"pip install -U --force-reinstall {package}",
-                send_message_on_success=False,
-            )
-        except AttributeError as e:
-            return await failedupdate(self, ctx)
-            log.error(e)
-        await redupdate(self, ctx)
+        update [botname] to latest changes.
+        
+        it will update to latest dev changes by default unless you specify `stable` as version.
 
-    @commands.is_owner()
-    @commands.command(aliases=["stableupdate"])
-    @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def updatestable(self, ctx: commands.Context):
+        Arguments:
+        - `[version]`: `dev` or `stable`
         """
-        update [botname] to latest stable changes.
-        """
-
-        package = "pip install --force-reinstall Red-DiscordBot"
-        log.info("Updating to latest stable release...")
+        package = "python -m pip install --force-reinstall Red-DiscordBot" if version == 'stable' else await self.config.redupdate_url()
+        log.info(f"Updating to latest {version} changes...")
         if not package:
             return await ctx.send("You need to set correct url for your fork first.")
         shell = self.bot.get_cog("Shell")
