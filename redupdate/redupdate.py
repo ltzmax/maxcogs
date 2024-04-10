@@ -166,7 +166,7 @@ class RedUpdate(commands.Cog):
         - `[version]`: `dev` or `stable`
         """
         package = (
-            "pip install --force-reinstall Red-DiscordBot"
+            "Red-DiscordBot"
             if version == "stable"
             else await self.config.redupdate_url()
         )
@@ -177,7 +177,7 @@ class RedUpdate(commands.Cog):
         try:
             await shell._shell_command(
                 ctx,
-                f"pip install -U --force-reinstall {package}",
+                f"python -m pip install --force-reinstall {package}",
                 send_message_on_success=False,
             )
         except AttributeError as e:
