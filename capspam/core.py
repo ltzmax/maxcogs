@@ -156,7 +156,7 @@ class CapSpam(commands.Cog):
             return
         if not before.guild:
             return
-        if not self.config.guild(before.guild).enabled():
+        if not await self.config.guild(before.guild).enabled():
             return
 
         ignored_channels = await self.config.guild(before.guild).ignored_channels()
