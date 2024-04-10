@@ -166,7 +166,7 @@ class RedUpdate(commands.Cog):
         - `[version]`: `dev` or `stable`
         """
         package = (
-            "python -m pip install --force-reinstall Red-DiscordBot"
+            "pip install --force-reinstall Red-DiscordBot"
             if version == "stable"
             else await self.config.redupdate_url()
         )
