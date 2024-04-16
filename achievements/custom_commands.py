@@ -41,7 +41,7 @@ class CustomCommands(MixinMeta, metaclass=CompositeMetaClass):
 
         Only guild owners can use these commands.
 
-        Custom achievements are disabled by default. Enable them with `[p]achievement custom enable`.
+        Custom achievements are disabled by default. Enable them with `[p]customset enable`.
         This will allow you to add, remove, and list custom achievements for your server.
         """
 
