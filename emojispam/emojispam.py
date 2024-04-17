@@ -121,7 +121,7 @@ class EmojiSpam(commands.Cog):
         await log_channel.send(embed=embed)
 
     async def process_message(self, message: discord.Message):
-        if message.author.bot:
+        if message.author.bot or message.is_system():
             return
         if not message.guild:
             return
