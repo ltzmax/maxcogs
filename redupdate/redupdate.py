@@ -170,7 +170,6 @@ class RedUpdate(commands.Cog):
             if version == "stable"
             else await self.config.redupdate_url()
         )
-        log.info(f"Updating to latest {version} changes...")
         view = ConfirmView(ctx.author, disable_buttons=True)
         if version == "dev":
             embed = discord.Embed(
