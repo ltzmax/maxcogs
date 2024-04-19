@@ -155,7 +155,9 @@ class RedUpdate(commands.Cog):
     @commands.command(aliases=["devupdate", "updatered"], usage="[version]")
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def redupdate(
-        self, ctx: commands.Context, version: Optional[Literal["dev", "stable"]] = "stable"
+        self,
+        ctx: commands.Context,
+        version: Optional[Literal["dev", "stable"]] = "stable",
     ):
         """
         update [botname] to latest changes.
@@ -188,7 +190,7 @@ class RedUpdate(commands.Cog):
                 name="Note:",
                 value="You should be using ``{prefix}updatered stable`` over using deverloper version of red unless you know what you are doing.".format(
                     prefix=ctx.clean_prefix,
-                inline=False,
+                    inline=False,
                 ),
             )
             embed.set_footer(
