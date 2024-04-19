@@ -188,7 +188,7 @@ class RedUpdate(commands.Cog):
             )
             embed.add_field(
                 name="Note:",
-                value="You should be using ``{prefix}updatered stable`` over using deverloper version of red unless you know what you are doing.".format(
+                value="You should be using ``{prefix}updatered`` without specifying version to update to latest stable changes.".format(
                     prefix=ctx.clean_prefix,
                     inline=False,
                 ),
