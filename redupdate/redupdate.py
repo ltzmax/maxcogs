@@ -26,11 +26,13 @@ from typing import Any, Final, Optional, Literal
 
 import discord
 import logging
+import re
 from redbot.core import commands, Config
 from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
 from .view import Buttons
 
+GITHUB = re.compile(r'^(git\+ssh://git@github\.com|git\+https://github\.com)')
 log = logging.getLogger("red.maxcogs.redupdate")
 
 
@@ -101,18 +103,59 @@ class RedUpdate(commands.Cog):
 
         Has to be vaild link such as `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot` else it will not work.
         """
-        # Cause i'm super lazy and don't want to make a regex for this.
-        # usually forks that are private uses `git+ssh://git@` instead of `https://`.
-        if not url.startswith("git+ssh://git@github.com") and not url.startswith(
-            "git+https://github.com"
-        ):
-            return await ctx.send("This is not a valid url for your fork.")
+        if not GITHUB.match(url):
+            return await ctx.send("This is not a valid url for your fork.\nCheck `redset whatlink` for more information.")
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
         data = await self.config.redupdate_url()
         if data == url:
             return await ctx.send("This url is already set.")
         await self.config.redupdate_url.set(url)
+        await ctx.tick()
+
+    @redupdateset.command(name="whatlink", aliases=["whaturl"])
+    async def redupdateset_whatlink(self, ctx: commands.Context):
+        """Show what a valid link looks like."""
+        embed = discord.Embed(
+            title="What a valid link looks like",
+            color=await ctx.embed_color(),
+            description="This is what a valid link should look like for your fork or if you are using red's main development url.",
+        )
+        embed.add_field(
+            name="Public Forks:",
+            value="For public forks, you need to use the `https` link. So it would look like",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example Link:",
+            value=box(
+                "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot",
+                lang="yaml",
+            ),
+        )
+        embed.add_field(
+            name="Private Forks:",
+            value="For private forks, you need to use the `ssh` link instead of `https`. So it would look like",
+            inline=False,
+        )
+        embed.add_field(
+            name="Example Link:",
+            value=box(
+                "git+ssh://git@github.com/yourusername/yourrepo@YOUR_BRANCH_HERE#egg=Red-DiscordBot",
+                lang="yaml",
+            ),
+        )
+        embed.add_field(
+            name="Link should end with:",
+            value=box("#egg=Red-DiscordBot", lang="cs"),
+            inline=False,
+        )
+        await ctx.send(embed=embed)
+
+    @redupdateset.command(name="reseturl")
+    async def redupdateset_reseturl(self, ctx: commands.Context):
+        """Reset the url to default."""
+        await self.config.redupdate_url.clear()
         await ctx.tick()
 
     @redupdateset.command(name="settings")
