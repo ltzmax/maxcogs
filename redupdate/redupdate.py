@@ -165,7 +165,7 @@ class RedUpdate(commands.Cog):
         it will update to latest stable changes by default unless you specify `dev` as version.
 
         Arguments:
-        - `[version]`: `dev` or `stable`
+        - `[version]`: `dev` to update to latest dev changes. `stable` by default already.
         """
         package = (
             "Red-DiscordBot"
@@ -188,7 +188,7 @@ class RedUpdate(commands.Cog):
             )
             embed.add_field(
                 name="Note:",
-                value="You should be using ``{prefix}updatered`` without specifying version to update to latest stable changes.".format(
+                value="You should be using ``{prefix}updatered`` without specifying version to update to latest stable changes unless you know what you are doing.".format(
                     prefix=ctx.clean_prefix,
                     inline=False,
                 ),
