@@ -68,7 +68,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.4.3"
+    __version__: Final[str] = "1.4.4"
     __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/redupdate"
 
     def __init__(self, bot):
@@ -155,12 +155,12 @@ class RedUpdate(commands.Cog):
     @commands.command(aliases=["devupdate", "updatered"], usage="[version]")
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def redupdate(
-        self, ctx: commands.Context, version: Optional[Literal["dev", "stable"]] = "dev"
+        self, ctx: commands.Context, version: Optional[Literal["dev", "stable"]] = "stable"
     ):
         """
         update [botname] to latest changes.
 
-        it will update to latest dev changes by default unless you specify `stable` as version.
+        it will update to latest stable changes by default unless you specify `dev` as version.
 
         Arguments:
         - `[version]`: `dev` or `stable`
@@ -171,19 +171,63 @@ class RedUpdate(commands.Cog):
             else await self.config.redupdate_url()
         )
         log.info(f"Updating to latest {version} changes...")
-        if not package:
-            return await ctx.send("You need to set correct url for your fork first.")
-        shell = self.bot.get_cog("Shell")
-        try:
-            await shell._shell_command(
-                ctx,
-                f"python -m pip install --force-reinstall {package}",
-                send_message_on_success=False,
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        if version == "dev":
+            embed = discord.Embed(
+                title="Red Update Information",
+                description="This will update {} to latest dev changes.".format(
+                    self.bot.user.name
+                ),
+                color=await ctx.embed_color(),
             )
-        except AttributeError as e:
-            return await failedupdate(self, ctx)
-            log.error(e)
-        await redupdate(self, ctx)
+            embed.add_field(
+                name="⚠️Warning⚠️",
+                value="This will update to latest dev changes and may include breaking changes that can break cogs that does not support latest changes. Are you sure you want to continue?",
+                inline=False,
+            )
+            embed.add_field(
+                name="Note:",
+                value="You should be using ``{prefix}updatered stable`` over using deverloper version of red unless you know what you are doing.".format(
+                    prefix=ctx.clean_prefix,
+                inline=False,
+                ),
+            )
+            embed.set_footer(
+                text="Be sure you want to update to latest dev changes before continuing!"
+            )
+            view.message = await ctx.send(embed=embed, view=view)
+            await view.wait()
+            if view.result:
+                shell = self.bot.get_cog("Shell")
+                try:
+                    await shell._shell_command(
+                        ctx,
+                        f"pip install -U --force-reinstall {package}",
+                        send_message_on_success=False,
+                    )
+                except AttributeError as e:
+                    return await failedupdate(self, ctx)
+                    log.error(e)
+                await redupdate(self, ctx)
+            else:
+                embed = discord.Embed(
+                    title="Red Update Cancelled",
+                    description="Cancelled updating {}.".format(self.bot.user.name),
+                    color=await ctx.embed_color(),
+                )
+                await ctx.send(embed=embed, silent=True)
+        if version == "stable":
+            shell = self.bot.get_cog("Shell")
+            try:
+                await shell._shell_command(
+                    ctx,
+                    f"pip install -U --force-reinstall {package}",
+                    send_message_on_success=False,
+                )
+            except AttributeError as e:
+                return await failedupdate(self, ctx)
+                log.error(e)
+            await redupdate(self, ctx)
 
     @commands.is_owner()
     @commands.command(aliases=["dpydevupdate"], hidden=True)
