@@ -121,14 +121,14 @@ async def build_people_embed(ctx, data, people_id):
         ),
     }
     if data.get("deathday"):
-        fields["Died:"] = (
-            f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D> ({((datetime.strptime(data['deathday'], '%Y-%m-%d') - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365) if data.get('deathday') else 'N/A'} years old)"
-        )
+        fields[
+            "Died:"
+        ] = f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D> ({((datetime.strptime(data['deathday'], '%Y-%m-%d') - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365) if data.get('deathday') else 'N/A'} years old)"
 
     if data.get("birthday") and not data.get("deathday"):
-        fields["Age: "] = (
-            f"{((datetime.now() - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365)} years old"
-        )
+        fields[
+            "Age: "
+        ] = f"{((datetime.now() - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365)} years old"
     total_length = len(embed.title) + len(embed.description)
     for name, value in fields.items():
         if value:
