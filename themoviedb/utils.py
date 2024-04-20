@@ -98,31 +98,37 @@ async def build_people_embed(ctx, data, people_id):
         colour=await ctx.embed_colour(),
     )
     fields = {
-        "Birthday:": f"<t:{int(datetime.strptime(data['birthday'], '%Y-%m-%d').timestamp())}:D>"
-        if data.get("birthday")
-        else None,
+        "Birthday:": (
+            f"<t:{int(datetime.strptime(data['birthday'], '%Y-%m-%d').timestamp())}:D>"
+            if data.get("birthday")
+            else None
+        ),
         "Place of Birth:": data.get("place_of_birth"),
-        "Popularity:": humanize_number(data["popularity"])
-        if data.get("popularity")
-        else None,
-        "Known For:": data["known_for_department"]
-        if data.get("known_for_department")
-        in ["Acting", "Directing", "Writing", "Production", "Crew"]
-        else None,
+        "Popularity:": (
+            humanize_number(data["popularity"]) if data.get("popularity") else None
+        ),
+        "Known For:": (
+            data["known_for_department"]
+            if data.get("known_for_department")
+            in ["Acting", "Directing", "Writing", "Production", "Crew"]
+            else None
+        ),
         "Also Known As:": humanize_list(data.get("also_known_as", [])),
-        "Last Updated:": f"<t:{int(datetime.strptime(data['last_updated_at'], '%Y-%m-%d %H:%M:%S').timestamp())}:R>"
-        if data.get("last_updated_at")
-        else None,
+        "Last Updated:": (
+            f"<t:{int(datetime.strptime(data['last_updated_at'], '%Y-%m-%d %H:%M:%S').timestamp())}:R>"
+            if data.get("last_updated_at")
+            else None
+        ),
     }
     if data.get("deathday"):
-        fields[
-            "Died:"
-        ] = f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D> ({((datetime.strptime(data['deathday'], '%Y-%m-%d') - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365) if data.get('deathday') else 'N/A'} years old)"
+        fields["Died:"] = (
+            f"<t:{int(datetime.strptime(data['deathday'], '%Y-%m-%d').timestamp())}:D> ({((datetime.strptime(data['deathday'], '%Y-%m-%d') - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365) if data.get('deathday') else 'N/A'} years old)"
+        )
 
     if data.get("birthday") and not data.get("deathday"):
-        fields[
-            "Age: "
-        ] = f"{((datetime.now() - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365)} years old"
+        fields["Age: "] = (
+            f"{((datetime.now() - datetime.strptime(data['birthday'], '%Y-%m-%d')).days // 365)} years old"
+        )
     total_length = len(embed.title) + len(embed.description)
     for name, value in fields.items():
         if value:
@@ -166,24 +172,36 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
     )
     fields = {
         "Original Name": data.get("original_name"),
-        "First Air Date": f"<t:{int(datetime.strptime(data['first_air_date'], '%Y-%m-%d').timestamp())}:D>"
-        if data.get("first_air_date")
-        else None,
-        "Last Episode Air Date": f"<t:{int(datetime.strptime(data['last_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>"
-        if data.get("last_episode_to_air")
-        else None,
-        "Next Episode Air Date": f"<t:{int(datetime.strptime(data['next_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>"
-        if data.get("next_episode_to_air")
-        else None,
-        "Last Air Date": f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>"
-        if data.get("last_air_date")
-        else None,
-        "Episode Run Time": f"{data['episode_run_time'][0]} minutes"
-        if data.get("episode_run_time")
-        else None,
-        "Number of Episodes": humanize_number(data["number_of_episodes"])
-        if data.get("number_of_episodes")
-        else None,
+        "First Air Date": (
+            f"<t:{int(datetime.strptime(data['first_air_date'], '%Y-%m-%d').timestamp())}:D>"
+            if data.get("first_air_date")
+            else None
+        ),
+        "Last Episode Air Date": (
+            f"<t:{int(datetime.strptime(data['last_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>"
+            if data.get("last_episode_to_air")
+            else None
+        ),
+        "Next Episode Air Date": (
+            f"<t:{int(datetime.strptime(data['next_episode_to_air']['air_date'], '%Y-%m-%d').timestamp())}:D>"
+            if data.get("next_episode_to_air")
+            else None
+        ),
+        "Last Air Date": (
+            f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>"
+            if data.get("last_air_date")
+            else None
+        ),
+        "Episode Run Time": (
+            f"{data['episode_run_time'][0]} minutes"
+            if data.get("episode_run_time")
+            else None
+        ),
+        "Number of Episodes": (
+            humanize_number(data["number_of_episodes"])
+            if data.get("number_of_episodes")
+            else None
+        ),
         "Number of Seasons": data.get("number_of_seasons"),
         "Status": data.get("status"),
         "In Production": "Yes" if data.get("in_production") else "No",
@@ -200,13 +218,13 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
             [i["name"] for i in data.get("production_countries", [])]
         ),
         "Created By": ", ".join([i["name"] for i in data.get("created_by", [])]),
-        "Popularity": humanize_number(data["popularity"])
-        if data.get("popularity")
-        else None,
+        "Popularity": (
+            humanize_number(data["popularity"]) if data.get("popularity") else None
+        ),
         "Vote Average": data.get("vote_average"),
-        "Vote Count": humanize_number(data["vote_count"])
-        if data.get("vote_count")
-        else None,
+        "Vote Count": (
+            humanize_number(data["vote_count"]) if data.get("vote_count") else None
+        ),
         "Adult": "Yes" if data.get("adult") is True else "No",
         "Homepage": data.get("homepage"),
         "Tagline": data.get("tagline"),
@@ -246,14 +264,18 @@ async def build_movie_embed(ctx, data, movie_id, i, results):
     )
     fields = {
         "Original Title": data.get("original_title"),
-        "Release Date": f"<t:{int(datetime.strptime(data['release_date'], '%Y-%m-%d').timestamp())}:D>"
-        if data.get("release_date")
-        else None,
+        "Release Date": (
+            f"<t:{int(datetime.strptime(data['release_date'], '%Y-%m-%d').timestamp())}:D>"
+            if data.get("release_date")
+            else None
+        ),
         "Runtime": f"{data['runtime']} minutes" if data.get("runtime") else None,
         "Status": data.get("status"),
-        "Belongs to Collection": data.get("belongs_to_collection").get("name")
-        if data.get("belongs_to_collection")
-        else None,
+        "Belongs to Collection": (
+            data.get("belongs_to_collection").get("name")
+            if data.get("belongs_to_collection")
+            else None
+        ),
         "Genres": humanize_list([i["name"] for i in data.get("genres", [])]),
         "Production Companies": humanize_list(
             [i["name"] for i in data.get("production_companies", [])]
@@ -264,17 +286,17 @@ async def build_movie_embed(ctx, data, movie_id, i, results):
         "Spoken Languages": humanize_list(
             [i["english_name"] for i in data.get("spoken_languages", [])]
         ),
-        "Revenue": f"${humanize_number(data['revenue'])}"
-        if data.get("revenue")
-        else None,
+        "Revenue": (
+            f"${humanize_number(data['revenue'])}" if data.get("revenue") else None
+        ),
         "Budget": f"${humanize_number(data['budget'])}" if data.get("budget") else None,
-        "Popularity": humanize_number(data["popularity"])
-        if data.get("popularity")
-        else None,
+        "Popularity": (
+            humanize_number(data["popularity"]) if data.get("popularity") else None
+        ),
         "Vote Average": data.get("vote_average"),
-        "Vote Count": humanize_number(data["vote_count"])
-        if data.get("vote_count")
-        else None,
+        "Vote Count": (
+            humanize_number(data["vote_count"]) if data.get("vote_count") else None
+        ),
         "Adult": "Yes" if data.get("adult") is True else "No",
         "Homepage": data.get("homepage"),
         "Tagline": data.get("tagline"),

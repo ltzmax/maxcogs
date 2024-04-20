@@ -7,9 +7,9 @@ from redbot.core import commands
 from redbot.core.errors import CogLoadError
 from redbot.core.utils.chat_formatting import humanize_number
 
-warn_message: Final[
-    str
-] = "{member(mention)} Usage of spoiler is not allowed in this server."
+warn_message: Final[str] = (
+    "{member(mention)} Usage of spoiler is not allowed in this server."
+)
 
 TAGSCRIPT_LIMIT: Final[int] = 10_000
 

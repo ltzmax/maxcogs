@@ -32,7 +32,7 @@ from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
 from .view import Buttons
 
-GITHUB = re.compile(r'^(git\+ssh://git@github\.com|git\+https://github\.com)')
+GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
 log = logging.getLogger("red.maxcogs.redupdate")
 
 
@@ -104,7 +104,9 @@ class RedUpdate(commands.Cog):
         Has to be vaild link such as `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot` else it will not work.
         """
         if not GITHUB.match(url):
-            return await ctx.send("This is not a valid url for your fork.\nCheck `redset whatlink` for more information.")
+            return await ctx.send(
+                "This is not a valid url for your fork.\nCheck `redset whatlink` for more information."
+            )
         if not url.endswith("#egg=Red-DiscordBot"):
             return await ctx.send("This is not a valid url for your fork.")
         data = await self.config.redupdate_url()
