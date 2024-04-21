@@ -70,7 +70,7 @@ class CapSpam(commands.Cog):
 
     __version__ = "1.2.0"
     __author__ = "MAX, Predeactor"
-    __docs__ = "https://maxcogs.gitbook.io/maxcogs/cogs/capspam"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/CapSpam.md"
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""

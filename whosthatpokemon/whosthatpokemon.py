@@ -57,7 +57,7 @@ class WhosThatPokemon(commands.Cog):
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
     __version__: Final[str] = "1.4.6"
-    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/whosthatpokemon"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/WhosThatPokemon.md"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot

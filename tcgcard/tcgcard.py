@@ -45,7 +45,7 @@ class TCGCard(commands.Cog):
 
     __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000"]
     __version__: Final[str] = "1.3.1"
-    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/tcgcard"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/TCGCard.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

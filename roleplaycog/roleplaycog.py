@@ -43,7 +43,7 @@ class RolePlayCog(commands.Cog):
 
     __version__: Final[str] = "0.2.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/roleplaycog"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RolePlayCog.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

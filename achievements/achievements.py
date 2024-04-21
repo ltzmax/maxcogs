@@ -49,7 +49,7 @@ class Achievements(
 
     __version__: Final[str] = "1.4.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://maxcogs.gitbook.io/maxcogs/cogs/achievements"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Achievements.md"
 
     def __init__(self, bot):
         self.bot = bot
