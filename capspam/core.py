@@ -34,7 +34,7 @@ from redbot.core.utils.chat_formatting import box, humanize_list
 
 CAP_DETECTOR = re.compile(r"[A-Z]", re.MULTILINE)
 URL_DETECTOR = re.compile(
-    r"(?:http[s]?://)?(?:[a-zA-Z]|[0-9]|[$@.&+]|[\-]|[\*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+    r"(?:http[s]?://)?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 )
 WARN_MESSAGE_DELETE_COOLDOWN = 10
 
