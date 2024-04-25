@@ -45,10 +45,10 @@ from .utils import (
 log = logging.getLogger("red.maxcogs.themoviedb")
 
 
-# This is to prevent the cog from being used to search for movies and TV shows related to the 2011 Norway attacks.
-# TheMovieDB has a lot of movies and TV shows related to this event, and it's not appropriate to use this cog to search for them.
-# As a norwegian, I don't want to see movies and TV shows related to this event, and I don't want to see this cog being used to search for them,
-# the attack was very tragic and it hurts me to see movies and TV shows related to this event, those should never have been made in the first place.
+# This is to prevent the cog from being used to search for movies and TV shows related to the 2011 Norway terror attack.
+# TheMovieDB has a lot of movies and TV shows related to this, and it's not appropriate to use this cog to search for them.
+# As a norwegian, I don't want to see movies and TV shows related to this, and I don't want to see this cog being used to search for them,
+# the terror attack was very tragic and it hurts to see movies and TV shows related to this was made, those should never have been made in the first place.
 BLOCKED_SEARCH = {"utoya: july 22", "utøya: july 22", "22 july", "22 juli"}
 
 
