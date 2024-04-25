@@ -16,7 +16,7 @@
         "embed_links",
         "manage_messages"
     ],
-    "requirements": ["emoji>=2.0.0", "AdvancedTagScriptEngine==3.1.4"],
+    "requirements": ["emoji~=2.0.0", "AdvancedTagScriptEngine==3.1.4"],
     "min_python_version": [
         3,
         9,
