@@ -29,11 +29,7 @@ from typing import Any, Dict, Final, Literal, Optional, Union
 import discord
 import TagScriptEngine as tse
 from redbot.core.bot import Red
-
-try:
-    from emoji import UNICODE_EMOJI_ENGLISH as EMOJI_DATA  # emoji<2.0.0
-except ImportError:
-    from emoji import EMOJI_DATA  # emoji>=2.0.0
+from emoji import EMOJI_DATA
 
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
