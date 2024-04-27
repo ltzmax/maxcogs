@@ -1,4 +1,5 @@
 # UNRELEASED COG
+NOTE: Things are subjected to change in the code that is yet not added to the documents. This is an unreleased cog so it is expected to not look like how it does at this moment.
 # NBA Help
 
 Get the current NBA scoreboard.
