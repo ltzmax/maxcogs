@@ -46,12 +46,13 @@ from ._tagscript import (
 log = logging.getLogger("red.maxcogs.emojispam")
 
 EMOJI_REGEX = re.compile(
-    r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
+    r"(" 
+    + r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
     + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2}){1,3}"
-    + r"|(:\w+:|_tone\d)",
+    + r"|:\w+(_tone\d){0,5}:"
+    + r"){1,5}",
     re.UNICODE,
 )
-
 
 class EmojiSpam(commands.Cog):
     """Prevent users from spamming emojis."""
@@ -225,12 +226,12 @@ class EmojiSpam(commands.Cog):
         """Set the emoji limit.
 
         Default limit is 5.
-        Limit must be between 1 and 25.
+        Limit must be between 5 and 25.
 
-        NOTE: Some emojis may count more than 1. These are usually normal emojis that are combined to form a single emoji (e.g. face_with_spiral_eyes) This one count as 3 emojis in the limit of 5.
+        It is from 5 due to some emojis are made up of multiple characters.
         """
-        if limit < 1 or limit > 25:
-            return await ctx.send("Limit must be between 1 and 25!")
+        if limit < 5 or limit > 25:
+            return await ctx.send("Limit must be between 5 and 25!")
         await self.config.guild(ctx.guild).emoji_limit.set(limit)
         await ctx.send(f"Emoji limit set to {limit}!")
 
