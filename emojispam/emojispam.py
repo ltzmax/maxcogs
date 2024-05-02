@@ -45,11 +45,16 @@ from ._tagscript import (
 
 log = logging.getLogger("red.maxcogs.emojispam")
 
+# Emojis that should be ignored when checking for spam
+# These are also impossible to respect the emoji limit 
+# as they are counted as multiple emojis by discord 
+# and the `emoji` package doesn't support them
+IGNORED_EMOJIS = { "🫱🏻‍🫲🏾" }
+# Regex to match emojis
 EMOJI_REGEX = re.compile(
     r"(" 
     + r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
     + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2}){1,3}"
-    + (r"|🫱[\U0001F3FB-\U0001F3FF]?‍🫲[\U0001F3FB-\U0001F3FF]?" if len("🫱🏻‍🫲🏾") <= 32 else "")
     + r")",
     re.UNICODE,
 )
@@ -130,12 +135,20 @@ class EmojiSpam(commands.Cog):
             return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
+        if await self.bot.is_automod_immune(message.author):
+            return
 
-        if EMOJI_REGEX.search(message.content):
-            emoji_count = len(EMOJI_REGEX.findall(message.content))
-            if emoji_count > data["emoji_limit"]:
-                if await self.bot.is_automod_immune(message.author):
-                    return
+        # Remove ignored emojis from the message content
+        # Prevents the bot from counting them as emojis
+        # since they are counted as multiple emojis by discord
+        filtered_content = message.content
+        for emoji in IGNORED_EMOJIS:
+            filtered_content = filtered_content.replace(emoji, '')
+        # Check if the message contains emojis
+        if EMOJI_REGEX.search(filtered_content):
+            matched_emojis = EMOJI_REGEX.findall(filtered_content)
+            total_length = sum(len(emoji) for emoji in matched_emojis)
+            if total_length > data["emoji_limit"]:
                 if not message.channel.permissions_for(message.guild.me).send_messages:
                     log.info("I don't have permission to send messages.")
                     return
