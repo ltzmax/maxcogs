@@ -173,9 +173,11 @@ class Plague(commands.Cog):
         embed = await self.generate_plague_profile(member)
         await ctx.send(embed=embed)
 
-    async def plague_profile_context(self, interaction: discord.Interaction, member: discord.Member):
+    async def plague_profile_context(
+        self, interaction: discord.Interaction, member: discord.Member
+    ):
         """View a user's plague profile from a context menu.
-        
+
         Parameters
         -----------
         member: discord.Member
