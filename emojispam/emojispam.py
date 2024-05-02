@@ -49,7 +49,7 @@ EMOJI_REGEX = re.compile(
     r"(" 
     + r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
     + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2}){1,3}"
-    + r"|🫱[\U0001F3FB-\U0001F3FF]?‍🫲[\U0001F3FB-\U0001F3FF]?"
+    + (r"|🫱[\U0001F3FB-\U0001F3FF]?‍🫲[\U0001F3FB-\U0001F3FF]?" if len("🫱🏻‍🫲🏾") <= 32 else "")
     + r")",
     re.UNICODE,
 )
