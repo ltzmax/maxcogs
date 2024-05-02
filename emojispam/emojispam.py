@@ -49,8 +49,8 @@ EMOJI_REGEX = re.compile(
     r"(" 
     + r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
     + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2}){1,3}"
-    + r"|:\w+(_tone\d){0,5}:"
-    + r"){1,5}",
+    + r"|🫱[\U0001F3FB-\U0001F3FF]?‍🫲[\U0001F3FB-\U0001F3FF]?"
+    + r")",
     re.UNICODE,
 )
 
@@ -68,7 +68,7 @@ class EmojiSpam(commands.Cog):
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild: Dict[str, Union[bool, Optional[int]]] = {
             "enabled": False,
-            "emoji_limit": 5,
+            "emoji_limit": 6,
             "log_channel": None,
             "timeout": 10,
             "emoji_message": emoji_message,
@@ -226,11 +226,11 @@ class EmojiSpam(commands.Cog):
         """Set the emoji limit.
 
         Default limit is 5.
-        Limit must be between 5 and 25.
+        Limit must be between 1 and 25.
 
-        It is from 5 due to some emojis are made up of multiple characters.
+    
         """
-        if limit < 5 or limit > 25:
+        if limit < 1 or limit > 25:
             return await ctx.send("Limit must be between 5 and 25!")
         await self.config.guild(ctx.guild).emoji_limit.set(limit)
         await ctx.send(f"Emoji limit set to {limit}!")
