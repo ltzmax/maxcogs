@@ -46,18 +46,19 @@ from ._tagscript import (
 log = logging.getLogger("red.maxcogs.emojispam")
 
 # Emojis that should be ignored when checking for spam
-# These are also impossible to respect the emoji limit 
-# as they are counted as multiple emojis by discord 
+# These are also impossible to respect the emoji limit
+# as they are counted as multiple emojis by discord
 # and the `emoji` package doesn't support them
-IGNORED_EMOJIS = { "🫱🏻‍🫲🏾" }
+IGNORED_EMOJIS = {"🫱🏻‍🫲🏾"}
 # Regex to match emojis
 EMOJI_REGEX = re.compile(
-    r"(" 
+    r"("
     + r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
     + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2}){1,3}"
     + r")",
     re.UNICODE,
 )
+
 
 class EmojiSpam(commands.Cog):
     """Prevent users from spamming emojis."""
@@ -143,7 +144,7 @@ class EmojiSpam(commands.Cog):
         # since they are counted as multiple emojis by discord
         filtered_content = message.content
         for emoji in IGNORED_EMOJIS:
-            filtered_content = filtered_content.replace(emoji, '')
+            filtered_content = filtered_content.replace(emoji, "")
         # Check if the message contains emojis
         if EMOJI_REGEX.search(filtered_content):
             matched_emojis = EMOJI_REGEX.findall(filtered_content)
@@ -241,7 +242,7 @@ class EmojiSpam(commands.Cog):
         Default limit is 5.
         Limit must be between 1 and 25.
 
-    
+
         """
         if limit < 1 or limit > 25:
             return await ctx.send("Limit must be between 5 and 25!")
