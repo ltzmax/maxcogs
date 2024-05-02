@@ -31,7 +31,7 @@ To install any cog you want:
 | AutoPublisyher | Automatically push news channel messages. | 2.1.3 | ltzmax | ✅ |
 | emojispam | Prevent users from spamming emojis. | 1.4.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.7 | ltzmax | ✅ |
-| PlagueGame | Infect users with the plague | 1.0.7 | phenom4n4n, ltzmax | ✅ |
+| PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
 | Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.1 | ltzmax, o-wo | ✅ |
 | RedUpdate | Update your bot to latest dev changes.| 1.4.4 | ltzmax, kuro | ✅ |

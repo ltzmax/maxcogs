@@ -28,7 +28,7 @@ import random
 from collections import Counter
 
 import discord
-from redbot.core import Config, bank, commands
+from redbot.core import Config, bank, commands, app_commands
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import (
     humanize_number,
@@ -95,7 +95,7 @@ async def has_role(ctx: commands.Context) -> bool:
 class Plague(commands.Cog):
     """A plague game."""
 
-    __version__ = "1.0.7"
+    __version__ = "1.0.8"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/Plague.md"
 
@@ -117,6 +117,16 @@ class Plague(commands.Cog):
         }
         self.config.register_global(**default_global)
         self.config.register_user(**default_user)
+        # Context Menu for viewing plague profiles
+        # https://github.com/Rapptz/discord.py/issues/7823#issuecomment-1086830458
+        self.ctx_menu = app_commands.ContextMenu(
+            name="View Plague Profile",
+            callback=self.plague_profile_context,
+        )
+        self.bot.tree.add_command(self.ctx_menu)
+
+    async def cog_unload(self):
+        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -125,6 +135,55 @@ class Plague(commands.Cog):
 
     async def red_delete_data_for_user(self, *, requester: str, user_id: int):
         await self.config.user_from_id(user_id).clear()
+
+    async def generate_plague_profile(self, member):
+        data = await self.config.user(member).all()
+        userRole = data["gameRole"]
+        userState = data["gameState"]
+
+        notifications = data["notifications"]
+        if notifications:
+            notifications = "Enabled"
+        else:
+            notifications = "Disabled"
+
+        if userRole == GameRole.DOCTOR:
+            thumbnail = "https://contestimg.wish.com/api/webimage/5b556e7ba225161706d6857a-large.jpg?cache_buster=e79a94ce3e105025c5655d67b3d5e1bd"
+        elif userRole == GameRole.PLAGUEBEARER:
+            thumbnail = "https://cdna.artstation.com/p/assets/images/images/015/285/028/large/john-yakimow-plaguebear.jpg?1547774010"
+        elif userState == GameState.INFECTED:
+            thumbnail = "https://cdn.pixabay.com/photo/2020/04/29/07/54/coronavirus-5107715_960_720.png"
+        else:
+            thumbnail = "https://static.thenounproject.com/png/2090399-200.png"
+
+        embed = discord.Embed(title="Plague Profile", colour=0x7289DA)
+        embed.add_field(name="Role:", value=userRole)
+        embed.add_field(name="State:", value=userState)
+        embed.add_field(name="Notifications:", value=notifications, inline=False)
+        embed.set_thumbnail(url=thumbnail)
+        embed.set_author(name=member, icon_url=member.avatar.url)
+        return embed
+
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.guild_only()
+    @commands.command("plagueprofile", aliases=["pprofile"])
+    async def plagueProfile(self, ctx, *, member: FuzzyHuman = None):
+        """Show's your Plague Game profile"""
+        member = member or ctx.author
+        embed = await self.generate_plague_profile(member)
+        await ctx.send(embed=embed)
+
+    async def plague_profile_context(self, interaction: discord.Interaction, member: discord.Member):
+        """View a user's plague profile from a context menu.
+        
+        Parameters
+        -----------
+        member: discord.Member
+            The member to view the profile of.
+        """
+        await interaction.response.defer(ephemeral=True)
+        embed = await self.generate_plague_profile(member)
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
     @commands.check(is_infected)
     @commands.cooldown(1, 30, commands.BucketType.user)
@@ -150,42 +209,6 @@ class Plague(commands.Cog):
         """Cure a user. You must be a Doctor to use this command."""
         result = await self.cure_user(ctx=ctx, user=member)
         await ctx.send(result)
-
-    @commands.bot_has_permissions(embed_links=True)
-    @commands.guild_only()
-    @commands.command("plagueprofile", aliases=["pprofile"])
-    async def plagueProfile(self, ctx, *, member: FuzzyHuman = None):
-        """Show's your Plague Game profile"""
-        member = member or ctx.author
-        data = await self.config.user(member).all()
-        userRole = data["gameRole"]
-        userState = data["gameState"]
-
-        notifications = data["notifications"]
-        if notifications:
-            notifications = "Enabled"
-        else:
-            notifications = "Disabled"
-
-        color = await ctx.embed_color()
-        if userRole == GameRole.DOCTOR:
-            thumbnail = "https://contestimg.wish.com/api/webimage/5b556e7ba225161706d6857a-large.jpg?cache_buster=e79a94ce3e105025c5655d67b3d5e1bd"
-        elif userRole == GameRole.PLAGUEBEARER:
-            # credit to John Yakimow
-            # https://goldenyak.artstation.com/projects/v1z81O
-            thumbnail = "https://cdna.artstation.com/p/assets/images/images/015/285/028/large/john-yakimow-plaguebear.jpg?1547774010"
-        elif userState == GameState.INFECTED:
-            thumbnail = "https://cdn.pixabay.com/photo/2020/04/29/07/54/coronavirus-5107715_960_720.png"
-        else:
-            thumbnail = "https://static.thenounproject.com/png/2090399-200.png"
-
-        embed = discord.Embed(title="Plague Profile", colour=color)
-        embed.add_field(name="Role:", value=userRole)
-        embed.add_field(name="State:", value=userState)
-        embed.add_field(name="Notifications:", value=notifications, inline=False)
-        embed.set_thumbnail(url=thumbnail)
-        embed.set_author(name=member, icon_url=member.avatar.url)
-        await ctx.send(embed=embed)
 
     @commands.command()
     async def plaguenotify(self, ctx):
