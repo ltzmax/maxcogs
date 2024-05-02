@@ -48,7 +48,7 @@ log = logging.getLogger("red.maxcogs.emojispam")
 EMOJI_REGEX = re.compile(
     r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
     + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2}){1,3}"
-    + r"|:\w+(_tone\d)?(_tone\d)?(_tone\d)?(_tone\d)?(_tone\d)?:",
+    + r"|:\w+(_tone\d){0,5}:",
     re.UNICODE,
 )
 
