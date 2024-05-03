@@ -99,8 +99,8 @@ class EmojiSpam(commands.Cog):
             description=f"A user was caught spamming emojis.\n{message.content}",
             color=0xFF0000,
         )
-        embed.set_author(name=message.author)
-        embed.set_footer(text=f"User ID: {message.author.id}")
+        embed.add_field(name="Channel:", value=message.channel.mention)
+        embed.add_field(name="Member:", value=f"{message.author.mention} ({message.author.id})")
         await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
