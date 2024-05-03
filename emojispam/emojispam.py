@@ -218,3 +218,23 @@ class EmojiSpam(commands.Cog):
         enabled = await self.config.guild(ctx.guild).toggle_emoji_message()
         await self.config.guild(ctx.guild).toggle_emoji_message.set(not enabled)
         await ctx.send(f"Message is now {'enabled' if not enabled else 'disabled'}.")
+
+    @emojispam.command()
+    async def settings(self, ctx: commands.Context):
+        """Shows current settings"""
+        all = await self.config.guild(ctx.guild).all()
+        msg = all["emoji_message"]
+        toggle = all["toggle_emoji_message"]
+        log_channel = all["log_channel"]
+        timeout = all["timeout"]
+        emoji_limit = all["emoji_limit"]
+        enabled = all["enabled"]
+        await ctx.send(
+            "## Current settings:\n"
+            f"Enabled: {enabled}\n"
+            f"Emoji Limit: {emoji_limit}\n"
+            f"Timeout: {timeout}\n"
+            f"Log Channel: {ctx.guild.get_channel(log_channel).mention if log_channel else 'None'}\n"
+            f"Toggle Message: {toggle}\n"
+            f"Message: {msg}"
+        )
