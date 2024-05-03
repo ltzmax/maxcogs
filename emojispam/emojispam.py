@@ -41,7 +41,7 @@ IGNORED_EMOJIS = {"🫱🏻‍🫲🏾"}
 EMOJI_REGEX = re.compile(
     r"("
     + r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
-    + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2}){1,3}"
+    + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2})+"
     + r")",
     re.UNICODE,
 )
