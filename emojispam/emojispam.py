@@ -53,9 +53,9 @@ class EmojiSpam(commands.Cog):
 
     __author__: Final[str] = "MAX"
     __version__: Final[str] = "2.0.1"
-    __docs__: Final[str] = (
-        "https://github.com/ltzmax/maxcogs/blob/master/docs/EmojiSpam.md"
-    )
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/EmojiSpam.md"
 
     def __init__(self, bot):
         self.bot = bot
@@ -100,7 +100,9 @@ class EmojiSpam(commands.Cog):
             color=0xFF0000,
         )
         embed.add_field(name="Channel:", value=message.channel.mention)
-        embed.add_field(name="Member:", value=f"{message.author.mention} ({message.author.id})")
+        embed.add_field(
+            name="Member:", value=f"{message.author.mention} ({message.author.id})"
+        )
         await log_channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -232,4 +234,3 @@ class EmojiSpam(commands.Cog):
             f"Toggle Message: {toggle}\n"
             f"Message: {msg}"
         )
-
