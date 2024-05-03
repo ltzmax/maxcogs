@@ -29,7 +29,7 @@ To install any cog you want:
 |:---:|---|:---:|:---:|:---:|
 | Achievements | Earn achievements by chatting in channels. | 1.4.0 | ltzmax | ✅ |
 | AutoPublisyher | Automatically push news channel messages. | 2.1.3 | ltzmax | ✅ |
-| emojispam | Prevent users from spamming emojis. | 1.4.0 | ltzmax | ✅ |
+| emojispam | Prevent users from spamming emojis. | 2.0.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.7 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
