@@ -41,7 +41,7 @@ IGNORED_EMOJIS = {"🫱🏻‍🫲🏾"}
 EMOJI_REGEX = re.compile(
     r"("
     + r"|".join(re.escape(e) for e in EMOJI_DATA if len(e) == 1)
-    + r"|<a?:\w{2,32}:\d{17,19}>|(?:[\U0001F1E6-\U0001F1FF]{2})+"
+    + r"|<a?:\w{2,32}:\d{17,19}>|[\U0001F1E6-\U0001F1FF]{2}"
     + r")",
     re.UNICODE,
 )
@@ -52,7 +52,7 @@ class EmojiSpam(commands.Cog):
     """Prevent users from spamming emojis."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "2.0.0"
+    __version__: Final[str] = "2.0.1"
     __docs__: Final[str] = (
         "https://github.com/ltzmax/maxcogs/blob/master/docs/EmojiSpam.md"
     )
@@ -118,21 +118,18 @@ class EmojiSpam(commands.Cog):
         for emoji in IGNORED_EMOJIS:
             if emoji in message.content:
                 return
-        if EMOJI_REGEX.search(message.content):
-            if (
-                len(EMOJI_REGEX.findall(message.content))
-                > await self.config.guild(message.guild).emoji_limit()
-            ):
-                if await self.config.guild(message.guild).toggle_emoji_message():
-                    await message.channel.send(
-                        f"{message.author.mention} {await self.config.guild(message.guild).emoji_message()}",
-                        delete_after=await self.config.guild(message.guild).timeout(),
-                    )
-                try:
-                    await message.delete()
-                except discord.NotFound:
-                    log.error("Message was already deleted.")
-                await self.log_channel(message.guild, message)
+        emoji_count = len(EMOJI_REGEX.findall(message.content))
+        if emoji_count > await self.config.guild(message.guild).emoji_limit():
+            if await self.config.guild(message.guild).toggle_emoji_message():
+                await message.channel.send(
+                    f"{message.author.mention} {await self.config.guild(message.guild).emoji_message()}",
+                    delete_after=await self.config.guild(message.guild).timeout(),
+                )
+            try:
+                await message.delete()
+            except discord.NotFound:
+                log.error("Message was already deleted.")
+            await self.log_channel(message.guild, message)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
@@ -151,21 +148,18 @@ class EmojiSpam(commands.Cog):
         for emoji in IGNORED_EMOJIS:
             if emoji in after.content:
                 return
-        if EMOJI_REGEX.search(after.content):
-            if (
-                len(EMOJI_REGEX.findall(after.content))
-                > await self.config.guild(after.guild).emoji_limit()
-            ):
-                if await self.config.guild(after.guild).toggle_emoji_message():
-                    await after.channel.send(
-                        f"{after.author.mention} {await self.config.guild(after.guild).emoji_message()}",
-                        delete_after=await self.config.guild(after.guild).timeout(),
-                    )
-                try:
-                    await after.delete()
-                except discord.NotFound:
-                    log.error("Message was already deleted.")
-                await self.log_channel(after.guild, after)
+        emoji_count = len(EMOJI_REGEX.findall(after.content))
+        if emoji_count > await self.config.guild(after.guild).emoji_limit():
+            if await self.config.guild(after.guild).toggle_emoji_message():
+                await after.channel.send(
+                    f"{after.author.mention} {await self.config.guild(after.guild).emoji_message()}",
+                    delete_after=await self.config.guild(after.guild).timeout(),
+                )
+            try:
+                await after.delete()
+            except discord.NotFound:
+                log.error("Message was already deleted.")
+            await self.log_channel(after.guild, after)
 
     @commands.group()
     @commands.guild_only()
@@ -238,3 +232,4 @@ class EmojiSpam(commands.Cog):
             f"Toggle Message: {toggle}\n"
             f"Message: {msg}"
         )
+
