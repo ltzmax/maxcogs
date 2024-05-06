@@ -23,6 +23,7 @@ SOFTWARE.
 """
 from datetime import datetime, timezone
 
+
 def get_games(schedule):
     """
     Get scheduled games from the NBA API.

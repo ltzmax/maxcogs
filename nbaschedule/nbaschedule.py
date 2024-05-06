@@ -32,12 +32,15 @@ from redbot.core.utils.views import SimpleMenu
 
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 
+
 class NBASchedule(commands.Cog):
     """Get the current NBA schedule for next game."""
 
     __version__: Final[str] = "1.0.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBASchedule.md"
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBASchedule.md"
 
     def __init__(self, bot):
         self.bot = bot
