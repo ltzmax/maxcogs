@@ -36,7 +36,7 @@ log = logging.getLogger("red.maxcogs.emojispam")
 # These are also impossible to respect the emoji limit
 # as they are counted as multiple emojis by discord
 # and the `emoji` package doesn't support them
-IGNORED_EMOJIS = {"🫱🏻‍🫲🏾"}
+IGNORED_EMOJIS = {"🫱🏻‍🫲🏾", "🏴‍☠️", "🏳️‍⚧️", "🏳️‍🌈"}
 # Regex to match emojis
 EMOJI_REGEX = re.compile(
     r"("
