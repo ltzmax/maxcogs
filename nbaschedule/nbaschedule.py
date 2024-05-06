@@ -36,7 +36,7 @@ SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.js
 class NBASchedule(commands.Cog):
     """Get the current NBA schedule for next game."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.0.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -53,7 +53,7 @@ class NBASchedule(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
 
-    @commands.command(aliases=["nschedule"])
+    @commands.hybrid_command(aliases=["nschedule"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def nbaschedule(self, ctx: commands.Context):
