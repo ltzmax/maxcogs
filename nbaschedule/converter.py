@@ -30,8 +30,8 @@ def get_games(schedule):
     """
     games = [
         {
-            "home_team": game["homeTeam"]["teamTricode"],
-            "away_team": game["awayTeam"]["teamTricode"],
+            "home_team": game["homeTeam"]["teamName"],
+            "away_team": game["awayTeam"]["teamName"],
             "timestamp": int(
                 datetime.strptime(game["gameDateTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
                 .replace(tzinfo=timezone.utc)
