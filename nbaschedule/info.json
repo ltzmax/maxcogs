@@ -1,0 +1,27 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "NBASchedule",
+    "install_msg": "Thanks for installing.\nif you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
+    "description": "Get the current NBA schedule for next game.",
+    "short": "Get the current NBA schedule for next game.",
+    "hidden": false,
+    "min_bot_version": "3.5.0",
+    "tags": [
+        "basketball",
+        "nba",
+        "espn"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "requirements": ["orjson"],
+    "min_python_version": [
+        3,
+        8,
+        5
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
