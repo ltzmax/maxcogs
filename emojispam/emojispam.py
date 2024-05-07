@@ -190,7 +190,7 @@ class EmojiSpam(commands.Cog):
     ):
         """Set the timeout for the user."""
         await self.config.guild(ctx.guild).timeout.set(timeout)
-        await ctx.send(f"Timeout set to {timeout} seconds.")
+        await ctx.send(f"Timeout set to {seconds} seconds.")
 
     @emojispam.command()
     async def logchannel(
