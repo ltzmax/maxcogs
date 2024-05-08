@@ -231,6 +231,7 @@ class RedUpdate(commands.Cog):
                 return await failedupdate(self, ctx)
                 log.error(e)
             await redupdate(self, ctx)
+            log.info("Updated to latest stable changes.")
         view = ConfirmView(ctx.author, disable_buttons=True)
         if version == "dev":
             embed = discord.Embed(
@@ -266,6 +267,7 @@ class RedUpdate(commands.Cog):
                     return await failedupdate(self, ctx)
                     log.error(e)
                 await redupdate(self, ctx)
+                log.info("Updated to latest dev changes.")
             else:
                 embed = discord.Embed(
                     title="Update Cancelled",
