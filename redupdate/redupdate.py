@@ -71,9 +71,9 @@ class RedUpdate(commands.Cog):
 
     __author__: Final[str] = "MAX, kuro"
     __version__: Final[str] = "1.4.5"
-    __docs__: Final[str] = (
-        "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
-    )
+    __docs__: Final[
+        str
+    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
 
     def __init__(self, bot):
         self.bot = bot
@@ -214,11 +214,7 @@ class RedUpdate(commands.Cog):
         Arguments:
         - `[version]`: `dev` to update to latest dev changes. `stable` by default already.
         """
-        package = (
-            "Red-DiscordBot"
-            if not version
-            else await self.config.redupdate_url()
-        )
+        package = "Red-DiscordBot" if not version else await self.config.redupdate_url()
         if not version:
             shell = self.bot.get_cog("Shell")
             try:
