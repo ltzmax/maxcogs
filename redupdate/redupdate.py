@@ -70,10 +70,10 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.4.4"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
+    __version__: Final[str] = "1.4.5"
+    __docs__: Final[str] = (
+        "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
+    )
 
     def __init__(self, bot):
         self.bot = bot
@@ -204,7 +204,7 @@ class RedUpdate(commands.Cog):
     async def redupdate(
         self,
         ctx: commands.Context,
-        version: Optional[Literal["dev", "stable"]] = "stable",
+        version: Optional[Literal["dev"]],
     ):
         """
         update [botname] to latest changes.
@@ -219,26 +219,34 @@ class RedUpdate(commands.Cog):
             if version == "stable"
             else await self.config.redupdate_url()
         )
+        shell = self.bot.get_cog("Shell")
+        try:
+            await shell._shell_command(
+                ctx,
+                f"pip install -U --force-reinstall {package}",
+                send_message_on_success=False,
+            )
+        except AttributeError as e:
+            return await failedupdate(self, ctx)
+            log.error(e)
+        await redupdate(self, ctx)
         view = ConfirmView(ctx.author, disable_buttons=True)
         if version == "dev":
             embed = discord.Embed(
                 title="Red Update Information",
-                description="This will update {} to latest dev changes.".format(
-                    self.bot.user.name
-                ),
                 color=await ctx.embed_color(),
             )
             embed.add_field(
                 name="⚠️Warning⚠️",
-                value="This will update to latest dev changes and may include breaking changes that can break cogs that does not support latest changes. Are you sure you want to continue?",
+                value="This will update to latest dev changes and may include breaking changes that can break cogs that does not support latest dev changes. Are you sure you want to continue?",
                 inline=False,
             )
             embed.add_field(
                 name="Note:",
-                value="You should be using ``{prefix}updatered`` without specifying version to update to latest stable changes unless you know what you are doing.".format(
-                    prefix=ctx.clean_prefix,
-                    inline=False,
+                value="If you are not sure what you are doing, it is recommended to update to latest stable changes instead of dev changes. Use ``{prefix}updatered`` to update to latest stable changes without specifying ``dev``.".format(
+                    prefix=ctx.clean_prefix
                 ),
+                inline=False,
             )
             embed.set_footer(
                 text="Be sure you want to update to latest dev changes before continuing!"
@@ -264,18 +272,6 @@ class RedUpdate(commands.Cog):
                     color=await ctx.embed_color(),
                 )
                 await ctx.send(embed=embed, silent=True)
-        if version == "stable":
-            shell = self.bot.get_cog("Shell")
-            try:
-                await shell._shell_command(
-                    ctx,
-                    f"pip install -U --force-reinstall {package}",
-                    send_message_on_success=False,
-                )
-            except AttributeError as e:
-                return await failedupdate(self, ctx)
-                log.error(e)
-            await redupdate(self, ctx)
 
     @commands.is_owner()
     @commands.command(aliases=["dpydevupdate"], hidden=True)
