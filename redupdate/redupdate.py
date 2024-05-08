@@ -216,7 +216,7 @@ class RedUpdate(commands.Cog):
         """
         package = (
             "Red-DiscordBot"
-            if version == "stable"
+            if not version
             else await self.config.redupdate_url()
         )
         if not version:
