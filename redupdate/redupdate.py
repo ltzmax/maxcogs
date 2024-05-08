@@ -219,17 +219,18 @@ class RedUpdate(commands.Cog):
             if version == "stable"
             else await self.config.redupdate_url()
         )
-        shell = self.bot.get_cog("Shell")
-        try:
-            await shell._shell_command(
-                ctx,
-                f"pip install -U --force-reinstall {package}",
-                send_message_on_success=False,
-            )
-        except AttributeError as e:
-            return await failedupdate(self, ctx)
-            log.error(e)
-        await redupdate(self, ctx)
+        if not version:
+            shell = self.bot.get_cog("Shell")
+            try:
+                await shell._shell_command(
+                    ctx,
+                    f"pip install -U --force-reinstall {package}",
+                    send_message_on_success=False,
+                )
+            except AttributeError as e:
+                return await failedupdate(self, ctx)
+                log.error(e)
+            await redupdate(self, ctx)
         view = ConfirmView(ctx.author, disable_buttons=True)
         if version == "dev":
             embed = discord.Embed(
@@ -267,7 +268,7 @@ class RedUpdate(commands.Cog):
                 await redupdate(self, ctx)
             else:
                 embed = discord.Embed(
-                    title="Red Update Cancelled",
+                    title="Update Cancelled",
                     description="Cancelled updating {}.".format(self.bot.user.name),
                     color=await ctx.embed_color(),
                 )
