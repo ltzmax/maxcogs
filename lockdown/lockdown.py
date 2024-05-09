@@ -13,7 +13,7 @@ class Lockdown(commands.Cog):
     This only works with the default role.
     """
 
-    __version__: Final[str] = "1.0.2"
+    __version__: Final[str] = "1.0.3"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -140,16 +140,18 @@ class Lockdown(commands.Cog):
             return await ctx.send("I can't lockdown a voice, forum or thread channels.")
 
         overwrites = channel.overwrites_for(role)
-        if overwrites is not None and overwrites.send_messages is False:
+        if overwrites is None:
+            overwrites = discord.PermissionOverwrite()
+        if overwrites.send_messages is False:
             return await ctx.send(
                 f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
             )
 
-        overwrite = discord.PermissionOverwrite(send_messages=False)
+        overwrites.send_messages = False
         await ctx.send(
             f"🔒 {'Role' if role != ctx.guild.default_role else 'Channel'} locked."
         )
-        await channel.set_permissions(role, overwrite=overwrite)
+        await channel.set_permissions(role, overwrite=overwrites)
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Locked",
@@ -205,16 +207,18 @@ class Lockdown(commands.Cog):
             return await ctx.send("I can't lockdown a voice, forum or thread channels.")
 
         overwrites = channel.overwrites_for(role)
-        if overwrites is None or overwrites.send_messages is None:
+        if overwrites is None:
+            overwrites = discord.PermissionOverwrite()
+        if overwrites.send_messages is None:
             return await ctx.send(
-                f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already unlocked."
+                f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
             )
 
-        overwrite = discord.PermissionOverwrite(send_messages=None)
+        overwrites.send_messages = None
         await ctx.send(
             f"🔓 {'Role' if role != ctx.guild.default_role else 'Channel'} unlocked."
         )
-        await channel.set_permissions(role, overwrite=overwrite)
+        await channel.set_permissions(role, overwrite=overwrites)
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Unlocked",

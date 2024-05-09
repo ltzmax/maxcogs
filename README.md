@@ -30,7 +30,7 @@ To install any cog you want:
 | Achievements | Earn achievements by chatting in channels. | 1.4.0 | ltzmax | ✅ |
 | AutoPublisyher | Automatically push news channel messages. | 2.1.3 | ltzmax | ✅ |
 | emojispam | Prevent users from spamming emojis. | 2.0.1 | ltzmax | ✅ |
-| lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.0.1 | ltzmax | ✅ |
+| lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.0.3 | ltzmax | ✅ |
 | nbaschedule | Get the current NBA schedule for next game. | 1.0.1 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.5.7 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
