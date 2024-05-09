@@ -211,7 +211,7 @@ class Lockdown(commands.Cog):
             overwrites = discord.PermissionOverwrite()
         if overwrites.send_messages is None:
             return await ctx.send(
-                f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
+                f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already unlocked."
             )
 
         overwrites.send_messages = None
