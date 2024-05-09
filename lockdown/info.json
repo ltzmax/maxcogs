@@ -1,0 +1,27 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "Lockdown",
+    "install_msg": "Thanks for installing.\nIf you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
+    "description": "Let moderators lockdown a channel to prevent messages from being sent.",
+    "short": "Let moderators lockdown a channel to prevent messages from being sent.",
+    "hidden": false,
+    "min_bot_version": "3.5.5",
+    "tags": [
+        "lockdown",
+        "unlock",
+        "lock"
+    ],
+    "permissions": [
+        "manage_channels"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
