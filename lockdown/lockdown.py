@@ -13,11 +13,11 @@ class Lockdown(commands.Cog):
     This only works with the default role.
     """
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.0.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
+    __docs__: Final[str] = (
+        "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
+    )
 
     def __init__(self, bot):
         self.bot = bot
@@ -35,7 +35,6 @@ class Lockdown(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
-
 
     async def log_channel(
         self,
@@ -93,46 +92,74 @@ class Lockdown(commands.Cog):
     @commands.guild_only()
     @commands.bot_can_manage_channel()
     @commands.hybrid_command(aliases=["lockdown"])
-    @app_commands.describe(channel="The channel to lockdown.")
+    @app_commands.describe(
+        channel="The channel to lock down.", role="The role to lock down."
+    )
     @commands.has_permissions(manage_channels=True)
-    async def lock(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
+    async def lock(
+        self,
+        ctx: commands.Context,
+        channel: Optional[discord.TextChannel] = None,
+        role: Optional[discord.Role] = None,
+    ):
         """Lock a channel down.
 
-        This will remove the permission `send_messages` from the default role in the channel.
+        This will remove the permission `send_messages` from the provided role in the channel. If no role is provided, the default role will be used.
 
         __Parameters__
         --------------
         channel: Optional[discord.TextChannel]
             The channel to lock down. If no channel is provided, the current channel will be locked down.
+        role: Optional[discord.Role]
+            The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
         """
-        if ctx.channel.overwrites_for(ctx.guild.default_role).send_messages is False:
-            return await ctx.send("❌ Channel is already locked.")
-        channel = ctx.channel
-        overwrite = discord.PermissionOverwrite(send_messages=False)
+        if role is None:
+            role = ctx.guild.default_role
+
+        # let's not lock the channel roles higher than the bot's top role
+        # Since it doesn't have the permission to do so.
+        bot_role = ctx.guild.get_member(ctx.me.id).top_role
+        if role >= bot_role:
+            return await ctx.send(
+                "I can't lock a channel for a role higher than or equal to my top role."
+            )
+        # Check if the role is higher than the author's top role.
+        top_role = ctx.guild.get_member(ctx.author.id).top_role
+        if role >= top_role:
+            return await ctx.send(
+                "You can't lock a channel for a role higher than or equal to your top role."
+            )
+
         if channel is None:
-            await ctx.send("🔒 Channel locked.")
-            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-            await self.log_channel(
-                guild=ctx.guild,
-                event="Channel Locked",
-                reason=f"{channel.mention} was locked down by {ctx.author.mention}.",
+            channel = ctx.channel
+
+        overwrites = channel.overwrites_for(role)
+        if overwrites is not None and overwrites.send_messages is False:
+            return await ctx.send(
+                f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
             )
-        else:
-            await ctx.send(f"🔒 {channel.mention} locked.")
-            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-            await self.log_channel(
-                guild=ctx.guild,
-                event="Channel Locked",
-                reason=f"{channel.mention} was locked down by {ctx.author.mention}.",
-            )
+
+        overwrite = discord.PermissionOverwrite(send_messages=False)
+        await channel.set_permissions(role, overwrite=overwrite)
+        await ctx.send(
+            f"🔒 {'Role' if role != ctx.guild.default_role else 'Channel'} locked."
+        )
+        await self.log_channel(
+            guild=ctx.guild,
+            event="Channel Locked",
+            reason=f"{channel.mention} was locked down by {ctx.author.mention}",
+        )
 
     @commands.guild_only()
     @commands.hybrid_command()
     @commands.bot_can_manage_channel()
-    @app_commands.describe(channel="The channel to unlock.")
+    @app_commands.describe(channel="The channel to unlock.", role="The role to unlock.")
     @commands.has_permissions(manage_channels=True)
     async def unlock(
-        self, ctx: commands.Context, channel: Optional[discord.TextChannel]
+        self,
+        ctx: commands.Context,
+        channel: Optional[discord.TextChannel] = None,
+        role: Optional[discord.Role] = None,
     ):
         """Unlock a channel.
 
@@ -142,24 +169,42 @@ class Lockdown(commands.Cog):
         --------------
         channel: Optional[discord.TextChannel]
             The channel to unlock. If no channel is provided, the current channel will be unlocked.
+        role: Optional[discord.Role]
+            The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
         """
-        if ctx.channel.overwrites_for(ctx.guild.default_role).send_messages is None:
-            return await ctx.send("❌ Channel is not locked.")
-        channel = ctx.channel
-        overwrites = discord.PermissionOverwrite(send_messages=None)
+        if role is None:
+            role = ctx.guild.default_role
+
+        # let's not lock the channel roles higher than the bot's top role
+        # Since it doesn't have the permission to do so.
+        bot_role = ctx.guild.get_member(ctx.me.id).top_role
+        if role >= bot_role:
+            return await ctx.send(
+                "I can't unlock a channel for a role higher than or equal to my top role."
+            )
+        # Check if the role is higher than the author's top role.
+        top_role = ctx.guild.get_member(ctx.author.id).top_role
+        if role >= top_role:
+            return await ctx.send(
+                "You can't unlock a channel for a role higher than or equal to your top role."
+            )
+
         if channel is None:
-            await ctx.send("🔓 Channel unlocked.")
-            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
-            await self.log_channel(
-                guild=ctx.guild,
-                event="Channel Unlocked",
-                reason=f"{channel.mention} was unlocked by {ctx.author.mention}.",
+            channel = ctx.channel
+
+        overwrites = channel.overwrites_for(role)
+        if overwrites is None or overwrites.send_messages is None:
+            return await ctx.send(
+                f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already unlocked."
             )
-        else:
-            await ctx.send(f"🔓 {channel.mention} unlocked.")
-            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
-            await self.log_channel(
-                guild=ctx.guild,
-                event="Channel Unlocked",
-                reason=f"{channel.mention} was unlocked by {ctx.author.mention}.",
-            )
+
+        overwrite = discord.PermissionOverwrite(send_messages=None)
+        await channel.set_permissions(role, overwrite=overwrite)
+        await ctx.send(
+            f"🔓 {'Role' if role != ctx.guild.default_role else 'Channel'} unlocked."
+        )
+        await self.log_channel(
+            guild=ctx.guild,
+            event="Channel Unlocked",
+            reason=f"{channel.mention} was unlocked by {ctx.author.mention}",
+        )
