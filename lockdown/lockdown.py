@@ -36,7 +36,6 @@ class Lockdown(commands.Cog):
         """Nothing to delete."""
         return
 
-
     async def log_channel(
         self,
         guild: discord.Guild,
