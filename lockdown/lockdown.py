@@ -13,7 +13,7 @@ class Lockdown(commands.Cog):
     This only works with the default role.
     """
 
-    __version__: Final[str] = "1.0.1"
+    __version__: Final[str] = "1.0.2"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -133,6 +133,12 @@ class Lockdown(commands.Cog):
         if channel is None:
             channel = ctx.channel
 
+        # It's currently not possible to do this.
+        if isinstance(
+            channel, Union[discord.VoiceChannel, discord.ForumChannel, discord.Thread]
+        ):
+            return await ctx.send("I can't lockdown a voice, forum or thread channels.")
+
         overwrites = channel.overwrites_for(role)
         if overwrites is not None and overwrites.send_messages is False:
             return await ctx.send(
@@ -191,6 +197,12 @@ class Lockdown(commands.Cog):
 
         if channel is None:
             channel = ctx.channel
+
+        # It's currently not possible to do this.
+        if isinstance(
+            channel, Union[discord.VoiceChannel, discord.ForumChannel, discord.Thread]
+        ):
+            return await ctx.send("I can't lockdown a voice, forum or thread channels.")
 
         overwrites = channel.overwrites_for(role)
         if overwrites is None or overwrites.send_messages is None:
