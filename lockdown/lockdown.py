@@ -140,10 +140,10 @@ class Lockdown(commands.Cog):
             )
 
         overwrite = discord.PermissionOverwrite(send_messages=False)
-        await channel.set_permissions(role, overwrite=overwrite)
         await ctx.send(
             f"🔒 {'Role' if role != ctx.guild.default_role else 'Channel'} locked."
         )
+        await channel.set_permissions(role, overwrite=overwrite)
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Locked",
@@ -199,10 +199,10 @@ class Lockdown(commands.Cog):
             )
 
         overwrite = discord.PermissionOverwrite(send_messages=None)
-        await channel.set_permissions(role, overwrite=overwrite)
         await ctx.send(
             f"🔓 {'Role' if role != ctx.guild.default_role else 'Channel'} unlocked."
         )
+        await channel.set_permissions(role, overwrite=overwrite)
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Unlocked",
