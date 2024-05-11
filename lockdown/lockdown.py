@@ -91,11 +91,11 @@ class Lockdown(commands.Cog):
 
     @commands.guild_only()
     @commands.bot_can_manage_channel()
+    @commands.mod_or_can_manage_channel()
     @commands.hybrid_command(aliases=["lockdown"])
     @app_commands.describe(
         channel="The channel to lock down.", role="The role to lock down."
     )
-    @commands.has_permissions(manage_channels=True)
     async def lock(
         self,
         ctx: commands.Context,
@@ -161,8 +161,8 @@ class Lockdown(commands.Cog):
     @commands.guild_only()
     @commands.hybrid_command()
     @commands.bot_can_manage_channel()
+    @commands.mod_or_can_manage_channel()
     @app_commands.describe(channel="The channel to unlock.", role="The role to unlock.")
-    @commands.has_permissions(manage_channels=True)
     async def unlock(
         self,
         ctx: commands.Context,
