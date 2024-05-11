@@ -94,7 +94,7 @@ class Lockdown(commands.Cog):
     @commands.mod_or_can_manage_channel()
     @commands.hybrid_command(aliases=["lockdown"])
     @app_commands.describe(
-        channel="The channel to lock down.", role="The role to lock down."
+        channel="The channel to lockdown.", role="The role to lockdown."
     )
     async def lock(
         self,
