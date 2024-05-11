@@ -13,7 +13,7 @@ class Lockdown(commands.Cog):
     This only works with the default role.
     """
 
-    __version__: Final[str] = "1.0.3"
+    __version__: Final[str] = "1.0.4"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -90,9 +90,9 @@ class Lockdown(commands.Cog):
         )
 
     @commands.guild_only()
-    @commands.bot_can_manage_channel()
     @commands.mod_or_can_manage_channel()
     @commands.hybrid_command(aliases=["lockdown"])
+    @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
         channel="The channel to lockdown.", role="The role to lockdown."
     )
@@ -148,9 +148,13 @@ class Lockdown(commands.Cog):
             )
 
         overwrites.send_messages = False
-        await ctx.send(
-            f"🔒 {'Role' if role != ctx.guild.default_role else 'Channel'} locked."
+        embed = discord.Embed(
+            title="Channel Locked",
+            description=f"🔒 Locked channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}",
+            color=0xFF0000,
         )
+        embed.set_footer(text=f"Locked by {ctx.author}")
+        await ctx.send(embed=embed)
         await channel.set_permissions(role, overwrite=overwrites)
         await self.log_channel(
             guild=ctx.guild,
@@ -160,8 +164,8 @@ class Lockdown(commands.Cog):
 
     @commands.guild_only()
     @commands.hybrid_command()
-    @commands.bot_can_manage_channel()
     @commands.mod_or_can_manage_channel()
+    @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(channel="The channel to unlock.", role="The role to unlock.")
     async def unlock(
         self,
@@ -215,9 +219,13 @@ class Lockdown(commands.Cog):
             )
 
         overwrites.send_messages = None
-        await ctx.send(
-            f"🔓 {'Role' if role != ctx.guild.default_role else 'Channel'} unlocked."
+        embed = discord.Embed(
+            title="Channel Unlocked",
+            description=f"🔓 Unlocked channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}",
+            color=0x00FF00,
         )
+        embed.set_footer(text=f"Unlocked by {ctx.author}")
+        await ctx.send(embed=embed)
         await channel.set_permissions(role, overwrite=overwrites)
         await self.log_channel(
             guild=ctx.guild,
