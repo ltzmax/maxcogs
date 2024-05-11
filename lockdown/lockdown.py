@@ -108,10 +108,10 @@ class Lockdown(commands.Cog):
 
         __Parameters__
         --------------
-        channel: Optional[discord.TextChannel]
-            The channel to lock down. If no channel is provided, the current channel will be locked down.
-        role: Optional[discord.Role]
-            The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
+        ``channel``: Optional[discord.TextChannel]
+            - The channel to lock down. If no channel is provided, the current channel will be locked down.
+        ``role``: Optional[discord.Role]
+            - The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
         """
         if role is None:
             role = ctx.guild.default_role
@@ -175,10 +175,10 @@ class Lockdown(commands.Cog):
 
         __Parameters__
         --------------
-        channel: Optional[discord.TextChannel]
-            The channel to unlock. If no channel is provided, the current channel will be unlocked.
-        role: Optional[discord.Role]
-            The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
+        ``channel``: Optional[discord.TextChannel]
+            - The channel to unlock. If no channel is provided, the current channel will be unlocked.
+        ``role``: Optional[discord.Role]
+            - The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
         """
         if role is None:
             role = ctx.guild.default_role
