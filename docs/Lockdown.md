@@ -31,5 +31,5 @@ Lock a channel down.<br/><br/>This will remove the permission `send_messages` fr
  - Slash Usage: `/unlock [channel=None] [role=None]`
  - Checks: `server_only and bot_can_manage_channel`
 
-Unlock a channel.<br/><br/>This will allow the default role to send messages in the channel.<br/><br/>__Parameters__<br/>--------------<br/>channel: Optional[discord.TextChannel]<br/>    The channel to unlock. If no channel is provided, the current channel will be unlocked.<br/>role: Optional[discord.Role]<br/>    The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
+Unlock a channel.<br/><br/>This will unlock the provided role in the channel. If no role is provided, the default role will be used.<br/><br/>__Parameters__<br/>--------------<br/>channel: Optional[discord.TextChannel]<br/>    The channel to unlock. If no channel is provided, the current channel will be unlocked.<br/>role: Optional[discord.Role]<br/>    The role to remove the `send_messages` permission from. If no role is provided, the default role will be used.
 

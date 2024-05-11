@@ -171,7 +171,7 @@ class Lockdown(commands.Cog):
     ):
         """Unlock a channel.
 
-        This will allow the default role to send messages in the channel.
+        This will unlock the provided role in the channel. If no role is provided, the default role will be used.
 
         __Parameters__
         --------------
