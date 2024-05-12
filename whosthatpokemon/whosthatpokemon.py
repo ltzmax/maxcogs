@@ -35,7 +35,6 @@ import logging
 import asyncio
 from PIL import Image
 from discord import File
-from perftracker import perf, get_stats
 from redbot.core.data_manager import bundled_data_path
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
