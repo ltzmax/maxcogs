@@ -35,7 +35,7 @@ To install any cog you want:
 | NoSpoiler | Prevent using spoiler messages | 1.5.7 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 0.1.20 | ltzmax | ✅ |
-| Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.1 | ltzmax, o-wo | ✅ |
+| Tcgcard | Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG). | 1.3.2 | ltzmax, o-wo | ✅ |
 | RedUpdate | Update your bot to latest dev changes.| 1.4.5 | ltzmax, kuro | ✅ |
 | RolePlayCog | Roleplay cog to interact with other users. | 0.2.1| ltzmax | ✅ |
 | TheMovieDB | Search for informatio of movies and tv shows from themoviedb.org. | 1.0.6 | ltzmax | ✅ |

@@ -44,7 +44,7 @@ class TCGCard(commands.Cog):
     """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)."""
 
     __author__: Final[List[str]] = ["<@306810730055729152>", "MAX#1000"]
-    __version__: Final[str] = "1.3.1"
+    __version__: Final[str] = "1.3.2"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/TCGCard.md"
@@ -129,7 +129,10 @@ class TCGCard(commands.Cog):
             release = datetime.strptime(data["set"]["releaseDate"], "%Y/%m/%d")
             embed = discord.Embed(colour=await ctx.embed_colour())
             embed.title = data["name"]
-            embed.description = "**Rarity:** " + str(data.get("rarity"))
+            rarity = data.get("rarity")
+            if rarity == "Promo":
+                rarity = "Uncommon"
+            embed.description = "**Rarity:** " + str(rarity)
             embed.add_field(name="Artist:", value=str(data.get("artist")))
             embed.add_field(
                 name="Belongs to Set:", value=str(data["set"]["name"]), inline=False
@@ -137,6 +140,11 @@ class TCGCard(commands.Cog):
             embed.add_field(
                 name="Set Release Date:",
                 value=discord.utils.format_dt(release, style="D"),
+                inline=False,
+            )
+            embed.add_field(
+                name="Weakness:",
+                value=str(data.get("weaknesses", [{}])[0].get("type")),
             )
             embed.set_thumbnail(url=str(data["set"]["images"]["logo"]))
             embed.set_image(url=str(data["images"]["large"]))
