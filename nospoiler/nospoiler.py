@@ -120,8 +120,12 @@ class NoSpoiler(commands.Cog):
         if attachment:
             embed.add_field(
                 name="Attachment:",
-                value=attachment.url,
-                inline=False,
+                value="\n".join(
+                    [
+                        f"[{attachment.filename}]({attachment.url})",
+                        f"Size: {attachment.size} bytes",
+                    ]
+                ),
             )
         await log_channel.send(embed=embed)
 
