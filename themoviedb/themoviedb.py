@@ -157,9 +157,9 @@ class TheMovieDB(commands.Cog):
         results = data["results"]
 
         # Normalize popularity scores
-        max_popularity = max(result["popularity"] for result in results)
+        max_popularity = max(result.get("popularity", 0) for result in results)
         results = [
-            {**result, "popularity": (result["popularity"] / max_popularity) * 100}
+            {**result, "popularity": (result.get("popularity", 0) / max_popularity) * 100 if max_popularity else 0}
             for result in results
         ]
         # Sort results by a combination of normalized popularity and similarity to the query
