@@ -13,7 +13,7 @@ class Lockdown(commands.Cog):
     This only works with the default role.
     """
 
-    __version__: Final[str] = "1.0.4"
+    __version__: Final[str] = "1.0.5"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -58,7 +58,7 @@ class Lockdown(commands.Cog):
             return
         embed = discord.Embed(
             title=f"{event}",
-            description=f"{reason or 'No reason provided.'}",
+            description=reason,
             color=0xFF0000,
         )
         await log_channel.send(embed=embed)
@@ -94,11 +94,14 @@ class Lockdown(commands.Cog):
     @commands.hybrid_command(aliases=["lockdown"])
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
-        channel="The channel to lockdown.", role="The role to lockdown."
+        reason="The reason why you're locking this channel", 
+        channel="The channel to lockdown.", 
+        role="The role to lockdown."
     )
     async def lock(
         self,
         ctx: commands.Context,
+        reason: Optional[str] = None,
         channel: Optional[discord.TextChannel] = None,
         role: Optional[discord.Role] = None,
     ):
@@ -108,6 +111,8 @@ class Lockdown(commands.Cog):
 
         __Parameters__
         --------------
+        ``reason``: Optional[str]
+            - The reason why you're locking this channel.
         ``channel``: Optional[discord.TextChannel]
             - The channel to lock down. If no channel is provided, the current channel will be locked down.
         ``role``: Optional[discord.Role]
@@ -153,23 +158,30 @@ class Lockdown(commands.Cog):
             description=f"🔒 Locked channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}",
             color=0xFF0000,
         )
+        if reason:
+            embed.add_field(name="Reason:", value=reason or "No reason provided.")
         embed.set_footer(text=f"Locked by {ctx.author}")
         await ctx.send(embed=embed)
         await channel.set_permissions(role, overwrite=overwrites)
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Locked",
-            reason=f"{channel.mention} was locked down by {ctx.author.mention}",
+            reason=f"{channel.mention} was locked by {ctx.author.mention}" + (f" for Reason: {reason}" if reason else ""),
         )
 
     @commands.guild_only()
     @commands.hybrid_command()
     @commands.mod_or_can_manage_channel()
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
-    @app_commands.describe(channel="The channel to unlock.", role="The role to unlock.")
+    @app_commands.describe(
+        reason="The reason why you're unlocking this channel",
+        channel="The channel to unlock.", 
+        role="The role to unlock."
+    )
     async def unlock(
         self,
         ctx: commands.Context,
+        reason: Optional[str] = None,
         channel: Optional[discord.TextChannel] = None,
         role: Optional[discord.Role] = None,
     ):
@@ -179,6 +191,8 @@ class Lockdown(commands.Cog):
 
         __Parameters__
         --------------
+        ``reason``: Optional[str]
+            - The reason why you're unlocking this channel.
         ``channel``: Optional[discord.TextChannel]
             - The channel to unlock. If no channel is provided, the current channel will be unlocked.
         ``role``: Optional[discord.Role]
@@ -224,11 +238,13 @@ class Lockdown(commands.Cog):
             description=f"🔓 Unlocked channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}",
             color=0x00FF00,
         )
+        if reason:
+            embed.add_field(name="Reason:", value=reason or "No reason provided.")
         embed.set_footer(text=f"Unlocked by {ctx.author}")
         await ctx.send(embed=embed)
         await channel.set_permissions(role, overwrite=overwrites)
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Unlocked",
-            reason=f"{channel.mention} was unlocked by {ctx.author.mention}",
+            reason=f"{channel.mention} was unlocked by {ctx.author.mention}" + (f" for Reason: {reason}" if reason else ""),
         )
