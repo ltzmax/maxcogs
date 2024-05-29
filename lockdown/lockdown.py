@@ -94,9 +94,9 @@ class Lockdown(commands.Cog):
     @commands.hybrid_command(aliases=["lockdown"])
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
-        reason="The reason why you're locking this channel", 
-        channel="The channel to lockdown.", 
-        role="The role to lockdown."
+        reason="The reason why you're locking this channel",
+        channel="The channel to lockdown.",
+        role="The role to lockdown.",
     )
     async def lock(
         self,
@@ -166,7 +166,8 @@ class Lockdown(commands.Cog):
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Locked",
-            reason=f"{channel.mention} was locked by {ctx.author.mention}" + (f" for Reason: {reason}" if reason else ""),
+            reason=f"{channel.mention} was locked by {ctx.author.mention}"
+            + (f" for Reason: {reason}" if reason else ""),
         )
 
     @commands.guild_only()
@@ -175,8 +176,8 @@ class Lockdown(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
         reason="The reason why you're unlocking this channel",
-        channel="The channel to unlock.", 
-        role="The role to unlock."
+        channel="The channel to unlock.",
+        role="The role to unlock.",
     )
     async def unlock(
         self,
@@ -246,5 +247,6 @@ class Lockdown(commands.Cog):
         await self.log_channel(
             guild=ctx.guild,
             event="Channel Unlocked",
-            reason=f"{channel.mention} was unlocked by {ctx.author.mention}" + (f" for Reason: {reason}" if reason else ""),
+            reason=f"{channel.mention} was unlocked by {ctx.author.mention}"
+            + (f" for Reason: {reason}" if reason else ""),
         )
