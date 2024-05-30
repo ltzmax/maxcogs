@@ -1,6 +1,6 @@
 # Lockdown Help
 
-Let moderators lockdown a channel to prevent messages from being sent.<br/>This only works with the default role.
+Let moderators lockdown a channel to prevent messages from being sent.
 
 # lockdownset
  - Usage: `[p]lockdownset`

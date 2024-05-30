@@ -10,7 +10,6 @@ log = logging.getLogger("red.maxcogs.lockdown")
 class Lockdown(commands.Cog):
     """
     Let moderators lockdown a channel to prevent messages from being sent.
-    This only works with the default role.
     """
 
     __version__: Final[str] = "1.0.5"
