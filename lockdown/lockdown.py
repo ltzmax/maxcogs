@@ -118,13 +118,15 @@ class Lockdown(commands.Cog):
         if isinstance(
             channel, Union[discord.VoiceChannel, discord.ForumChannel, discord.Thread]
         ):
-            return await ctx.send(f"I can't {action} a voice, forum or thread channels.")
+            return await ctx.send(
+                f"I can't {action} a voice, forum or thread channels."
+            )
 
         overwrites = channel.overwrites_for(role)
         if overwrites is None:
             overwrites = discord.PermissionOverwrite()
 
-        if action == 'lock':
+        if action == "lock":
             if overwrites.send_messages is False:
                 return await ctx.send(
                     f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
@@ -133,7 +135,7 @@ class Lockdown(commands.Cog):
             embed_title = "Channel Locked"
             embed_description = f"🔒 Locked channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}"
             log_event = "Channel Locked"
-        elif action == 'unlock':
+        elif action == "unlock":
             if overwrites.send_messages is None:
                 return await ctx.send(
                     f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already unlocked."
@@ -146,10 +148,13 @@ class Lockdown(commands.Cog):
         embed = discord.Embed(
             title=embed_title,
             description=embed_description,
-            color=0xFF0000 if action == 'lock' else 0x00FF00,
+            color=0xFF0000 if action == "lock" else 0x00FF00,
         )
         if reason:
-            embed.add_field(name="Reason:", value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}")
+            embed.add_field(
+                name="Reason:",
+                value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}",
+            )
         embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
         await ctx.send(embed=embed)
         await channel.set_permissions(role, overwrite=overwrites)
@@ -181,7 +186,7 @@ class Lockdown(commands.Cog):
 
         If no channel is provided, the current channel will be locked for the provided role else the default role.
         """
-        await self.manage_lock(ctx, 'lock', reason, channel, role)
+        await self.manage_lock(ctx, "lock", reason, channel, role)
 
     @commands.guild_only()
     @commands.hybrid_command()
@@ -204,4 +209,4 @@ class Lockdown(commands.Cog):
 
         If no channel is provided, the current channel will be unlocked for the provided role else the default role.
         """
-        await self.manage_lock(ctx, 'unlock', reason, channel, role)
+        await self.manage_lock(ctx, "unlock", reason, channel, role)
