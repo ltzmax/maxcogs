@@ -92,7 +92,6 @@ class Lockdown(commands.Cog):
         self,
         ctx: commands.Context,
         action: str,
-        *,
         reason: Optional[str] = None,
         channel: Optional[discord.TextChannel] = None,
         role: Optional[discord.Role] = None,
@@ -177,6 +176,7 @@ class Lockdown(commands.Cog):
     async def lock(
         self,
         ctx: commands.Context,
+        *,
         reason: Optional[str] = None,
         channel: Optional[discord.TextChannel] = None,
         role: Optional[discord.Role] = None,
@@ -200,6 +200,7 @@ class Lockdown(commands.Cog):
     async def unlock(
         self,
         ctx: commands.Context,
+        *,
         reason: Optional[str] = None,
         channel: Optional[discord.TextChannel] = None,
         role: Optional[discord.Role] = None,
