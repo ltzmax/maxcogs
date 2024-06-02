@@ -15,7 +15,6 @@ body:
       label: Cog
       description: What cog are you feature requesting to?
       options:
-        - achievements
         - autopublisher
         - emojispam
         - lockdown

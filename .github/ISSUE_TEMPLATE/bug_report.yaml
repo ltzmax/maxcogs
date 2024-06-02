@@ -15,7 +15,6 @@ body:
       label: Cog
       description: What cog are you getting issue from?
       options:
-        - achievements
         - autopublisher
         - emojispam
         - lockdown

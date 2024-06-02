@@ -92,6 +92,7 @@ class Lockdown(commands.Cog):
         self,
         ctx: commands.Context,
         action: str,
+        *,
         reason: Optional[str] = None,
         channel: Optional[discord.TextChannel] = None,
         role: Optional[discord.Role] = None,
