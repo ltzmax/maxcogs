@@ -186,7 +186,7 @@ class Lockdown(commands.Cog):
 
         If no channel is provided, the current channel will be locked for the provided role else the default role.
         """
-        await self.manage_lock(ctx, "lock", reason, channel, role)
+        await self.manage_lock(ctx, "lock", reason=reason, channel=channel, role=role)
 
     @commands.guild_only()
     @commands.hybrid_command()
@@ -209,4 +209,4 @@ class Lockdown(commands.Cog):
 
         If no channel is provided, the current channel will be unlocked for the provided role else the default role.
         """
-        await self.manage_lock(ctx, "unlock", reason, channel, role)
+        await self.manage_lock(ctx, "unlock", reason=reason, channel=channel, role=role)
