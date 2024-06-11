@@ -12,7 +12,7 @@ class Lockdown(commands.Cog):
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.0.6"
+    __version__: Final[str] = "1.0.7"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -23,6 +23,7 @@ class Lockdown(commands.Cog):
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild = {
             "log_channel": None,
+            "use_embed": False,
         }
         self.config.register_guild(**default_guild)
 
@@ -80,12 +81,19 @@ class Lockdown(commands.Cog):
         await ctx.send(f"Log channel set to {channel.mention}.")
 
     @lockdownset.command()
+    async def useembed(self, ctx: commands.Context, value: bool):
+        """Set whether to use embeds or not."""
+        await self.config.guild(ctx.guild).use_embed.set(value)
+        await ctx.send(f"Use embeds set to {value}.")
+
+    @lockdownset.command()
     async def settings(self, ctx: commands.Context):
         """Get the current log channel."""
         all = await self.config.guild(ctx.guild).all()
         log_channel = all["log_channel"]
+        use_embed = all["use_embed"]
         await ctx.send(
-            f"## Settings\nLog channel: {ctx.guild.get_channel(log_channel).mention if log_channel else 'None'}"
+            f"## Settings\nLog channel: {ctx.guild.get_channel(log_channel).mention if log_channel else 'None'}\nUse embeds: {use_embed}"
         )
 
     async def manage_lock(
@@ -93,7 +101,7 @@ class Lockdown(commands.Cog):
         ctx: commands.Context,
         action: str,
         reason: Optional[str] = None,
-        channel: Optional[discord.TextChannel] = None,
+        channel: Optional[Union[discord.TextChannel, discord.Thread]] = None,
         role: Optional[discord.Role] = None,
     ):
         if role is None:
@@ -114,49 +122,52 @@ class Lockdown(commands.Cog):
         if channel is None:
             channel = ctx.channel
 
-        if isinstance(
-            channel, Union[discord.VoiceChannel, discord.ForumChannel, discord.Thread]
-        ):
-            return await ctx.send(
-                f"I can't {action} a voice, forum or thread channels."
+        embed_title = "Channel Locked" if action == "lock" else "Channel Unlocked"
+        embed_description = f"{'🔒' if action == 'lock' else '🔓'} {'Locked' if action == 'lock' else 'Unlocked'} channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}"
+        log_event = "Channel Locked" if action == "lock" else "Channel Unlocked"
+
+        if await self.config.guild(ctx.guild).use_embed():
+            embed = discord.Embed(
+                title=embed_title,
+                description=embed_description,
+                color=0xFF0000 if action == "lock" else 0x00FF00,
+            )
+            if reason:
+                embed.add_field(
+                    name="Reason:",
+                    value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}",
+                )
+            embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(
+                f"{embed_description}\n{'Reason: ' + reason if reason else ''}"
             )
 
-        overwrites = channel.overwrites_for(role)
-        if overwrites is None:
-            overwrites = discord.PermissionOverwrite()
+        if isinstance(channel, discord.Thread):
+            if action == "lock":
+                await ctx.channel.edit(locked=True)
+            elif action == "unlock":
+                await ctx.channel.edit(locked=False)
+        else:
+            overwrites = channel.overwrites_for(role)
+            if overwrites is None:
+                overwrites = discord.PermissionOverwrite()
 
-        if action == "lock":
-            if overwrites.send_messages is False:
-                return await ctx.send(
-                    f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
-                )
-            overwrites.send_messages = False
-            embed_title = "Channel Locked"
-            embed_description = f"🔒 Locked channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}"
-            log_event = "Channel Locked"
-        elif action == "unlock":
-            if overwrites.send_messages is None:
-                return await ctx.send(
-                    f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already unlocked."
-                )
-            overwrites.send_messages = None
-            embed_title = "Channel Unlocked"
-            embed_description = f"🔓 Unlocked channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}"
-            log_event = "Channel Unlocked"
+            if action == "lock":
+                if overwrites.send_messages is False:
+                    return await ctx.send(
+                        f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
+                    )
+                overwrites.send_messages = False
+            elif action == "unlock":
+                if overwrites.send_messages is None:
+                    return await ctx.send(
+                        f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already unlocked."
+                    )
+                overwrites.send_messages = None
+            await channel.set_permissions(role, overwrite=overwrites)
 
-        embed = discord.Embed(
-            title=embed_title,
-            description=embed_description,
-            color=0xFF0000 if action == "lock" else 0x00FF00,
-        )
-        if reason:
-            embed.add_field(
-                name="Reason:",
-                value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}",
-            )
-        embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
-        await ctx.send(embed=embed)
-        await channel.set_permissions(role, overwrite=overwrites)
         await self.log_channel(
             guild=ctx.guild,
             event=log_event,
@@ -178,7 +189,7 @@ class Lockdown(commands.Cog):
         ctx: commands.Context,
         *,
         reason: Optional[str] = None,
-        channel: Optional[discord.TextChannel] = None,
+        channel: Optional[Union[discord.TextChannel, discord.Thread]] = None,
         role: Optional[discord.Role] = None,
     ):
         """
@@ -202,7 +213,7 @@ class Lockdown(commands.Cog):
         ctx: commands.Context,
         *,
         reason: Optional[str] = None,
-        channel: Optional[discord.TextChannel] = None,
+        channel: Optional[Union[discord.TextChannel, discord.Thread]] = None,
         role: Optional[discord.Role] = None,
     ):
         """
