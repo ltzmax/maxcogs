@@ -40,11 +40,11 @@ Set your custom fork url of red.<br/><br/>Has to be vaild link such as `git+http
  - Restricted to: `BOT_OWNER`
  - Aliases: `updatered`
 
-update MAX to latest changes.<br/><br/>it will update to latest stable changes by default unless you specify `dev` as version.<br/><br/>Arguments:<br/>- `[version]`: `dev` to update to latest dev changes. `stable` by default already.
+update to latest changes.<br/><br/>it will update to latest stable changes by default unless you specify `dev` as version.<br/><br/>Arguments:<br/>- `[version]`: `dev` to update to latest dev changes. `stable` by default already.
 
 # forkupdate
  - Usage: `[p]forkupdate`
  - Restricted to: `BOT_OWNER`
  - Aliases: `updatefork`
 
-Update MAX to your fork.<br/><br/>This will update to your fork and not to red's main repo. Make sure you have set the url using `redset url` before using this command.<br/><br/>Note: If you do not have a fork, you can use `updatered` to update to latest stable changes.
+Update to your fork.<br/><br/>This will update to your fork and not to red's main repo. Make sure you have set the url using `redset url` before using this command.<br/><br/>Note: If you do not have a fork, you can use `updatered` to update to latest stable changes.
