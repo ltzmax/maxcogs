@@ -301,6 +301,8 @@ class RedUpdate(commands.Cog):
                     prefix=ctx.clean_prefix
                 ),
             )
+        # When it's used for the first time, it will store the old url in the config.
+        # This is to prevent the user from using the command without setting their own fork.
         elif (
             package
             == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
