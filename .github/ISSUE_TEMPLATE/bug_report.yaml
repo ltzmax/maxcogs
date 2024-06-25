@@ -16,7 +16,6 @@ body:
       description: What cog are you getting issue from?
       options:
         - autopublisher
-        - emojispam
         - lockdown
         - nbaschedule
         - nospoiler
