@@ -328,7 +328,11 @@ class GitHub(commands.Cog):
 
     @_github_set.command(name="role")
     async def _set_role(self, ctx: commands.Context, role: discord.Role = None):
-        """Set the GitHub role requirement."""
+        """Set the GitHub role requirement.
+        
+        Note: Only those who are a mod or has permissions `manage_channels` can add / remove.
+        This is for you to lock to a speficially role to those with the permission to add / remove.
+        """
         if not role:
             await self.config.guild(ctx.guild).role.set(None)
             return await ctx.send(f"The GitHub RSS feed role requirement has been removed.")
@@ -465,6 +469,7 @@ class GitHub(commands.Cog):
         ))
 
     @commands.guild_only()
+    @commands.mod_or_permissions(manage_channels=True)
     @commands.bot_has_permissions(embed_links=True)
     @commands.group(name="github", aliases=["gh"])
     async def _github(self, ctx: commands.Context):
