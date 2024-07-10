@@ -379,7 +379,7 @@ class GitHub(commands.Cog):
     @_github_set.command(name="role")
     async def _set_role(self, ctx: commands.Context, role: discord.Role = None):
         """Set the GitHub role requirement.
-        
+
         Note: Only those who are a mod or has permissions `manage_channels` can add / remove.
         This is for you to lock to a speficially role to those with the permission to add / remove.
         Only those who have the role can add / remove feeds, if they dont have the role, they will not be able to use this command.
