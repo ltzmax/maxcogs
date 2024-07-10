@@ -207,9 +207,9 @@ class RedUpdate(commands.Cog):
         await ctx.send(embed=embed, view=view)
 
     @commands.is_owner()
-    @commands.command(aliases=["updatered"], usage="[version]")
+    @commands.command(usage="[version]")
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def redupdate(
+    async def updatered(
         self,
         ctx: commands.Context,
         version: Optional[Literal["dev"]],
