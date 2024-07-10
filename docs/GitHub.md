@@ -30,6 +30,10 @@ List all GitHub RSS feeds in the server.
 
 Set the GitHub role requirement.
 
+Note: Only those who are a mod or has permissions `manage_channels` can add / remove.
+This is for you to lock to a speficially role to those with the permission to add / remove.
+Only those who have the role can add / remove feeds, if they dont have the role, they will not be able to use this command.
+
 ## githubset channel
  - Usage: `[p]githubset channel <channel>`
 
