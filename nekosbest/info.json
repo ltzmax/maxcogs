@@ -4,8 +4,8 @@
     ],
     "name": "NekosBest",
     "install_msg": "Thanks for installing.\nif you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
-    "description": "Cog that sends random nekos, kitsune, husbando and waifu images from nekos.best",
-    "short": "Sending random kitsune, waifue, husbando and nekos images.",
+    "description": "Random Nekos.best images + RolePlay Commands.",
+    "short": "Random Nekos.best images + RolePlay Commands.",
     "hidden": false,
     "min_bot_version": "3.5.0",
     "tags": [
