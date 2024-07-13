@@ -34,6 +34,7 @@ from .core import ACTIONS, ICON, NEKOS
 
 log = logging.getLogger("red.maxcogs.nekosbest")
 
+
 async def api_call(
     self, ctx: commands.Context, endpoint: str
 ) -> Optional[Dict[str, Any]]:
@@ -46,10 +47,12 @@ async def api_call(
         url = orjson.loads(data)
         return url
 
-
     # ------- Image Commands Handler ------->
 
-async def imgembedgen(ctx: commands.Context, url: Dict[str, Any], endpoint: str) -> None:
+
+async def imgembedgen(
+    ctx: commands.Context, url: Dict[str, Any], endpoint: str
+) -> None:
     result = url["results"][0]
     artist_name = result["artist_name"]
     source_url = result["source_url"]
@@ -170,7 +173,7 @@ class NekosBest(commands.Cog):
         url = await api_call(self, ctx, "husbando")
         await imgembedgen(ctx, url, "husbando")
 
-    # --------- ROLEPLAY COMMANDS ------------> 
+    # --------- ROLEPLAY COMMANDS ------------>
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
