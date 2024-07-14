@@ -571,7 +571,7 @@ class GitHub(commands.Cog):
             value=f"Just use your repo url and specify a branch if needed. For example, ```{ctx.clean_prefix}github add TestRepo https://github.com/user/repo/ <optional_branch>```",
         )
         e.add_field(
-            name="Private Repositories",
+            name="Private Repositories (This Currently Does Not Work.)",
             inline=False,
             value=f'Inside the "commits" page for a chosen branch, use inspect element to search for the `.atom` link in the page html. Copy the entire url (with `?token=`); do **not** specify a value for the branch parameter. For example, ```{ctx.clean_prefix}github add TestRepo https://github.com/user/repo/commits/branch.atom?token=token```',
         )
