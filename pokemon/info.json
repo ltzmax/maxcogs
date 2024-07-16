@@ -1,7 +1,7 @@
 {
-    "name": "WhosThatPokemon",
-    "short": "Play a game of Who's That Pok\u00e9mon.",
-    "description": "Play a game of Who's That Pok\u00e9mon.",
+    "name": "Pokemon",
+    "short": "Play a game of Who's That Pok\u00e9mon or Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game.",
+    "description": "Play a game of Who's That Pok\u00e9mon or Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
     "install_msg": "Thank you for installing.",
     "author": [
@@ -15,6 +15,7 @@
     ],
     "tags": [
         "pokemon",
+        "tcgcard",
         "whosthatpokemon",
         "whos that pokemon"
     ],

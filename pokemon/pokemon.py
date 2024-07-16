@@ -33,6 +33,7 @@ import aiohttp
 import discord
 import logging
 import asyncio
+import orjson
 from PIL import Image
 from discord import File
 from redbot.core.data_manager import bundled_data_path
@@ -51,11 +52,15 @@ log = logging.getLogger("red.maxcogs.whosthatpokemon")
 API_URL: Final[str] = "https://pokeapi.co/api/v2"
 
 
-class WhosThatPokemon(commands.Cog):
-    """Can you guess Who's That Pokémon?"""
+class Pokemon(commands.Cog):
+    """
+    This is pokemon related stuff cog.
+    - Can you guess Who's That Pokémon?
+    - Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).
+    """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.4.6"
+    __version__: Final[str] = "1.7.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/WhosThatPokemon.md"
@@ -206,30 +211,73 @@ class WhosThatPokemon(commands.Cog):
             log.info(f"{ctx.author} ran out of time to guess the pokemon.")
         await ctx.send(file=revealed_img, embed=embed)
 
-    @commands.group(name="wtpset", aliases=["whosthatpokemonset"], hidden=True)
-    async def whosthatpokemon_set(self, ctx: commands.Context) -> None:
-        """Group commands for whosthatpokemon"""
+    # --------- TCGCARD -----------
 
-    @whosthatpokemon_set.command(name="version")
+    @commands.hybrid_command()
+    @app_commands.describe(query=("The Pokémon you want to search a card for."))
     @commands.bot_has_permissions(embed_links=True)
-    async def whosthatpokemon_version(self, ctx: commands.Context) -> None:
-        """Shows the version of the cog"""
-        version = self.__version__
-        author = self.__author__
-        embed = discord.Embed(
-            title="Cog Information",
-            description=box(
-                f"{'Cog Author':<11}: {author}\n{'Cog Version':<10}: {version}",
-                lang="yaml",
-            ),
-            color=await ctx.embed_color(),
-        )
-        view = discord.ui.View()
-        style = discord.ButtonStyle.gray
-        docs = discord.ui.Button(
-            style=style,
-            label="Cog Documentations",
-            url=self.__docs__,
-        )
-        view.add_item(item=docs)
-        await ctx.send(embed=embed, view=view)
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    async def tcgcard(self, ctx: commands.Context, *, query: str) -> None:
+        """Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).
+
+        **Example:**
+        - `[p]tcgcard pikachu` - returns information about pikachu's cards.
+
+        **Arguments:**
+        - `<query>` - The pokemon you want to search for.
+        """
+        api_key = (await ctx.bot.get_shared_api_tokens("pokemontcg")).get("api_key")
+        headers = {"X-Api-Key": api_key} if api_key else None
+        await ctx.typing()
+        base_url = f"https://api.pokemontcg.io/v2/cards?q=name:{query}"
+        try:
+            async with self.session.get(base_url, headers=headers) as response:
+                if response.status != 200:
+                    await ctx.send(f"https://http.cat/{response.status}")
+                    log.error(f"Failed to fetch data. Status code: {response.status}.")
+                    return
+                output = orjson.loads(await response.read())
+        except asyncio.TimeoutError:
+            await ctx.send("Operation timed out.")
+            log.error("Operation timed out while fetching data.")
+            return
+
+        if not output["data"]:
+            await ctx.send("There is no results for that search.")
+            log.info("There is no results for that search in the API.")
+            return
+
+        pages = []
+        for i, data in enumerate(output["data"], 1):
+            dt = datetime.utcnow()
+            release = datetime.strptime(data["set"]["releaseDate"], "%Y/%m/%d")
+            embed = discord.Embed(colour=await ctx.embed_colour())
+            embed.title = data["name"]
+            rarity = data.get("rarity")
+            if rarity == "Promo":
+                rarity = "Uncommon"
+            embed.description = "**Rarity:** " + str(rarity)
+            embed.add_field(name="Artist:", value=str(data.get("artist")))
+            embed.add_field(
+                name="Belongs to Set:", value=str(data["set"]["name"]), inline=False
+            )
+            embed.add_field(
+                name="Set Release Date:",
+                value=discord.utils.format_dt(release, style="D"),
+                inline=False,
+            )
+            embed.add_field(
+                name="Weakness:",
+                value=str(data.get("weaknesses", [{}])[0].get("type")),
+            )
+            embed.set_thumbnail(url=str(data["set"]["images"]["logo"]))
+            embed.set_image(url=str(data["images"]["large"]))
+            embed.set_footer(
+                text=f"Page {i} of {len(output['data'])} • Powered by Pokémon TCG API!"
+            )
+            pages.append(embed)
+        await SimpleMenu(
+            pages,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)

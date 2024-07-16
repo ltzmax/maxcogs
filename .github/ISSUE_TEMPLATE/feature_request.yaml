@@ -23,9 +23,8 @@ body:
         - plaguegame
         - nekosbest
         - redupdate
-        - tcgcard
+        - pokemon
         - themoviedb
-        - whosthatpokemon
     validations:
       required: true
   - type: input

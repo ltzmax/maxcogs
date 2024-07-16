@@ -24,8 +24,7 @@ body:
         - nekosbest
         - redupdate
         - themoviedb
-        - tcgcard
-        - whosthatpokemon
+        - pokemon
     validations:
       required: true
   - type: input

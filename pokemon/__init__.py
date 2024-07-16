@@ -1,8 +1,8 @@
 from redbot.core.bot import Red
 
-from .whosthatpokemon import WhosThatPokemon
+from .pokemon import Pokemon
 
 
 async def setup(bot: Red):
-    cog = WhosThatPokemon(bot)
+    cog = Pokemon(bot)
     await bot.add_cog(cog)
