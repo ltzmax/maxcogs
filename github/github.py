@@ -573,8 +573,8 @@ class GitHub(commands.Cog):
         e.add_field(
             name="Private Repositories (This Currently Does Not Work.)",
             inline=False,
-        #    value=f'Inside the "commits" page for a chosen branch, use inspect element to search for the `.atom` link in the page html. Copy the entire url (with `?token=`); do **not** specify a value for the branch parameter. For example, ```{ctx.clean_prefix}github add TestRepo https://github.com/user/repo/commits/branch.atom?token=token```',
-            value="Private Repositories cannot be added via rss (or more like this cog at this moment)."
+            #    value=f'Inside the "commits" page for a chosen branch, use inspect element to search for the `.atom` link in the page html. Copy the entire url (with `?token=`); do **not** specify a value for the branch parameter. For example, ```{ctx.clean_prefix}github add TestRepo https://github.com/user/repo/commits/branch.atom?token=token```',
+            value="Private Repositories cannot be added via rss (or more like this cog at this moment).",
         )
         return await ctx.send(embed=e)
 
