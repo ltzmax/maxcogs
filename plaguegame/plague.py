@@ -148,7 +148,7 @@ class Plague(commands.Cog):
             notifications = "Disabled"
 
         if userRole == GameRole.DOCTOR:
-            thumbnail = "https://contestimg.wish.com/api/webimage/5b556e7ba225161706d6857a-large.jpg?cache_buster=e79a94ce3e105025c5655d67b3d5e1bd"
+            thumbnail = "https://max.shx.gg/6GJ6zTXmI.png"
         elif userRole == GameRole.PLAGUEBEARER:
             thumbnail = "https://cdna.artstation.com/p/assets/images/images/015/285/028/large/john-yakimow-plaguebear.jpg?1547774010"
         elif userState == GameState.INFECTED:
@@ -164,9 +164,9 @@ class Plague(commands.Cog):
         embed.set_author(name=member, icon_url=member.avatar.url)
         return embed
 
-    @commands.bot_has_permissions(embed_links=True)
     @commands.guild_only()
-    @commands.command("plagueprofile", aliases=["pprofile"])
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.command("plagueprofile")
     async def plagueProfile(self, ctx, *, member: FuzzyHuman = None):
         """Show's your Plague Game profile"""
         member = member or ctx.author
