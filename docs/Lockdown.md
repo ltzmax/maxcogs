@@ -47,4 +47,4 @@ Manage thread(s) with MAX.
 ## thread close
  - Usage: `[p]thread close`
 
-Close and archive a thread post.
+Close and archive a thread post.<br/><br/>If you want to only lock a thread post, you'll have to use `[p]lock` command.

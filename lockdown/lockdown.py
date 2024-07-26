@@ -256,7 +256,10 @@ class Lockdown(commands.Cog):
 
     @thread.command()
     async def close(self, ctx: commands.Context):
-        """Close and archive a thread post."""
+        """Close and archive a thread post.
+        
+        If you want to only lock a thread post, you'll have to use `[p]lock` command.
+        """
         if not isinstance(ctx.channel, discord.Thread):
             return await ctx.send("This channel is not a thread.")
         await ctx.send(f"Archived and closed this thread post!")
