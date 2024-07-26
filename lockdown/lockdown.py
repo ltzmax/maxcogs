@@ -36,7 +36,7 @@ class Lockdown(commands.Cog):
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.0.7"
+    __version__: Final[str] = "1.0.8"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -246,3 +246,18 @@ class Lockdown(commands.Cog):
         If no channel is provided, the current channel will be unlocked for the provided role else the default role.
         """
         await self.manage_lock(ctx, "unlock", reason=reason, channel=channel, role=role)
+
+    @commands.group()
+    @commands.guild_only()
+    @commands.mod_or_can_manage_channel()
+    @commands.bot_has_permissions(manage_channels=True)
+    async def thread(self, ctx: commands.Context):
+        """Manage thread(s) with [botname].""""
+
+    @thread.command()
+    async def close(self, ctx: commands.Context):
+        """Close and archive a thread post."""
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This channel is not a thread.")
+        await ctx.send(f"Archived and closed {channel.mention}!")
+        await ctx.channel.edit(locked=True, archived=True)
