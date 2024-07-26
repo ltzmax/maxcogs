@@ -23,7 +23,6 @@ body:
         - plaguegame
         - nekosbest
         - redupdate
-        - themoviedb
         - pokemon
     validations:
       required: true

@@ -24,7 +24,6 @@ body:
         - nekosbest
         - redupdate
         - pokemon
-        - themoviedb
     validations:
       required: true
   - type: input
