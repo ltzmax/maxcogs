@@ -252,7 +252,7 @@ class Lockdown(commands.Cog):
     @commands.mod_or_can_manage_channel()
     @commands.bot_has_permissions(manage_channels=True)
     async def thread(self, ctx: commands.Context):
-        """Manage thread(s) with [botname].""""
+        """Manage thread(s) with [botname]."""
 
     @thread.command()
     async def close(self, ctx: commands.Context):
