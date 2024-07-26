@@ -259,5 +259,5 @@ class Lockdown(commands.Cog):
         """Close and archive a thread post."""
         if not isinstance(ctx.channel, discord.Thread):
             return await ctx.send("This channel is not a thread.")
-        await ctx.send(f"Archived and closed {channel.mention}!")
+        await ctx.send(f"Archived and closed this thread post!")
         await ctx.channel.edit(locked=True, archived=True)
