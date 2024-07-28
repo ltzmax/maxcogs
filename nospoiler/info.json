@@ -16,7 +16,7 @@
         "embed_links",
         "manage_messages"
     ],
-    "requirements": ["AdvancedTagScriptEngine==3.1.4"],
+    "requirements": ["AdvancedTagScriptEngine==3.2.2"],
     "min_python_version": [
         3,
         9,
