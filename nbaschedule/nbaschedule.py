@@ -24,6 +24,7 @@ SOFTWARE.
 import aiohttp
 import discord
 import orjson
+import logging
 
 from typing import Final
 from redbot.core import commands
@@ -31,7 +32,7 @@ from .converter import get_games
 from redbot.core.utils.views import SimpleMenu
 
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
-
+log = logging.getLogger("red.maxcogs.nbaschedule")
 
 class NBASchedule(commands.Cog):
     """Get the current NBA schedule for next game."""
@@ -44,14 +45,13 @@ class NBASchedule(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.session = aiohttp.ClientSession()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
         return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def cog_unload(self):
-        await self.session.close()
 
     @commands.hybrid_command(aliases=["nschedule"])
     @commands.bot_has_permissions(embed_links=True)
@@ -71,9 +71,7 @@ class NBASchedule(commands.Cog):
             "leagueSchedule" not in schedule
             or "gameDates" not in schedule["leagueSchedule"]
         ):
-            return await ctx.send(
-                "No games data found in the schedule at this moment.\nCheck <https://www.nba.com/schedule> for more information."
-            )
+            log.info("There is no game data to generate!")
 
         games = get_games(schedule)
         pages = []
@@ -92,6 +90,9 @@ class NBASchedule(commands.Cog):
             embed.set_footer(text="Provided by NBA.com")
             pages.append(embed)
 
+        return await ctx.send(
+            "No games data found in the schedule at this moment.\nCheck <https://www.nba.com/schedule> for more information."
+        )
         await SimpleMenu(
             pages,
             disable_after_timeout=True,
