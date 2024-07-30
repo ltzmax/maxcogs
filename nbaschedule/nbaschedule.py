@@ -34,6 +34,7 @@ from redbot.core.utils.views import SimpleMenu
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 log = logging.getLogger("red.maxcogs.nbaschedule")
 
+
 class NBASchedule(commands.Cog):
     """Get the current NBA schedule for next game."""
 
@@ -51,7 +52,6 @@ class NBASchedule(commands.Cog):
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
         return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
-
 
     @commands.hybrid_command(aliases=["nschedule"])
     @commands.bot_has_permissions(embed_links=True)
