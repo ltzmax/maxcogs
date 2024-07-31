@@ -30,7 +30,7 @@ import re
 from redbot.core import commands, Config
 from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
-from .view import Buttons
+from .view import RestartButton
 
 GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
 log = logging.getLogger("red.maxcogs.redupdate")
@@ -42,7 +42,7 @@ async def redupdate(self, ctx: commands.Context):
         color=await ctx.embed_color(),
     )
     embed.set_footer(text="Restart required to apply changes!")
-    view = Buttons(ctx)
+    view = RestartButton(ctx)
     view.message = await ctx.send(embed=embed, view=view)
 
 

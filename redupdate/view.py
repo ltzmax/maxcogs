@@ -28,8 +28,8 @@ from copy import copy
 from redbot.core import commands
 
 
-class Buttons(discord.ui.View):
-    def __init__(self, ctx, *, timeout=30):
+class RestartButton(discord.ui.View):
+    def __init__(self, ctx, *, timeout=60):
         super().__init__(timeout=timeout)
         self.ctx = ctx
 
