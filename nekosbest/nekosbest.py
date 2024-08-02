@@ -92,7 +92,7 @@ async def imgembedgen(
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best + RolePlay Commands."""
 
-    __version__: Final[str] = "2.2.0"
+    __version__: Final[str] = "2.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -119,18 +119,12 @@ class NekosBest(commands.Cog):
     async def embedgen(
         self, ctx: commands.Context, member: discord.Member, action: str
     ) -> None:
-        async with self.session.get(NEKOS + action) as response:
-            if response.status != 200:
-                log.error(
-                    f"Something went wrong while trying to contact API. Status Code: {response.status}"
-                )
-                await ctx.send("Something went wrong while trying to contact API.")
-                return
-            response_data = await response.read()
-            data = orjson.loads(response_data)
+        url = await api_call(self, ctx, action)
+        if url is None:
+            return
 
         action_fmt = ACTIONS.get(action, action)
-        anime_name = data["results"][0]["anime_name"]
+        anime_name = url["results"][0]["anime_name"]
         emb = discord.Embed(
             colour=await ctx.embed_color(),
             description=(
@@ -140,7 +134,7 @@ class NekosBest(commands.Cog):
         emb.set_footer(
             text=f"Powered by nekos.best\nAnime Name: {anime_name}", icon_url=ICON
         )
-        emb.set_image(url=data["results"][0]["url"])
+        emb.set_image(url=url["results"][0]["url"])
         await ctx.send(embed=emb)
 
     # -------- image Commands ------->
