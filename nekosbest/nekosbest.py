@@ -28,9 +28,10 @@ import aiohttp
 import discord
 import orjson
 import logging
-from redbot.core import commands
+from redbot.core import commands, Config
 from redbot.core.bot import Red
 from .core import ACTIONS, ICON, NEKOS
+from .view import ImageButtonView, CountButtonView
 
 log = logging.getLogger("red.maxcogs.nekosbest")
 
@@ -66,41 +67,25 @@ async def imgembedgen(
     emb.colour = await ctx.embed_color()
     emb.set_image(url=image)
     emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
-    view = discord.ui.View()
-    style = discord.ButtonStyle.gray
-    artist = discord.ui.Button(
-        style=style,
-        label="Artist",
-        url=artist_href,
-    )
-    source = discord.ui.Button(
-        style=style,
-        label="Source",
-        url=source_url,
-    )
-    image = discord.ui.Button(
-        style=style,
-        label="Open Image",
-        url=image,
-    )
-    view.add_item(item=artist)
-    view.add_item(item=source)
-    view.add_item(item=image)
+    view = ImageButtonView(artist_href, source_url, image)
     await ctx.send(embed=emb, view=view)
 
 
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best + RolePlay Commands."""
 
-    __version__: Final[str] = "2.3.0"
+    __version__: Final[str] = "2.3.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NekosBest.md"
+    __docs__: Final[str] = (
+        "https://github.com/ltzmax/maxcogs/blob/master/docs/NekosBest.md"
+    )
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self.config = Config.get_conf(self, identifier=1234567890)
+        default_user = {"command_counts": {}}
+        self.config.register_user(**default_user)
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -135,7 +120,18 @@ class NekosBest(commands.Cog):
             text=f"Powered by nekos.best\nAnime Name: {anime_name}", icon_url=ICON
         )
         emb.set_image(url=url["results"][0]["url"])
-        await ctx.send(embed=emb)
+
+        # Count the command usage
+        user_config = self.config.user(ctx.author)
+        command_counts = await user_config.command_counts()
+        if action not in command_counts:
+            command_counts[action] = 0
+        command_counts[action] += 1
+        await user_config.command_counts.set(command_counts)
+        count = command_counts[action]
+
+        view = CountButtonView(ctx, action, count)
+        await ctx.send(embed=emb, view=view)
 
     # -------- image Commands ------->
 
