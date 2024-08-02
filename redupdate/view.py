@@ -28,6 +28,7 @@ import logging
 
 log = logging.getLogger("red.maxcogs.redupdate.view")
 
+
 class RestartButton(discord.ui.View):
     def __init__(self, ctx, bot, *, timeout=60):
         super().__init__(timeout=timeout)
@@ -54,7 +55,9 @@ class RestartButton(discord.ui.View):
         return True
 
     @discord.ui.button(label="Restart", style=discord.ButtonStyle.primary)
-    async def restart_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def restart_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         self.clicked = True
         button.disabled = True
         await interaction.response.send_message("Restarting...", ephemeral=True)
