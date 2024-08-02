@@ -42,8 +42,8 @@ async def redupdate(self, ctx: commands.Context):
         color=await ctx.embed_color(),
     )
     embed.set_footer(text="Restart required to apply changes!")
-    view = RestartButton(ctx)
-    view.message = await ctx.send(embed=embed, view=view)
+    view = RestartButton(ctx, self.bot)
+    await ctx.send(embed=embed, view=view)
 
 
 async def failedupdate(self, ctx: commands.Context):
@@ -70,7 +70,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.4.6"
+    __version__: Final[str] = "1.5.0"
     __docs__: Final[
         str
     ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
