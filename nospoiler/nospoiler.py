@@ -188,6 +188,8 @@ class NoSpoiler(commands.Cog):
             return
         if after.author.bot:
             return
+        if not after.guild:  # Check if after.guild is not None
+            return
         if not await self.config.guild(after.guild).enabled():
             return
         if await self.bot.cog_disabled_in_guild(self, after.guild):
