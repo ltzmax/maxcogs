@@ -102,9 +102,7 @@ class Chest(commands.Cog):
         else:
             view = ChestView(self.bot, self.config, channel)
             await view.init_view()
-            message = await channel.send(
-                embed=await view.get_embed(), view=view
-            )
+            message = await channel.send(embed=await view.get_embed(), view=view)
             view.message = message  # Store the message in the view
 
     def cog_unload(self):
