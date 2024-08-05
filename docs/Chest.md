@@ -1,3 +1,6 @@
+# Note
+The chest will spawn in all servers it has a channel configured when reloading the cog. I am not responsible for any demages done if you sit and reload to get it to spawn. It will also spawn every 4 hours after first spawn or whatever it says in the `Next Spawn`.
+
 # Chest Help
 
 First to click the button gets random credits to their `[p]bank balance`.
