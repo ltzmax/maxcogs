@@ -58,7 +58,7 @@ class Chest(commands.Cog):
             "toggle": False,  # Default disabled because yes, not alot want default enabled(?)
             "default_spawn_image": "https://cdn.maxapp.tv/Geb793.png",  # Default image.
             "default_claim_image": "https://cdn.maxapp.tv/Z5m382.png",  # Default image.
-            "emoji": "🪙", # Default emoji on the button.
+            "emoji": "🪙",  # Default emoji on the button.
         }
         self.config.register_global(**default_global)
         self.config.register_guild(**default_guild)
@@ -260,7 +260,7 @@ class Chest(commands.Cog):
         red_economy_name = await bank.get_currency_name(ctx.guild)
         await self.config.max_coins.set(coins)
         await ctx.send(
-            f"The max {red_economy_name} is now set to {humanize_number(coins)}"
+            f"The max {red_economy_name} is now set to {humanize_number(coins)}\nI will now choose any random {red_economy_name} between 1 and {humanize_number(coins)}"
         )
 
     @owner.command()
