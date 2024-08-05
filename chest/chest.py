@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.chest")
 class Chest(commands.Cog):
     """First to click the button gets random credits to their `[p]bank balance`."""
 
-    __version__: Final[str] = "1.0.1"
+    __version__: Final[str] = "1.0.2"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Chest.md"
 

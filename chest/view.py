@@ -34,7 +34,6 @@ from redbot.core.errors import BalanceTooHigh
 from redbot.core.utils.chat_formatting import humanize_number
 
 log = logging.getLogger("red.maxcogs.chest.view")
-NEXT_TIME = int(time.time()) + 14400
 
 
 class ChestView(discord.ui.View):
@@ -95,7 +94,7 @@ class ChestView(discord.ui.View):
                 value=f"{humanize_number(coins)} {eco_name}",
                 inline=False,
             )
-        next_time = datetime.datetime.fromtimestamp(NEXT_TIME, tz=pytz.utc)
+        next_time = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=4)
         discord_timestamp = (
             f"<t:{int(next_time.timestamp())}:f> (<t:{int(next_time.timestamp())}:R>)"
         )
