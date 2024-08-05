@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.chest")
 class Chest(commands.Cog):
     """First to click the button gets random credits to their `[p]bank balance`."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.0.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Chest.md"
 
@@ -76,28 +76,36 @@ class Chest(commands.Cog):
     # if you change this, you also need to make sure
     # you change in view.py too.
     @tasks.loop(hours=4)
-    async def send_chest(self):
-        for guild in self.bot.guilds:
-            channel_id = await self.config.guild(guild).channel()
-            if channel_id:  # Make sure the channel is set
-                channel = self.bot.get_channel(channel_id)
-                if channel:  # Make sure the channel is found
-                    # Make sure it has permission
-                    if (
-                        not channel.permissions_for(guild.me).embed_links
-                        or not channel.permissions_for(guild.me).send_messages
-                    ):
-                        log.warning(
-                            f"Missing permissions to send chest in {channel.mention} ({guild.name})"
-                        )
-                        continue
+    async def send_chest(self, channel: discord.TextChannel = None):
+        if channel is None:
+            for guild in self.bot.guilds:
+                channel_id = await self.config.guild(guild).channel()
+                if channel_id:  # Make sure the channel is set
+                    channel = self.bot.get_channel(channel_id)
+                    if channel:  # Make sure the channel is found
+                        # Make sure it has permission
+                        if (
+                            not channel.permissions_for(guild.me).embed_links
+                            or not channel.permissions_for(guild.me).send_messages
+                        ):
+                            log.warning(
+                                f"Missing permissions to send chest in {channel.mention} ({guild.name})"
+                            )
+                            continue
 
-                    view = ChestView(self.bot, self.config, channel)
-                    await view.init_view()
-                    message = await channel.send(
-                        embed=await view.get_embed(), view=view
-                    )
-                    view.message = message  # Store the message in the view
+                        view = ChestView(self.bot, self.config, channel)
+                        await view.init_view()
+                        message = await channel.send(
+                            embed=await view.get_embed(), view=view
+                        )
+                        view.message = message  # Store the message in the view
+        else:
+            view = ChestView(self.bot, self.config, channel)
+            await view.init_view()
+            message = await channel.send(
+                embed=await view.get_embed(), view=view
+            )
+            view.message = message  # Store the message in the view
 
     def cog_unload(self):
         self.send_chest.cancel()
@@ -136,7 +144,7 @@ class Chest(commands.Cog):
         # This will make the chest spawn immediately after setting the channel,
         # so you don't have to wait hours for the first spawn.
         await asyncio.sleep(0.4)  # wait 0.4 sec before sending.
-        await self.send_chest()
+        await self.send_chest(channel)
 
     @chestset.command()
     @commands.bot_has_permissions(embed_links=True)
