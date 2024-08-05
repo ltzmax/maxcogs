@@ -58,7 +58,7 @@ class Chest(commands.Cog):
             "toggle": False,  # Default disabled because yes, not alot want default enabled(?)
             "default_spawn_image": "https://cdn.maxapp.tv/Geb793.png",  # Default image.
             "default_claim_image": "https://cdn.maxapp.tv/Z5m382.png",  # Default image.
-            "emoji": "🪙", # Default emoji on the button.
+            "emoji": "🪙",  # Default emoji on the button.
         }
         self.config.register_global(**default_global)
         self.config.register_guild(**default_guild)
