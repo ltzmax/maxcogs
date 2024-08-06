@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.chest")
 class Chest(commands.Cog):
     """First to click the button gets random credits to their `[p]bank balance`."""
 
-    __version__: Final[str] = "1.0.2"
+    __version__: Final[str] = "1.0.3"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Chest.md"
 
@@ -51,6 +51,7 @@ class Chest(commands.Cog):
         self.config = Config.get_conf(self, identifier=34562809)
         default_guild = {
             "channel": None,  # I can't choose the channel for you so it's None.
+            "role": None,  # I can't choose the role for you so it's None.
         }
         default_global = {
             "max_coins": 5000,  # Default random between 1 and 5,000 coins.
@@ -92,13 +93,28 @@ class Chest(commands.Cog):
                                 f"Missing permissions to send chest in {channel.mention} ({guild.name})"
                             )
                             continue
-
-                        view = ChestView(self.bot, self.config, channel)
-                        await view.init_view()
-                        message = await channel.send(
-                            embed=await view.get_embed(), view=view
-                        )
-                        view.message = message  # Store the message in the view
+                        role = await self.config.guild(guild).role()
+                        if role:
+                            role = guild.get_role(role)
+                            if role:
+                                view = ChestView(self.bot, self.config, channel)
+                                await view.init_view()
+                                message = await channel.send(
+                                    embed=await view.get_embed(),
+                                    view=view,
+                                    content=role.mention,
+                                    allowed_mentions=discord.AllowedMentions(
+                                        roles=True, users=False
+                                    ),
+                                )
+                                view.message = message  # Store the message in the view
+                        else:
+                            view = ChestView(self.bot, self.config, channel)
+                            await view.init_view()
+                            message = await channel.send(
+                                embed=await view.get_embed(), view=view
+                            )
+                            view.message = message  # Store the message in the view
         else:
             view = ChestView(self.bot, self.config, channel)
             await view.init_view()
@@ -143,6 +159,25 @@ class Chest(commands.Cog):
         # so you don't have to wait hours for the first spawn.
         await asyncio.sleep(0.4)  # wait 0.4 sec before sending.
         await self.send_chest(channel)
+
+    @chestset.command()
+    async def role(self, ctx: commands.Context, role: discord.Role = None):
+        """
+        Set the role for the chest game.
+
+        Use the command again to disable chest from spawning.
+        """
+        if role is None:
+            await self.config.guild(ctx.guild).role.clear()
+            return await ctx.send("Cleared role. I won't ping anymore!")
+        if role >= ctx.author.top_role:
+            return await ctx.send("You can't set a role higher than your top role.")
+        if role >= ctx.guild.me.top_role:
+            return await ctx.send("You can't set a role higher than my top role.")
+        if role.is_default():
+            return await ctx.send("You can't set a role with everyone or here mention.")
+        await self.config.guild(ctx.guild).role.set(role.id)
+        await ctx.send(f"Chest game role set to {role.name}")
 
     @chestset.command()
     @commands.bot_has_permissions(embed_links=True)
