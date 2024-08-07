@@ -37,7 +37,7 @@ log = logging.getLogger("red.maxcogs.autopublisher")
 
 class ChannelView(discord.ui.View):
     def __init__(self, bot: Red, config: Config, guild_id: int):
-        super().__init__()
+        super().__init__(timeout=60)
         self.bot = bot
         self.config = config
         self.guild_id = guild_id
@@ -54,6 +54,12 @@ class ChannelView(discord.ui.View):
         self.remove_button = discord.ui.Button(label="Remove", style=discord.ButtonStyle.red)
         self.remove_button.callback = self.remove_button_callback
         self.add_item(self.remove_button)
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            await self.message.edit(view=self)
 
     def set_select_options(self):
         # This method sets the options for the select menu
@@ -223,13 +229,28 @@ class AutoPublisher(commands.Cog):
         - Use `Remove` button to remove the selected channel(s) from the ignored list.
         """
         if not "NEWS" in ctx.guild.features:
-            return await ctx.send("Your server doesn't have News Channel feature enabled.")
-        try:
-            view = ChannelView(self.bot, self.config, ctx.guild.id)
-            await ctx.send("Select a news channel to ignore:", view=view)
-        except discord.HTTPException:
-            # When they don't even have a news channel or the bot can't view it.
-            await ctx.send("There is no news channel to ignore in this server.")
+            view = discord.ui.View()
+            style = discord.ButtonStyle.gray
+            discordinfo = discord.ui.Button(
+                style=style,
+                label="Learn more here",
+                url="https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server",
+                emoji="<:icons_info:880113401207095346>",
+            )
+            view.add_item(item=discordinfo)
+            return await ctx.send(
+                f"Your server doesn't have News Channel feature. Please enable it first.",
+                view=view,
+            )
+
+        # Check if there are any news channels
+        news_channels = [channel for channel in ctx.guild.text_channels if channel.is_news()]
+        if not news_channels:
+            return await ctx.send("There are no news channels available to ignore.")
+
+        view = ChannelView(self.bot, self.config, ctx.guild.id)
+        message = await ctx.send("Select a news channel to ignore:", view=view)
+        view.message = message  # Set the message reference in the view
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
