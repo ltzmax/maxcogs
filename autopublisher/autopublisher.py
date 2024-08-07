@@ -63,6 +63,11 @@ class ChannelView(discord.ui.View):
             self.select.options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if not interaction.user.id == interaction.user.id:
+            await interaction.response.send_message(
+                ("You are not the author of this command."), ephemeral=True
+            )
+            return False
         return True
 
     async def select_callback(self, interaction: discord.Interaction):
