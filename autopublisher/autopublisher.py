@@ -48,10 +48,14 @@ class ChannelView(discord.ui.View):
         self.set_select_options()
         self.add_item(self.select)
         # Add buttons below the select menu
-        self.confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.green)
+        self.confirm_button = discord.ui.Button(
+            label="Confirm", style=discord.ButtonStyle.green
+        )
         self.confirm_button.callback = self.confirm_button_callback
         self.add_item(self.confirm_button)
-        self.remove_button = discord.ui.Button(label="Remove", style=discord.ButtonStyle.red)
+        self.remove_button = discord.ui.Button(
+            label="Remove", style=discord.ButtonStyle.red
+        )
         self.remove_button.callback = self.remove_button_callback
         self.add_item(self.remove_button)
 
@@ -66,7 +70,10 @@ class ChannelView(discord.ui.View):
         guild = self.bot.get_guild(self.guild_id)
         if guild:
             channels = [channel for channel in guild.text_channels if channel.is_news()]
-            self.select.options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
+            self.select.options = [
+                discord.SelectOption(label=channel.name, value=str(channel.id))
+                for channel in channels
+            ]
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not interaction.user.id == interaction.user.id:
@@ -77,30 +84,52 @@ class ChannelView(discord.ui.View):
         return True
 
     async def select_callback(self, interaction: discord.Interaction):
-        self.selected_channel = self.bot.get_channel(int(interaction.data['values'][0]))
-        await interaction.response.send_message(f"Selected channel: {self.selected_channel}", ephemeral=True)
+        self.selected_channel = self.bot.get_channel(int(interaction.data["values"][0]))
+        await interaction.response.send_message(
+            f"Selected channel: {self.selected_channel}", ephemeral=True
+        )
 
     async def confirm_button_callback(self, interaction: discord.Interaction):
         if self.selected_channel:
-            async with self.config.guild_from_id(self.guild_id).ignored_channels() as ignored_channels:
+            async with self.config.guild_from_id(
+                self.guild_id
+            ).ignored_channels() as ignored_channels:
                 if self.selected_channel.id not in ignored_channels:
                     ignored_channels.append(self.selected_channel.id)
-                    await interaction.response.send_message(f"Confirmed and ignored channel: {self.selected_channel}", ephemeral=True)
+                    await interaction.response.send_message(
+                        f"Confirmed and ignored channel: {self.selected_channel}",
+                        ephemeral=True,
+                    )
                 else:
-                    await interaction.response.send_message(f"Channel {self.selected_channel} is already ignored.", ephemeral=True)
+                    await interaction.response.send_message(
+                        f"Channel {self.selected_channel} is already ignored.",
+                        ephemeral=True,
+                    )
         else:
-            await interaction.response.send_message("No channel selected.", ephemeral=True)
+            await interaction.response.send_message(
+                "No channel selected.", ephemeral=True
+            )
 
     async def remove_button_callback(self, interaction: discord.Interaction):
         if self.selected_channel:
-            async with self.config.guild_from_id(self.guild_id).ignored_channels() as ignored_channels:
+            async with self.config.guild_from_id(
+                self.guild_id
+            ).ignored_channels() as ignored_channels:
                 if self.selected_channel.id in ignored_channels:
                     ignored_channels.remove(self.selected_channel.id)
-                    await interaction.response.send_message(f"Removed channel from ignored list: {self.selected_channel}", ephemeral=True)
+                    await interaction.response.send_message(
+                        f"Removed channel from ignored list: {self.selected_channel}",
+                        ephemeral=True,
+                    )
                 else:
-                    await interaction.response.send_message(f"Channel {self.selected_channel} is not in the ignored list.", ephemeral=True)
+                    await interaction.response.send_message(
+                        f"Channel {self.selected_channel} is not in the ignored list.",
+                        ephemeral=True,
+                    )
         else:
-            await interaction.response.send_message("No channel selected.", ephemeral=True)
+            await interaction.response.send_message(
+                "No channel selected.", ephemeral=True
+            )
 
 
 class AutoPublisher(commands.Cog):
@@ -219,7 +248,7 @@ class AutoPublisher(commands.Cog):
     @autopublisher.command()
     async def ignorechannel(self, ctx: commands.Context):
         """Ignore a news channel to prevent AutoPublisher from publishing messages in it.
-        
+
         Please note select menu's can't view more than 25 channels.
 
         - This command will show a select menu to choose one or more news channel(s) to ignore.
@@ -244,7 +273,9 @@ class AutoPublisher(commands.Cog):
             )
 
         # Check if there are any news channels
-        news_channels = [channel for channel in ctx.guild.text_channels if channel.is_news()]
+        news_channels = [
+            channel for channel in ctx.guild.text_channels if channel.is_news()
+        ]
         if not news_channels:
             return await ctx.send("There are no news channels available to ignore.")
 
