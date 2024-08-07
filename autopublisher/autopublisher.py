@@ -35,10 +35,67 @@ from redbot.core.utils.views import ConfirmView
 log = logging.getLogger("red.maxcogs.autopublisher")
 
 
+class ChannelView(discord.ui.View):
+    def __init__(self, bot: Red, config: Config, guild_id: int):
+        super().__init__()
+        self.bot = bot
+        self.config = config
+        self.guild_id = guild_id
+        self.selected_channel = None
+        # Initialize the select menu
+        self.select = discord.ui.Select(placeholder="Select a news channel")
+        self.select.callback = self.select_callback
+        self.set_select_options()
+        self.add_item(self.select)
+        # Add buttons below the select menu
+        self.confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.green)
+        self.confirm_button.callback = self.confirm_button_callback
+        self.add_item(self.confirm_button)
+        self.remove_button = discord.ui.Button(label="Remove", style=discord.ButtonStyle.red)
+        self.remove_button.callback = self.remove_button_callback
+        self.add_item(self.remove_button)
+
+    def set_select_options(self):
+        # This method sets the options for the select menu
+        guild = self.bot.get_guild(self.guild_id)
+        if guild:
+            channels = [channel for channel in guild.text_channels if channel.is_news()]
+            self.select.options = [discord.SelectOption(label=channel.name, value=str(channel.id)) for channel in channels]
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return True
+
+    async def select_callback(self, interaction: discord.Interaction):
+        self.selected_channel = self.bot.get_channel(int(interaction.data['values'][0]))
+        await interaction.response.send_message(f"Selected channel: {self.selected_channel}", ephemeral=True)
+
+    async def confirm_button_callback(self, interaction: discord.Interaction):
+        if self.selected_channel:
+            async with self.config.guild_from_id(self.guild_id).ignored_channels() as ignored_channels:
+                if self.selected_channel.id not in ignored_channels:
+                    ignored_channels.append(self.selected_channel.id)
+                    await interaction.response.send_message(f"Confirmed and ignored channel: {self.selected_channel}", ephemeral=True)
+                else:
+                    await interaction.response.send_message(f"Channel {self.selected_channel} is already ignored.", ephemeral=True)
+        else:
+            await interaction.response.send_message("No channel selected.", ephemeral=True)
+
+    async def remove_button_callback(self, interaction: discord.Interaction):
+        if self.selected_channel:
+            async with self.config.guild_from_id(self.guild_id).ignored_channels() as ignored_channels:
+                if self.selected_channel.id in ignored_channels:
+                    ignored_channels.remove(self.selected_channel.id)
+                    await interaction.response.send_message(f"Removed channel from ignored list: {self.selected_channel}", ephemeral=True)
+                else:
+                    await interaction.response.send_message(f"Channel {self.selected_channel} is not in the ignored list.", ephemeral=True)
+        else:
+            await interaction.response.send_message("No channel selected.", ephemeral=True)
+
+
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.1.3"
+    __version__: Final[str] = "2.1.4"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -148,57 +205,26 @@ class AutoPublisher(commands.Cog):
         toggle = await self.config.guild(ctx.guild).toggle()
         await ctx.send(f"AutoPublisher has been {'enabled' if toggle else 'disabled'}.")
 
-    @commands.bot_has_permissions(embed_links=True)
-    @autopublisher.command(
-        aliases=["ignorechannels"], usage="<add_or_remove> <channels>"
-    )
-    async def ignore(
-        self,
-        ctx: commands.Context,
-        add_or_remove: Literal["add", "remove"],
-        channels: commands.Greedy[discord.TextChannel] = None,
-    ) -> None:
-        """Add or remove channels for your guild.
+    @autopublisher.command()
+    async def ignorechannel(self, ctx: commands.Context):
+        """Ignore a news channel to prevent AutoPublisher from publishing messages in it.
+        
+        Please note select menu's can't view more than 25 channels.
 
-        `<add_or_remove>` should be either `add` to add channels or `remove` to remove channels.
-
-        **Example:**
-        - `[p]autopublisher ignore add #news`
-        - `[p]autopublisher ignore remove #news`
+        - This command will show a select menu to choose one or more news channel(s) to ignore.
 
         **Note:**
-        - You can add or remove multiple channels at once.
-        - You can also use channel ID instead of mentioning the channel.
+        - Use `Confirm` button to confirm the selected channel(s) to ignore.
+        - Use `Remove` button to remove the selected channel(s) from the ignored list.
         """
-        if channels is None:
-            await ctx.send("`Channels` is a required argument.")
-            return
-
-        async with self.config.guild(ctx.guild).ignored_channels() as c:
-            for channel in channels:
-                if channel.is_news():  # add check for news channel
-                    if add_or_remove.lower() == "add":
-                        if not channel.id in c:
-                            c.append(channel.id)
-
-                    elif add_or_remove.lower() == "remove":
-                        if channel.id in c:
-                            c.remove(channel.id)
-
-        news_channels = [
-            channel for channel in channels if channel.is_news()
-        ]  # filter news channels
-        ids = len(news_channels)
-        embed = discord.Embed(
-            title="Success!",
-            description=f"{'added' if add_or_remove.lower() == 'add' else 'removed'} {ids} {'channel' if ids == 1 else 'channels'}.",
-            color=0xE91E63,
-        )
-        embed.add_field(
-            name=f"{'channel:' if ids == 1 else 'channels:'}",
-            value=humanize_list([channel.mention for channel in news_channels]),
-        )
-        await ctx.send(embed=embed)
+        if not "NEWS" in ctx.guild.features:
+            return await ctx.send("Your server doesn't have News Channel feature enabled.")
+        try:
+            view = ChannelView(self.bot, self.config, ctx.guild.id)
+            await ctx.send("Select a news channel to ignore:", view=view)
+        except discord.HTTPException:
+            # When they don't even have a news channel or the bot can't view it.
+            await ctx.send("There is no news channel to ignore in this server.")
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
