@@ -107,7 +107,9 @@ class ChestView(discord.ui.View):
         embed.set_footer(text="")
         if not chances <= fail_rate:
             bal = await bank.get_balance(interaction.user)
-            embed.set_footer(text=f"Your {eco_name} balance is now: {humanize_number(bal)}")
+            embed.set_footer(
+                text=f"Your {eco_name} balance is now: {humanize_number(bal)}"
+            )
         await interaction.response.edit_message(embed=embed, view=self)
 
     async def get_embed(self):
