@@ -105,6 +105,9 @@ class ChestView(discord.ui.View):
         # Remove the "Click the button to claim free..." text and footer after button click.
         embed.description = ""
         embed.set_footer(text="")
+        if not chances <= fail_rate:
+            bal = await bank.get_balance(interaction.user)
+            embed.set_footer(text=f"Your {eco_name} balance is now: {humanize_number(bal)}")
         await interaction.response.edit_message(embed=embed, view=self)
 
     async def get_embed(self):
