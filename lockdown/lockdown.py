@@ -36,7 +36,7 @@ class Lockdown(commands.Cog):
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.0.8"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[
         str
@@ -62,6 +62,7 @@ class Lockdown(commands.Cog):
 
     async def log_channel(
         self,
+        ctx: commands.Context,
         guild: discord.Guild,
         event: str,
         reason: Optional[str] = None,
@@ -81,10 +82,15 @@ class Lockdown(commands.Cog):
             )
             return
         embed = discord.Embed(
-            title=f"{event}",
-            description=reason,
+            title=event,
+            description=f"{'**Reason**: ' + reason if reason else ''}",
             color=0xFF0000,
         )
+        moderator_name = ctx.author.name
+        log_message = f"{event} by {moderator_name}"
+        embed.add_field(name="Log Message:", value=log_message)
+        embed.add_field(name="Channel:", value=ctx.channel.mention, inline=False)
+        embed.set_footer(text=f"Moderator's ID: {ctx.author.id}")
         await log_channel.send(embed=embed)
 
     @commands.group()
@@ -121,83 +127,60 @@ class Lockdown(commands.Cog):
         )
 
     async def manage_lock(
-        self,
-        ctx: commands.Context,
-        action: str,
-        reason: Optional[str] = None,
-        channel: Optional[Union[discord.TextChannel, discord.Thread]] = None,
-        role: Optional[discord.Role] = None,
-    ):
-        if role is None:
-            role = ctx.guild.default_role
-
-        bot_role = ctx.guild.get_member(ctx.me.id).top_role
-        if role >= bot_role:
-            return await ctx.send(
-                f"I can't {action} a channel for a role higher than or equal to my top role."
-            )
-
-        top_role = ctx.guild.get_member(ctx.author.id).top_role
-        if role >= top_role:
-            return await ctx.send(
-                f"You can't {action} a channel for a role higher than or equal to your top role."
-            )
-
-        if channel is None:
-            channel = ctx.channel
-
-        embed_title = "Channel Locked" if action == "lock" else "Channel Unlocked"
-        embed_description = f"{'🔒' if action == 'lock' else '🔓'} {'Locked' if action == 'lock' else 'Unlocked'} channel {channel.mention} for {role.mention if role != ctx.guild.default_role else 'everyone'}"
-        log_event = "Channel Locked" if action == "lock" else "Channel Unlocked"
-
+        self, 
+        ctx: commands.Context, 
+        action: str, 
+        reason: Optional[str] = None
+    ) -> None:
+        actions = {
+            "lock": {
+                "title": "Channel Locked",
+                "description": f"🔒 Locked channel {ctx.channel.mention} for everyone",
+                "color": 0xFF0000,
+                "log_event": "Channel Locked",
+                "send_messages": False,
+                "already_set_message": "❌ This channel is already locked."
+            },
+            "unlock": {
+                "title": "Channel Unlocked",
+                "description": f"🔓 Unlocked channel {ctx.channel.mention} for everyone",
+                "color": 0x00FF00,
+                "log_event": "Channel Unlocked",
+                "send_messages": None,
+                "already_set_message": "❌ This channel is already unlocked."
+            }
+        }
+        action_props = actions.get(action)
         if await self.config.guild(ctx.guild).use_embed():
             embed = discord.Embed(
-                title=embed_title,
-                description=embed_description,
-                color=0xFF0000 if action == "lock" else 0x00FF00,
+                title=action_props["title"],
+                description=action_props["description"],
+                color=action_props["color"],
             )
             if reason:
                 embed.add_field(
                     name="Reason:",
-                    value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}",
+                    value=f"{reason if len(reason) < 2024 else 'Reason is too long.'}",
                 )
             embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
             await ctx.send(embed=embed)
         else:
             await ctx.send(
-                f"{embed_description}\n{'Reason: ' + reason if reason else ''}"
+                f"{action_props['description']}\n{'Reason: ' + reason if reason else ''}"
             )
 
-        if isinstance(channel, discord.Thread):
-            if action == "lock":
-                await ctx.channel.edit(locked=True)
-            elif action == "unlock":
-                await ctx.channel.edit(locked=False)
+        if isinstance(ctx.channel, discord.Thread):
+            await ctx.channel.edit(locked=(action == "lock"))
         else:
-            overwrites = channel.overwrites_for(role)
-            if overwrites is None:
-                overwrites = discord.PermissionOverwrite()
+            overwrites = ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
+            if overwrites.send_messages == action_props["send_messages"]:
+                return await ctx.send(action_props["already_set_message"])
+            overwrites.send_messages = action_props["send_messages"]
+            await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
 
-            if action == "lock":
-                if overwrites.send_messages is False:
-                    return await ctx.send(
-                        f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already locked."
-                    )
-                overwrites.send_messages = False
-            elif action == "unlock":
-                if overwrites.send_messages is None:
-                    return await ctx.send(
-                        f"❌ {'Role' if role != ctx.guild.default_role else 'Channel'} is already unlocked."
-                    )
-                overwrites.send_messages = None
-            await channel.set_permissions(role, overwrite=overwrites)
-
-        await self.log_channel(
-            guild=ctx.guild,
-            event=log_event,
-            reason=f"{channel.mention} was {action}ed by {ctx.author.mention}"
-            + (f" for Reason: {reason}" if reason else ""),
-        )
+        # Log the event
+        log_event = action_props["log_event"]
+        await self.log_channel(ctx, ctx.guild, event=log_event, reason=reason)
 
     @commands.guild_only()
     @commands.mod_or_can_manage_channel()
@@ -205,23 +188,17 @@ class Lockdown(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
         reason="The reason why you're locking this channel",
-        channel="The channel to lockdown.",
-        role="The role to lockdown.",
     )
     async def lock(
         self,
         ctx: commands.Context,
         *,
         reason: Optional[str] = None,
-        channel: Optional[Union[discord.TextChannel, discord.Thread]] = None,
-        role: Optional[discord.Role] = None,
     ):
         """
-        Lock a channel for a role or everyone.
-
-        If no channel is provided, the current channel will be locked for the provided role else the default role.
+        Lock a channel for everyone.
         """
-        await self.manage_lock(ctx, "lock", reason=reason, channel=channel, role=role)
+        await self.manage_lock(ctx, "lock", reason=reason)
 
     @commands.guild_only()
     @commands.hybrid_command()
@@ -229,8 +206,6 @@ class Lockdown(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
         reason="The reason why you're unlocking this channel",
-        channel="The channel to unlock.",
-        role="The role to unlock.",
     )
     async def unlock(
         self,
@@ -241,11 +216,9 @@ class Lockdown(commands.Cog):
         role: Optional[discord.Role] = None,
     ):
         """
-        Unlock a channel for a role or everyone.
-
-        If no channel is provided, the current channel will be unlocked for the provided role else the default role.
+        Unlock a channel for everyone.
         """
-        await self.manage_lock(ctx, "unlock", reason=reason, channel=channel, role=role)
+        await self.manage_lock(ctx, "unlock", reason=reason)
 
     @commands.group()
     @commands.guild_only()
@@ -255,7 +228,7 @@ class Lockdown(commands.Cog):
         """Manage thread(s) with [botname]."""
 
     @thread.command()
-    async def close(self, ctx: commands.Context):
+    async def close(self, ctx: commands.Context, *, reason: Optional[str] = None):
         """Close and archive a thread post.
 
         If you want to only lock a thread post, you'll have to use `[p]lock` command.
@@ -264,3 +237,4 @@ class Lockdown(commands.Cog):
             return await ctx.send("This channel is not a thread.")
         await ctx.send(f"Archived and closed this thread post!")
         await ctx.channel.edit(locked=True, archived=True)
+        await self.log_channel(ctx, ctx.guild, event="Thread Closed", reason=reason)
