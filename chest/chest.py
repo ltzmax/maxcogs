@@ -294,7 +294,7 @@ class Chest(commands.Cog):
         """
         Change how much credits users can get from claiming.
 
-        Default is 10,000. (it random select between 1 and 10,000)
+        Default is 5,000. (it random select between 1 and 5,000)
         """
         if coins <= 10:
             return await ctx.send("Please enter a value greater than 10")
