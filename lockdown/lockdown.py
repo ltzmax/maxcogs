@@ -127,10 +127,7 @@ class Lockdown(commands.Cog):
         )
 
     async def manage_lock(
-        self, 
-        ctx: commands.Context, 
-        action: str, 
-        reason: Optional[str] = None
+        self, ctx: commands.Context, action: str, reason: Optional[str] = None
     ) -> None:
         actions = {
             "lock": {
@@ -139,7 +136,7 @@ class Lockdown(commands.Cog):
                 "color": 0xFF0000,
                 "log_event": "Channel Locked",
                 "send_messages": False,
-                "already_set_message": "❌ This channel is already locked."
+                "already_set_message": "❌ This channel is already locked.",
             },
             "unlock": {
                 "title": "Channel Unlocked",
@@ -147,8 +144,8 @@ class Lockdown(commands.Cog):
                 "color": 0x00FF00,
                 "log_event": "Channel Unlocked",
                 "send_messages": None,
-                "already_set_message": "❌ This channel is already unlocked."
-            }
+                "already_set_message": "❌ This channel is already unlocked.",
+            },
         }
         action_props = actions.get(action)
         if await self.config.guild(ctx.guild).use_embed():
@@ -172,11 +169,16 @@ class Lockdown(commands.Cog):
         if isinstance(ctx.channel, discord.Thread):
             await ctx.channel.edit(locked=(action == "lock"))
         else:
-            overwrites = ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
+            overwrites = (
+                ctx.channel.overwrites_for(ctx.guild.default_role)
+                or discord.PermissionOverwrite()
+            )
             if overwrites.send_messages == action_props["send_messages"]:
                 return await ctx.send(action_props["already_set_message"])
             overwrites.send_messages = action_props["send_messages"]
-            await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
+            await ctx.channel.set_permissions(
+                ctx.guild.default_role, overwrite=overwrites
+            )
 
         # Log the event
         log_event = action_props["log_event"]
