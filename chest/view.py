@@ -74,7 +74,7 @@ class ChestView(discord.ui.View):
         if chances <= fail_rate:
             embed.add_field(
                 name="Result:",
-                value=f"Sorry, you didn't get any {eco_name} this time!",
+                value=f"Sorry {interaction.user.mention}, you didn't get any {eco_name} this time!",
                 inline=False,
             )
         else:
