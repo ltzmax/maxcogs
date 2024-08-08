@@ -70,6 +70,7 @@ class ChestView(discord.ui.View):
         toggle = await self.config.toggle()
         default_claim_image = await self.config.default_claim_image()
         eco_name = await bank.get_currency_name(interaction.guild)
+        bal = await bank.get_balance(interaction.user)
         chances = random.randint(1, 100)  # Generate a random chance
         if chances <= fail_rate:
             embed.add_field(
@@ -91,7 +92,7 @@ class ChestView(discord.ui.View):
             )
             embed.add_field(
                 name=f"You Got:",
-                value=f"{humanize_number(coins)} {eco_name}",
+                value=f"{humanize_number(coins)} {eco_name}\nYour {eco_name} balance is now: {humanize_number(bal)}",
                 inline=False,
             )
         next_time = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=4)
@@ -105,11 +106,6 @@ class ChestView(discord.ui.View):
         # Remove the "Click the button to claim free..." text and footer after button click.
         embed.description = ""
         embed.set_footer(text="")
-        if not chances <= fail_rate:
-            bal = await bank.get_balance(interaction.user)
-            embed.set_footer(
-                text=f"Your {eco_name} balance is now: {humanize_number(bal)}"
-            )
         await interaction.response.edit_message(embed=embed, view=self)
 
     async def get_embed(self):
