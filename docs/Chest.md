@@ -46,7 +46,7 @@ Set a new default image.<br/><br/>Args:<br/>    ctx (discord.Context): The comma
  - Usage: `[p]chestset owner credit <coins>`
  - Aliases: `credits`
 
-Change how much credits users can get from claiming.<br/><br/>Default is 10,000. (it random select between 1 and 10,000)
+Change how much credits users can get from claiming.<br/><br/>Default is 5,000. (it random select between 1 and 5,000)
 
 ### chestset owner setemoji
  - Usage: `[p]chestset owner setemoji <emoji>`
