@@ -28,7 +28,7 @@ import aiohttp
 import discord
 import orjson
 import logging
-from redbot.core import commands, Config
+from redbot.core import commands, Config, app_commands
 from redbot.core.bot import Red
 from .core import ACTIONS, ICON, NEKOS
 from .view import ImageButtonView, CountButtonView
