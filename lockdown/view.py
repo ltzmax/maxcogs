@@ -12,16 +12,12 @@ class UnlockView(discord.ui.View):
             item.disabled = True
         await self.message.edit(view=self)
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not interaction.user.id == interaction.user.id:
-            await interaction.response.send_message(
-                ("You are not the author of this command."), ephemeral=True
-            )
-            return False
-        return True
-
     @discord.ui.button(label="Unlock Channel", style=discord.ButtonStyle.green, emoji="🔓")
     async def unlock_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not interaction.user.id == self.ctx.author.id:
+            return await interaction.response.send_message(
+                "You are not the author of this command.", ephemeral=True
+            )
         await self.ctx.cog.manage_lock(self.ctx, "unlock", reason=self.reason)
         button.disabled = True
         await interaction.response.edit_message(view=self)
