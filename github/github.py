@@ -65,7 +65,7 @@ class GitHub(commands.Cog):
     Customizable system for GitHub commit updates similar to the webhook.
     """
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.0.1"
     __author__: Final[List[str]] = ["MAX", "Obi-Wan3"]
     __docs__: Final[
         str
@@ -307,8 +307,15 @@ class GitHub(commands.Cog):
             url=f"https://github.com/{entries[0].author}",
             icon_url=entries[0].media_thumbnail[0]["url"],
         )
-
-        return embed
+        view = discord.ui.View()
+        style = discord.ButtonStyle.gray
+        new_commit = discord.ui.Button(
+            style=style,
+            label=f"{num} new commit{'s' if num > 1 else ''}",
+            url=feed_link if num > 1 else entries[0].link,
+        )
+        view.add_item(item=new_commit)
+        return embed, view
 
     @commands.is_owner()
     @commands.command(name="ghinterval", hidden=True)
@@ -435,15 +442,14 @@ class GitHub(commands.Cog):
         guild_config = await self.config.guild(ctx.guild).all()
 
         if channel and channel.permissions_for(ctx.guild.me).embed_links:
-            return await channel.send(
-                embed=await self._commit_embeds(
-                    entries=[parsed.entries[0]],
-                    feed_link=parsed.feed.link,
-                    color=guild_config["color"],
-                    timestamp=guild_config["timestamp"],
-                    short=guild_config["short"],
-                )
+            embed, view = await self._commit_embeds(
+                entries=[parsed.entries[0]],
+                feed_link=parsed.feed.link,
+                color=guild_config["color"],
+                timestamp=guild_config["timestamp"],
+                short=guild_config["short"],
             )
+            return await channel.send(embed=embed, view=view)
         else:
             return await ctx.send(
                 "Either the set channel has been removed or I do not have permissions to send embeds in the channel."
@@ -684,15 +690,14 @@ class GitHub(commands.Cog):
             )
 
         # Send last feed entry
-        await channel.send(
-            embed=await self._commit_embeds(
-                entries=[parsed.entries[0]],
-                feed_link=parsed.feed.link,
-                color=guild_config["color"],
-                timestamp=guild_config["timestamp"],
-                short=guild_config["short"],
-            )
+        embed, view = await self._commit_embeds(
+            entries=[parsed.entries[0]],
+            feed_link=parsed.feed.link,
+            color=guild_config["color"],
+            timestamp=guild_config["timestamp"],
+            short=guild_config["short"],
         )
+        await channel.send(embed=embed, view=view)
 
         return await ctx.send("Feed successfully added.")
 
