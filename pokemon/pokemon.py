@@ -116,6 +116,8 @@ class Pokemon(commands.Cog):
         poke_image.close()
         return temp
 
+    # --------- POKEMON INFO -----------
+
     def create_base_info_embed(self, data):
         embed = discord.Embed(
             title=data["name"].capitalize(),
@@ -132,8 +134,14 @@ class Pokemon(commands.Cog):
             + f"\nTotal: {sum([s['base_stat'] for s in data['stats']])}",
             inline=False,
         )
-        embed.add_field(name="Height:", value=data["height"])
-        embed.add_field(name="Weight:", value=data["weight"])
+        embed.add_field(
+            name="Height:",
+            value=f"{data['height']/10:.1f}m ({data['height']*3.28084/10:.2f}ft)",
+        )
+        embed.add_field(
+            name="Weight:",
+            value=f"{data['weight']/10:.1f}kg ({data['weight']*2.20462/10:.2f}lbs)",
+        )
         embed.add_field(name=" ", value=" ", inline=False)
         embed.add_field(name="Base Experience:", value=data["base_experience"])
         embed.add_field(
@@ -250,6 +258,8 @@ class Pokemon(commands.Cog):
         )
         embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data["id"]))
         return embed
+
+    # --------- WHOSTHATPOKEMON -----------
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(generation=("Optionally choose generation from gen1 to gen9."))
@@ -405,14 +415,17 @@ class Pokemon(commands.Cog):
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    @app_commands.describe(pokemon=("The Pokémon you want to search for."))
     async def pokeinfo(self, ctx: commands.Context, *, pokemon: str):
         """Get information about a Pokémon.
-        
+
         **Example:**
         - `[p]pokeinfo pikachu` - returns information about Pikachu.
 
         **Arguments:**
         - `<pokemon>` - The Pokémon you want to search for.
+            - If you dont know names, you can check the list from the [national pokedex](https://pokemondb.net/pokedex/national).
         """
         async with aiohttp.ClientSession() as session:
             async with session.get(
