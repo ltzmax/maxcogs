@@ -22,11 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import discord
 import logging
+from typing import Any, Final, Optional, Union
 
-from typing import Optional, Union, Any, Final
-from redbot.core import commands, Config, app_commands
+import discord
+from redbot.core import Config, app_commands, commands
+
+from .view import UnlockView
 
 log = logging.getLogger("red.maxcogs.lockdown")
 
@@ -36,11 +38,11 @@ class Lockdown(commands.Cog):
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.1.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
+    __docs__: Final[str] = (
+        "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
+    )
 
     def __init__(self, bot):
         self.bot = bot
@@ -160,7 +162,12 @@ class Lockdown(commands.Cog):
                     value=f"{reason if len(reason) < 2024 else 'Reason is too long.'}",
                 )
             embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
-            await ctx.send(embed=embed)
+            if action == "lock":
+                view = UnlockView(ctx, reason)
+                message = await ctx.send(embed=embed, view=view)
+                view.message = message
+            else:
+                await ctx.send(embed=embed)
         else:
             await ctx.send(
                 f"{action_props['description']}\n{'Reason: ' + reason if reason else ''}"
