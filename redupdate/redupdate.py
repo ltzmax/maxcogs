@@ -47,9 +47,7 @@ async def redupdate(self, ctx: commands.Context):
 
 
 async def failedupdate(self, ctx: commands.Context):
-    msg = (
-        "You need to have Shell from JackCogs loaded and installed to use this command."
-    )
+    msg = "You need to have Shell from JackCogs loaded and installed to use this command."
     embed = discord.Embed(
         title="Error in redupdate",
         description=msg,
@@ -71,15 +69,11 @@ class RedUpdate(commands.Cog):
 
     __author__: Final[str] = "MAX, kuro"
     __version__: Final[str] = "1.5.0"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(
-            self, identifier=0x1A108201, force_registration=True
-        )
+        self.config = Config.get_conf(self, identifier=0x1A108201, force_registration=True)
         default_global = {
             "redupdate_url": [],
         }

@@ -50,15 +50,11 @@ class NoSpoiler(commands.Cog):
 
     __author__: Final[str] = "MAX"
     __version__: Final[str] = "1.5.7"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NoSpoiler.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NoSpoiler.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
-        self.config: Config = Config.get_conf(
-            self, identifier=1234567890, force_registration=True
-        )
+        self.config: Config = Config.get_conf(self, identifier=1234567890, force_registration=True)
         default_guild: Dict[str, Union[bool, Optional[int]]] = {
             "enabled": False,
             "log_channel": None,
@@ -156,9 +152,7 @@ class NoSpoiler(commands.Cog):
                 "color": tse.StringAdapter(str(color)),
             },
         )
-        kwargs["allowed_mentions"] = discord.AllowedMentions(
-            everyone=False, roles=False
-        )
+        kwargs["allowed_mentions"] = discord.AllowedMentions(everyone=False, roles=False)
         kwargs["delete_after"] = delete_after
         await message.channel.send(**kwargs)
 
@@ -220,9 +214,7 @@ class NoSpoiler(commands.Cog):
         )
 
     @nospoiler.command()
-    async def deleteafter(
-        self, ctx: commands.Context, seconds: commands.Range[int, 10, 120]
-    ):
+    async def deleteafter(self, ctx: commands.Context, seconds: commands.Range[int, 10, 120]):
         """Set when the warn message should delete.
 
         Default timeout is 10 seconds.
@@ -232,9 +224,7 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Timeout has been set to {seconds} seconds.")
 
     @nospoiler.command()
-    async def logchannel(
-        self, ctx: commands.Context, channel: discord.TextChannel = None
-    ) -> None:
+    async def logchannel(self, ctx: commands.Context, channel: discord.TextChannel = None) -> None:
         """Set the channel where the bot will log the deleted spoiler messages.
 
         If the channel is not set, the bot will not log the deleted spoiler messages.
@@ -250,9 +240,7 @@ class NoSpoiler(commands.Cog):
     async def togglewarnmsg(self, ctx: commands.Context, toggle: bool = None) -> None:
         """Toggle the spoiler warning message on or off."""
         await self.config.guild(ctx.guild).spoiler_warn.set(toggle)
-        await ctx.send(
-            f"Spoiler warning message is now {'enabled' if toggle else 'disabled'}."
-        )
+        await ctx.send(f"Spoiler warning message is now {'enabled' if toggle else 'disabled'}.")
 
     @nospoiler.command()
     async def message(

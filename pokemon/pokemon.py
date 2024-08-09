@@ -61,9 +61,7 @@ class Pokemon(commands.Cog):
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
     __version__: Final[str] = "1.7.0"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/WhosThatPokemon.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/WhosThatPokemon.md"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot
@@ -82,13 +80,9 @@ class Pokemon(commands.Cog):
         return
 
     async def generate_image(self, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
-        base_image = Image.open(bundled_data_path(self) / "template.webp").convert(
-            "RGBA"
-        )
+        base_image = Image.open(bundled_data_path(self) / "template.webp").convert("RGBA")
         bg_width, bg_height = base_image.size
-        base_url = (
-            f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
-        )
+        base_url = f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
         try:
             async with self.session.get(base_url) as response:
                 if response.status != 200:
@@ -100,9 +94,7 @@ class Pokemon(commands.Cog):
         pbytes = BytesIO(data)
         poke_image = Image.open(pbytes)
         poke_width, poke_height = poke_image.size
-        poke_image_resized = poke_image.resize(
-            (int(poke_width * 1.6), int(poke_height * 1.6))
-        )
+        poke_image_resized = poke_image.resize((int(poke_width * 1.6), int(poke_height * 1.6)))
 
         if hide:
             p_load = poke_image_resized.load()  # type: ignore
@@ -125,9 +117,7 @@ class Pokemon(commands.Cog):
         return temp
 
     @commands.hybrid_command(aliases=["wtp"])
-    @app_commands.describe(
-        generation=("Optionally choose generation from gen1 to gen9.")
-    )
+    @app_commands.describe(generation=("Optionally choose generation from gen1 to gen9."))
     @app_commands.choices(
         generation=[
             app_commands.Choice(name="Generation 1", value="gen1"),
@@ -180,9 +170,7 @@ class Pokemon(commands.Cog):
             log.error(f"Failed to get species data from PokeAPI. {species_data}")
         names_data = species_data.get("names", [{}])
         eligible_names = [x["name"].lower() for x in names_data]
-        english_name = [x["name"] for x in names_data if x["language"]["name"] == "en"][
-            0
-        ]
+        english_name = [x["name"] for x in names_data if x["language"]["name"] == "en"][0]
 
         revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
         revealed_img = File(revealed, "whosthatpokemon.png")
@@ -258,9 +246,7 @@ class Pokemon(commands.Cog):
                 rarity = "Uncommon"
             embed.description = "**Rarity:** " + str(rarity)
             embed.add_field(name="Artist:", value=str(data.get("artist")))
-            embed.add_field(
-                name="Belongs to Set:", value=str(data["set"]["name"]), inline=False
-            )
+            embed.add_field(name="Belongs to Set:", value=str(data["set"]["name"]), inline=False)
             embed.add_field(
                 name="Set Release Date:",
                 value=discord.utils.format_dt(release, style="D"),

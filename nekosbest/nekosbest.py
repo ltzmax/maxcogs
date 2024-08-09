@@ -36,9 +36,7 @@ from .view import ImageButtonView, CountButtonView
 log = logging.getLogger("red.maxcogs.nekosbest")
 
 
-async def api_call(
-    self, ctx: commands.Context, endpoint: str
-) -> Optional[Dict[str, Any]]:
+async def api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
     await ctx.typing()
     async with self.session.get(NEKOS + endpoint) as response:
         if response.status != 200:
@@ -51,9 +49,7 @@ async def api_call(
     # ------- Image Commands Handler ------->
 
 
-async def imgembedgen(
-    ctx: commands.Context, url: Dict[str, Any], endpoint: str
-) -> None:
+async def imgembedgen(ctx: commands.Context, url: Dict[str, Any], endpoint: str) -> None:
     result = url["results"][0]
     artist_name = result["artist_name"]
     source_url = result["source_url"]
@@ -76,9 +72,7 @@ class NekosBest(commands.Cog):
 
     __version__: Final[str] = "2.3.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NekosBest.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NekosBest.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
@@ -101,9 +95,7 @@ class NekosBest(commands.Cog):
 
     # ------- RolePlay Commands Handler ------>
 
-    async def embedgen(
-        self, ctx: commands.Context, member: discord.Member, action: str
-    ) -> None:
+    async def embedgen(self, ctx: commands.Context, member: discord.Member, action: str) -> None:
         url = await api_call(self, ctx, action)
         if url is None:
             return
@@ -116,9 +108,7 @@ class NekosBest(commands.Cog):
                 f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member and member != ctx.author else 'themselves!'}"
             ),
         )
-        emb.set_footer(
-            text=f"Powered by nekos.best\nAnime Name: {anime_name}", icon_url=ICON
-        )
+        emb.set_footer(text=f"Powered by nekos.best\nAnime Name: {anime_name}", icon_url=ICON)
         emb.set_image(url=url["results"][0]["url"])
 
         # Count the command usage

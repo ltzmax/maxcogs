@@ -20,12 +20,8 @@ class UnlockView(discord.ui.View):
             return False
         return True
 
-    @discord.ui.button(
-        label="Unlock Channel", style=discord.ButtonStyle.green, emoji="🔓"
-    )
-    async def unlock_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    @discord.ui.button(label="Unlock Channel", style=discord.ButtonStyle.green, emoji="🔓")
+    async def unlock_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.ctx.cog.manage_lock(self.ctx, "unlock", reason=self.reason)
         button.disabled = True
         await interaction.response.edit_message(view=self)

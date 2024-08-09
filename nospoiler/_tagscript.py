@@ -7,9 +7,7 @@ from redbot.core import commands
 from redbot.core.errors import CogLoadError
 from redbot.core.utils.chat_formatting import humanize_number
 
-warn_message: Final[
-    str
-] = "{member(mention)} Usage of spoiler is not allowed in this server."
+warn_message: Final[str] = "{member(mention)} Usage of spoiler is not allowed in this server."
 
 TAGSCRIPT_LIMIT: Final[int] = 10_000
 
@@ -25,9 +23,7 @@ blocks: List[tse.Block] = [
 tagscript_engine: tse.Interpreter = tse.Interpreter(blocks)
 
 
-def process_tagscript(
-    content: str, seed_variables: Dict[str, tse.Adapter] = {}
-) -> Dict[str, Any]:
+def process_tagscript(content: str, seed_variables: Dict[str, tse.Adapter] = {}) -> Dict[str, Any]:
     output: tse.Response = tagscript_engine.process(content, seed_variables)
     kwargs: Dict[str, Any] = {}
     if output.body:
@@ -63,9 +59,7 @@ class TagscriptConverter(commands.Converter[str]):
         return argument
 
 
-async def validate_tagscriptengine(
-    bot: Red, tse_version: str, *, reloaded: bool = False
-):
+async def validate_tagscriptengine(bot: Red, tse_version: str, *, reloaded: bool = False):
     try:
         import TagScriptEngine as tse
     except ImportError as exc:

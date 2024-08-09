@@ -40,9 +40,7 @@ class Lockdown(commands.Cog):
 
     __version__: Final[str] = "1.1.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
 
     def __init__(self, bot):
         self.bot = bot
@@ -102,9 +100,7 @@ class Lockdown(commands.Cog):
         """Lockdown settings commands."""
 
     @lockdownset.command()
-    async def logchannel(
-        self, ctx: commands.Context, channel: Optional[discord.TextChannel]
-    ):
+    async def logchannel(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
         """Set the channel for logging lockdowns."""
         if channel is None:
             await self.config.guild(ctx.guild).log_channel.clear()
@@ -177,15 +173,12 @@ class Lockdown(commands.Cog):
             await ctx.channel.edit(locked=(action == "lock"))
         else:
             overwrites = (
-                ctx.channel.overwrites_for(ctx.guild.default_role)
-                or discord.PermissionOverwrite()
+                ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
             )
             if overwrites.send_messages == action_props["send_messages"]:
                 return await ctx.send(action_props["already_set_message"])
             overwrites.send_messages = action_props["send_messages"]
-            await ctx.channel.set_permissions(
-                ctx.guild.default_role, overwrite=overwrites
-            )
+            await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
 
         # Log the event
         log_event = action_props["log_event"]

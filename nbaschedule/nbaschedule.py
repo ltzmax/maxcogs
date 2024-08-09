@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import aiohttp
 import discord
 import orjson
@@ -40,9 +41,7 @@ class NBASchedule(commands.Cog):
 
     __version__: Final[str] = "1.0.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBASchedule.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBASchedule.md"
 
     def __init__(self, bot):
         self.bot = bot
@@ -67,10 +66,7 @@ class NBASchedule(commands.Cog):
                 "The NBA schedule data is currently unavailable.\nPlease try again later or check the NBA schedule at <https://www.nba.com/schedule>."
             )
         schedule = orjson.loads(data)
-        if (
-            "leagueSchedule" not in schedule
-            or "gameDates" not in schedule["leagueSchedule"]
-        ):
+        if "leagueSchedule" not in schedule or "gameDates" not in schedule["leagueSchedule"]:
             log.info("There is no game data to generate!")
 
         games = get_games(schedule)

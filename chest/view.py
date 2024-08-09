@@ -52,7 +52,9 @@ class ChestView(discord.ui.View):
     async def init_view(self):
         self.emoji = await self.config.emoji()  # Fetch the emoji from the config
         self.button = discord.ui.Button(
-            label="Claim Here!", style=discord.ButtonStyle.green, emoji=self.emoji
+            label="Claim Here!",
+            style=discord.ButtonStyle.green,
+            emoji=self.emoji,
         )
         self.button.callback = self.button_callback
         self.add_item(self.button)

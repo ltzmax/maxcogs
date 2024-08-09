@@ -48,16 +48,12 @@ class RestartButton(discord.ui.View):
             )
             return False
         if self.clicked:
-            await interaction.response.send_message(
-                ("Button already clicked."), ephemeral=True
-            )
+            await interaction.response.send_message(("Button already clicked."), ephemeral=True)
             return False
         return True
 
     @discord.ui.button(label="Restart", style=discord.ButtonStyle.primary)
-    async def restart_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def restart_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.clicked = True
         button.disabled = True
         await interaction.response.send_message("Restarting...", ephemeral=True)

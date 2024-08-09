@@ -111,9 +111,7 @@ class Chest(commands.Cog):
                         else:
                             view = ChestView(self.bot, self.config, channel)
                             await view.init_view()
-                            message = await channel.send(
-                                embed=await view.get_embed(), view=view
-                            )
+                            message = await channel.send(embed=await view.get_embed(), view=view)
                             view.message = message  # Store the message in the view
         else:
             view = ChestView(self.bot, self.config, channel)
@@ -258,12 +256,8 @@ class Chest(commands.Cog):
             # Get the first attachment
             attachment = ctx.message.attachments[0]
             # Check if the attachment has a valid extension
-            if not attachment.filename.lower().endswith(
-                (".png", ".jpg", ".jpeg", ".gif")
-            ):
-                await ctx.send(
-                    "Invalid image format. Only PNG, JPG, GIF, and JPEG are allowed."
-                )
+            if not attachment.filename.lower().endswith((".png", ".jpg", ".jpeg", ".gif")):
+                await ctx.send("Invalid image format. Only PNG, JPG, GIF, and JPEG are allowed.")
                 return
             # Use the attachment as the image
             image_url = attachment.url
@@ -271,9 +265,7 @@ class Chest(commands.Cog):
         elif image:
             # Check if the URL has a valid extension
             if not image.lower().endswith((".png", ".jpg", ".jpeg", ".gif")):
-                await ctx.send(
-                    "Invalid image format. Only PNG, JPG, GIF, and JPEG are allowed."
-                )
+                await ctx.send("Invalid image format. Only PNG, JPG, GIF, and JPEG are allowed.")
                 return
             # Use the URL as the image
             image_url = image
@@ -333,9 +325,7 @@ class Chest(commands.Cog):
         await ctx.send(f"Image usage is now {'enabled' if toggle else 'disabled'}.")
 
     @owner.command()
-    async def setemoji(
-        self, ctx: commands.Context, emoji: Optional[RealEmojiConverter]
-    ):
+    async def setemoji(self, ctx: commands.Context, emoji: Optional[RealEmojiConverter]):
         """
         Change the default emoji on the button.
 
@@ -353,9 +343,7 @@ class Chest(commands.Cog):
     async def reset(self, ctx: commands.Context):
         """Reset back to default setting"""
         view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(
-            "Are you sure you want to reset Chest settings?", view=view
-        )
+        view.message = await ctx.send("Are you sure you want to reset Chest settings?", view=view)
         await view.wait()
         if view.result:
             await self.config.clear()

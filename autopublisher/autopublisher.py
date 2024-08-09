@@ -48,14 +48,10 @@ class ChannelView(discord.ui.View):
         self.set_select_options()
         self.add_item(self.select)
         # Add buttons below the select menu
-        self.confirm_button = discord.ui.Button(
-            label="Confirm", style=discord.ButtonStyle.green
-        )
+        self.confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.green)
         self.confirm_button.callback = self.confirm_button_callback
         self.add_item(self.confirm_button)
-        self.remove_button = discord.ui.Button(
-            label="Remove", style=discord.ButtonStyle.red
-        )
+        self.remove_button = discord.ui.Button(label="Remove", style=discord.ButtonStyle.red)
         self.remove_button.callback = self.remove_button_callback
         self.add_item(self.remove_button)
 
@@ -106,9 +102,7 @@ class ChannelView(discord.ui.View):
                         ephemeral=True,
                     )
         else:
-            await interaction.response.send_message(
-                "No channel selected.", ephemeral=True
-            )
+            await interaction.response.send_message("No channel selected.", ephemeral=True)
 
     async def remove_button_callback(self, interaction: discord.Interaction):
         if self.selected_channel:
@@ -127,9 +121,7 @@ class ChannelView(discord.ui.View):
                         ephemeral=True,
                     )
         else:
-            await interaction.response.send_message(
-                "No channel selected.", ephemeral=True
-            )
+            await interaction.response.send_message("No channel selected.", ephemeral=True)
 
 
 class AutoPublisher(commands.Cog):
@@ -137,15 +129,11 @@ class AutoPublisher(commands.Cog):
 
     __version__: Final[str] = "2.1.4"
     __author__: Final[str] = "MAX"
-    __docs__: Final[
-        str
-    ] = "https://github.com/ltzmax/maxcogs/blob/master/docs/AutoPublisher.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/AutoPublisher.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
-        self.config: Config = Config.get_conf(
-            self, identifier=15786223, force_registration=True
-        )
+        self.config: Config = Config.get_conf(self, identifier=15786223, force_registration=True)
         default_guild: Dict[str, Union[bool, List[int]]] = {
             "toggle": False,
             "ignored_channels": [],
@@ -273,9 +261,7 @@ class AutoPublisher(commands.Cog):
             )
 
         # Check if there are any news channels
-        news_channels = [
-            channel for channel in ctx.guild.text_channels if channel.is_news()
-        ]
+        news_channels = [channel for channel in ctx.guild.text_channels if channel.is_news()]
         if not news_channels:
             return await ctx.send("There are no news channels available to ignore.")
 
