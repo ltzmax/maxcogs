@@ -17,3 +17,8 @@ Guess Who's that Pokémon in 30 seconds!<br/><br/>You can optionally specify gen
 
 Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).<br/><br/>**Example:**<br/>- `[p]tcgcard pikachu` - returns information about pikachu's cards.<br/><br/>**Arguments:**<br/>- `<query>` - The pokemon you want to search for.
 
+# pokeinfo (Hybrid Command)
+ - Usage: `[p]pokeinfo <pokemon>`
+ - Slash Usage: `/pokeinfo <pokemon>`
+
+Get information about a Pokémon.<br/><br/>**Example:**<br/>- `[p]pokeinfo pikachu` - returns information about Pikachu.<br/><br/>**Arguments:**<br/>- `<pokemon>` - The Pokémon you want to search for.

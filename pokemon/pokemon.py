@@ -60,8 +60,8 @@ class Pokemon(commands.Cog):
     """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.7.1"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/WhosThatPokemon.md"
+    __version__: Final[str] = "1.7.2"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Pokemon.md"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot
@@ -180,8 +180,12 @@ class Pokemon(commands.Cog):
     def create_moves_embed(self, data):
         moves_info = humanize_list(
             [
-                f"{m['move']['name'].capitalize()} ({m['version_group_details'][0]['level_learned_at']})"
-                for m in data["moves"]
+                "\n".join(
+                    [
+                        f"{m['move']['name'].capitalize()} ({m['version_group_details'][0]['level_learned_at']})"
+                        for m in data["moves"]
+                    ]
+                )
             ]
         )
         embed = discord.Embed(
@@ -193,11 +197,54 @@ class Pokemon(commands.Cog):
         embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data["id"]))
         return embed
 
-    def create_sprites_embed(self, data):
-        sprites = humanize_list([f"[{k}]({v})" for k, v in data["sprites"].items() if v])
+    async def fetch_location_data(self, url):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    return None
+                return await response.json()
+
+    async def create_locations_embed(self, data, location_areas):
+        # Ensure location_areas is a list
+        if not isinstance(location_areas, list):
+            return None
+
+        # Format the location information
+        locations = []
+        for location in location_areas:
+            if not isinstance(location, dict):
+                continue
+            location_area = location.get("location_area", {})
+            location_name = location_area.get("name", "Unknown Location").replace("-", " ").title()
+            version_details = location.get("version_details", [])
+
+            # Format version details
+            versions = []
+            for detail in version_details:
+                version_name = (
+                    detail.get("version", {})
+                    .get("name", "Unknown Version")
+                    .replace("-", " ")
+                    .title()
+                )
+                encounter_details = detail.get("encounter_details", [])
+                if encounter_details:
+                    chance = encounter_details[0].get("chance", "Unknown Chance")
+                    versions.append(f"{version_name}: {chance}%")
+
+            versions_str = "\n".join(versions)
+            locations.append(f"**{location_name}**:\n{versions_str}")
+
+        # Join all locations into a single string
+        locations_str = "\n\n".join(locations)
+
+        # Ensure the description does not exceed the character limit
+        if len(locations_str) > 4000:
+            locations_str = locations_str[:4000] + "..."
+
         embed = discord.Embed(
-            title=data["name"].capitalize() + " Sprites",
-            description=f"{sprites if len(sprites) < 4000 else 'Too many sprites to display.'}",
+            title=data["name"].capitalize() + " Locations",
+            description=locations_str,
             color=discord.Color.blue(),
             url=f"https://www.pokemon.com/us/pokedex/{data['name']}",
         )
@@ -359,7 +406,14 @@ class Pokemon(commands.Cog):
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
     async def pokeinfo(self, ctx: commands.Context, *, pokemon: str):
-        """Get information about a Pokémon."""
+        """Get information about a Pokémon.
+        
+        **Example:**
+        - `[p]pokeinfo pikachu` - returns information about Pikachu.
+
+        **Arguments:**
+        - `<pokemon>` - The Pokémon you want to search for.
+        """
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 f"https://pokeapi.co/api/v2/pokemon/{pokemon.lower()}"
@@ -377,8 +431,12 @@ class Pokemon(commands.Cog):
             pages.append(self.create_held_items_embed(data))
         if data["moves"]:
             pages.append(self.create_moves_embed(data))
-        if data["sprites"]:
-            pages.append(self.create_sprites_embed(data))
+        if data["location_area_encounters"]:
+            location_areas = await self.fetch_location_data(data["location_area_encounters"])
+            if location_areas:
+                embed = await self.create_locations_embed(data, location_areas)
+                if embed:
+                    pages.append(embed)
         await SimpleMenu(
             pages,
             use_select_menu=True,
