@@ -60,7 +60,7 @@ class Pokemon(commands.Cog):
     """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.7.0"
+    __version__: Final[str] = "1.7.1"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/WhosThatPokemon.md"
 
     def __init__(self, bot: Red):
@@ -115,6 +115,94 @@ class Pokemon(commands.Cog):
         base_image.close()
         poke_image.close()
         return temp
+
+    def create_base_info_embed(self, data):
+        embed = discord.Embed(
+            title=data["name"].capitalize(),
+            description=f"Information about {data['name'].capitalize()}",
+            color=discord.Color.blue(),
+            url=f"https://www.pokemon.com/us/pokedex/{data['name']}",
+        )
+        embed.set_thumbnail(url=data["sprites"]["front_default"])
+        embed.add_field(
+            name="Base Stats:",
+            value="\n".join(
+                [f"{s['stat']['name'].capitalize()}: {s['base_stat']}" for s in data["stats"]]
+            )
+            + f"\nTotal: {sum([s['base_stat'] for s in data['stats']])}",
+            inline=False,
+        )
+        embed.add_field(name="Height:", value=data["height"])
+        embed.add_field(name="Weight:", value=data["weight"])
+        embed.add_field(name=" ", value=" ", inline=False)
+        embed.add_field(name="Base Experience:", value=data["base_experience"])
+        embed.add_field(
+            name="Types:",
+            value=humanize_list([t["type"]["name"].capitalize() for t in data["types"]]),
+        )
+        embed.add_field(name=" ", value=" ", inline=False)
+        embed.add_field(
+            name="Abilities:",
+            value=humanize_list([a["ability"]["name"].capitalize() for a in data["abilities"]])
+            + f" (Hidden: {humanize_list([a['ability']['name'].capitalize() for a in data['abilities'] if a['is_hidden']] or ['None'])})",
+        )
+        if data["game_indices"]:
+            embed.add_field(
+                name="Game Indices:",
+                value=humanize_list(
+                    [
+                        f"{g['game_index']} ({g['version']['name'].capitalize()})"
+                        for g in data["game_indices"]
+                    ]
+                ),
+                inline=False,
+            )
+        embed.set_image(url=data["sprites"]["other"]["official-artwork"]["front_default"])
+        embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data["id"]))
+        return embed
+
+    def create_held_items_embed(self, data):
+        items_held_info = humanize_list(
+            [
+                f"{h['item']['name'].capitalize()} ({h['version_details'][0]['rarity']})"
+                for h in data["held_items"]
+            ]
+        )
+        embed = discord.Embed(
+            title=data["name"].capitalize() + " Held Items",
+            description=f"{items_held_info if len(items_held_info) < 4000 else 'Too many items to display.'}",
+            color=discord.Color.blue(),
+            url=f"https://www.pokemon.com/us/pokedex/{data['name']}",
+        )
+        embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data["id"]))
+        return embed
+
+    def create_moves_embed(self, data):
+        moves_info = humanize_list(
+            [
+                f"{m['move']['name'].capitalize()} ({m['version_group_details'][0]['level_learned_at']})"
+                for m in data["moves"]
+            ]
+        )
+        embed = discord.Embed(
+            title=data["name"].capitalize() + " Moves",
+            description=f"{moves_info if len(moves_info) < 4000 else 'Too many moves to display.'}",
+            color=discord.Color.blue(),
+            url=f"https://www.pokemon.com/us/pokedex/{data['name']}",
+        )
+        embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data["id"]))
+        return embed
+
+    def create_sprites_embed(self, data):
+        sprites = humanize_list([f"[{k}]({v})" for k, v in data["sprites"].items() if v])
+        embed = discord.Embed(
+            title=data["name"].capitalize() + " Sprites",
+            description=f"{sprites if len(sprites) < 4000 else 'Too many sprites to display.'}",
+            color=discord.Color.blue(),
+            url=f"https://www.pokemon.com/us/pokedex/{data['name']}",
+        )
+        embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data["id"]))
+        return embed
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(generation=("Optionally choose generation from gen1 to gen9."))
@@ -264,6 +352,36 @@ class Pokemon(commands.Cog):
             pages.append(embed)
         await SimpleMenu(
             pages,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
+
+    @commands.hybrid_command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def pokeinfo(self, ctx: commands.Context, *, pokemon: str):
+        """Get information about a Pokémon."""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"https://pokeapi.co/api/v2/pokemon/{pokemon.lower()}"
+            ) as response:
+                if response.status != 200:
+                    return await ctx.send("Could not fetch data from the PokéAPI.")
+                    log.error(
+                        f"Failed to fetch data from the PokéAPI. Status code: {response.status}."
+                    )
+                data = await response.json()
+
+        pages = []
+        pages.append(self.create_base_info_embed(data))
+        if data["held_items"]:
+            pages.append(self.create_held_items_embed(data))
+        if data["moves"]:
+            pages.append(self.create_moves_embed(data))
+        if data["sprites"]:
+            pages.append(self.create_sprites_embed(data))
+        await SimpleMenu(
+            pages,
+            use_select_menu=True,
             disable_after_timeout=True,
             timeout=120,
         ).start(ctx)
