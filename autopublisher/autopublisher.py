@@ -40,7 +40,7 @@ log = logging.getLogger("red.maxcogs.autopublisher")
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.2.0"
+    __version__: Final[str] = "2.2.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/AutoPublisher.md"
 
@@ -53,7 +53,6 @@ class AutoPublisher(commands.Cog):
         }
         default_global = {
             "published_count": 0,
-            "start_timestamp": 0,
         }
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
@@ -72,12 +71,6 @@ class AutoPublisher(commands.Cog):
         total_count = data.get("published_count", 0)
         total_count += 1
         await self.config.published_count.set(total_count)
-
-        # Initialize start_timestamp if not set
-        start_timestamp = data.get("start_timestamp")
-        if start_timestamp is None:
-            start_timestamp = int(time.time())
-            await self.config.start_timestamp.set(start_timestamp)
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
@@ -137,27 +130,16 @@ class AutoPublisher(commands.Cog):
         """
         Show the number of published messages.
 
-        Note that this count is only for messages published by AutoPublisher. It doesn't count messages published manually.
-
-        The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
-        When you first start using this cog, the timestamp will be begin from that time. (not from the cog installation time)
-            - This is to prevent the count from being reset when you update the cog or restart the bot. (it will never reset unless you manually reset it)
+        NOTE: The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
         """
         data = await self.config.all()
         total_count = data.get("published_count", 0)
-        start_timestamp = data.get("start_timestamp")
-
-        # If start_timestamp is not set, initialize it
-        if not start_timestamp:
-            start_timestamp = int(time.time())
-            await self.config.start_timestamp.set(start_timestamp)
 
         embed = discord.Embed(
             title="AutoPublisher Stats",
-            description=f"Started counting published messages since\n<t:{start_timestamp}:F> (<t:{start_timestamp}:R>).",
+            description=f"Total Published Messages:\n{humanize_number(total_count)}",
             color=await ctx.embed_color(),
         )
-        embed.add_field(name="Total Published Messages:", value=str(total_count), inline=False)
         await ctx.send(embed=embed)
 
     @autopublisher.command()
@@ -310,7 +292,6 @@ class AutoPublisher(commands.Cog):
         await view.wait()
         if view.result:
             await self.config.published_count.set(0)
-            await self.config.start_timestamp.set(0)
             await ctx.send("Published messages count has been reset.")
         else:
             await ctx.send("Published messages count reset has been cancelled.")

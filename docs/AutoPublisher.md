@@ -24,7 +24,7 @@ Toggle AutoPublisher enable or disable.<br/><br/>- It's disabled by default.<br/
  - Usage: `[p]autopublisher stats`
  - Restricted to: `BOT_OWNER`
 
-Show the number of published messages.<br/><br/>Note that this count is only for messages published by AutoPublisher. It doesn't count messages published manually.<br/><br/>The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)<br/>When you first start using this cog, the timestamp will be begin from that time. (not from the cog installation time)<br/>    - This is to prevent the count from being reset when you update the cog or restart the bot. (it will never reset unless you manually reset it)
+Show the number of published messages.<br/><br/>NOTE: The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
 
 ## autopublisher settings
  - Usage: `[p]autopublisher settings`
