@@ -10,28 +10,34 @@ Automatically push news channel messages.
 
 Manage AutoPublisher setting.
 
-## autopublisher settings
- - Usage: `[p]autopublisher settings`
- - Aliases: `view`
-
-Show AutoPublisher setting.
-
 ## autopublisher ignorechannel
  - Usage: `[p]autopublisher ignorechannel`
 
-Ignore a news channel to prevent AutoPublisher from publishing messages in it.<br/><br/>- This command will show a select menu to choose one or more news channel(s) to ignore.<br/><br/>**Note:**<br/>- Use `Confirm` button to confirm the selected channel(s) to ignore.<br/>- Use `Remove` button to remove the selected channel(s) from the ignored list.
-
-## autopublisher version
- - Usage: `[p]autopublisher version`
-
-Shows the version of the cog.
+Ignore a news channel to prevent AutoPublisher from publishing messages in it.<br/><br/>Please note select menu's can't view more than 25 channels.<br/><br/>- This command will show a select menu to choose one or more news channel(s) to ignore.<br/><br/>**Note:**<br/>- Use `Confirm` button to confirm the selected channel(s) to ignore.<br/>- Use `Remove` button to remove the selected channel(s) from the ignored list.<br/>- You can confrim or remove multiple channels at once. (must go by one by one)
 
 ## autopublisher toggle
  - Usage: `[p]autopublisher toggle`
 
 Toggle AutoPublisher enable or disable.<br/><br/>- It's disabled by default.<br/>    - Please ensure that the bot has access to `view_channel` in your news channels. it also need `manage_messages` to be able to publish.<br/><br/>**Note:**<br/>- This cog requires News Channel. If you don't have it, you can't use this cog.<br/>    - Learn more [here on how to enable](https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server) community server. (which is a part of news channel feature.)
 
+## autopublisher stats
+ - Usage: `[p]autopublisher stats`
+ - Restricted to: `BOT_OWNER`
+
+Show the number of published messages.<br/><br/>Note that this count is only for messages published by AutoPublisher. It doesn't count messages published manually.<br/><br/>The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)<br/>When you first start using this cog, the timestamp will be begin from that time. (not from the cog installation time)<br/>    - This is to prevent the count from being reset when you update the cog or restart the bot. (it will never reset unless you manually reset it)
+
+## autopublisher settings
+ - Usage: `[p]autopublisher settings`
+ - Aliases: `view`
+
+Show AutoPublisher setting.
+
 ## autopublisher reset
  - Usage: `[p]autopublisher reset`
 
 Reset AutoPublisher setting.
+
+## autopublisher version
+ - Usage: `[p]autopublisher version`
+
+Shows the version of the cog.

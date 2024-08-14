@@ -27,107 +27,20 @@ import logging
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
+import time
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_list
+from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView
+from .view import ChannelView
 
 log = logging.getLogger("red.maxcogs.autopublisher")
-
-
-class ChannelView(discord.ui.View):
-    def __init__(self, bot: Red, config: Config, guild_id: int):
-        super().__init__(timeout=60)
-        self.bot = bot
-        self.config = config
-        self.guild_id = guild_id
-        self.selected_channel = None
-        # Initialize the select menu
-        self.select = discord.ui.Select(placeholder="Select a news channel")
-        self.select.callback = self.select_callback
-        self.set_select_options()
-        self.add_item(self.select)
-        # Add buttons below the select menu
-        self.confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.green)
-        self.confirm_button.callback = self.confirm_button_callback
-        self.add_item(self.confirm_button)
-        self.remove_button = discord.ui.Button(label="Remove", style=discord.ButtonStyle.red)
-        self.remove_button.callback = self.remove_button_callback
-        self.add_item(self.remove_button)
-
-    async def on_timeout(self) -> None:
-        for item in self.children:
-            item.disabled = True
-        if self.message:
-            await self.message.edit(view=self)
-
-    def set_select_options(self):
-        # This method sets the options for the select menu
-        guild = self.bot.get_guild(self.guild_id)
-        if guild:
-            channels = [channel for channel in guild.text_channels if channel.is_news()]
-            self.select.options = [
-                discord.SelectOption(label=channel.name, value=str(channel.id))
-                for channel in channels
-            ]
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not interaction.user.id == interaction.user.id:
-            await interaction.response.send_message(
-                ("You are not the author of this command."), ephemeral=True
-            )
-            return False
-        return True
-
-    async def select_callback(self, interaction: discord.Interaction):
-        self.selected_channel = self.bot.get_channel(int(interaction.data["values"][0]))
-        await interaction.response.send_message(
-            f"Selected channel: {self.selected_channel}", ephemeral=True
-        )
-
-    async def confirm_button_callback(self, interaction: discord.Interaction):
-        if self.selected_channel:
-            async with self.config.guild_from_id(
-                self.guild_id
-            ).ignored_channels() as ignored_channels:
-                if self.selected_channel.id not in ignored_channels:
-                    ignored_channels.append(self.selected_channel.id)
-                    await interaction.response.send_message(
-                        f"Confirmed and ignored channel: {self.selected_channel}",
-                        ephemeral=True,
-                    )
-                else:
-                    await interaction.response.send_message(
-                        f"Channel {self.selected_channel} is already ignored.",
-                        ephemeral=True,
-                    )
-        else:
-            await interaction.response.send_message("No channel selected.", ephemeral=True)
-
-    async def remove_button_callback(self, interaction: discord.Interaction):
-        if self.selected_channel:
-            async with self.config.guild_from_id(
-                self.guild_id
-            ).ignored_channels() as ignored_channels:
-                if self.selected_channel.id in ignored_channels:
-                    ignored_channels.remove(self.selected_channel.id)
-                    await interaction.response.send_message(
-                        f"Removed channel from ignored list: {self.selected_channel}",
-                        ephemeral=True,
-                    )
-                else:
-                    await interaction.response.send_message(
-                        f"Channel {self.selected_channel} is not in the ignored list.",
-                        ephemeral=True,
-                    )
-        else:
-            await interaction.response.send_message("No channel selected.", ephemeral=True)
 
 
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.1.4"
+    __version__: Final[str] = "2.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/AutoPublisher.md"
 
@@ -138,7 +51,12 @@ class AutoPublisher(commands.Cog):
             "toggle": False,
             "ignored_channels": [],
         }
+        default_global = {
+            "published_count": 0,
+            "start_timestamp": 0,
+        }
         self.config.register_guild(**default_guild)
+        self.config.register_global(**default_global)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -149,14 +67,24 @@ class AutoPublisher(commands.Cog):
         """Nothing to delete."""
         return
 
+    async def increment_published_count(self):
+        data = await self.config.all()
+        total_count = data.get("published_count", 0)
+        total_count += 1
+        await self.config.published_count.set(total_count)
+
+        # Initialize start_timestamp if not set
+        start_timestamp = data.get("start_timestamp")
+        if start_timestamp is None:
+            start_timestamp = int(time.time())
+            await self.config.start_timestamp.set(start_timestamp)
+
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
-        """Publish message to news channel."""
+        """Automatically publish messages in news channels."""
         if message.guild is None:
             return
 
-        # Reduce the number of return statements: Having many return statements can make the code harder to follow.
-        # You can combine some of the conditions using logical operators. Cool right?
         isAutoPublisherEnabled = await self.config.guild(message.guild).toggle()
         ignoredChannels = await self.config.guild(message.guild).ignored_channels()
         isCogDisabled = await self.bot.cog_disabled_in_guild(self, message.guild)
@@ -179,7 +107,7 @@ class AutoPublisher(commands.Cog):
             if isAutoPublisherEnabled:
                 await self.config.guild(message.guild).toggle.set(False)
                 log.warning(
-                    f"AutoPublisher has been disabled in {message.guild} due to News Channel feature is not enabled."
+                    f"AutoPublisher has been disabled in {message.guild} due to News Channel feature not being enabled."
                 )
             return
         if not isNewsChannel and isTextChannel:
@@ -188,6 +116,7 @@ class AutoPublisher(commands.Cog):
             try:
                 await asyncio.sleep(0.5)
                 await asyncio.wait_for(message.publish(), timeout=60)
+                await self.increment_published_count()
             except (
                 discord.HTTPException,
                 discord.Forbidden,
@@ -195,11 +124,41 @@ class AutoPublisher(commands.Cog):
             ) as e:
                 log.error(e)
 
-    @commands.group(aliases=["aph", "autopub"])
     @commands.guild_only()
+    @commands.group(aliases=["aph", "autopub"])
     @commands.admin_or_permissions(manage_guild=True)
     async def autopublisher(self, ctx: commands.Context) -> None:
         """Manage AutoPublisher setting."""
+
+    @commands.is_owner()
+    @autopublisher.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def stats(self, ctx: commands.Context):
+        """
+        Show the number of published messages.
+
+        Note that this count is only for messages published by AutoPublisher. It doesn't count messages published manually.
+
+        The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
+        When you first start using this cog, the timestamp will be begin from that time. (not from the cog installation time)
+            - This is to prevent the count from being reset when you update the cog or restart the bot. (it will never reset unless you manually reset it)
+        """
+        data = await self.config.all()
+        total_count = data.get("published_count", 0)
+        start_timestamp = data.get("start_timestamp")
+
+        # If start_timestamp is not set, initialize it
+        if not start_timestamp:
+            start_timestamp = int(time.time())
+            await self.config.start_timestamp.set(start_timestamp)
+
+        embed = discord.Embed(
+            title="AutoPublisher Stats",
+            description=f"Started counting published messages since\n<t:{start_timestamp}:F> (<t:{start_timestamp}:R>).",
+            color=await ctx.embed_color(),
+        )
+        embed.add_field(name="Total Published Messages:", value=str(total_count), inline=False)
+        await ctx.send(embed=embed)
 
     @autopublisher.command()
     @commands.bot_has_permissions(manage_messages=True, view_channel=True)
@@ -244,6 +203,7 @@ class AutoPublisher(commands.Cog):
         **Note:**
         - Use `Confirm` button to confirm the selected channel(s) to ignore.
         - Use `Remove` button to remove the selected channel(s) from the ignored list.
+        - You can confrim or remove multiple channels at once. (must go by one by one)
         """
         if not "NEWS" in ctx.guild.features:
             view = discord.ui.View()
@@ -328,3 +288,29 @@ class AutoPublisher(commands.Cog):
             await ctx.send("AutoPublisher setting has been reset.")
         else:
             await ctx.send("AutoPublisher setting reset has been cancelled.")
+
+    @commands.is_owner()
+    @autopublisher.command(hidden=True)  # To prevent accidental usage.
+    @commands.bot_has_permissions(embed_links=True)
+    async def resetcount(self, ctx: commands.Context) -> None:
+        """Reset the published messages count."""
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        embed = discord.Embed(
+            title="Reset Published Messages Count",
+            description="Are you sure you want to reset the published messages count?",
+            color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="⚠️WARNING⚠️",
+            value="This action will reset the published messages count to `0` and cannot be undone unless you have a backup of the data.",
+            inline=False,
+        )
+        embed.set_footer(text="Be careful with this action.")
+        view.message = await ctx.send(embed=embed, view=view)
+        await view.wait()
+        if view.result:
+            await self.config.published_count.set(0)
+            await self.config.start_timestamp.set(0)
+            await ctx.send("Published messages count has been reset.")
+        else:
+            await ctx.send("Published messages count reset has been cancelled.")

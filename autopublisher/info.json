@@ -15,6 +15,7 @@
     "permissions": [
         "manage_messages"
     ],
+    "requirements": [],
     "min_python_version": [
         3,
         9,
