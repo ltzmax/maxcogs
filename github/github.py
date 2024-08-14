@@ -295,15 +295,7 @@ class GitHub(commands.Cog):
             url=f"https://github.com/{entries[0].author}",
             icon_url=entries[0].media_thumbnail[0]["url"],
         )
-        view = discord.ui.View()
-        style = discord.ButtonStyle.gray
-        new_commit = discord.ui.Button(
-            style=style,
-            label=f"{num} new commit{'s' if num > 1 else ''}",
-            url=feed_link if num > 1 else entries[0].link,
-        )
-        view.add_item(item=new_commit)
-        return embed, view
+        return embed
 
     @commands.is_owner()
     @commands.command(name="ghinterval", hidden=True)
@@ -420,14 +412,15 @@ class GitHub(commands.Cog):
         guild_config = await self.config.guild(ctx.guild).all()
 
         if channel and channel.permissions_for(ctx.guild.me).embed_links:
-            embed, view = await self._commit_embeds(
-                entries=[parsed.entries[0]],
-                feed_link=parsed.feed.link,
-                color=guild_config["color"],
-                timestamp=guild_config["timestamp"],
-                short=guild_config["short"],
+            return await channel.send(
+                embed=await self._commit_embeds(
+                    entries=[parsed.entries[0]],
+                    feed_link=parsed.feed.link,
+                    color=guild_config["color"],
+                    timestamp=guild_config["timestamp"],
+                    short=guild_config["short"],
+                )
             )
-            return await channel.send(embed=embed, view=view)
         else:
             return await ctx.send(
                 "Either the set channel has been removed or I do not have permissions to send embeds in the channel."
@@ -621,6 +614,7 @@ class GitHub(commands.Cog):
 
         # Set user config
         async with self.config.member(ctx.author).feeds() as feeds:
+
             # Checks
             if name in feeds:
                 return await ctx.send("There is already a feed with that name!")
@@ -657,14 +651,15 @@ class GitHub(commands.Cog):
             )
 
         # Send last feed entry
-        embed, view = await self._commit_embeds(
-            entries=[parsed.entries[0]],
-            feed_link=parsed.feed.link,
-            color=guild_config["color"],
-            timestamp=guild_config["timestamp"],
-            short=guild_config["short"],
+        await channel.send(
+            embed=await self._commit_embeds(
+                entries=[parsed.entries[0]],
+                feed_link=parsed.feed.link,
+                color=guild_config["color"],
+                timestamp=guild_config["timestamp"],
+                short=guild_config["short"],
+            )
         )
-        await channel.send(embed=embed, view=view)
 
         return await ctx.send("Feed successfully added.")
 
@@ -730,17 +725,20 @@ class GitHub(commands.Cog):
     async def _github_rss(self, guild_to_check=None):
         # Loop through each guild
         for guild_id, guild_config in (await self.config.all_guilds()).items():
+
             # Check for single guild
             if guild_to_check and guild_id != guild_to_check:
                 continue
 
             if (
-                not (guild := self.bot.get_guild(guild_id))
-                or not (  # Bot no longer in guild
+                not (guild := self.bot.get_guild(guild_id))  # Bot no longer in guild
+                or not (
                     channel := self.bot.get_channel(guild_config["channel"])
-                )
-                or not channel.permissions_for(guild.me).send_messages  # Guild channel not found
-                or not channel.permissions_for(  # Cannot send in guild channel
+                )  # Guild channel not found
+                or not channel.permissions_for(
+                    guild.me
+                ).send_messages  # Cannot send in guild channel
+                or not channel.permissions_for(
                     guild.me
                 ).embed_links  # Cannot embed links in guild channel
             ):
@@ -750,6 +748,7 @@ class GitHub(commands.Cog):
             async for member_id, member_data in AsyncIter(
                 (await self.config.all_members(guild)).items(), steps=100
             ):
+
                 # Loop through each feed
                 for name, feed in member_data["feeds"].items():
                     url = await self._url_from_config(feed)
@@ -769,6 +768,7 @@ class GitHub(commands.Cog):
                         timestamp=guild_config["timestamp"],
                         short=guild_config["short"],
                     ):
+
                         # Get channel (guild vs feed override)
                         ch = channel
                         if feed["channel"]:
