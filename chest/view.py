@@ -94,9 +94,15 @@ class ChestView(discord.ui.View):
             )
             embed.add_field(
                 name=f"You Got:",
-                value=f"{humanize_number(coins)} {eco_name}\nYour {eco_name} balance is now: {humanize_number(bal)}",
+                value=f"{humanize_number(coins)} {eco_name}",
                 inline=False,
             )
+            if not chances <= fail_rate:
+                embed.add_field(
+                    name="Total Balance:",
+                    value=f"Your new balance is now: {humanize_number(bal)}",
+                    inline=False,
+                )
         next_time = datetime.datetime.now(pytz.utc) + datetime.timedelta(hours=4)
         discord_timestamp = (
             f"<t:{int(next_time.timestamp())}:f> (<t:{int(next_time.timestamp())}:R>)"
