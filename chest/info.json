@@ -15,7 +15,7 @@
     "permissions": [
         "embed_links"
     ],
-    "requirements": ["pytz"],
+    "requirements": ["pytz", "emoji"],
     "min_python_version": [
         3,
         9,

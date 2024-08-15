@@ -110,7 +110,9 @@ class ChestView(discord.ui.View):
         )
         embed.add_field(name="Next Spawn:", value=discord_timestamp, inline=False)
         if toggle:
-            embed.set_image(url=default_claim_image if not chances <= fail_rate else default_fail_image)
+            embed.set_image(
+                url=default_claim_image if not chances <= fail_rate else default_fail_image
+            )
         self.button.disabled = True
         # Remove the "Click the button to claim free..." text and footer after button click.
         embed.description = ""

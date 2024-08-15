@@ -27,13 +27,15 @@ import logging
 from typing import Any, Final, Literal, Optional
 
 import discord
+from emoji import EMOJI_DATA
 from discord.ext import tasks
 from redbot.core import Config, bank, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_number, box
 from redbot.core.utils.views import ConfirmView
+from discord.ext.commands.errors import EmojiNotFound
+from discord.ext.commands.converter import EmojiConverter
 
-from .converter import RealEmojiConverter
 from .view import ChestView
 
 log = logging.getLogger("red.maxcogs.chest")
@@ -237,8 +239,8 @@ class Chest(commands.Cog):
     async def owner(self, ctx: commands.Context):
         """Group owner commands."""
 
-    @owner.command()
-    async def setimage(
+    @owner.command(aliases=["setimage"])
+    async def image(
         self,
         ctx: commands.Context,
         image_type: Literal["spawn", "claim", "fail"],
@@ -300,7 +302,7 @@ class Chest(commands.Cog):
             f"The max {red_economy_name} is now set to {humanize_number(coins)}\nI will now choose any random {red_economy_name} between 1 and {humanize_number(coins)}"
         )
 
-    @owner.command()
+    @owner.command(aloases=["failrate"])
     async def rate(self, ctx: commands.Context, fail_rate: commands.Range[int, 1, 100]):
         """
         Change the fail rate to a different.
@@ -328,19 +330,30 @@ class Chest(commands.Cog):
         toggle = await self.config.toggle()
         await ctx.send(f"Image usage is now {'enabled' if toggle else 'disabled'}.")
 
-    @owner.command()
-    async def setemoji(self, ctx: commands.Context, emoji: Optional[RealEmojiConverter]):
+    @owner.command(aliases=["setemoji"])
+    async def emoji(self, ctx: commands.Context, emoji_input: Optional[str]):
         """
         Change the default emoji on the button.
 
         Leave blank to reset back to default.
-        Note that your bot must share same server as the emoji for the emoji to work.
+        Note that your bot must share the same server as the emoji for the custom emoji to work.
         """
-        if emoji:
-            await self.config.emoji.set(str(emoji))
-            await ctx.send(f"Default emoji has been set to {emoji}")
+        if emoji_input:
+            try:
+                # Use EmojiConverter to convert the emoji argument
+                emoji_obj = await EmojiConverter().convert(ctx, emoji_input)
+                emoji_str = str(emoji_obj)
+            except EmojiNotFound:
+                if emoji_input in EMOJI_DATA:
+                    emoji_str = emoji_input
+                else:
+                    await ctx.send(f"'{emoji_input}' is not a valid emoji.")
+                    return
+
+            await self.config.emoji.set(emoji_str)
+            await ctx.send(f"Default emoji has been set to {emoji_str}")
         else:
-            await self.config.emoji.set(str(("🪙")))
+            await self.config.emoji.set("🪙")
             await ctx.send("I've reset back to default!")
 
     @owner.command()
