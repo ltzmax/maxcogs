@@ -27,7 +27,6 @@ import logging
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
-import time
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
