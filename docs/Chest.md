@@ -40,7 +40,7 @@ Toggle whether you want to use image(s) in spawn/claim embed or not.<br/><br/>De
 ### chestset owner setimage
  - Usage: `[p]chestset owner setimage <image_type> [image=None]`
 
-Set a new default image.<br/><br/>Args:<br/>    ctx (discord.Context): The command context.<br/>    image_type (str): The type of image to update (spawn or claim).<br/>    image (str, optional): The URL of the image or None if an attachment is provided. Defaults to None.
+Set a new default image.<br/><br/>Args:<br/>    ctx (discord.Context): The command context.<br/>    image_type (str): The type of image to update (spawn, claim or fail).<br/>    image (str, optional): The URL of the image or None if an attachment is provided. Defaults to None.
 
 ### chestset owner credit
  - Usage: `[p]chestset owner credit <coins>`

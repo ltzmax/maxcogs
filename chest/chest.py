@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.chest")
 class Chest(commands.Cog):
     """First to click the button gets random credits to their `[p]bank balance`."""
 
-    __version__: Final[str] = "1.0.3"
+    __version__: Final[str] = "1.0.4"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Chest.md"
 
@@ -57,8 +57,9 @@ class Chest(commands.Cog):
             "max_coins": 5000,  # Default random between 1 and 5,000 coins.
             "chance": 30,  # Default 30% fail rate.
             "toggle": False,  # Default disabled because yes, not alot want default enabled(?)
-            "default_spawn_image": "https://cdn.maxapp.tv/Geb793.png",  # Default image.
-            "default_claim_image": "https://cdn.maxapp.tv/Z5m382.png",  # Default image.
+            "default_spawn_image": "https://pngimg.com/uploads/treasure_chest/treasure_chest_PNG78.png",  # Default image.
+            "default_claim_image": "https://pngimg.com/uploads/treasure_chest/treasure_chest_PNG130.png",  # Default image.
+            "default_fail_image": "https://pngimg.com/uploads/treasure_chest/treasure_chest_PNG40.png",  # Default image.
             "emoji": "🪙",  # Default emoji on the button.
         }
         self.config.register_global(**default_global)
@@ -240,7 +241,7 @@ class Chest(commands.Cog):
     async def setimage(
         self,
         ctx: commands.Context,
-        image_type: Literal["spawn", "claim"],
+        image_type: Literal["spawn", "claim", "fail"],
         image: str = None,
     ):
         """
@@ -248,7 +249,7 @@ class Chest(commands.Cog):
 
         Args:
             ctx (discord.Context): The command context.
-            image_type (str): The type of image to update (spawn or claim).
+            image_type (str): The type of image to update (spawn, claim or fail).
             image (str, optional): The URL of the image or None if an attachment is provided. Defaults to None.
         """
         # Check if an attachment is provided
@@ -280,6 +281,9 @@ class Chest(commands.Cog):
         elif image_type.lower() == "claim":
             await self.config.default_claim_image.set(image_url)
             await ctx.send("Default claim image updated!")
+        elif image_type.lower() == "fail":
+            await self.config.default_fail_image.set(image_url)
+            await ctx.send("Default fail image updated!")
 
     @owner.command(aliases=["credits"])
     async def credit(self, ctx: commands.Context, coins: int):

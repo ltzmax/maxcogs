@@ -71,6 +71,7 @@ class ChestView(discord.ui.View):
         fail_rate = await self.config.chance()
         toggle = await self.config.toggle()
         default_claim_image = await self.config.default_claim_image()
+        default_fail_image = await self.config.default_fail_image()
         eco_name = await bank.get_currency_name(interaction.guild)
         bal = await bank.get_balance(interaction.user)
         chances = random.randint(1, 100)  # Generate a random chance
@@ -109,7 +110,7 @@ class ChestView(discord.ui.View):
         )
         embed.add_field(name="Next Spawn:", value=discord_timestamp, inline=False)
         if toggle:
-            embed.set_image(url=default_claim_image)
+            embed.set_image(url=default_claim_image if not chances <= fail_rate else default_fail_image)
         self.button.disabled = True
         # Remove the "Click the button to claim free..." text and footer after button click.
         embed.description = ""
