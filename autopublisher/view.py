@@ -28,9 +28,10 @@ from redbot.core.config import Config
 
 
 class ChannelView(discord.ui.View):
-    def __init__(self, bot: Red, config: Config, guild_id: int):
+    def __init__(self, ctx, bot: Red, config: Config, guild_id: int):
         super().__init__(timeout=60)
         self.bot = bot
+        self.ctx = ctx
         self.config = config
         self.guild_id = guild_id
         self.selected_channel = None
@@ -64,7 +65,7 @@ class ChannelView(discord.ui.View):
             ]
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not interaction.user.id == interaction.user.id:
+        if not interaction.user.id == self.ctx.author.id:
             await interaction.response.send_message(
                 ("You are not the author of this command."), ephemeral=True
             )

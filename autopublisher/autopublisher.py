@@ -206,7 +206,7 @@ class AutoPublisher(commands.Cog):
         if not news_channels:
             return await ctx.send("There are no news channels available to ignore.")
 
-        view = ChannelView(self.bot, self.config, ctx.guild.id)
+        view = ChannelView(ctx, self.bot, self.config, ctx.guild.id)
         message = await ctx.send("Select a news channel to ignore:", view=view)
         view.message = message  # Set the message reference in the view
 
