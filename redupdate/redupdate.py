@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Final, Optional, Literal
+import logging
+from typing import Any, Final, Literal, Optional
 
 import discord
-import logging
-from redbot.core import commands, Config
-from redbot.core.utils.views import ConfirmView
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.views import ConfirmView
+
 from .view import URLModal
 
 log = logging.getLogger("red.maxcogs.redupdate")
@@ -98,8 +99,8 @@ class RedUpdate(commands.Cog):
         """
         view = URLModal(ctx, self.config)
         view.message = await ctx.send(
-            f"Please enter your custom fork URL\n-# If you're unsure of what url, see `{ctx.prefix}redset whaturl`.", 
-            view=view
+            f"Please enter your custom fork URL\n-# If you're unsure of what url, see `{ctx.prefix}redset whaturl`.",
+            view=view,
         )
 
     @redupdateset.command(name="whatlink", aliases=["whaturl"])

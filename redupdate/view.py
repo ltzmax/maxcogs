@@ -22,14 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import discord
 import logging
 import re
 
+import discord
 from redbot.core import Config
 
 log = logging.getLogger("red.maxcogs.redupdate.view")
 GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
+
 
 class URLModalView(discord.ui.Modal, title="Set Your Custom Fork"):
     forkurl: discord.ui.TextInput = discord.ui.TextInput(
@@ -40,6 +41,7 @@ class URLModalView(discord.ui.Modal, title="Set Your Custom Fork"):
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
+
 
 class URLModal(discord.ui.View):
     def __init__(self, ctx, config):
@@ -70,12 +72,16 @@ class URLModal(discord.ui.View):
         if not GITHUB.match(url):
             await interaction.followup.send(
                 f"This is not a valid url for your fork.\nCheck `redset whatlink` for more information.",
-                ephemeral=True
+                ephemeral=True,
             )
             return
         if not url.endswith("#egg=Red-DiscordBot"):
-            await interaction.followup.send("This is not a valid url for your fork.", ephemeral=True)
-            log.info("This is not a valid url for your fork, please check `redset whatlink` for more information.")
+            await interaction.followup.send(
+                "This is not a valid url for your fork.", ephemeral=True
+            )
+            log.info(
+                "This is not a valid url for your fork, please check `redset whatlink` for more information."
+            )
             return
         data = await self.config.redupdate_url()
         if data == url:
@@ -90,7 +96,5 @@ class URLModal(discord.ui.View):
         error: Exception,
         item: discord.ui.Item,
     ) -> None:
-        await interaction.followup.send(
-            f"An error occured: {error}", ephemeral=True
-        )
+        await interaction.followup.send(f"An error occured: {error}", ephemeral=True)
         log.error(f"An error occured: {error}")
