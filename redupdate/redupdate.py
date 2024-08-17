@@ -26,12 +26,11 @@ from typing import Any, Final, Optional, Literal
 
 import discord
 import logging
-import re
 from redbot.core import commands, Config
 from redbot.core.utils.views import ConfirmView
 from redbot.core.utils.chat_formatting import box
+from .view import URLModal
 
-GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
 log = logging.getLogger("red.maxcogs.redupdate")
 
 
@@ -66,7 +65,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.5.0"
+    __version__: Final[str] = "1.6.0"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
 
     def __init__(self, bot):
@@ -92,22 +91,16 @@ class RedUpdate(commands.Cog):
         """Setting commands for redupdate cog."""
 
     @redupdateset.command(name="url")
-    async def redupdateset_url(self, ctx: commands.Context, url: str):
+    async def redupdateset_url(self, ctx: commands.Context):
         """Set your custom fork url of red.
 
         Has to be vaild link such as `git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot` else it will not work.
         """
-        if not GITHUB.match(url):
-            return await ctx.send(
-                "This is not a valid url for your fork.\nCheck `redset whatlink` for more information."
-            )
-        if not url.endswith("#egg=Red-DiscordBot"):
-            return await ctx.send("This is not a valid url for your fork.")
-        data = await self.config.redupdate_url()
-        if data == url:
-            return await ctx.send("This url is already set.")
-        await self.config.redupdate_url.set(url)
-        await ctx.tick()
+        view = URLModal(ctx, self.config)
+        view.message = await ctx.send(
+            f"Please enter your custom fork URL\n-# If you're unsure of what url, see `{ctx.prefix}redset whaturl`.", 
+            view=view
+        )
 
     @redupdateset.command(name="whatlink", aliases=["whaturl"])
     async def redupdateset_whatlink(self, ctx: commands.Context):
@@ -295,6 +288,7 @@ class RedUpdate(commands.Cog):
             )
         # When it's used for the first time, it will store the old url in the config.
         # This is to prevent the user from using the command without setting their own fork.
+        # If they want to update to red's main repo to dev changes, they can use `updatered dev`.
         elif (
             package
             == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
@@ -315,40 +309,3 @@ class RedUpdate(commands.Cog):
             return await failedupdate(self, ctx)
             log.error(e)
         await redupdate(self, ctx)
-
-    @commands.is_owner()
-    @commands.command(aliases=["dpydevupdate"], hidden=True)
-    @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def discordpyupdate(self, ctx: commands.Context):
-        """Update discord.py to latest dev changes.
-
-        Do note that this will update discord.py to latest dev changes and not to latest stable release. There may be breaking changes that will break your bot and are not yet on red.
-        """
-        package = "git+https://github.com/Rapptz/discord.py@master"
-        view = ConfirmView(ctx.author, disable_buttons=True)
-        embed = discord.Embed(
-            title="Discord.py Update Information",
-            description="This will update discord.py to latest dev changes and not to latest stable release. There may be breaking changes that will break your bot and are not yet on red and may fail to start your bot.\n\nDo you want to continue?",
-            color=await ctx.embed_color(),
-        )
-        view.message = await ctx.send(embed=embed, view=view)
-        await view.wait()
-        if view.result:
-            shell = self.bot.get_cog("Shell")
-            try:
-                await shell._shell_command(
-                    ctx,
-                    f"pip install -U --force-reinstall {package}",
-                    send_message_on_success=False,
-                )
-            except AttributeError as e:
-                return await failedupdate(self, ctx)
-                log.error(e)
-            await redupdate(self, ctx)
-        else:
-            embed = discord.Embed(
-                title="Discord.py Update Cancelled",
-                description="Cancelled updating {}.".format(self.bot.user.name),
-                color=await ctx.embed_color(),
-            )
-            await ctx.send(embed=embed, silent=True)
