@@ -141,7 +141,6 @@ class NoSpoiler(commands.Cog):
     async def handle_spoiler_message(
         self, message: discord.Message, attachments: List[discord.Attachment] = None
     ) -> None:
-        log.info("handle_spoiler_message called")
         if (
             not message.channel.permissions_for(message.guild.me).manage_messages
             or not message.channel.permissions_for(message.guild.me).send_messages
