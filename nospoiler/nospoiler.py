@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import re
 import logging
-from typing import Any, Dict, Final, Optional, Pattern, Union
+import re
+from typing import Any, Dict, Final, List, Optional, Pattern, Union
 
 import discord
 import TagScriptEngine as tse
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import box, humanize_number
 
 from ._tagscript import (
     TAGSCRIPT_LIMIT,
@@ -49,7 +49,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.5.7"
+    __version__: Final[str] = "1.6.0"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NoSpoiler.md"
 
     def __init__(self, bot: Red) -> None:
@@ -62,7 +62,11 @@ class NoSpoiler(commands.Cog):
             "spoiler_warn_message": warn_message,
             "timeout": 10,
         }
+        default_user: Dict[str, int] = {
+            "spoiler_count": 0,
+        }
         self.config.register_guild(**default_guild)
+        self.config.register_user(**default_user)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -83,13 +87,13 @@ class NoSpoiler(commands.Cog):
         self,
         guild: discord.Guild,
         message: discord.Message,
-        attachment: Union[discord.Attachment, None] = None,
+        attachments: List[discord.Attachment] = None,
     ) -> None:
         """Send embed to log channel."""
-        log_channel = await self.config.guild(guild).log_channel()
-        if not log_channel:
+        log_channel_id = await self.config.guild(guild).log_channel()
+        if not log_channel_id:
             return
-        log_channel = guild.get_channel(log_channel)
+        log_channel = guild.get_channel(log_channel_id)
         if not log_channel:
             return
         if (
@@ -100,41 +104,56 @@ class NoSpoiler(commands.Cog):
                 f"I don't have send_messages or embed_links permission in {log_channel.mention}."
             )
             return
-        color = await self.bot.get_embed_color(log_channel)
-        if message.content:
-            embed = discord.Embed(
-                title="Spoiler Message Deleted",
-                description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.\n{box(message.content, lang='yaml')}",
-                color=color,
-            )
-        else:
-            embed = discord.Embed(
-                title="Spoiler Message Deleted",
-                description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.",
-                color=color,
-            )
-        if attachment:
-            embed.add_field(
-                name="Attachment:",
-                value="\n".join(
-                    [
-                        f"[{attachment.filename}]({attachment.url})",
-                        f"Size: {attachment.size} bytes",
-                    ]
-                ),
-            )
-        await log_channel.send(embed=embed)
 
-    async def handle_spoiler_message(self, message: discord.Message, attachment=None):
+        user_id = message.author.id
+        user_config = self.config.user_from_id(user_id)
+        current_count = await user_config.spoiler_count()
+        new_count = current_count + 1
+        await user_config.spoiler_count.set(new_count)
+
+        color = await self.bot.get_embed_color(log_channel)
+        embed = discord.Embed(
+            title="Spoiler Message Deleted",
+            description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.",
+            color=color,
+        )
+        if message.content:
+            embed.description += f"\n{box(message.content, lang='yaml')}"
+        embed.set_footer(text=f"Message ID: {message.id}")
+        if attachments:
+            embed.add_field(
+                name="Attachments:",
+                value="\n".join(
+                    f"[{a.filename}]({a.url}) ([Cached]({a.proxy_url}))" for a in attachments
+                ),
+                inline=False,
+            )
+        embed.add_field(
+            name="Count:",
+            value=f"{message.author.display_name} has posted {humanize_number(new_count)} spoiler messages.",
+            inline=False,
+        )
+        try:
+            await log_channel.send(embed=embed)
+        except discord.Forbidden as e:
+            log.error(e)
+
+    async def handle_spoiler_message(
+        self, message: discord.Message, attachments: List[discord.Attachment] = None
+    ) -> None:
+        log.info("handle_spoiler_message called")
         if (
             not message.channel.permissions_for(message.guild.me).manage_messages
             or not message.channel.permissions_for(message.guild.me).send_messages
         ):
             log.warning(
-                f"i do not have permission to manage_messages or send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
+                f"I do not have permission to manage_messages or send_messages in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
             )
             return
-        await self.log_channel_embed(message.guild, message, attachment)
+        # Ensure attachments is a list
+        if attachments and not isinstance(attachments, list):
+            attachments = [attachments]
+        await self.log_channel_embed(message.guild, message, attachments)
         if await self.config.guild(message.guild).spoiler_warn():
             await self.send_warning_message(message)
         await message.delete()
@@ -169,12 +188,14 @@ class NoSpoiler(commands.Cog):
             return
         if await self.bot.is_automod_immune(message.author):
             return
+
+        spoiler_attachments = [
+            attachment for attachment in message.attachments if attachment.is_spoiler()
+        ]
         if SPOILER_REGEX.search(message.content):
-            await self.handle_spoiler_message(message)
-        elif message.attachments:
-            for attachment in message.attachments:
-                if attachment.is_spoiler():
-                    await self.handle_spoiler_message(message, attachment)
+            await self.handle_spoiler_message(message, message.attachments)
+        elif spoiler_attachments:
+            await self.handle_spoiler_message(message, spoiler_attachments)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
