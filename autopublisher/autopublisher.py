@@ -124,7 +124,6 @@ class AutoPublisher(commands.Cog):
 
     @commands.is_owner()
     @autopublisher.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def stats(self, ctx: commands.Context):
         """
         Show the number of published messages.
@@ -133,13 +132,11 @@ class AutoPublisher(commands.Cog):
         """
         data = await self.config.all()
         total_count = data.get("published_count", 0)
-
-        embed = discord.Embed(
-            title="AutoPublisher Stats",
-            description=f"Total Published Messages:\n{humanize_number(total_count)}",
-            color=await ctx.embed_color(),
+        msg (
+            "Total Published Messages:\n"
+            f"{box(humanize_number(total_count), lang='yaml')}"
         )
-        await ctx.send(embed=embed)
+        await ctx.send(msg)
 
     @autopublisher.command()
     @commands.bot_has_permissions(manage_messages=True, view_channel=True)
