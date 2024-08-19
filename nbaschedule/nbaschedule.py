@@ -55,7 +55,7 @@ class NBASchedule(commands.Cog):
     @commands.hybrid_command(aliases=["nschedule"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
-    @app_commands.allowed_installs(guilds=True, users=True, dms=True)
+    @app_commands.allowed_installs(guilds=False, users=True)
     async def nbaschedule(self, ctx: commands.Context):
         """Get the current NBA schedule for next game."""
         url = SCHEDULE_URL
