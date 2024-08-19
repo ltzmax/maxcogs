@@ -126,7 +126,6 @@ class NekosBest(commands.Cog):
     # -------- image Commands ------->
 
     @commands.hybrid_command()
-    @app_commands.allowed_installs(guilds=True, users=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def waifu(self, ctx: commands.Context) -> None:
         """Send a random waifu image."""
@@ -134,7 +133,6 @@ class NekosBest(commands.Cog):
         await imgembedgen(ctx, url, "waifu")
 
     @commands.hybrid_command()
-    @app_commands.allowed_installs(guilds=True, users=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def nekos(self, ctx: commands.Context) -> None:
         """Send a random neko image."""
@@ -142,7 +140,6 @@ class NekosBest(commands.Cog):
         await imgembedgen(ctx, url, "neko")
 
     @commands.hybrid_command()
-    @app_commands.allowed_installs(guilds=True, users=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx: commands.Context) -> None:
         """Send a random kitsune image."""
@@ -150,7 +147,6 @@ class NekosBest(commands.Cog):
         await imgembedgen(ctx, url, "kitsune")
 
     @commands.hybrid_command()
-    @app_commands.allowed_installs(guilds=True, users=True)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def husbando(self, ctx: commands.Context) -> None:
         """Send a random husbando image."""
