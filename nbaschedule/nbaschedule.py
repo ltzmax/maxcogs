@@ -28,7 +28,7 @@ import orjson
 import logging
 
 from typing import Final
-from redbot.core import commands
+from redbot.core import commands, app_commands
 from .converter import get_games
 from redbot.core.utils.views import SimpleMenu
 
@@ -55,6 +55,7 @@ class NBASchedule(commands.Cog):
     @commands.hybrid_command(aliases=["nschedule"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
+    @app_commands.allowed_installs(guilds=True, users=True, dms=True)
     async def nbaschedule(self, ctx: commands.Context):
         """Get the current NBA schedule for next game."""
         url = SCHEDULE_URL
