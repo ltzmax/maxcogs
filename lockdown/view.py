@@ -2,10 +2,9 @@ import discord
 
 
 class UnlockView(discord.ui.View):
-    def __init__(self, ctx, reason):
+    def __init__(self, ctx):
         super().__init__(timeout=60)
         self.ctx = ctx
-        self.reason = reason
 
     async def on_timeout(self):
         for item in self.children:
@@ -18,10 +17,6 @@ class UnlockView(discord.ui.View):
             return await interaction.response.send_message(
                 "You are not the author of this command.", ephemeral=True
             )
-        await self.ctx.cog.manage_lock(self.ctx, "unlock", reason=self.reason)
+        await self.ctx.cog.manage_lock(self.ctx, "unlock")
         button.disabled = True
         await interaction.response.edit_message(view=self)
-        await interaction.followup.send(
-            f"🔓 {interaction.user.mention} This channel has now been unlocked",
-            ephemeral=True,
-        )
