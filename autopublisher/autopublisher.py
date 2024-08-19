@@ -132,8 +132,9 @@ class AutoPublisher(commands.Cog):
         """
         data = await self.config.all()
         total_count = data.get("published_count", 0)
+        messages = "message" if total_count == 1 else "messages"
         msg = (
-            "Total Published Messages:\n"
+            f"Total Published {messages}:\n"
             f"{box(humanize_number(total_count), lang='yaml')}"
         )
         await ctx.send(msg)
