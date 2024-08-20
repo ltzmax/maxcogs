@@ -32,7 +32,7 @@ To install any cog you want:
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.2.0 | ltzmax | ✅ |
 | nbaschedule | Get the current NBA schedule for next game. | 1.0.1 | ltzmax | ✅ |
-| NoSpoiler | Prevent using spoiler messages | 1.6.0 | ltzmax | ✅ |
+| NoSpoiler | Prevent using spoiler messages | 1.7.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 2.3.1 | ltzmax | ✅ |
 | Pokemon | Play a game of Who's That Pokemon or Fetch Pokemon cards based on Pokemon Trading Card Game.| 1.7.2 | ltzmax, o-wo, flame442 | ✅ |

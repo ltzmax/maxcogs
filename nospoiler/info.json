@@ -7,7 +7,7 @@
     "description": "Disallow spoilers in your server.",
     "short": "Disallow spoilers in your server.",
     "hidden": false,
-    "min_bot_version": "3.5.0",
+    "min_bot_version": "3.5.9",
     "tags": [
         "spoiler",
         "nospoiler"
@@ -16,7 +16,7 @@
         "embed_links",
         "manage_messages"
     ],
-    "requirements": ["AdvancedTagScriptEngine==3.2.2"],
+    "requirements": [],
     "min_python_version": [
         3,
         9,

@@ -27,20 +27,14 @@ import re
 from typing import Any, Dict, Final, List, Optional, Pattern, Union
 
 import discord
-import TagScriptEngine as tse
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_number
 
-from ._tagscript import (
-    TAGSCRIPT_LIMIT,
-    TagCharacterLimitReached,
-    TagscriptConverter,
-    process_tagscript,
-    warn_message,
-)
+from .view import BanView
 
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
+WARNING_MESSAGE = "Usage of spoiler is not allowed in this server."
 
 log = logging.getLogger("red.maxcogs.nospoiler")
 
@@ -49,7 +43,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.6.0"
+    __version__: Final[str] = "1.7.0"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NoSpoiler.md"
 
     def __init__(self, bot: Red) -> None:
@@ -59,14 +53,11 @@ class NoSpoiler(commands.Cog):
             "enabled": False,
             "log_channel": None,
             "spoiler_warn": False,
-            "spoiler_warn_message": warn_message,
+            "spoiler_warn_message": WARNING_MESSAGE,
             "timeout": 10,
-        }
-        default_user: Dict[str, int] = {
-            "spoiler_count": 0,
+            "useembed": False,
         }
         self.config.register_guild(**default_guild)
-        self.config.register_user(**default_user)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -76,12 +67,6 @@ class NoSpoiler(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
-
-    async def validate_tagscript(self, tagscript: str) -> bool:
-        length = len(tagscript)
-        if length > TAGSCRIPT_LIMIT:
-            raise TagCharacterLimitReached(TAGSCRIPT_LIMIT, length)
-        return True
 
     async def log_channel_embed(
         self,
@@ -105,13 +90,8 @@ class NoSpoiler(commands.Cog):
             )
             return
 
-        user_id = message.author.id
-        user_config = self.config.user_from_id(user_id)
-        current_count = await user_config.spoiler_count()
-        new_count = current_count + 1
-        await user_config.spoiler_count.set(new_count)
-
         color = await self.bot.get_embed_color(log_channel)
+        view = BanView(guild, message.author, message.author)
         embed = discord.Embed(
             title="Spoiler Message Deleted",
             description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.",
@@ -128,13 +108,11 @@ class NoSpoiler(commands.Cog):
                 ),
                 inline=False,
             )
-        embed.add_field(
-            name="Count:",
-            value=f"{message.author.display_name} has posted {humanize_number(new_count)} spoiler messages.",
-            inline=False,
-        )
         try:
-            await log_channel.send(embed=embed)
+            if not self.bot.get_cog("Mod"):
+                await log_channel.send(embed=embed)
+            else:
+                view.message = await log_channel.send(embed=embed, view=view)
         except discord.Forbidden as e:
             log.error(e)
 
@@ -160,19 +138,26 @@ class NoSpoiler(commands.Cog):
     async def send_warning_message(self, message: discord.Message):
         warnmessage = await self.config.guild(message.guild).spoiler_warn_message()
         delete_after = await self.config.guild(message.guild).timeout()
-        color = await self.bot.get_embed_color(message.channel)
-        kwargs = process_tagscript(
-            warnmessage,
-            {
-                "server": tse.GuildAdapter(message.guild),
-                "member": tse.MemberAdapter(message.author),
-                "author": tse.MemberAdapter(message.author),
-                "color": tse.StringAdapter(str(color)),
-            },
-        )
-        kwargs["allowed_mentions"] = discord.AllowedMentions(everyone=False, roles=False)
-        kwargs["delete_after"] = delete_after
-        await message.channel.send(**kwargs)
+        useembed = await self.config.guild(message.guild).useembed()
+        mentions = discord.AllowedMentions(users=True, roles=False, everyone=False)
+        if useembed:
+            embed = discord.Embed(
+                title="Spoiler Warning",
+                description=warnmessage,
+                color=await self.bot.get_embed_color(message.channel),
+            )
+            await message.channel.send(
+                f"{message.author.mention}",
+                embed=embed,
+                delete_after=delete_after,
+                allowed_mentions=mentions,
+            )
+        else:
+            await message.channel.send(
+                f"{message.author.mention}, {warnmessage}",
+                delete_after=delete_after,
+                allowed_mentions=mentions,
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -234,6 +219,14 @@ class NoSpoiler(commands.Cog):
         )
 
     @nospoiler.command()
+    async def useembed(self, ctx: commands.Context, toggle: bool = None) -> None:
+        """Toggle the spoiler warning message to use embed or not."""
+        await self.config.guild(ctx.guild).useembed.set(toggle)
+        await ctx.send(
+            f"Spoiler warning message is now {'using embed' if toggle else 'not using embed'}."
+        )
+
+    @nospoiler.command()
     async def deleteafter(self, ctx: commands.Context, seconds: commands.Range[int, 10, 120]):
         """Set when the warn message should delete.
 
@@ -263,33 +256,10 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Spoiler warning message is now {'enabled' if toggle else 'disabled'}.")
 
     @nospoiler.command()
-    async def message(
-        self, ctx: commands.Context, *, message: Optional[TagscriptConverter]
-    ) -> None:
-        """
-        Set the spoiler warning message.
+    async def message(self, ctx: commands.Context, *, message: Optional[str] = None) -> None:
+        """Set the spoiler warning message.
 
-        Leave it empty to reset the message to the default message.
-
-        (Supports Tagscript)
-
-        **Blocks:**
-        - [Assugnment Block](https://seina-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#assignment-block)
-        - [If Block](https://seina-cogs.readthedocs.io/en/latest/tags/tse_blocks.html#if-block)
-        - [Embed Block](https://seina-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#embed-block)
-        - [Command Block](https://seina-cogs.readthedocs.io/en/latest/tags/parsing_blocks.html#command-block)
-
-        **Variable:**
-        - `{server}`: [Your guild/server.](https://seina-cogs.readthedocs.io/en/latest/tags/default_variables.html#server-block)
-        - `{member}`: [Author of the message.](https://seina-cogs.readthedocs.io/en/latest/tags/default_variables.html#author-block)
-        - `{color}`: [botname]'s default color.
-
-        **Example:**
-        ```
-        {embed(title):No spoiler allowed.}
-        {embed(description):{member(mention)} Usage of spoiler is not allowed in this server.}
-        {embed(color):{color}}
-        ```
+        If the message is not set, the bot will use the default message.
         """
         if message:
             await self.config.guild(ctx.guild).spoiler_warn_message.set(message)
@@ -307,6 +277,7 @@ class NoSpoiler(commands.Cog):
             f"**Enabled**: {all['enabled']}\n"
             f"**Log Channel**: {ctx.guild.get_channel(all['log_channel']).mention if all['log_channel'] else 'Not Set'}\n"
             f"**Spoiler Warning**: {all['spoiler_warn']}\n"
+            f"**Use Embed**: {all['useembed']}\n"
             f"**Delete After**: {all['timeout']} seconds\n"
             f"**Spoiler Warning Message**:\n{box(all['spoiler_warn_message'], lang='yaml') if len(all['spoiler_warn_message']) < 2000 else 'Message too long to display.'}"
         )
