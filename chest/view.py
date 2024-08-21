@@ -63,7 +63,10 @@ class ChestView(discord.ui.View):
         for item in self.children:
             item.disabled = True
         if self.message:  # Check if the message attribute is not None
-            await self.message.edit(view=self)
+            try:
+                await self.message.edit(view=self)
+            except discord.NotFound as e:
+                log.error(e)
 
     async def button_callback(self, interaction):
         embed = await self.get_embed()

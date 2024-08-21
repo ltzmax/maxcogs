@@ -23,9 +23,11 @@ SOFTWARE.
 """
 
 import discord
+import logging
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
+log = logging.getLogger("red.maxcogs.autopublisher.view")
 
 class ChannelView(discord.ui.View):
     def __init__(self, ctx, bot: Red, config: Config, guild_id: int):
@@ -52,7 +54,10 @@ class ChannelView(discord.ui.View):
         for item in self.children:
             item.disabled = True
         if self.message:
-            await self.message.edit(view=self)
+            try:
+                await self.message.edit(view=self)
+            except discord.NotFound as e:
+                log.error(e)
 
     def set_select_options(self):
         # This method sets the options for the select menu
