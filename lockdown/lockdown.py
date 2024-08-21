@@ -180,13 +180,12 @@ class Lockdown(commands.Cog):
                         value=f"{reason if len(reason) < 2024 else 'Reason is too long.'}",
                     )
                 embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
-                message = await ctx.send(embed=embed, view=view)
+                view.message = await ctx.send(embed=embed, view=view)
             else:
-                message = await ctx.send(
+                view.message = await ctx.send(
                     f"{action_props['description']}\n{'Reason: ' + reason if reason else ''}", 
                     view=view
                 )
-            view.message = message
 
         # Attempt to set the permissions after sending the message
         try:

@@ -6,8 +6,9 @@ class UnlockView(discord.ui.View):
         super().__init__(timeout=60)
         self.ctx = ctx
 
-    async def on_timeout(self):
+    async def on_timeout(self) -> None:
         for item in self.children:
+            item: discord.ui.Item
             item.disabled = True
         await self.message.edit(view=self)
 
