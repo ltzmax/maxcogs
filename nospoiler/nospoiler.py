@@ -91,7 +91,7 @@ class NoSpoiler(commands.Cog):
             return
 
         color = await self.bot.get_embed_color(log_channel)
-        view = BanView(guild, message.author, message.author)
+        view = BanView(guild, message.author, target_user)
         embed = discord.Embed(
             title="Spoiler Message Deleted",
             description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.",
