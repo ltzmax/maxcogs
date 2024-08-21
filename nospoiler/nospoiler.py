@@ -31,7 +31,7 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_number
 
-from .view import BanView
+from .view import KickBanUserView
 
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 WARNING_MESSAGE = "Usage of spoiler is not allowed in this server."
@@ -43,7 +43,7 @@ class NoSpoiler(commands.Cog):
     """No spoiler in this server."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.7.0"
+    __version__: Final[str] = "1.8.0"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NoSpoiler.md"
 
     def __init__(self, bot: Red) -> None:
@@ -91,9 +91,8 @@ class NoSpoiler(commands.Cog):
             return
 
         target_user = message.author
-        # it is possible that the user has left the server
         color = await self.bot.get_embed_color(log_channel)
-        view = BanView(guild, message.author, target_user)
+        view = KickBanUserView(target_user)
         embed = discord.Embed(
             title="Spoiler Message Deleted",
             description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.",

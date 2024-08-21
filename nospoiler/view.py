@@ -23,13 +23,12 @@ SOFTWARE.
 """
 
 import logging
-
 import discord
 
 log = logging.getLogger("red.maxcogs.nospoiler.view")
 
 
-class BanViewModal(discord.ui.Modal, title="Enter Ban Reason"):
+class BanViewModal(discord.ui.Modal, title="Ban User"):
     def __init__(self):
         super().__init__()
         self.reason = discord.ui.TextInput(
@@ -46,32 +45,85 @@ class BanViewModal(discord.ui.Modal, title="Enter Ban Reason"):
         self.reason_value = self.reason.value  # Store the reason value
 
 
-class BanView(discord.ui.View):
-    def __init__(self, guild, author, target_user):
-        super().__init__(timeout=900)
-        self.guild = guild
-        self.author = author
+class KickViewModal(discord.ui.Modal, title="Kick User"):
+    def __init__(self):
+        super().__init__()
+        self.reason = discord.ui.TextInput(
+            label="Add Kick Reason",
+            placeholder="Example: Could not stop spamming...",
+            min_length=3,
+            max_length=4000,
+            required=True,
+        )
+        self.add_item(self.reason)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer()
+        self.reason_value = self.reason.value  # Store the reason value
+
+# TODO: 
+# Add tempban (if possible?)
+# Add timeout (Should be possible)
+
+
+class KickBanUserSelect(discord.ui.Select):
+    def __init__(self, target_user):
         self.target_user = target_user
+        options = [
+            discord.SelectOption(label="Kick", description="Kick this user", emoji="👢"),
+            discord.SelectOption(label="Ban", description="Ban this user", emoji="🔨")
+        ]
+        super().__init__(placeholder="Choose an action...", min_values=1, options=options)
 
-    async def on_timeout(self) -> None:
-        for item in self.children:
-            item: discord.ui.Item
-            item.disabled = True
+    async def callback(self, interaction: discord.Interaction):
+        if self.values[0] == "Kick User":
+            await self.handle_kick(interaction)
+        elif self.values[0] == "Ban User":
+            await self.handle_ban(interaction)
+
+    async def handle_kick(self, interaction: discord.Interaction):
+        if not interaction.user.guild_permissions.kick_members:
+            await interaction.response.send_message(
+                "You do not have permission `kick_members` to kick a user.", ephemeral=True
+            )
+            return
+
+        if (
+            self.target_user.guild_permissions.administrator
+            or self.target_user.guild_permissions.manage_roles
+            or self.target_user.guild_permissions.manage_guild
+            or self.target_user.guild_permissions.ban_members
+        ):
+            await interaction.response.send_message(
+                "You cannot kick moderators, administrators, or the owner of the server.",
+                ephemeral=True,
+            )
+            return
+
+        modal = KickViewModal()
+        await interaction.response.send_modal(modal)
+        await modal.wait()
+
+        reason = modal.reason_value
         try:
-            await self.message.edit(view=self)
-        except discord.NotFound as e:
-            log.error(e)
+            await self.target_user.kick(reason=reason)
+            self.disabled = True
+            await interaction.followup.send(f"{self.target_user} has been kicked.", ephemeral=True)
+            await interaction.message.edit(view=self.view)
+        except discord.Forbidden:
+            await interaction.followup.send(
+                "I do not have permission to kick this user.", ephemeral=True
+            )
+        except discord.HTTPException as e:
+            await interaction.followup.send(f"Failed to kick user: {e}", ephemeral=True)
 
-    @discord.ui.button(label="Ban User", style=discord.ButtonStyle.red, emoji="🔨")
-    async def on_ban(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Check if the user has ban_members permission
+    async def handle_ban(self, interaction: discord.Interaction):
         if not interaction.user.guild_permissions.ban_members:
             await interaction.response.send_message(
                 "You do not have permission `ban_members` to ban a user.", ephemeral=True
             )
             return
 
-        # Check if the target user is a mod, admin, or owner; they cannot be banned if they have these permissions
         if (
             self.target_user.guild_permissions.administrator
             or self.target_user.guild_permissions.manage_roles
@@ -88,22 +140,32 @@ class BanView(discord.ui.View):
         await interaction.response.send_modal(modal)
         await modal.wait()
 
-        # Check if the modal was submitted
         reason = modal.reason_value
         try:
-            await self.guild.ban(self.target_user, reason=reason)
-            button.disabled = True
-            await interaction.followup.send(
-                f"{self.target_user} has been banned for: {reason}", ephemeral=True
-            )
-            # Update the view to disable the button
-            await interaction.message.edit(view=self)
+            await self.target_user.ban(reason=reason)
+            self.disabled = True
+            await interaction.followup.send(f"{self.target_user} has been banned.", ephemeral=True)
+            await interaction.message.edit(view=self.view)
         except discord.Forbidden:
             await interaction.followup.send(
                 "I do not have permission to ban this user.", ephemeral=True
             )
         except discord.HTTPException as e:
             await interaction.followup.send(f"Failed to ban user: {e}", ephemeral=True)
+
+class KickBanUserView(discord.ui.View):
+    def __init__(self, target_user):
+        super().__init__(timeout=60)
+        self.add_item(KickBanUserSelect(target_user))
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item: discord.ui.Item
+            item.disabled = True
+        try:
+            await self.message.edit(view=self)
+        except discord.NotFound as e:
+            log.error(e)
 
     async def on_error(
         self,
