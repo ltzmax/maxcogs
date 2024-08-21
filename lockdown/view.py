@@ -1,5 +1,7 @@
 import discord
+import logging
 
+log = logging.getLogger("red.maxcogs.lockdown.view")
 
 class UnlockView(discord.ui.View):
     def __init__(self, ctx):
@@ -10,7 +12,10 @@ class UnlockView(discord.ui.View):
         for item in self.children:
             item: discord.ui.Item
             item.disabled = True
-        await self.message.edit(view=self)
+        try:
+            await self.message.edit(view=self)
+        except discord.NotFound as e:
+            log.error(e)
 
     @discord.ui.button(label="Unlock Channel", style=discord.ButtonStyle.green, emoji="🔓")
     async def unlock_button(self, interaction: discord.Interaction, button: discord.ui.Button):
