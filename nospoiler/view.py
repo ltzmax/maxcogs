@@ -155,7 +155,7 @@ class KickBanUserSelect(discord.ui.Select):
 
 class KickBanUserView(discord.ui.View):
     def __init__(self, target_user):
-        super().__init__(timeout=60)
+        super().__init__(timeout=900) # 15 minutes (limited by discord so cant be higher)
         self.add_item(KickBanUserSelect(target_user))
 
     async def on_timeout(self) -> None:
