@@ -44,7 +44,6 @@ class BanViewModal(discord.ui.Modal, title="Ban User"):
         await interaction.response.defer()
         self.reason_value = self.reason.value  # Store the reason value
 
-
 class KickViewModal(discord.ui.Modal, title="Kick User"):
     def __init__(self):
         super().__init__()
@@ -61,10 +60,6 @@ class KickViewModal(discord.ui.Modal, title="Kick User"):
         await interaction.response.defer()
         self.reason_value = self.reason.value  # Store the reason value
 
-# TODO: 
-# Add tempban (if possible?)
-# Add timeout (Should be possible)
-
 
 class KickBanUserSelect(discord.ui.Select):
     def __init__(self, target_user):
@@ -76,10 +71,15 @@ class KickBanUserSelect(discord.ui.Select):
         super().__init__(placeholder="Choose an action...", min_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        if self.values[0] == "Kick User":
+        if self.values[0] == "Kick":
             await self.handle_kick(interaction)
-        elif self.values[0] == "Ban User":
+        elif self.values[0] == "Ban":
             await self.handle_ban(interaction)
+
+# TODO:
+# Add timeout (should theorically be possible)
+# Add mute (should theorically be possible?)
+# Add tempban (should theorically be possible)
 
     async def handle_kick(self, interaction: discord.Interaction):
         if not interaction.user.guild_permissions.kick_members:
@@ -106,7 +106,7 @@ class KickBanUserSelect(discord.ui.Select):
 
         reason = modal.reason_value
         try:
-            await self.target_user.kick(reason=reason)
+            await interaction.guild.kick(self.target_user, reason=reason)
             self.disabled = True
             await interaction.followup.send(f"{self.target_user} has been kicked.", ephemeral=True)
             await interaction.message.edit(view=self.view)
@@ -142,7 +142,7 @@ class KickBanUserSelect(discord.ui.Select):
 
         reason = modal.reason_value
         try:
-            await self.target_user.ban(reason=reason)
+            await interaction.guild.ban(self.target_user, reason=reason)
             self.disabled = True
             await interaction.followup.send(f"{self.target_user} has been banned.", ephemeral=True)
             await interaction.message.edit(view=self.view)
@@ -173,5 +173,5 @@ class KickBanUserView(discord.ui.View):
         error: Exception,
         item: discord.ui.Item,
     ) -> None:
-        await interaction.followup.send(f"An error occured: {error}", ephemeral=True)
-        log.error(f"An error occured: {error}")
+        await interaction.followup.send(f"An error occurred: {error}", ephemeral=True)
+        log.error(f"An error occurred: {error}")
