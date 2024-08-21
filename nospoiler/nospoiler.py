@@ -90,6 +90,8 @@ class NoSpoiler(commands.Cog):
             )
             return
 
+        target_user = message.author
+        # it is possible that the user has left the server
         color = await self.bot.get_embed_color(log_channel)
         view = BanView(guild, message.author, target_user)
         embed = discord.Embed(
