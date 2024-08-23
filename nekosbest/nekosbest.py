@@ -138,7 +138,7 @@ class NekosBest(commands.Cog):
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send("Are you sure you want to reset everything?", view=view)
         await view.wait()
-            await self.config.user(ctx.author).clear()
+            await self.config.clear_all_users()
             await ctx.send("All command counts have been reset.")
         else:
             await ctx.send("Reset cancelled.")
