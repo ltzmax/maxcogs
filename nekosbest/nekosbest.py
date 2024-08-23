@@ -30,6 +30,7 @@ import orjson
 import logging
 from redbot.core import commands, Config, app_commands
 from redbot.core.bot import Red
+from redbot.core.utils.views import ConfirmView
 from .core import ACTIONS, ICON, NEKOS
 from .view import ImageButtonView, CountButtonView
 
@@ -124,6 +125,35 @@ class NekosBest(commands.Cog):
         await ctx.send(embed=emb, view=view)
 
     # -------- image Commands ------->
+
+    @commands.group()
+    @commands.guild_only()
+    @commands.admin_or_permissions(manage_guild=True)
+    async def nekoset(self, ctx: commands.Context) -> None:
+        """Settings for nekosbest cog."""
+    
+    @nekoset.command()
+    async def resetall(self, ctx: commands.Context) -> None:
+        """Reset all command counts."""
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send("Are you sure you want to reset everything?", view=view)
+        await view.wait()
+            await self.config.user(ctx.author).clear()
+            await ctx.send("All command counts have been reset.")
+        else:
+            await ctx.send("Reset cancelled.")
+
+    @nekoset.command()
+    async def reset(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Reset a user's command counts."""
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send(f"Are you sure you want to reset everything for {member.mention}?", view=view)
+        await view.wait()
+        if view.result:
+            await self.config.user(member).clear()
+            await ctx.send(f"{member.mention}'s command counts have been reset.", mention_author=False)
+        else:
+            await ctx.send("Reset cancelled.")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
