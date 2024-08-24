@@ -133,6 +133,7 @@ class NekosBest(commands.Cog):
         """Settings for nekosbest cog."""
     
     @nekoset.command()
+    @commands.is_owner() # It clears all users across all servers so needs to be owner.
     async def resetall(self, ctx: commands.Context) -> None:
         """Reset all command counts."""
         view = ConfirmView(ctx.author, disable_buttons=True)
