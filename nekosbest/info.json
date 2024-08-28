@@ -25,6 +25,6 @@
         8,
         5
     ],
-    "end_user_data_statement": "This cog does not store any End User Data.",
+    "end_user_data_statement": "This cog stores Discord IDs for the count of each actions from any roleplay commands used. No privately informations is stored about users.",
     "type": "COG"
 }

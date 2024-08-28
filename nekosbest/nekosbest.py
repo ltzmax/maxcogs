@@ -90,8 +90,11 @@ class NekosBest(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
-        """Nothing to delete."""
+
+    async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int):
+        return
+
+    async def red_get_data_for_user(self, *, user_id: int):
         return
 
     # ------- RolePlay Commands Handler ------>
