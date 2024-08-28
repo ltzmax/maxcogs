@@ -35,7 +35,7 @@ from .core import ACTIONS, ICON, NEKOS
 from .view import ImageButtonView, CountButtonView
 
 log = logging.getLogger("red.maxcogs.nekosbest")
-RequestType = t.Literal["discord_deleted_user", "owner", "user", "user_strict"]
+RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
 
 async def api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
