@@ -1,6 +1,9 @@
 # Note
 The chest will spawn in all servers it has a channel configured when reloading the cog. I am not responsible for any demages done if you sit and reload to get it to spawn. It will also spawn every 4 hours after first spawn or whatever it says in the `Next Spawn`.
 
+# Redis Driver (OPTIONAL)
+This cog uses redis driver to save the next spawn time. this is to make tasks to be presisted across reloads. This is not like you need to install and have at all, its complete optional choice, it will still spawn without this, but If you want tasks to be presisted across reloads, then you will need it. Follow the install guide from [here to setup redis driver](https://www.digitalocean.com/community/tutorial-collections/how-to-install-and-secure-redis)
+
 # Chest Help
 
 First to click the button gets random credits to their `[p]bank balance`.
