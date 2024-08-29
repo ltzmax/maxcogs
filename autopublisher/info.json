@@ -15,7 +15,7 @@
     "permissions": [
         "manage_messages"
     ],
-    "requirements": [],
+    "requirements": ["apscheduler"],
     "min_python_version": [
         3,
         9,

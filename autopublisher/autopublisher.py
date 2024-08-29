@@ -27,9 +27,11 @@ import logging
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
+from datetime import datetime, timedelta
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core.utils.views import ConfirmView
 from .view import ChannelView
 
@@ -39,7 +41,7 @@ log = logging.getLogger("red.maxcogs.autopublisher")
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.2.1"
+    __version__: Final[str] = "2.2.3"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/AutoPublisher.md"
 
@@ -52,9 +54,15 @@ class AutoPublisher(commands.Cog):
         }
         default_global = {
             "published_count": 0,
+            "published_weekly_count": 0,
         }
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
+
+        # Schedule weekly count reset.
+        scheduler = AsyncIOScheduler()
+        scheduler.add_job(self.reset_weekly_count, 'cron', day_of_week='sun', hour=0, minute=0)
+        scheduler.start()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -70,6 +78,14 @@ class AutoPublisher(commands.Cog):
         total_count = data.get("published_count", 0)
         total_count += 1
         await self.config.published_count.set(total_count)
+        weekly_count = data.get("published_weekly_count", 0)
+        weekly_count += 1
+        await self.config.published_weekly_count.set(weekly_count)
+
+    async def reset_weekly_count(self):
+        """Reset the published_weekly_count to zero every Sunday."""
+        await self.config.published_weekly_count.set(0)
+        log.info("Reset published_weekly_count to 0")
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
@@ -128,14 +144,27 @@ class AutoPublisher(commands.Cog):
         """
         Show the number of published messages.
 
-        NOTE: The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
+        NOTE: 
+        - The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
+        - The weekly count will reset every Sunday at midnight UTC.
         """
         data = await self.config.all()
         total_count = data.get("published_count", 0)
-        messages = "message" if total_count == 1 else "messages"
+        weekly_count = data.get("published_weekly_count", 0)
+
+        # Calculate the next Sunday midnight timestamp
+        now = datetime.utcnow()
+        next_sunday = now + timedelta(days=(6 - now.weekday()))
+        next_sunday_midnight = datetime.combine(next_sunday, datetime.min.time())
+        timestamp = int(next_sunday_midnight.timestamp())
+        time_until_reset = f"<t:{timestamp}:f> (<t:{timestamp}:R>)"
+
         msg = (
-            f"Total Published {messages}:\n"
+            "Total Published messages:\n"
             f"{box(humanize_number(total_count), lang='yaml')}"
+            "Total Published messages this week:\n"
+            f"{box(humanize_number(weekly_count), lang='yaml')}\n"
+            f"Time until weekly count reset: {time_until_reset}"
         )
         await ctx.send(msg)
 
