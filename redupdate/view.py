@@ -53,7 +53,10 @@ class URLModal(discord.ui.View):
         for item in self.children:
             item: discord.ui.Item
             item.disabled = True
-        await self.message.edit(view=self)
+        try:
+            await self.message.edit(view=self)
+        except discord.HTTPException:
+            pass
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not interaction.user.id == self.ctx.author.id:
