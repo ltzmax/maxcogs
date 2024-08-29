@@ -25,26 +25,23 @@ SOFTWARE.
 import asyncio
 import logging
 import os
+import sqlite3
 from datetime import datetime, timedelta
 from typing import Any, Final, Literal, Optional
 
 import discord
+from databases import Database
 from discord.ext import tasks
 from discord.ext.commands.converter import EmojiConverter
 from discord.ext.commands.errors import EmojiNotFound
 from emoji import EMOJI_DATA
 from redbot.core import Config, bank, commands
 from redbot.core.bot import Red
+from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import ConfirmView
-from redis.exceptions import ConnectionError
 
-try:
-    import redis
-    REDIS_AVAILABLE = True
-except ImportError:
-    REDIS_AVAILABLE = False
-
+from .utils import is_default_role
 from .view import ChestView
 
 log = logging.getLogger("red.maxcogs.chest")
@@ -53,7 +50,7 @@ log = logging.getLogger("red.maxcogs.chest")
 class Chest(commands.Cog):
     """First to click the button gets random credits to their `[p]bank balance`."""
 
-    __version__: Final[str] = "1.2.0"
+    __version__: Final[str] = "2.0.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Chest.md"
 
@@ -75,27 +72,15 @@ class Chest(commands.Cog):
         }
         self.config.register_global(**default_global)
         self.config.register_guild(**default_guild)
-        self.redis_client = None  # Initialize redis_client to None
-        self.redis_installed = False  # Initialize redis_installed to False
-        self.remaining_time = None  # Initialize remaining_time to None
-        if REDIS_AVAILABLE:
-            try:
-                host = os.getenv("REDIS_HOST", "localhost")
-                port = int(os.getenv("REDIS_PORT", 6379))
-                password = os.getenv("REDIS_PASSWORD", None)
-                self.redis_client = redis.Redis(host=host, port=port, db=0, password=password)
-                self.redis_client.ping()
-                self.redis_installed = True
-                log.info("Connected to Redis successfully.")
-                self.load_task_state()
-            except redis.ConnectionError:
-                log.warning(
-                    "Redis Driver is not available. Task state will not be persisted across reloads."
-                )
-        self.send_chest.start()  # Start the send_chest task.
+        self.remaining_times = {}
+        self.DATABASE_URL = f"sqlite:///{cog_data_path(self)}/time_left.db"
+        self.database = Database(self.DATABASE_URL)
+        self.send_chest.start()
+        self.bot.loop.create_task(self.initialize())
 
     def cog_unload(self):
         self.send_chest.cancel()
+        self.bot.loop.create_task(self.database.disconnect())
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -106,46 +91,92 @@ class Chest(commands.Cog):
         """Nothing to delete."""
         return
 
-    def save_task_state(self):
-        if self.redis_installed:
-            try:
-                self.redis_client.set("last_run", datetime.now().isoformat())
-                log.info("Task state saved to Redis.")
-            except redis.ConnectionError:
-                log.warning("Failed to save task state to Redis. Connection error.")
+    async def initialize(self):
+        """
+        Initialize the database and load all task states.
+        """
+        await self.init_db()
+        await self.load_all_task_states()
 
-    def load_task_state(self):
-        if self.redis_installed:
-            try:
-                last_run = self.redis_client.get("last_run")
-                if last_run:
-                    last_run = datetime.fromisoformat(last_run.decode("utf-8"))
-                    now = datetime.now()
-                    elapsed = now - last_run
-                    if elapsed < timedelta(hours=4):
-                        self.remaining_time = timedelta(hours=4) - elapsed
-                        log.info(
-                            f"Task state loaded from Redis. Remaining time: {self.remaining_time}"
-                        )
-                    else:
-                        self.remaining_time = None
-                        log.info("No remaining time. Task will run immediately.")
-                else:
-                    self.remaining_time = None
-                    log.info("No previous task state found in Redis.")
-            except redis.ConnectionError:
-                log.warning("Failed to load task state from Redis. Connection error.")
-                self.remaining_time = None
+    async def init_db(self):
+        """
+        Initialize the database and create the table if it doesn't exist.
+        """
+        await self.database.connect()
+        query = """
+            CREATE TABLE IF NOT EXISTS timer_table (
+                id INTEGER PRIMARY KEY,
+                guild_id INTEGER NOT NULL UNIQUE,
+                next_chest_time TEXT NOT NULL
+            )
+        """
+        await self.database.execute(query=query)
 
-    @tasks.loop(hours=4)
-    async def send_chest(self, channel: discord.TextChannel = None):
-        if channel is None:
-            for guild in self.bot.guilds:
+    async def save_task_state(self, guild_id: int):
+        """
+        Save the task state to the database.
+        """
+        next_chest_time = datetime.now() + self.remaining_times[guild_id]
+        query = """
+            INSERT INTO timer_table (guild_id, next_chest_time)
+            VALUES (:guild_id, :next_chest_time)
+            ON CONFLICT(guild_id) DO UPDATE SET next_chest_time=excluded.next_chest_time
+        """
+        values = {"guild_id": guild_id, "next_chest_time": next_chest_time.isoformat()}
+        await self.database.execute(query=query, values=values)
+        log.info(f"Saved task state for guild {guild_id}. Next Spawn: {next_chest_time}")
+
+    async def load_task_state(self, guild_id: int):
+        """
+        Load the task state from the database.
+        """
+        query = """
+            SELECT next_chest_time FROM timer_table WHERE guild_id = :guild_id
+        """
+        result = await self.database.fetch_one(query=query, values={"guild_id": guild_id})
+        if result:
+            next_chest_time = datetime.fromisoformat(result["next_chest_time"])
+            self.remaining_times[guild_id] = next_chest_time - datetime.now()
+            log.info(f"Loaded task state for guild {guild_id}. Next Spawn: {next_chest_time}")
+        else:
+            self.remaining_times[guild_id] = timedelta(hours=4)
+
+    async def load_all_task_states(self):
+        """
+        Load all task states from the database.
+        """
+        query = """
+            SELECT guild_id, next_chest_time FROM timer_table
+        """
+        results = await self.database.fetch_all(query=query)
+        for result in results:
+            guild_id = result["guild_id"]
+            next_chest_time = datetime.fromisoformat(result["next_chest_time"])
+            self.remaining_times[guild_id] = next_chest_time - datetime.now()
+            log.info(f"Loaded task state for guild {guild_id}. Next Spawn: {next_chest_time}")
+
+    async def delete_task_state(self, guild_id: int):
+        """
+        Delete the task state from the database.
+        """
+        query = """
+            DELETE FROM timer_table WHERE guild_id = :guild_id
+        """
+        await self.database.execute(query=query, values={"guild_id": guild_id})
+
+    @tasks.loop(minutes=1)
+    async def send_chest(self):
+        """
+        Task to send a chest in the channel every 4 hours.
+        """
+        for guild in self.bot.guilds:
+            if guild.id not in self.remaining_times:
+                await self.load_task_state(guild.id)
+            if self.remaining_times[guild.id].total_seconds() <= 0:
                 channel_id = await self.config.guild(guild).channel()
-                if channel_id:  # Make sure the channel is set
+                if channel_id:
                     channel = self.bot.get_channel(channel_id)
-                    if channel:  # Make sure the channel is found
-                        # Make sure it has permission
+                    if channel:
                         if (
                             not channel.permissions_for(guild.me).embed_links
                             or not channel.permissions_for(guild.me).send_messages
@@ -174,19 +205,21 @@ class Chest(commands.Cog):
                             await view.init_view()
                             message = await channel.send(embed=await view.get_embed(), view=view)
                             view.message = message  # Store the message in the view
-        else:
-            view = ChestView(self.bot, self.config, channel)
-            await view.init_view()
-            message = await channel.send(embed=await view.get_embed(), view=view)
-            view.message = message  # Store the message in the view
-        self.save_task_state()
+
+                        # Update remaining_time before saving the task state
+                        self.remaining_times[guild.id] = timedelta(hours=4)
+                        await self.save_task_state(guild.id)
+            else:
+                self.remaining_times[guild.id] -= timedelta(minutes=1)
 
     @send_chest.before_loop
     async def before_send_chest(self):
+        """
+        Wait until the bot is ready before starting the task.
+        """
         await self.bot.wait_until_ready()
-        if hasattr(self, "remaining_time") and self.remaining_time:
-            log.info(f"Sleeping until {datetime.now() + self.remaining_time}")
-            await discord.utils.sleep_until(datetime.now() + self.remaining_time)
+        for guild in self.bot.guilds:
+            await self.load_task_state(guild.id)
 
     @commands.group()
     @commands.guild_only()
@@ -200,12 +233,14 @@ class Chest(commands.Cog):
         Set the channel for the chest game.
 
         Use the command again to disable chest from spawning.
-        Note: if you want tasks to be presisted across reloads, you need to have [Redis Driver installed](https://www.digitalocean.com/community/tutorial-collections/how-to-install-and-secure-redis).
         """
         if channel is None:
             await self.config.guild(ctx.guild).channel.clear()
+            if ctx.guild.id in self.remaining_times:
+                del self.remaining_times[ctx.guild.id]
+                await self.delete_task_state(ctx.guild.id)
+                log.info(f"Deleted task state for guild {ctx.guild.id}.")
             return await ctx.send("Cleared channel. I won't send anymore!")
-        # Actually make sure your app has perm in the channel you set.
         if (
             not channel.permissions_for(ctx.guild.me).send_messages
             and not channel.permissions_for(ctx.guild.me).embed_links
@@ -215,14 +250,15 @@ class Chest(commands.Cog):
             )
 
         await self.config.guild(ctx.guild).channel.set(channel.id)
-        await ctx.send(
-            f"Chest game channel set to {channel.mention}\n"
-            "**OPTIONAL**: If you want tasks to be presisted across reloads, you need to have [Redis Driver installed](<https://www.digitalocean.com/community/tutorial-collections/how-to-install-and-secure-redis>)."
-        )
-        # This will make the chest spawn immediately after setting the channel,
-        # so you don't have to wait hours for the first spawn.
-        await asyncio.sleep(0.4)  # wait 0.4 sec before sending.
-        await self.send_chest(channel)
+        await ctx.send(f"Channel set to {channel.mention}. Sending a chest now!")
+
+        view = ChestView(self.bot, self.config, channel)
+        await view.init_view()
+        message = await channel.send(embed=await view.get_embed(), view=view)
+        view.message = message
+
+        self.remaining_times[ctx.guild.id] = timedelta(hours=4)
+        await self.save_task_state(ctx.guild.id)
 
     @chestset.command()
     async def role(self, ctx: commands.Context, role: discord.Role = None):
@@ -234,14 +270,15 @@ class Chest(commands.Cog):
         if role is None:
             await self.config.guild(ctx.guild).role.clear()
             return await ctx.send("Cleared role. I won't ping anymore!")
-        if role >= ctx.author.top_role:
-            return await ctx.send("You can't set a role higher than your top role.")
         if role >= ctx.guild.me.top_role:
             return await ctx.send("You can't set a role higher than my top role.")
-        if role.is_default():
-            return await ctx.send("You can't set a role with everyone or here mention.")
+        if is_default_role(role):
+            return await ctx.send("You can't set a role with ``@everyone`` or ``@here``.")
         await self.config.guild(ctx.guild).role.set(role.id)
-        await ctx.send(f"Chest game role set to {role.name}")
+        await ctx.send(
+            f"Chest game role set to {role.mention}. I will ping this role when a chest spawns.",
+            allowed_mentions=discord.AllowedMentions(roles=False),
+        )
 
     @chestset.command()
     @commands.bot_has_permissions(embed_links=True)
@@ -419,8 +456,12 @@ class Chest(commands.Cog):
             await self.config.emoji.set("🪙")
             await ctx.send("I've reset back to default!")
 
-    @owner.command()
-    async def reset(self, ctx: commands.Context):
+    @owner.group(name="reset")
+    async def owner_reset(self, ctx: commands.Context):
+        """Manage the chest game resets."""
+
+    @owner_reset.command(name="resetsetting", aliases=["settingreset", "rsetting"])
+    async def owner_reset_resetsetting(self, ctx: commands.Context):
         """Reset back to default setting"""
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send("Are you sure you want to reset Chest settings?", view=view)
@@ -430,3 +471,39 @@ class Chest(commands.Cog):
             await ctx.send("Settings have been reset to default!")
         else:
             await ctx.send("Alright, i won't reset anything!")
+
+    @owner_reset.command(name="resetdb")
+    async def owner_reset_resetdb(self, ctx: commands.Context):
+        """Reset the database."""
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send("Are you sure you want to reset the database?", view=view)
+        await view.wait()
+        if view.result:
+            query = """
+                DROP TABLE IF EXISTS timer_table
+            """
+            await self.database.execute(query=query)
+            await self.init_db()
+            log.info("Database has been reset successfully.")
+            await ctx.send("Database has been reset!")
+        else:
+            await ctx.send("Alright, i won't reset the database!")
+
+    @owner_reset.command(name="resetguilddb", aliases=["guildresetdb", "rgdb", "resetguild"])
+    async def owner_reset_resetguilddb(self, ctx: commands.Context, guild_id: int):
+        """Reset the database for a specific guild."""
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send(
+            f"Are you sure you want to reset the database for guild {guild_id}?", view=view
+        )
+        await view.wait()
+        if view.result:
+            query = """
+                DELETE FROM timer_table WHERE guild_id = :guild_id
+            """
+            await self.database.execute(query=query, values={"guild_id": guild_id})
+            await self.load_task_state(guild_id)
+            log.info(f"Database for guild {guild_id} has been reset successfully.")
+            await ctx.send(f"Database for guild {guild_id} has been reset!")
+        else:
+            await ctx.send("Alright, i won't reset the database!")

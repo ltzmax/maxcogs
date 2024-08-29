@@ -15,7 +15,7 @@
     "permissions": [
         "embed_links"
     ],
-    "requirements": ["pytz", "emoji", "redis"],
+    "requirements": ["pytz", "emoji", "databases", "databases[sqlite]"],
     "min_python_version": [
         3,
         9,
