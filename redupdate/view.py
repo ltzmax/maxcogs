@@ -98,3 +98,40 @@ class URLModal(discord.ui.View):
     ) -> None:
         await interaction.followup.send(f"An error occured: {error}", ephemeral=True)
         log.error(f"An error occured: {error}")
+
+
+class RestartButton(discord.ui.View):
+    def __init__(self, ctx, bot, *, timeout=60):
+        super().__init__(timeout=timeout)
+        self.ctx = ctx
+        self.bot = bot
+        self.clicked = False
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item: discord.ui.Item
+            item.disabled = True
+        await self.message.edit(view=self)
+
+    async def interaction_check(self, interaction: discord.Interaction):
+        if not interaction.user.id == self.ctx.author.id:
+            await interaction.response.send_message(
+                ("You are not the author of this command."), ephemeral=True
+            )
+            return False
+        if self.clicked:
+            await interaction.response.send_message(("Button already clicked."), ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Restart", style=discord.ButtonStyle.gray)
+    async def restart_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.clicked = True
+        button.disabled = True
+        await interaction.response.send_message("Restarting...", ephemeral=True)
+        await interaction.message.edit(view=self)
+        try:
+            await self.bot.shutdown(restart=True)
+        except Exception as e:
+            await interaction.channel.send(f"Error restarting bot: {str(e)}")
+            log.error(e)

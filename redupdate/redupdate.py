@@ -30,7 +30,7 @@ from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
-from .view import URLModal
+from .view import URLModal, RestartButton
 
 log = logging.getLogger("red.maxcogs.redupdate")
 
@@ -41,7 +41,8 @@ async def redupdate(self, ctx: commands.Context):
         color=await ctx.embed_color(),
     )
     embed.set_footer(text="Restart required to apply changes!")
-    await ctx.send(embed=embed)
+    view = RestartButton(ctx, self.bot)
+    await ctx.send(embed=embed, view=view)
 
 
 async def failedupdate(self, ctx: commands.Context):
@@ -66,7 +67,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.6.0"
+    __version__: Final[str] = "1.7.0"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
 
     def __init__(self, bot):
