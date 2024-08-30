@@ -470,8 +470,13 @@ class Chest(commands.Cog):
             await ctx.send("No records found.")
             return
 
-        # Convert results to a list of dictionaries
-        results_list = [dict(result) for result in results]
+        # Convert results to a list of dictionaries and format datetime
+        results_list = []
+        for result in results:
+            result_dict = dict(result)
+            if 'next_chest_time' in result_dict:
+                result_dict['next_chest_time'] = datetime.fromisoformat(result_dict['next_chest_time']).strftime('%Y-%m-%d %H:%M:%S')
+            results_list.append(result_dict)
 
         # Format the results using tabulate
         formatted_results = tabulate(results_list, headers="keys", tablefmt="pretty")
@@ -479,6 +484,7 @@ class Chest(commands.Cog):
         # Create an in-memory file-like object
         file = io.BytesIO(formatted_results.encode("utf-8"))
         file.name = "debug.txt"
+
         # Send the file
         await ctx.send("Here's the current database records", file=discord.File(file, "debug.txt"))
 
