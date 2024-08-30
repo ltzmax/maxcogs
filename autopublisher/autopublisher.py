@@ -140,6 +140,7 @@ class AutoPublisher(commands.Cog):
 
     @commands.is_owner()
     @autopublisher.command()
+    @commands.bot_has_permissions(embed_links=True)
     async def stats(self, ctx: commands.Context):
         """
         Show the number of published messages.
@@ -159,14 +160,21 @@ class AutoPublisher(commands.Cog):
         timestamp = int(next_sunday_midnight.timestamp())
         time_until_reset = f"<t:{timestamp}:f> (<t:{timestamp}:R>)"
 
-        msg = (
-            "Total Published messages:\n"
-            f"{box(humanize_number(total_count), lang='yaml')}"
-            "Total Published messages this week:\n"
-            f"{box(humanize_number(weekly_count), lang='yaml')}\n"
-            f"Time until weekly count reset: {time_until_reset}"
+        msg_content = (
+            f"Total Published Messages:\n{humanize_number(total_count)}\n"
+            f"Weekly Published Messages:\n{humanize_number(weekly_count)}"
         )
-        await ctx.send(msg)
+        msg = box(msg_content, lang="yaml")
+        embed = discord.Embed(
+            title="AutoPublisher Stats",
+            description=msg,
+            color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="Weekly Reset:",
+            value=f"{time_until_reset}",
+        )
+        await ctx.send(embed=embed)
 
     @autopublisher.command()
     @commands.bot_has_permissions(manage_messages=True, view_channel=True)
