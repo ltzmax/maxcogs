@@ -152,7 +152,6 @@ class Chest(commands.Cog):
             guild_id = result["guild_id"]
             next_chest_time = datetime.fromisoformat(result["next_chest_time"])
             self.remaining_times[guild_id] = next_chest_time - datetime.now()
-            log.info(f"Loaded task state for guild {guild_id}. Next Spawn: {next_chest_time}")
 
     async def delete_task_state(self, guild_id: int):
         """
