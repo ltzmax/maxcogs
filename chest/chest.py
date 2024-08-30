@@ -95,6 +95,7 @@ class Chest(commands.Cog):
         """
         Initialize the database and load all task states.
         """
+        await self.database.connect()
         await self.init_db()
         await self.load_all_task_states()
 
@@ -102,13 +103,11 @@ class Chest(commands.Cog):
         """
         Initialize the database and create the table if it doesn't exist.
         """
-        await self.database.connect()
         query = """
-            CREATE TABLE IF NOT EXISTS timer_table (
-                id INTEGER PRIMARY KEY,
-                guild_id INTEGER NOT NULL UNIQUE,
-                next_chest_time TEXT NOT NULL
-            )
+        CREATE TABLE IF NOT EXISTS timer_table (
+            guild_id INTEGER PRIMARY KEY,
+            next_chest_time TEXT
+        )
         """
         await self.database.execute(query=query)
 
