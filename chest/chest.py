@@ -50,7 +50,7 @@ log = logging.getLogger("red.maxcogs.chest")
 class Chest(commands.Cog):
     """First to click the button gets random credits to their `[p]bank balance`."""
 
-    __version__: Final[str] = "2.0.0"
+    __version__: Final[str] = "2.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Chest.md"
 
@@ -208,7 +208,9 @@ class Chest(commands.Cog):
                         self.remaining_times[guild.id] = timedelta(hours=4)
                         await self.save_task_state(guild.id)
             else:
-                self.remaining_times[guild.id] -= timedelta(minutes=1)
+                # Calculate the exact time difference and update remaining_times
+                next_chest_time = datetime.now() + self.remaining_times[guild.id]
+                self.remaining_times[guild.id] = next_chest_time - datetime.now()
 
     @send_chest.before_loop
     async def before_send_chest(self):
