@@ -30,7 +30,9 @@ from datetime import datetime, timedelta
 from typing import Any, Final, Literal, Optional
 
 import discord
+import io
 from databases import Database
+from tabulate import tabulate
 from discord.ext import tasks
 from discord.ext.commands.converter import EmojiConverter
 from discord.ext.commands.errors import EmojiNotFound
@@ -455,6 +457,30 @@ class Chest(commands.Cog):
         else:
             await self.config.emoji.set("🪙")
             await ctx.send("I've reset back to default!")
+
+    @owner.command()
+    async def debug(self, ctx: commands.Context):
+        """Debug the database."""
+        query = """
+            SELECT * FROM timer_table
+        """
+        results = await self.database.fetch_all(query=query)
+        
+        if not results:
+            await ctx.send("No records found.")
+            return
+
+        # Convert results to a list of dictionaries
+        results_list = [dict(result) for result in results]
+
+        # Format the results using tabulate
+        formatted_results = tabulate(results_list, headers="keys", tablefmt="pretty")
+
+        # Create an in-memory file-like object
+        file = io.BytesIO(formatted_results.encode("utf-8"))
+        file.name = "debug.txt"
+        # Send the file
+        await ctx.send("Here's the current database records", file=discord.File(file, "debug.txt"))
 
     @owner.group(name="reset")
     async def owner_reset(self, ctx: commands.Context):
