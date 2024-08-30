@@ -52,7 +52,7 @@ log = logging.getLogger("red.maxcogs.chest")
 class Chest(commands.Cog):
     """First to click the button gets random credits to their `[p]bank balance`."""
 
-    __version__: Final[str] = "2.1.0"
+    __version__: Final[str] = "2.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Chest.md"
 
@@ -163,6 +163,30 @@ class Chest(commands.Cog):
             DELETE FROM timer_table WHERE guild_id = :guild_id
         """
         await self.database.execute(query=query, values={"guild_id": guild_id})
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):
+        """
+        Remove the task state when the bot leaves a guild.
+        """
+        if guild.id in self.remaining_times:
+            del self.remaining_times[guild.id]
+            await self.delete_task_state(guild.id)
+            log.info(f"Deleted task state for guild {guild.id}.")
+
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):
+        """
+        Remove the task state when the channel is deleted.
+        """
+        if channel.guild.id in self.remaining_times:
+            del self.remaining_times[channel.guild.id]
+            await self.delete_task_state(channel.guild.id)
+            log.info(f"Deleted task state for guild {channel.guild.id}.")
+
+        if await self.config.guild(channel.guild).channel() == channel.id:
+            await self.config.guild(channel.guild).channel.clear()
+            log.info(f"Cleared channel for guild {channel.guild.id}.")
 
     @tasks.loop(minutes=1)
     async def send_chest(self):
