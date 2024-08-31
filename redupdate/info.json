@@ -17,6 +17,9 @@
         "embed_links"
     ],
     "requirements": [],
+    "required_cogs": {
+        "shell": "https://github.com/Jackenmen/JackCogs"
+    },
     "min_python_version": [
         3,
         9,
