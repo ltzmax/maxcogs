@@ -164,7 +164,7 @@ class KickBanUserView(discord.ui.View):
             item.disabled = True
         try:
             await self.message.edit(view=self)
-        except discord.NotFound as e:
+        except discord.HTTPException as e:
             log.error(e)
 
     async def on_error(

@@ -24,15 +24,13 @@ SOFTWARE.
 
 import asyncio
 import logging
-import os
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Final, Literal, Optional
 
 import discord
-import io
+import os
 from databases import Database
-from tabulate import tabulate
 from discord.ext import tasks
 from discord.ext.commands.converter import EmojiConverter
 from discord.ext.commands.errors import EmojiNotFound
@@ -41,9 +39,9 @@ from redbot.core import Config, bank, commands
 from redbot.core.bot import Red
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box, humanize_number
-from redbot.core.utils.views import ConfirmView
+from redbot.core.utils.views import ConfirmView, SimpleMenu
+from tabulate import tabulate
 
-from .utils import is_default_role
 from .view import ChestView
 
 log = logging.getLogger("red.maxcogs.chest")
@@ -296,7 +294,7 @@ class Chest(commands.Cog):
             return await ctx.send("Cleared role. I won't ping anymore!")
         if role >= ctx.guild.me.top_role:
             return await ctx.send("You can't set a role higher than my top role.")
-        if is_default_role(role):
+        if role.is_default():
             return await ctx.send("You can't set a role with ``@everyone`` or ``@here``.")
         await self.config.guild(ctx.guild).role.set(role.id)
         await ctx.send(
@@ -482,33 +480,43 @@ class Chest(commands.Cog):
 
     @owner.command()
     async def debug(self, ctx: commands.Context):
-        """Debug the database."""
+        """
+        Debug the database.
+
+        This will show all the records in the database table for debugging purposes.
+        It will show the guild_id and the next_chest_time for each record.
+        """
         query = """
             SELECT * FROM timer_table
         """
         results = await self.database.fetch_all(query=query)
-        
+
         if not results:
             await ctx.send("No records found.")
             return
 
-        # Convert results to a list of dictionaries and format datetime
+        # Convert the results to a list of dictionaries
         results_list = []
         for result in results:
             result_dict = dict(result)
-            if 'next_chest_time' in result_dict:
-                result_dict['next_chest_time'] = datetime.fromisoformat(result_dict['next_chest_time']).strftime('%Y-%m-%d %H:%M:%S')
+            if "next_chest_time" in result_dict:
+                result_dict["next_chest_time"] = datetime.fromisoformat(
+                    result_dict["next_chest_time"]
+                ).replace(tzinfo=timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
             results_list.append(result_dict)
 
-        # Format the results using tabulate
-        formatted_results = tabulate(results_list, headers="keys", tablefmt="pretty")
-
-        # Create an in-memory file-like object
-        file = io.BytesIO(formatted_results.encode("utf-8"))
-        file.name = "debug.txt"
-
-        # Send the file
-        await ctx.send("Here's the current database records", file=discord.File(file, "debug.txt"))
+        # Manually split the results into chunks of 15
+        chunks = [results_list[i : i + 15] for i in range(0, len(results_list), 15)]
+        # Format each chunk using tabulate
+        pages = [
+            box(tabulate(chunk, headers="keys", tablefmt="pretty"), lang="yaml")
+            for chunk in chunks
+        ]
+        await SimpleMenu(
+            pages,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
 
     @owner.group(name="reset")
     async def owner_reset(self, ctx: commands.Context):

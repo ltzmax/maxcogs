@@ -56,7 +56,7 @@ class ChannelView(discord.ui.View):
         if self.message:
             try:
                 await self.message.edit(view=self)
-            except discord.NotFound as e:
+            except discord.HTTPException as e:
                 log.error(e)
 
     def set_select_options(self):
