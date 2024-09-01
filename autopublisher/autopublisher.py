@@ -57,14 +57,16 @@ class AutoPublisher(commands.Cog):
             "published_count": 0,
             "published_weekly_count": 0,
             "published_monthly_count": 0,
+            "published_yearly_count": 0,
         }
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
 
         # Schedule weekly count reset.
         scheduler = AsyncIOScheduler()
-        scheduler.add_job(self.reset_weekly_count, 'cron', day_of_week='sun', hour=0, minute=0)
-        scheduler.add_job(self.reset_monthly_count, 'cron', day=1, hour=0, minute=0) 
+        scheduler.add_job(self.reset_count, 'cron', day_of_week='sun', hour=0, minute=0, args=["weekly"])
+        scheduler.add_job(self.reset_count, 'cron', day=1, hour=0, minute=0, args=["monthly"])
+        scheduler.add_job(self.reset_count, 'cron', month=1, day=1, hour=0, minute=0, args=["yearly"])
         scheduler.start()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -81,16 +83,21 @@ class AutoPublisher(commands.Cog):
             data["published_count"] = data.get("published_count", 0) + 1
             data["published_weekly_count"] = data.get("published_weekly_count", 0) + 1
             data["published_monthly_count"] = data.get("published_monthly_count", 0) + 1
+            data["published_yearly_count"] = data.get("published_yearly_count", 0) + 1
 
-    async def reset_weekly_count(self):
-        """Reset the published_weekly_count to zero every Sunday."""
-        await self.config.published_weekly_count.set(0)
-        log.info("Reset published_weekly_count to 0")
-
-    async def reset_monthly_count(self):
-        """Reset the published_monthly_count to zero every month."""
-        await self.config.published_monthly_count.set(0)
-        log.info("Reset published_monthly_count to 0")
+    async def reset_count(self, period):
+        """Reset the published count based on the period."""
+        if period == "weekly":
+            await self.config.published_weekly_count.set(0)
+            log.info("Reset published_weekly_count to 0")
+        elif period == "monthly":
+            await self.config.published_monthly_count.set(0)
+            log.info("Reset published_monthly_count to 0")
+        elif period == "yearly":
+            await self.config.published_yearly_count.set(0)
+            log.info("Reset published_yearly_count to 0")
+        else:
+            log.error(f"Unknown period: {period}")
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
@@ -158,6 +165,7 @@ class AutoPublisher(commands.Cog):
         total_count = data.get("published_count", 0)
         weekly_count = data.get("published_weekly_count", 0)
         monthly_count = data.get("published_monthly_count", 0)
+        yearly_count = data.get("published_yearly_count", 0)
 
         # Calculate the next Sunday midnight timestamp
         now = datetime.utcnow()
@@ -166,15 +174,19 @@ class AutoPublisher(commands.Cog):
         # Calculate the next 1st of the month midnight timestamp
         next_1st_timestamp = get_next_reset_timestamp(now, target_day=1)
         time_until_monthly_reset = f"<t:{next_1st_timestamp}:f> (<t:{next_1st_timestamp}:R>)"
+        # Calculate the next 1st of January midnight timestamp
+        next_january_1st_timestamp = get_next_reset_timestamp(now, target_day=1, target_month=1)
+        time_until_yearly_reset = f"<t:{next_january_1st_timestamp}:f> (<t:{next_january_1st_timestamp}:R>)"
 
         msg_content = box(
             f"Total Weekly Published Messages: {humanize_number(weekly_count)}\n"
             f"Total Monthly Published Messages: {humanize_number(monthly_count)}\n"
+            f"Total Yearly Published Messages: {humanize_number(yearly_count)}\n"
             f"Total Published Messages: {humanize_number(total_count)}",
             lang="prolog",
         )
         await ctx.send(
-            f"{msg_content}\nNext Weekly Reset: {time_until_weekly_reset}\nNext Monthly Reset: {time_until_monthly_reset}"
+            f"{msg_content}\nNext Weekly Reset: {time_until_weekly_reset}\nNext Monthly Reset: {time_until_monthly_reset}\nNext Yearly Reset: {time_until_yearly_reset}"
         )
     
     @autopublisher.command()
