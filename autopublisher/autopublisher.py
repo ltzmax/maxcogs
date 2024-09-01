@@ -155,7 +155,10 @@ class AutoPublisher(commands.Cog):
 
         # Calculate the next Sunday midnight timestamp
         now = datetime.utcnow()
-        next_sunday = now + timedelta(days=(6 - now.weekday()))
+        days_until_next_sunday = (6 - now.weekday() + 1) % 7
+        if days_until_next_sunday == 0:
+            days_until_next_sunday = 7
+        next_sunday = now + timedelta(days=days_until_next_sunday)
         next_sunday_midnight = datetime.combine(next_sunday, datetime.min.time())
         timestamp = int(next_sunday_midnight.timestamp())
         time_until_reset = f"<t:{timestamp}:f> (<t:{timestamp}:R>)"
