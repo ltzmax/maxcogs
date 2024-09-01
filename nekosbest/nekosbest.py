@@ -30,9 +30,10 @@ import orjson
 import logging
 from redbot.core import commands, Config, app_commands
 from redbot.core.bot import Red
+from redbot.core.utils.chat_formatting import humanize_number
 from redbot.core.utils.views import ConfirmView
 from .core import ACTIONS, ICON, NEKOS
-from .view import ImageButtonView, CountButtonView
+from .view import ImageButtonView
 
 log = logging.getLogger("red.maxcogs.nekosbest")
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
@@ -104,18 +105,6 @@ class NekosBest(commands.Cog):
         url = await api_call(self, ctx, action)
         if url is None:
             return
-
-        action_fmt = ACTIONS.get(action, action)
-        anime_name = url["results"][0]["anime_name"]
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=(
-                f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member and member != ctx.author else 'themselves!'}"
-            ),
-        )
-        emb.set_footer(text=f"Powered by nekos.best\nAnime Name: {anime_name}", icon_url=ICON)
-        emb.set_image(url=url["results"][0]["url"])
-
         # Count the command usage
         user_config = self.config.user(ctx.author)
         command_counts = await user_config.command_counts()
@@ -125,8 +114,19 @@ class NekosBest(commands.Cog):
         await user_config.command_counts.set(command_counts)
         count = command_counts[action]
 
-        view = CountButtonView(ctx, action, count)
-        await ctx.send(embed=emb, view=view)
+        grammar = "times" if count > 1 else "time"
+        action_fmt = ACTIONS.get(action, action)
+        anime_name = url["results"][0]["anime_name"]
+        emb = discord.Embed(
+            colour=await ctx.embed_color(),
+            description=(
+                f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member and member != ctx.author else 'themselves!'}\n"
+            ),
+        )
+        emb.add_field(name=f"{ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}!", value=f"Anime Name: {anime_name}")
+        emb.set_image(url=url["results"][0]["url"])
+        emb.set_footer(text=f"Powered by nekos.best", icon_url=ICON)
+        await ctx.send(embed=emb)
 
     # -------- image Commands ------->
 

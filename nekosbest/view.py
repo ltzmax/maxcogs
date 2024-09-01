@@ -25,18 +25,6 @@ SOFTWARE.
 import discord
 
 
-class CountButtonView(discord.ui.View):
-    def __init__(self, ctx, action, count):
-        super().__init__()
-        self.add_item(
-            discord.ui.Button(
-                label=f"{ctx.author} has used {action} {count} times!",
-                style=discord.ButtonStyle.blurple,
-                disabled=True,
-            )
-        )
-
-
 class ImageButtonView(discord.ui.View):
     def __init__(self, artist_href, source_url, image):
         super().__init__()
