@@ -155,7 +155,7 @@ class AutoPublisher(commands.Cog):
 
         # Calculate the next Sunday midnight timestamp
         now = datetime.utcnow()
-        days_until_next_sunday = (6 - now.weekday() + 1) % 7
+        days_until_next_sunday = (6 - now.weekday()) % 7
         if days_until_next_sunday == 0:
             days_until_next_sunday = 7
         next_sunday = now + timedelta(days=days_until_next_sunday)
@@ -175,7 +175,8 @@ class AutoPublisher(commands.Cog):
         )
         embed.add_field(
             name="Weekly Reset:",
-            value=f"{time_until_reset}",
+            value=time_until_reset,
+            inline=False
         )
         await ctx.send(embed=embed)
 
