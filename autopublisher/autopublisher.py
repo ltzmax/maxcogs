@@ -181,10 +181,10 @@ class AutoPublisher(commands.Cog):
         )
 
         msg_content = box(
-            f"Total Weekly Published Messages: {humanize_number(weekly_count)}\n"
-            f"Total Monthly Published Messages: {humanize_number(monthly_count)}\n"
-            f"Total Yearly Published Messages: {humanize_number(yearly_count)}\n"
-            f"Total Published Messages: {humanize_number(total_count)}",
+            f"Total Weekly Published Messages:\n{humanize_number(weekly_count)}\n"
+            f"Total Monthly Published Messages:\n{humanize_number(monthly_count)}\n"
+            f"Total Yearly Published Messages:\n{humanize_number(yearly_count)}\n"
+            f"Total Published Messages:\n{humanize_number(total_count)}",
             lang="prolog",
         )
         await ctx.send(
