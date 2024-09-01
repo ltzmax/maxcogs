@@ -154,7 +154,7 @@ class AutoPublisher(commands.Cog):
         weekly_count = data.get("published_weekly_count", 0)
 
         # Calculate the next Sunday midnight timestamp
-        now = datetime.utcnow()
+        now = datetime.now()
         days_until_next_sunday = (6 - now.weekday()) % 7
         if days_until_next_sunday == 0:
             days_until_next_sunday = 7
