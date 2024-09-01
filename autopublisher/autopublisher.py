@@ -169,24 +169,24 @@ class AutoPublisher(commands.Cog):
 
         # Calculate the next Sunday midnight timestamp
         now = datetime.utcnow()
-        next_sunday_timestamp = get_next_reset_timestamp(now, target_weekday=6)
+        next_sunday_timestamp = await get_next_reset_timestamp(now, target_weekday=6)
         time_until_weekly_reset = f"<t:{next_sunday_timestamp}:f> (<t:{next_sunday_timestamp}:R>)"
         # Calculate the next 1st of the month midnight timestamp
-        next_1st_timestamp = get_next_reset_timestamp(now, target_day=1)
+        next_1st_timestamp = await get_next_reset_timestamp(now, target_day=1)
         time_until_monthly_reset = f"<t:{next_1st_timestamp}:f> (<t:{next_1st_timestamp}:R>)"
         # Calculate the next 1st of January midnight timestamp
-        next_january_1st_timestamp = get_next_reset_timestamp(now, target_day=1, target_month=1)
+        next_january_1st_timestamp = await get_next_reset_timestamp(now, target_day=1, target_month=1)
         time_until_yearly_reset = (
             f"<t:{next_january_1st_timestamp}:f> (<t:{next_january_1st_timestamp}:R>)"
         )
 
         msg_content = (
             "Total Weekly Published Messages:\n"
-            f"{box(humanize_number(weekly_count), lang='prolog')}\n"
+            f"{box(humanize_number(weekly_count), lang='prolog')}"
             "Total Monthly Published Messages:\n"
-            f"{box(humanize_number(monthly_count), lang='prolog')}\n"
+            f"{box(humanize_number(monthly_count), lang='prolog')}"
             "Total Yearly Published Messages:\n"
-            f"{box(humanize_number(yearly_count), lang='prolog')}\n"
+            f"{box(humanize_number(yearly_count), lang='prolog')}"
             "Total Published Messages:\n"
             f"{box(humanize_number(total_count), lang='prolog')}"
         )

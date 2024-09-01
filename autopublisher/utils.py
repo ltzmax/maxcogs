@@ -27,7 +27,17 @@ from datetime import datetime, timedelta
 
 log = logging.getLogger("red.maxcogs.autopublisher.utils")
 
-def get_next_reset_timestamp(now, target_weekday=None, target_day=None, target_month=None):
+async def get_next_reset_timestamp(now, target_weekday=None, target_day=None, target_month=None):
+    """
+    Calculate the next timestamp for a given target now, weekday, day, and month.
+
+    __Parameters__:
+    -------------
+    - now (datetime): The current datetime.
+    - target_weekday (int): The target weekday (0-6, Monday-Sunday).
+    - target_day (int): The target day of the month.
+    - target_month (int): The target month.
+    """
     if target_weekday is not None:
         days_until_target = (target_weekday - now.weekday()) % 7
         if days_until_target == 0:
