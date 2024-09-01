@@ -180,12 +180,15 @@ class AutoPublisher(commands.Cog):
             f"<t:{next_january_1st_timestamp}:f> (<t:{next_january_1st_timestamp}:R>)"
         )
 
-        msg_content = box(
-            f"Total Weekly Published Messages:\n{humanize_number(weekly_count)}\n"
-            f"Total Monthly Published Messages:\n{humanize_number(monthly_count)}\n"
-            f"Total Yearly Published Messages:\n{humanize_number(yearly_count)}\n"
-            f"Total Published Messages:\n{humanize_number(total_count)}",
-            lang="prolog",
+        msg_content = (
+            "Total Weekly Published Messages:\n"
+            f"{box(humanize_number(weekly_count), lang='prolog')}\n"
+            "Total Monthly Published Messages:\n"
+            f"{box(humanize_number(monthly_count), lang='prolog')}\n"
+            "Total Yearly Published Messages:\n"
+            f"{box(humanize_number(yearly_count), lang='prolog')}\n"
+            "Total Published Messages:\n"
+            f"{box(humanize_number(total_count), lang='prolog')}"
         )
         await ctx.send(
             f"{msg_content}\nNext Weekly Reset: {time_until_weekly_reset}\nNext Monthly Reset: {time_until_monthly_reset}\nNext Yearly Reset: {time_until_yearly_reset}"
