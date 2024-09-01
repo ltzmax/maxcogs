@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+
 def get_next_reset_timestamp(now, target_weekday=None, target_day=None, target_month=None):
     if target_weekday is not None:
         days_until_target = (target_weekday - now.weekday()) % 7

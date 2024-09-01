@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import discord
 import logging
+
+import discord
 from redbot.core.bot import Red
 from redbot.core.config import Config
 

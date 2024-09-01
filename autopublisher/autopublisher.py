@@ -24,17 +24,18 @@ SOFTWARE.
 
 import asyncio
 import logging
+from datetime import datetime, timedelta
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
-from datetime import datetime, timedelta
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core.utils.views import ConfirmView
-from .view import ChannelView
+
 from .utils import get_next_reset_timestamp
+from .view import ChannelView
 
 log = logging.getLogger("red.maxcogs.autopublisher")
 
@@ -64,9 +65,13 @@ class AutoPublisher(commands.Cog):
 
         # Schedule weekly count reset.
         scheduler = AsyncIOScheduler()
-        scheduler.add_job(self.reset_count, 'cron', day_of_week='sun', hour=0, minute=0, args=["weekly"])
-        scheduler.add_job(self.reset_count, 'cron', day=1, hour=0, minute=0, args=["monthly"])
-        scheduler.add_job(self.reset_count, 'cron', month=1, day=1, hour=0, minute=0, args=["yearly"])
+        scheduler.add_job(
+            self.reset_count, "cron", day_of_week="sun", hour=0, minute=0, args=["weekly"]
+        )
+        scheduler.add_job(self.reset_count, "cron", day=1, hour=0, minute=0, args=["monthly"])
+        scheduler.add_job(
+            self.reset_count, "cron", month=1, day=1, hour=0, minute=0, args=["yearly"]
+        )
         scheduler.start()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -171,7 +176,9 @@ class AutoPublisher(commands.Cog):
         time_until_monthly_reset = f"<t:{next_1st_timestamp}:f> (<t:{next_1st_timestamp}:R>)"
         # Calculate the next 1st of January midnight timestamp
         next_january_1st_timestamp = get_next_reset_timestamp(now, target_day=1, target_month=1)
-        time_until_yearly_reset = f"<t:{next_january_1st_timestamp}:f> (<t:{next_january_1st_timestamp}:R>)"
+        time_until_yearly_reset = (
+            f"<t:{next_january_1st_timestamp}:f> (<t:{next_january_1st_timestamp}:R>)"
+        )
 
         msg_content = box(
             f"Total Weekly Published Messages: {humanize_number(weekly_count)}\n"
@@ -183,7 +190,7 @@ class AutoPublisher(commands.Cog):
         await ctx.send(
             f"{msg_content}\nNext Weekly Reset: {time_until_weekly_reset}\nNext Monthly Reset: {time_until_monthly_reset}\nNext Yearly Reset: {time_until_yearly_reset}"
         )
-    
+
     @autopublisher.command()
     @commands.bot_has_permissions(manage_messages=True, view_channel=True)
     async def toggle(self, ctx: commands.Context):
