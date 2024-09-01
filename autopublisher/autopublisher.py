@@ -34,6 +34,7 @@ from redbot.core.utils.chat_formatting import box, humanize_list, humanize_numbe
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core.utils.views import ConfirmView
 from .view import ChannelView
+from .utils import get_next_reset_timestamp
 
 log = logging.getLogger("red.maxcogs.autopublisher")
 
@@ -41,7 +42,7 @@ log = logging.getLogger("red.maxcogs.autopublisher")
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.2.3"
+    __version__: Final[str] = "2.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/AutoPublisher.md"
 
@@ -55,6 +56,7 @@ class AutoPublisher(commands.Cog):
         default_global = {
             "published_count": 0,
             "published_weekly_count": 0,
+            "published_monthly_count": 0,
         }
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
@@ -62,6 +64,7 @@ class AutoPublisher(commands.Cog):
         # Schedule weekly count reset.
         scheduler = AsyncIOScheduler()
         scheduler.add_job(self.reset_weekly_count, 'cron', day_of_week='sun', hour=0, minute=0)
+        scheduler.add_job(self.reset_monthly_count, 'cron', day=1, hour=0, minute=0) 
         scheduler.start()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -74,18 +77,20 @@ class AutoPublisher(commands.Cog):
         return
 
     async def increment_published_count(self):
-        data = await self.config.all()
-        total_count = data.get("published_count", 0)
-        total_count += 1
-        await self.config.published_count.set(total_count)
-        weekly_count = data.get("published_weekly_count", 0)
-        weekly_count += 1
-        await self.config.published_weekly_count.set(weekly_count)
+        async with self.config.all() as data:
+            data["published_count"] = data.get("published_count", 0) + 1
+            data["published_weekly_count"] = data.get("published_weekly_count", 0) + 1
+            data["published_monthly_count"] = data.get("published_monthly_count", 0) + 1
 
     async def reset_weekly_count(self):
         """Reset the published_weekly_count to zero every Sunday."""
         await self.config.published_weekly_count.set(0)
         log.info("Reset published_weekly_count to 0")
+
+    async def reset_monthly_count(self):
+        """Reset the published_monthly_count to zero every month."""
+        await self.config.published_monthly_count.set(0)
+        log.info("Reset published_monthly_count to 0")
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
@@ -140,7 +145,6 @@ class AutoPublisher(commands.Cog):
 
     @commands.is_owner()
     @autopublisher.command()
-    @commands.bot_has_permissions(embed_links=True)
     async def stats(self, ctx: commands.Context):
         """
         Show the number of published messages.
@@ -148,38 +152,31 @@ class AutoPublisher(commands.Cog):
         NOTE: 
         - The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
         - The weekly count will reset every Sunday at midnight UTC.
+        - The monthly count will reset every 1st of the month at midnight UTC.
         """
         data = await self.config.all()
         total_count = data.get("published_count", 0)
         weekly_count = data.get("published_weekly_count", 0)
+        monthly_count = data.get("published_monthly_count", 0)
 
         # Calculate the next Sunday midnight timestamp
         now = datetime.utcnow()
-        days_until_next_sunday = (6 - now.weekday()) % 7
-        if days_until_next_sunday == 0:
-            days_until_next_sunday = 7
-        next_sunday = now + timedelta(days=days_until_next_sunday)
-        next_sunday_midnight = datetime.combine(next_sunday, datetime.min.time())
-        timestamp = int(next_sunday_midnight.timestamp())
-        time_until_reset = f"<t:{timestamp}:f> (<t:{timestamp}:R>)"
+        next_sunday_timestamp = get_next_reset_timestamp(now, target_weekday=6)
+        time_until_weekly_reset = f"<t:{next_sunday_timestamp}:f> (<t:{next_sunday_timestamp}:R>)"
+        # Calculate the next 1st of the month midnight timestamp
+        next_1st_timestamp = get_next_reset_timestamp(now, target_day=1)
+        time_until_monthly_reset = f"<t:{next_1st_timestamp}:f> (<t:{next_1st_timestamp}:R>)"
 
-        msg_content = (
-            f"Total Published Messages:\n{humanize_number(total_count)}\n"
-            f"Weekly Published Messages:\n{humanize_number(weekly_count)}"
+        msg_content = box(
+            f"Total Weekly Published Messages: {humanize_number(weekly_count)}\n"
+            f"Total Monthly Published Messages: {humanize_number(monthly_count)}\n"
+            f"Total Published Messages: {humanize_number(total_count)}",
+            lang="prolog",
         )
-        msg = box(msg_content, lang="yaml")
-        embed = discord.Embed(
-            title="AutoPublisher Stats",
-            description=msg,
-            color=await ctx.embed_color(),
+        await ctx.send(
+            f"{msg_content}\nNext Weekly Reset: {time_until_weekly_reset}\nNext Monthly Reset: {time_until_monthly_reset}"
         )
-        embed.add_field(
-            name="Weekly Reset:",
-            value=time_until_reset,
-            inline=False
-        )
-        await ctx.send(embed=embed)
-
+    
     @autopublisher.command()
     @commands.bot_has_permissions(manage_messages=True, view_channel=True)
     async def toggle(self, ctx: commands.Context):
