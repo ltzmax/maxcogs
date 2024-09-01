@@ -167,7 +167,7 @@ class AutoPublisher(commands.Cog):
             f"Total Published Messages:\n{humanize_number(total_count)}\n"
             f"Weekly Published Messages:\n{humanize_number(weekly_count)}"
         )
-        msg = box(msg_content, lang="yaml")
+        msg = box(msg_content, lang="prolog")
         embed = discord.Embed(
             title="AutoPublisher Stats",
             description=msg,
