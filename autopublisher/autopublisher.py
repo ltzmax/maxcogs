@@ -155,11 +155,6 @@ class AutoPublisher(commands.Cog):
     async def stats(self, ctx: commands.Context):
         """
         Show the number of published messages.
-
-        NOTE: 
-        - The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)
-        - The weekly count will reset every Sunday at midnight UTC.
-        - The monthly count will reset every 1st of the month at midnight UTC.
         """
         data = await self.config.all()
         total_count = data.get("published_count", 0)

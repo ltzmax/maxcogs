@@ -22,11 +22,6 @@ Toggle AutoPublisher enable or disable.<br/>
  - Usage: `[p]autopublisher toggle`
 ## [p]autopublisher stats
 Show the number of published messages.<br/>
-
-NOTE: <br/>
-- The count will never reset unless you manually reset it or and delete the data from the files. (not recommended)<br/>
-- The weekly count will reset every Sunday at midnight UTC.<br/>
-- The monthly count will reset every 1st of the month at midnight UTC.<br/>
  - Usage: `[p]autopublisher stats`
  - Restricted to: `BOT_OWNER`
 ## [p]autopublisher ignorechannel
