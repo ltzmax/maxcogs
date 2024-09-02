@@ -259,6 +259,12 @@ class AutoPublisher(commands.Cog):
         if not news_channels:
             return await ctx.send("There are no news channels available to ignore.")
 
+        # Check if there are more than 25 news channels
+        # Select menu can't view more than 25 channels therefore, this command can't be used.
+        # Maybe dont create that many news channels, right? :D
+        if len(news_channels) > 25:
+            return await ctx.send("There are more than 25 news channels. This command cannot be used.")
+
         view = ChannelView(ctx, self.bot, self.config, ctx.guild.id)
         message = await ctx.send("Select a news channel to ignore:", view=view)
         view.message = message  # Set the message reference in the view
