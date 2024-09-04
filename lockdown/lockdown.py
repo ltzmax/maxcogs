@@ -38,7 +38,7 @@ class Lockdown(commands.Cog):
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.2.0"
+    __version__: Final[str] = "1.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
 
@@ -145,26 +145,22 @@ class Lockdown(commands.Cog):
                 "already_set_message": "❌ This channel is already unlocked.",
             },
         }
-        action_props = actions.get(action)
-
         if isinstance(ctx.channel, discord.Thread):
-            if ctx.channel.locked == (action == "lock"):
-                return await ctx.send(
-                    action_props["already_set_message"],
-                    reference=ctx.message.to_reference(fail_if_not_exists=False),
-                    mention_author=False,
-                )
-
-        else:
-            overwrites = (
-                ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
+            return await ctx.send(
+                "❌ You can't lock/unlock a thread channel(s) with this command.\nUse `[p]thread lockdown` or `[p]thread close` instead.".replace(
+                    "[p]", ctx.clean_prefix
+                ),
             )
-            if overwrites.send_messages == action_props["send_messages"]:
-                return await ctx.send(
-                    action_props["already_set_message"],
-                    reference=ctx.message.to_reference(fail_if_not_exists=False),
-                    mention_author=False,
-                )
+        action_props = actions.get(action)
+        overwrites = (
+            ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
+        )
+        if overwrites.send_messages == action_props["send_messages"]:
+            return await ctx.send(
+                action_props["already_set_message"],
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
 
         if action == "lock":
             view = UnlockView(ctx)
@@ -177,33 +173,29 @@ class Lockdown(commands.Cog):
                 if reason:
                     embed.add_field(
                         name="Reason:",
-                        value=f"{reason if len(reason) < 2024 else 'Reason is too long.'}",
+                        value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}",
                     )
                 embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
                 view.message = await ctx.send(embed=embed, view=view)
             else:
                 view.message = await ctx.send(
-                    f"{action_props['description']}\n{'Reason: ' + reason if reason else ''}", 
-                    view=view
+                    f"{action_props['description']}\n{'Reason: ' + reason if reason else ''}",
+                    view=view,
                 )
 
         # Attempt to set the permissions after sending the message
         try:
-            if isinstance(ctx.channel, discord.Thread):
-                await ctx.channel.edit(locked=(action == "lock"))
-            else:
-                overwrites.send_messages = action_props["send_messages"]
+            if action == "lock":
+                overwrites.send_messages = False
                 await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
-        except discord.errors.Forbidden:
-            # If the bot doesn't have the permissions to lock/unlock the channel
-            # This will only happen if the bot doesn't have the permissions to send_messages.
+            if action == "unlock":
+                overwrites.send_messages = None
+                await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
+        except discord.Forbidden:
             log.error(
                 f"I don't have the permissions to {'lock' if action == 'lock' else 'unlock'} this channel."
             )
 
-        # This is for the unlock command to send a message if the channel is already unlocked
-        # This has to be below the try-except block to prevent the message from being sent twice if an error occurs
-        # Meaning that the message will be sent to the channel after the permissions are set successfully.
         if action == "unlock":
             if await self.config.guild(ctx.guild).use_embed():
                 embed = discord.Embed(
@@ -228,7 +220,7 @@ class Lockdown(commands.Cog):
 
     @commands.guild_only()
     @commands.mod_or_can_manage_channel()
-    @commands.hybrid_command(aliases=["lockdown"])
+    @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
         reason="The reason why you're locking this channel",
@@ -256,8 +248,6 @@ class Lockdown(commands.Cog):
         ctx: commands.Context,
         *,
         reason: Optional[str] = None,
-        channel: Optional[Union[discord.TextChannel, discord.Thread]] = None,
-        role: Optional[discord.Role] = None,
     ):
         """
         Unlock a channel for everyone.
@@ -279,6 +269,24 @@ class Lockdown(commands.Cog):
         """
         if not isinstance(ctx.channel, discord.Thread):
             return await ctx.send("This channel is not a thread.")
-        await ctx.send(f"Archived and closed this thread post!")
+        await ctx.send(f"Archived and closed {ctx.channel.mention}.")
         await ctx.channel.edit(locked=True, archived=True)
         await self.log_channel(ctx, ctx.guild, event="Thread Closed", reason=reason)
+
+    @thread.command()
+    async def lockdown(self, ctx: commands.Context, *, reason: Optional[str] = None):
+        """Lock a thread post."""
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This channel is not a thread.")
+        await ctx.send(f"Successfully locked {ctx.channel.mention}.")
+        await ctx.channel.edit(locked=True)
+        await self.log_channel(ctx, ctx.guild, event="Thread Locked", reason=reason)
+
+    @thread.command()
+    async def open(self, ctx: commands.Context, *, reason: Optional[str] = None):
+        """Open a thread post."""
+        if not isinstance(ctx.channel, discord.Thread):
+            return await ctx.send("This channel is not a thread.")
+        await ctx.send(f"Successfully opened {ctx.channel.mention}.")
+        await ctx.channel.edit(locked=False, archived=False)
+        await self.log_channel(ctx, ctx.guild, event="Thread Opened", reason=reason)

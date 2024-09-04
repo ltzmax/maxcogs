@@ -14,7 +14,7 @@ class UnlockView(discord.ui.View):
             item.disabled = True
         try:
             await self.message.edit(view=self)
-        except discord.NotFound as e:
+        except discord.HTTPException as e:
             log.error(e)
 
     @discord.ui.button(label="Unlock Channel", style=discord.ButtonStyle.green, emoji="🔓")

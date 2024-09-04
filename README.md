@@ -28,9 +28,8 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisyher | Automatically push news channel messages. | 2.5.0 | ltzmax, AAA3A | ✅ |
-| Chest | First to click the button gets random credits to their `[p]bank balance`. | 2.2.0 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
-| lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.2.0 | ltzmax | ✅ |
+| lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.3.0 | ltzmax | ✅ |
 | nbaschedule | Get the current NBA schedule for next game. | 1.0.1 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
