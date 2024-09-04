@@ -174,7 +174,9 @@ class AutoPublisher(commands.Cog):
         next_1st_timestamp = await get_next_reset_timestamp(now, target_day=1)
         time_until_monthly_reset = f"<t:{next_1st_timestamp}:f> (<t:{next_1st_timestamp}:R>)"
         # Calculate the next 1st of January midnight timestamp
-        next_january_1st_timestamp = await get_next_reset_timestamp(now, target_day=1, target_month=1)
+        next_january_1st_timestamp = await get_next_reset_timestamp(
+            now, target_day=1, target_month=1
+        )
         time_until_yearly_reset = (
             f"<t:{next_january_1st_timestamp}:f> (<t:{next_january_1st_timestamp}:R>)"
         )
@@ -226,7 +228,9 @@ class AutoPublisher(commands.Cog):
         await ctx.send(f"AutoPublisher has been {'enabled' if toggle else 'disabled'}.")
 
     @autopublisher.command()
-    async def ignorechannel(self, ctx: commands.Context, channels: commands.Greedy[discord.TextChannel]):
+    async def ignorechannel(
+        self, ctx: commands.Context, channels: commands.Greedy[discord.TextChannel]
+    ):
         """
         Ignore/Unignore a news channel to prevent AutoPublisher from publishing messages in it.
         """
@@ -267,7 +271,9 @@ class AutoPublisher(commands.Cog):
             news_channels = [channel for channel in channels if channel.is_news()]
             if news_channels:
                 last_channel = news_channels[-1]
-                await ctx.send(f"News channel(s) has been {'ignored' if last_channel.id in ignored_channels else 'removed'}.")
+                await ctx.send(
+                    f"News channel(s) has been {'ignored' if last_channel.id in ignored_channels else 'removed'}."
+                )
             else:
                 await ctx.send("No news channels were provided to ignore or remove.")
         else:
