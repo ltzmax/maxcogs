@@ -105,7 +105,7 @@ class NoSpoiler(commands.Cog):
             embed.add_field(
                 name="Attachments:",
                 value="\n".join(
-                    f"[{a.filename}]({a.url}) ([Cached]({a.proxy_url}))" for a in attachments
+                    f"[{attachment.filename}]({attachment.url})" for attachment in attachments
                 ),
                 inline=False,
             )
