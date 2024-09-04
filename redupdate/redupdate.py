@@ -158,16 +158,18 @@ class RedUpdate(commands.Cog):
         await ctx.tick()
 
     @redupdateset.command(name="settings")
-    @commands.bot_has_permissions(embed_links=True)
     async def redupdateset_settings(self, ctx: commands.Context):
         """Show the url for redupdate cog."""
         url = await self.config.redupdate_url()
-        embed = discord.Embed(
-            title="Redupdate Settings",
-            description="Current url for redupdate cog is `{}`.".format(url),
-            color=await ctx.embed_color(),
-        )
-        await ctx.send(embed=embed)
+        try:
+            await ctx.author.send(
+                f"Your current fork url is:\n`{url}`",
+            )
+            await ctx.tick()
+        except discord.Forbidden:
+            await ctx.send(
+                "You have disabled DMs from this server, please enable it to view your settings.",
+            )
 
     @redupdateset.command(name="version")
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
