@@ -25,16 +25,7 @@ Show the number of published messages.<br/>
  - Usage: `[p]autopublisher stats`
  - Restricted to: `BOT_OWNER`
 ## [p]autopublisher ignorechannel
-Ignore a news channel to prevent AutoPublisher from publishing messages in it.<br/>
-
-Please note select menu's can't view more than 25 channels.<br/>
-
-- This command will show a select menu to choose one or more news channel(s) to ignore.<br/>
-
-**Note:**<br/>
-- Use `Confirm` button to confirm the selected channel(s) to ignore.<br/>
-- Use `Remove` button to remove the selected channel(s) from the ignored list.<br/>
-- You can confrim or remove multiple channels at once. (must go by one by one)<br/>
+Ignore/Unignore a news channel to prevent AutoPublisher from publishing messages in it.
  - Usage: `[p]autopublisher ignorechannel`
 ## [p]autopublisher reset
 Reset AutoPublisher setting.<br/>

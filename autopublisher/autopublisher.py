@@ -35,7 +35,6 @@ from redbot.core.utils.chat_formatting import box, humanize_list, humanize_numbe
 from redbot.core.utils.views import ConfirmView
 
 from .utils import get_next_reset_timestamp
-from .view import ChannelView
 
 log = logging.getLogger("red.maxcogs.autopublisher")
 
@@ -227,17 +226,9 @@ class AutoPublisher(commands.Cog):
         await ctx.send(f"AutoPublisher has been {'enabled' if toggle else 'disabled'}.")
 
     @autopublisher.command()
-    async def ignorechannel(self, ctx: commands.Context):
-        """Ignore a news channel to prevent AutoPublisher from publishing messages in it.
-
-        Please note select menu's can't view more than 25 channels.
-
-        - This command will show a select menu to choose one or more news channel(s) to ignore.
-
-        **Note:**
-        - Use `Confirm` button to confirm the selected channel(s) to ignore.
-        - Use `Remove` button to remove the selected channel(s) from the ignored list.
-        - You can confrim or remove multiple channels at once. (must go by one by one)
+    async def ignorechannel(self, ctx: commands.Context, channels: commands.Greedy[discord.TextChannel]):
+        """
+        Ignore/Unignore a news channel to prevent AutoPublisher from publishing messages in it.
         """
         if not "NEWS" in ctx.guild.features:
             view = discord.ui.View()
@@ -259,15 +250,28 @@ class AutoPublisher(commands.Cog):
         if not news_channels:
             return await ctx.send("There are no news channels available to ignore.")
 
-        # Check if there are more than 25 news channels
-        # Select menu can't view more than 25 channels therefore, this command can't be used.
-        # Maybe dont create that many news channels, right? :D
-        if len(news_channels) > 25:
-            return await ctx.send("There are more than 25 news channels. This command cannot be used.")
+        # Add channels to ignore list
+        ignored_channels = await self.config.guild(ctx.guild).ignored_channels()
+        for channel in channels:
+            # Check if the channel is a news channel
+            if channel.is_news():
+                if channel.id in ignored_channels:
+                    ignored_channels.remove(channel.id)
+                else:
+                    ignored_channels.append(channel.id)
+        await self.config.guild(ctx.guild).ignored_channels.set(ignored_channels)
 
-        view = ChannelView(ctx, self.bot, self.config, ctx.guild.id)
-        message = await ctx.send("Select a news channel to ignore:", view=view)
-        view.message = message  # Set the message reference in the view
+        # Ensure the channel variable is defined
+        if channels:
+            # Filter out non-news channels
+            news_channels = [channel for channel in channels if channel.is_news()]
+            if news_channels:
+                last_channel = news_channels[-1]
+                await ctx.send(f"News channel(s) has been {'ignored' if last_channel.id in ignored_channels else 'removed'}.")
+            else:
+                await ctx.send("No news channels were provided to ignore or remove.")
+        else:
+            await ctx.send("No channels were provided to ignore or remove.")
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
