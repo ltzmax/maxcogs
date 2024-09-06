@@ -109,12 +109,17 @@ class RestartButton(discord.ui.View):
         self.ctx = ctx
         self.bot = bot
         self.clicked = False
+        self.message = None  # Initialize the message attribute
 
     async def on_timeout(self) -> None:
         for item in self.children:
             item: discord.ui.Item
             item.disabled = True
-        await self.message.edit(view=self)
+        try:
+            if self.message:
+                await self.message.edit(view=self)
+        except discord.HTTPException:
+            pass
 
     async def interaction_check(self, interaction: discord.Interaction):
         if not interaction.user.id == self.ctx.author.id:

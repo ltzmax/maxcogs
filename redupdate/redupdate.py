@@ -42,8 +42,8 @@ async def redupdate(self, ctx: commands.Context):
     )
     embed.set_footer(text="Restart required to apply changes!")
     view = RestartButton(ctx, self.bot)
-    await ctx.send(embed=embed, view=view)
-
+    message = await ctx.send(embed=embed, view=view)
+    view.message = message
 
 async def failedupdate(self, ctx: commands.Context):
     msg = "You need to have Shell from JackCogs loaded and installed to use this command."
