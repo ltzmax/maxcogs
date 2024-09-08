@@ -83,8 +83,8 @@ class AutoPublisher(commands.Cog):
         """Nothing to delete."""
         return
 
-    def cog_unload(self):
-        self.scheduler.shutdown()
+    #def cog_unload(self):
+    #    self.scheduler.shutdown()
 
     async def increment_published_count(self):
         async with self.config.all() as data:
