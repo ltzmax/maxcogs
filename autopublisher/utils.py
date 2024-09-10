@@ -38,6 +38,10 @@ async def get_next_reset_timestamp(now, target_weekday=None, target_day=None, ta
     - target_weekday (int): The target weekday (0-6, Monday-Sunday).
     - target_day (int): The target day of the month.
     - target_month (int): The target month.
+
+    __Returns__:
+    ---------
+    - int: The next timestamp after the target date.
     """
     if target_weekday is not None:
         days_until_target = (target_weekday - now.weekday()) % 7
