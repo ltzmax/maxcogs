@@ -1,5 +1,4 @@
 <h1 align="center">MAXCOGS</h1>
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ltzmax/maxcogs/master.svg)](https://results.pre-commit.ci/latest/github/ltzmax/maxcogs/master)
 ## Contact
 - You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #forum_othercogs then go to #maxcogs channel or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX (username: ltzmax) (345628097929936898)
 
