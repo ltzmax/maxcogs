@@ -141,4 +141,3 @@ Set a plaguebearer.
  - Usage: `[p]plagueset resetuser <user>`
 
 Reset a user.
-

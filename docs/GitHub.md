@@ -112,4 +112,3 @@ List your GitHub RSS feeds in the server.
  - Aliases: `delete`
 
 Remove a GitHub RSS feed from the server.
-
