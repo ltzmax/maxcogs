@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 
 log = logging.getLogger("red.maxcogs.autopublisher.utils")
 
+
 async def get_next_reset_timestamp(now, target_weekday=None, target_day=None, target_month=None):
     """
     Calculate the next timestamp for a given target now, weekday, day, and month.
@@ -55,8 +56,12 @@ async def get_next_reset_timestamp(now, target_weekday=None, target_day=None, ta
             next_year = now.year
         next_target = datetime(next_year, target_month, target_day)
     else:
-        raise ValueError("Must provide either target_weekday, target_day, or both target_day and target_month")
-        log.error("Must provide either target_weekday, target_day, or both target_day and target_month")
+        raise ValueError(
+            "Must provide either target_weekday, target_day, or both target_day and target_month"
+        )
+        log.error(
+            "Must provide either target_weekday, target_day, or both target_day and target_month"
+        )
 
     next_target_midnight = datetime.combine(next_target, datetime.min.time())
     return int(next_target_midnight.timestamp())

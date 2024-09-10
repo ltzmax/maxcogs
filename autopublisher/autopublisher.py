@@ -83,8 +83,6 @@ class AutoPublisher(commands.Cog):
         """Nothing to delete."""
         return
 
-    #def cog_unload(self):
-    #    self.scheduler.shutdown()
 
     async def increment_published_count(self):
         async with self.config.all() as data:
@@ -159,44 +157,43 @@ class AutoPublisher(commands.Cog):
         """Manage AutoPublisher setting."""
 
     @commands.is_owner()
-    @autopublisher.command()
-    async def stats(self, ctx: commands.Context):
+    @autopublisher.command(name="stats")
+    async def _stats(self, ctx: commands.Context) -> None:
         """
         Show the number of published messages.
         """
         data = await self.config.all()
-        total_count = data.get("published_count", 0)
-        weekly_count = data.get("published_weekly_count", 0)
-        monthly_count = data.get("published_monthly_count", 0)
-        yearly_count = data.get("published_yearly_count", 0)
 
-        # Calculate the next Sunday midnight timestamp
+        total_published_messages = data.get("published_count", 0)
+        weekly_published_messages = data.get("published_weekly_count", 0)
+        monthly_published_messages = data.get("published_monthly_count", 0)
+        yearly_published_messages = data.get("published_yearly_count", 0)
+
         now = datetime.utcnow()
-        next_sunday_timestamp = await get_next_reset_timestamp(now, target_weekday=6)
-        time_until_weekly_reset = f"<t:{next_sunday_timestamp}:f> (<t:{next_sunday_timestamp}:R>)"
-        # Calculate the next 1st of the month midnight timestamp
-        next_1st_timestamp = await get_next_reset_timestamp(now, target_day=1)
-        time_until_monthly_reset = f"<t:{next_1st_timestamp}:f> (<t:{next_1st_timestamp}:R>)"
-        # Calculate the next 1st of January midnight timestamp
-        next_january_1st_timestamp = await get_next_reset_timestamp(
-            now, target_day=1, target_month=1
-        )
-        time_until_yearly_reset = (
-            f"<t:{next_january_1st_timestamp}:f> (<t:{next_january_1st_timestamp}:R>)"
-        )
+        try:
+            next_sunday_reset = await get_next_reset_timestamp(now, target_weekday=6)
+            next_monthly_reset = await get_next_reset_timestamp(now, target_day=1)
+            next_yearly_reset = await get_next_reset_timestamp(now, target_day=1, target_month=1)
+        except (ValueError, TypeError) as e:
+            log.error("Error getting next reset timestamp", exc_info=e)
+            return
 
         msg_content = (
             "Total Weekly Published Messages:\n"
-            f"{box(humanize_number(weekly_count), lang='prolog')}"
+            f"{box(humanize_number(weekly_published_messages), lang='prolog')}"
             "Total Monthly Published Messages:\n"
-            f"{box(humanize_number(monthly_count), lang='prolog')}"
+            f"{box(humanize_number(monthly_published_messages), lang='prolog')}"
             "Total Yearly Published Messages:\n"
-            f"{box(humanize_number(yearly_count), lang='prolog')}"
+            f"{box(humanize_number(yearly_published_messages), lang='prolog')}"
             "Total Published Messages:\n"
-            f"{box(humanize_number(total_count), lang='prolog')}"
+            f"{box(humanize_number(total_published_messages), lang='prolog')}"
         )
+
         await ctx.send(
-            f"{msg_content}\nNext Weekly Reset: {time_until_weekly_reset}\nNext Monthly Reset: {time_until_monthly_reset}\nNext Yearly Reset: {time_until_yearly_reset}"
+            f"{msg_content}\n"
+            f"Next Weekly Reset: <t:{next_sunday_reset}:f> (<t:{next_sunday_reset}:R>)\n"
+            f"Next Monthly Reset: <t:{next_monthly_reset}:f> (<t:{next_monthly_reset}:R>)\n"
+            f"Next Yearly Reset: <t:{next_yearly_reset}:f> (<t:{next_yearly_reset}:R>)"
         )
 
     @autopublisher.command()
