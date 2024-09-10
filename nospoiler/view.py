@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import logging
+
 import discord
 
 log = logging.getLogger("red.maxcogs.nospoiler.view")
@@ -43,6 +44,7 @@ class BanViewModal(discord.ui.Modal, title="Ban User"):
     async def on_submit(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
         self.reason_value = self.reason.value  # Store the reason value
+
 
 class KickViewModal(discord.ui.Modal, title="Kick User"):
     def __init__(self):
@@ -66,7 +68,7 @@ class KickBanUserSelect(discord.ui.Select):
         self.target_user = target_user
         options = [
             discord.SelectOption(label="Kick", description="Kick this user", emoji="👢"),
-            discord.SelectOption(label="Ban", description="Ban this user", emoji="🔨")
+            discord.SelectOption(label="Ban", description="Ban this user", emoji="🔨"),
         ]
         super().__init__(placeholder="Choose an action...", min_values=1, options=options)
 
@@ -76,10 +78,10 @@ class KickBanUserSelect(discord.ui.Select):
         elif self.values[0] == "Ban":
             await self.handle_ban(interaction)
 
-# TODO:
-# Add timeout (should theorically be possible)
-# Add mute (should theorically be possible?)
-# Add tempban (should theorically be possible)
+    # TODO:
+    # Add timeout (should theorically be possible)
+    # Add mute (should theorically be possible?)
+    # Add tempban (should theorically be possible)
 
     async def handle_kick(self, interaction: discord.Interaction):
         if not interaction.user.guild_permissions.kick_members:
@@ -153,9 +155,10 @@ class KickBanUserSelect(discord.ui.Select):
         except discord.HTTPException as e:
             await interaction.followup.send(f"Failed to ban user: {e}", ephemeral=True)
 
+
 class KickBanUserView(discord.ui.View):
     def __init__(self, target_user):
-        super().__init__(timeout=900) # 15 minutes (limited by discord so cant be higher)
+        super().__init__(timeout=900)  # 15 minutes (limited by discord so cant be higher)
         self.add_item(KickBanUserSelect(target_user))
 
     async def on_timeout(self) -> None:

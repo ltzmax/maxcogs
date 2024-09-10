@@ -22,15 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
+from typing import Final
+
 import aiohttp
 import discord
 import orjson
-import logging
-
-from typing import Final
-from redbot.core import commands, app_commands
-from .converter import get_games
+from redbot.core import app_commands, commands
 from redbot.core.utils.views import SimpleMenu
+
+from .converter import get_games
 
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 log = logging.getLogger("red.maxcogs.nbaschedule")

@@ -22,16 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Dict, Final, Optional, Literal
+import logging
+from typing import Any, Dict, Final, Literal, Optional
 
 import aiohttp
 import discord
 import orjson
-import logging
-from redbot.core import commands, Config, app_commands
+from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_number
 from redbot.core.utils.views import ConfirmView
+
 from .core import ACTIONS, ICON, NEKOS
 from .view import ImageButtonView
 
@@ -92,7 +93,6 @@ class NekosBest(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-
     async def red_delete_data_for_user(self, *, requester: RequestType, user_id: int):
         return
 
@@ -123,7 +123,10 @@ class NekosBest(commands.Cog):
                 f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member and member != ctx.author else 'themselves!'}\n"
             ),
         )
-        emb.add_field(name=f"{ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}!", value=f"Anime Name: {anime_name}")
+        emb.add_field(
+            name=f"{ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}!",
+            value=f"Anime Name: {anime_name}",
+        )
         emb.set_image(url=url["results"][0]["url"])
         emb.set_footer(text=f"Powered by nekos.best", icon_url=ICON)
         await ctx.send(embed=emb)
@@ -135,9 +138,9 @@ class NekosBest(commands.Cog):
     @commands.admin_or_permissions(manage_guild=True)
     async def nekoset(self, ctx: commands.Context) -> None:
         """Settings for nekosbest cog."""
-    
+
     @nekoset.command()
-    @commands.is_owner() # It clears all users across all servers so needs to be owner.
+    @commands.is_owner()  # It clears all users across all servers so needs to be owner.
     async def resetall(self, ctx: commands.Context) -> None:
         """Reset all command counts."""
         view = ConfirmView(ctx.author, disable_buttons=True)
@@ -153,11 +156,15 @@ class NekosBest(commands.Cog):
     async def reset(self, ctx: commands.Context, member: discord.Member) -> None:
         """Reset a user's command counts."""
         view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(f"Are you sure you want to reset everything for {member.mention}?", view=view)
+        view.message = await ctx.send(
+            f"Are you sure you want to reset everything for {member.mention}?", view=view
+        )
         await view.wait()
         if view.result:
             await self.config.user(member).clear()
-            await ctx.send(f"{member.mention}'s command counts have been reset.", mention_author=False)
+            await ctx.send(
+                f"{member.mention}'s command counts have been reset.", mention_author=False
+            )
         else:
             await ctx.send("Reset cancelled.")
 

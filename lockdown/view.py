@@ -1,7 +1,9 @@
-import discord
 import logging
 
+import discord
+
 log = logging.getLogger("red.maxcogs.lockdown.view")
+
 
 class UnlockView(discord.ui.View):
     def __init__(self, ctx):

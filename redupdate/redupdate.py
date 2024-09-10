@@ -30,7 +30,7 @@ from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
-from .view import URLModal, RestartButton
+from .view import RestartButton, URLModal
 
 log = logging.getLogger("red.maxcogs.redupdate")
 
@@ -44,6 +44,7 @@ async def redupdate(self, ctx: commands.Context):
     view = RestartButton(ctx, self.bot)
     message = await ctx.send(embed=embed, view=view)
     view.message = message
+
 
 async def failedupdate(self, ctx: commands.Context):
     msg = "You need to have Shell from JackCogs loaded and installed to use this command."

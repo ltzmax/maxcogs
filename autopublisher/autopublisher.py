@@ -24,11 +24,11 @@ SOFTWARE.
 
 import asyncio
 import logging
+import typing
 from datetime import datetime, timedelta
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
-import typing
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -82,7 +82,6 @@ class AutoPublisher(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
-
 
     async def increment_published_count(self):
         async with self.config.all() as data:
@@ -285,8 +284,7 @@ class AutoPublisher(commands.Cog):
             view.ctx = ctx
             view.message = await ctx.send(
                 "Select a news channel to ignore or remove.\n-# To unignore channel(s), Use `[p]autopublisher ignorechannel #channel(s)`.".replace(
-                    "[p]",
-                    ctx.clean_prefix
+                    "[p]", ctx.clean_prefix
                 ),
                 view=view,
             )

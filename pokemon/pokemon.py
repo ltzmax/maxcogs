@@ -24,28 +24,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import asyncio
+import logging
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from random import randint
 from typing import Any, Final, List, Optional
-from io import BytesIO
 
 import aiohttp
 import discord
-import logging
-import asyncio
 import orjson
-from PIL import Image
 from discord import File
-from redbot.core.data_manager import bundled_data_path
+from PIL import Image
 from redbot.core import Config, app_commands, commands
 from redbot.core.bot import Red
+from redbot.core.data_manager import bundled_data_path
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import SimpleMenu
-from .converters import (
-    WhosThatPokemonView,
-    get_data,
-    Generation,
-)
+
+from .converters import Generation, WhosThatPokemonView, get_data
 
 log = logging.getLogger("red.maxcogs.whosthatpokemon")
 

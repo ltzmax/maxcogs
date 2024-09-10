@@ -65,9 +65,7 @@ async def get_data(self, url: str) -> Dict[str, Any]:
         async with self.session.get(url) as response:
             if response.status != 200:
                 return {"http_code": response.status}
-                log.error(
-                    f"Failed to get data from {url} with status code {response.status}"
-                )
+                log.error(f"Failed to get data from {url} with status code {response.status}")
             return await response.json()
     except asyncio.TimeoutError:
         log.error(f"Failed to get data from {url} due to timeout")
@@ -101,9 +99,7 @@ class WhosThatPokemonView(discord.ui.View):
         await self.message.edit(view=self)
 
     @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
-    async def guess_the_pokemon(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def guess_the_pokemon(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = WhosThatPokemonModal()
         await interaction.response.send_modal(modal)
         await modal.wait()
@@ -132,6 +128,4 @@ class WhosThatPokemonView(discord.ui.View):
         error: Exception,
         item: discord.ui.Item,
     ) -> None:
-        await interaction.response.send_message(
-            f"An error occured: {error}", ephemeral=True
-        )
+        await interaction.response.send_message(f"An error occured: {error}", ephemeral=True)
