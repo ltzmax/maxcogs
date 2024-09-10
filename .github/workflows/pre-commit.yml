@@ -5,8 +5,6 @@ repos:
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
-    -   id: pretty-format-json
-        args: [ --autofix ]
 -   repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
