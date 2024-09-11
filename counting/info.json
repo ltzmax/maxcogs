@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Counting",
-    "install_msg": "Thanks for installing.\nif you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
+    "install_msg": "Thanks for installing.\n## Check `[p]countingset` to get started. Set channel + toggle to begin the counting.\n-# if you enjoy my cog and wants to support me, you can do so from [github sponsor](<https://github.com/sponsors/ltzmax>) or [buy me a coffee](<https://www.buymeacoffee.com/ltzmax>)",
     "description": "Count from 1 to infinity! with some customizable settings.",
     "short": "Count from 1 to infinity! with some customizable settings.",
     "hidden": false,
