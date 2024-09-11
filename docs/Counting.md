@@ -55,7 +55,7 @@ Toggle whether the same user can count more than once consecutively.
 ## countingset reset
  - Usage: `[p]countingset reset`
 
-Reset the counting channel
+Reset the settings for the counting
 
 ## countingset enable
  - Usage: `[p]countingset enable <setting>`

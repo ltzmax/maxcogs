@@ -280,15 +280,15 @@ class Counting(commands.Cog):
 
     @countingset.command()
     async def reset(self, ctx):
-        """Reset the counting channel"""
+        """Reset the settings for the counting."""
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
-            "Are you sure you want to reset the counting channel? This will reset the count to 0.",
+            "Are you sure you want to reset the counting settings?\nThis will reset the counting channel, count, and all settings.",
             view=view,
         )
         await view.wait()
         if view.result:
-            config = self.config.guild(ctx.guild)
+            await self.config.guild(ctx.guild).clear()
             await config.count.set(0)
             await ctx.send("Counting channel has been reset to 0")
         else:
