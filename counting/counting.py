@@ -262,7 +262,7 @@ class Counting(commands.Cog):
 
         await self.config.guild(ctx.guild).channel.set(channel.id)
         await ctx.send(
-            "Counting channel has been set to {channel}\n-# Now toggle counting using `{prefix}countingset toggle`".format(
+            "Counting channel has been set to {channel}\nMake sure you enable it as well via `{prefix}countingset toggle`".format(
                 prefix=ctx.clean_prefix, channel=channel.mention
             )
         )
