@@ -37,7 +37,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -95,9 +95,10 @@ class Counting(commands.Cog):
             not message.channel.permissions_for(message.guild.me).manage_messages
             or not message.channel.permissions_for(message.guild.me).send_messages
         ):
-            await self.config.channel.clear()
-            log.info(
-                "I don't have permission to manage messages in the counting channel, clearing it."
+            log.warning(
+                "I don't have permission to manage messages or send messages in {channel} ({channel_id})".format(
+                    channel=message.channel.name, channel_id=message.channel.id
+                )
             )
             return
 
@@ -239,7 +240,9 @@ class Counting(commands.Cog):
             or not channel.permissions_for(ctx.guild.me).manage_messages
         ):
             return await ctx.send(
-                "I don't have permission to send or manage messages in that channel."
+                "I don't have permission to send messages or manage messages in {channel}".format(
+                    channel=channel.mention
+                )
             )
 
         await self.config.guild(ctx.guild).channel.set(channel.id)
