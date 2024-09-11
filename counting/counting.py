@@ -28,8 +28,9 @@ from typing import Any, Final, Literal, Optional
 
 import discord
 from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import humanize_number
+from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import ConfirmView
+from tabulate import tabulate
 
 log = logging.getLogger("red.maxcogs.counting")
 
@@ -169,39 +170,42 @@ class Counting(commands.Cog):
         if await config.toggle_edit_message():
             await after.channel.send(default_edit_message, delete_after=delete_after)
 
-    async def countingstats(self, ctx):
+    @commands.guild_only()
+    @commands.hybrid_group()
+    async def counting(self, ctx):
+        """Counting commands"""
+
+    @counting.command(name="countstats", aliases=["stats"])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def count_stats(self, ctx: commands.Context, user: Optional[discord.Member]):
+        """Get your current counting statistics."""
+        if not user:
+            user = ctx.author
+
+        # Check if the user is a bot
+        if user.bot:
+            return await ctx.send("Bots can't count anything.")
+
         config = self.config.guild(ctx.guild)
         user_config = self.config.user(ctx.author)
         count = await config.count()
         user_count = await user_config.count()
         last_count_timestamp = await user_config.last_count_timestamp()
 
-        embed = discord.Embed(
-            title="Counting Stats",
-            color=await ctx.embed_color(),
-        )
-        embed.add_field(name="Server Count:", value=humanize_number(count))
-        embed.add_field(name="Your Count:", value=humanize_number(user_count), inline=False)
+        if not user_count:
+            return await ctx.send(f"{user.display_name} has not counted yet.")
+
+        table_data = [
+            ["Server Count", humanize_number(count)],
+            ["Your Count", humanize_number(user_count)],
+        ]
+        table = tabulate(table_data, headers=["Statistic", "Count"], tablefmt="plain")
+        msg_box = box(table, lang="prolog")
         if last_count_timestamp:
             last_count_time = datetime.fromisoformat(last_count_timestamp)
-            embed.add_field(
-                name="You last counted:",
-                value=discord.utils.format_dt(last_count_time, style="R"),
-                inline=False,
-            )
-        await ctx.send(embed=embed)
+            time = discord.utils.format_dt(last_count_time, style="R")
 
-    @commands.group()
-    @commands.guild_only()
-    async def counting(self, ctx):
-        """Counting commands"""
-
-    @counting.command(name="countstats", aliases=["stats"])
-    @commands.cooldown(1, 60, commands.BucketType.user)
-    @commands.bot_has_permissions(embed_links=True)
-    async def count_stats(self, ctx: commands.Context):
-        """Get your current counting statistics."""
-        await self.countingstats(ctx)
+        await ctx.send(f"{msg_box}\nYou Last Counted: {time}")
 
     @counting.command(name="resetme")
     async def reset_me(self, ctx: commands.Context):
