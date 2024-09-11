@@ -243,7 +243,11 @@ class Counting(commands.Cog):
             await ctx.send("Counting channel has been cleared")
         else:
             await config.channel.set(channel.id)
-            await ctx.send(f"Counting channel has been set to {channel.mention}")
+            await ctx.send(
+                f"Counting channel has been set to {channel.mention}\n-# Now toggle counting using `{prefix}countingset toggle`".format(
+                    prefix=ctx.clean_prefix
+                )
+            )
 
     @countingset.command()
     async def deleteafter(self, ctx, seconds: commands.Range[int, 5, 300]):
