@@ -151,6 +151,17 @@ class Counting(commands.Cog):
         if channel_id is None or after.channel.id != channel_id:
             return
 
+        if (
+            not after.channel.permissions_for(after.guild.me).manage_messages
+            or not after.channel.permissions_for(after.guild.me).send_messages
+        ):
+            log.warning(
+                "I don't have permission to manage messages or send messages in {channel} ({channel_id})".format(
+                    channel=after.channel.name, channel_id=after.channel.id
+                )
+            )
+            return
+
         delete_after = await config.delete_after()
         default_edit_message = await config.default_edit_message()
 
