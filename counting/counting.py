@@ -91,6 +91,14 @@ class Counting(commands.Cog):
         if channel_id is None or message.channel.id != channel_id:
             return
 
+        if (
+            not message.channel.permissions_for(message.guild.me).manage_messages
+            or not message.channel.permissions_for(message.guild.me).send_messages
+        ):
+            await self.config.channel.clear()
+            log.info("I don't have permission to manage messages in the counting channel, clearing it.")
+            return
+
         delete_after = await config.delete_after()
         default_next_number_message = await config.default_next_number_message()
         count = await config.count()
@@ -214,6 +222,12 @@ class Counting(commands.Cog):
     @countingset.command()
     async def channel(self, ctx, channel: Optional[discord.TextChannel]):
         """Set the counting channel"""
+        if not channel.permissions_for(ctx.guild.me).send_messages or not channel.permissions_for(
+            ctx.guild.me
+        ).manage_messages:
+            return await ctx.send(
+                "I don't have permission to send or manage messages in that channel."
+            )
         config = self.config.guild(ctx.guild)
         if channel is None:
             await config.channel.clear()
