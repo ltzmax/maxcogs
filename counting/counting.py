@@ -244,8 +244,8 @@ class Counting(commands.Cog):
         else:
             await config.channel.set(channel.id)
             await ctx.send(
-                f"Counting channel has been set to {channel.mention}\n-# Now toggle counting using `{prefix}countingset toggle`".format(
-                    prefix=ctx.clean_prefix
+                "Counting channel has been set to {channel}\n-# Now toggle counting using `{prefix}countingset toggle`".format(
+                    prefix=ctx.clean_prefix, channel=channel.mention
                 )
             )
 
