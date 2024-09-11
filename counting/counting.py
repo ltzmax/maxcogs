@@ -230,6 +230,10 @@ class Counting(commands.Cog):
     @countingset.command()
     async def channel(self, ctx, channel: Optional[discord.TextChannel]):
         """Set the counting channel"""
+        if channel is None:
+            await self.config.guild(ctx.guild).channel.clear()
+            return await ctx.send("Counting channel has been cleared")
+
         if (
             not channel.permissions_for(ctx.guild.me).send_messages
             or not channel.permissions_for(ctx.guild.me).manage_messages
@@ -237,17 +241,13 @@ class Counting(commands.Cog):
             return await ctx.send(
                 "I don't have permission to send or manage messages in that channel."
             )
-        config = self.config.guild(ctx.guild)
-        if channel is None:
-            await config.channel.clear()
-            await ctx.send("Counting channel has been cleared")
-        else:
-            await config.channel.set(channel.id)
-            await ctx.send(
-                "Counting channel has been set to {channel}\n-# Now toggle counting using `{prefix}countingset toggle`".format(
-                    prefix=ctx.clean_prefix, channel=channel.mention
-                )
+
+        await self.config.guild(ctx.guild).channel.set(channel.id)
+        await ctx.send(
+            "Counting channel has been set to {channel}\n-# Now toggle counting using `{prefix}countingset toggle`".format(
+                prefix=ctx.clean_prefix, channel=channel.mention
             )
+        )
 
     @countingset.command()
     async def deleteafter(self, ctx, seconds: commands.Range[int, 5, 300]):
