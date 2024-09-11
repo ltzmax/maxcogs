@@ -216,6 +216,12 @@ class Counting(commands.Cog):
     @countingset.command()
     async def toggle(self, ctx):
         """Toggle counting in the channel"""
+        if not await self.config.guild(ctx.guild).channel():
+            return await ctx.send(
+                "Counting channel is not set. Please set it first using `{prefix}countingset channel`".format(
+                    prefix=ctx.clean_prefix
+                )
+            )
         config = self.config.guild(ctx.guild)
         toggle = await config.toggle()
         await config.toggle.set(not toggle)
