@@ -418,6 +418,8 @@ class Counting(commands.Cog):
         toggle_edit_message = await config.toggle_edit_message()
         toggle_next_number_message = await config.toggle_next_number_message()
         same_user_to_count = await config.same_user_to_count()
+        default_reaction = await config.default_reaction()
+        toggle_reactions = await config.toggle_reactions()
 
         embed = discord.Embed(
             title="Counting Settings",
@@ -436,6 +438,8 @@ class Counting(commands.Cog):
         embed.add_field(
             name="Same User To Count", value="Allowed" if same_user_to_count else "Disallowed"
         )
+        embed.add_field(name="Toggle Reactions", value="Enabled" if toggle_reactions else "Disabled")
+        embed.add_field(name="Default Reaction", value=default_reaction)
         embed.add_field(name="Default Edit Message", value=default_edit_message, inline=False)
         embed.add_field(
             name="Default Next Number Message", value=default_next_number_message, inline=False
