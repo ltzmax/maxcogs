@@ -334,8 +334,8 @@ class Counting(commands.Cog):
         await view.wait()
         if view.result:
             await self.config.guild(ctx.guild).clear()
-            await config.count.set(0)
-            await ctx.send("Counting channel has been reset to 0")
+            await self.config.user.clear()
+            await ctx.send("Counting settings have been reset.")
         else:
             await ctx.send("Reset cancelled")
 
@@ -438,7 +438,9 @@ class Counting(commands.Cog):
         embed.add_field(
             name="Same User To Count:", value="Enabled" if same_user_to_count else "Disabled"
         )
-        embed.add_field(name="Toggle Reactions:", value="Enabled" if toggle_reactions else "Disabled")
+        embed.add_field(
+            name="Toggle Reactions:", value="Enabled" if toggle_reactions else "Disabled"
+        )
         embed.add_field(name="Default Reaction:", value=default_reaction, inline=False)
         embed.add_field(name="Default Edit Message:", value=default_edit_message, inline=False)
         embed.add_field(
