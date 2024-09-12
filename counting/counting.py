@@ -22,11 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import asyncio
 import logging
 from datetime import datetime
 from typing import Any, Final, Literal, Optional
 
 import discord
+from discord.ext.commands.converter import EmojiConverter
+from discord.ext.commands.errors import EmojiNotFound
+from emoji import EMOJI_DATA
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import ConfirmView
@@ -38,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -56,6 +60,8 @@ class Counting(commands.Cog):
             "toggle_next_number_message": False,
             "same_user_to_count": False,
             "last_user_id": None,
+            "toggle_reactions": False,
+            "default_reaction": "✅",
         }
         default_user = {
             "count": 0,
@@ -103,6 +109,7 @@ class Counting(commands.Cog):
             )
             return
 
+        default_reaction = await config.default_reaction()
         delete_after = await config.delete_after()
         default_next_number_message = await config.default_next_number_message()
         count = await config.count()
@@ -124,6 +131,16 @@ class Counting(commands.Cog):
             user_count = await user_config.count()
             await user_config.count.set(user_count + 1)
             await user_config.last_count_timestamp.set(datetime.now().isoformat())
+            if await config.toggle_reactions():
+                await asyncio.sleep(0.3)  # Sleep for a bit.
+                try:
+                    await message.add_reaction(default_reaction)
+                except discord.HTTPException:
+                    log.warning(
+                        "Failed to add reaction to message {message_id}".format(
+                            message_id=message.id
+                        )
+                    )
         else:
             await message.delete()
             await message.channel.send(
@@ -228,6 +245,34 @@ class Counting(commands.Cog):
     @commands.admin_or_permissions(manage_guild=True)
     async def countingset(self, ctx):
         """Counting settings commands."""
+
+    @countingset.command()
+    async def togglereact(self, ctx):
+        """Toggle the reactions for correct numbers."""
+        config = self.config.guild(ctx.guild)
+        toggle = await config.toggle_reactions()
+        await config.toggle_reactions.set(not toggle)
+        await ctx.send(
+            f"Reactions for the counting is now {'enabled' if not toggle else 'disabled'}\n"
+            f"{'Please make sure the bot has the necessary permissions to add reactions in the counting channel.' if not toggle else ''}"
+        )
+
+    @countingset.command()
+    async def setreaction(self, ctx, emoji_input: str):
+        """Set the reaction for correct numbers."""
+        if emoji_input:
+            try:
+                # Use EmojiConverter to convert the emoji argument
+                emoji_obj = await EmojiConverter().convert(ctx, emoji_input)
+                emoji_str = str(emoji_obj)
+            except EmojiNotFound:
+                if emoji_input in EMOJI_DATA:
+                    emoji_str = emoji_input
+                else:
+                    return await ctx.send(f"'{emoji_input}' is not a valid emoji.")
+        config = self.config.guild(ctx.guild)
+        await config.default_reaction.set(emoji_input)
+        await ctx.send(f"Reaction for correct numbers has been set to {emoji_input}")
 
     @countingset.command()
     async def toggle(self, ctx):
