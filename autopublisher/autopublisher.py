@@ -34,6 +34,7 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView
+from tabulate import tabulate
 
 from .utils import get_next_reset_timestamp
 
@@ -177,19 +178,15 @@ class AutoPublisher(commands.Cog):
             log.error("Error getting next reset timestamp", exc_info=e)
             return
 
-        msg_content = (
-            "Total Weekly Published Messages:\n"
-            f"{box(humanize_number(weekly_published_messages), lang='prolog')}"
-            "Total Monthly Published Messages:\n"
-            f"{box(humanize_number(monthly_published_messages), lang='prolog')}"
-            "Total Yearly Published Messages:\n"
-            f"{box(humanize_number(yearly_published_messages), lang='prolog')}"
-            "Total Published Messages:\n"
-            f"{box(humanize_number(total_published_messages), lang='prolog')}"
-        )
-
+        table_data = [
+            ["Total Weekly Published", humanize_number(weekly_published_messages)],
+            ["Total Monthly Published", humanize_number(monthly_published_messages)],
+            ["Total Yearly Published", humanize_number(yearly_published_messages)],
+            ["Total Published Messages", humanize_number(total_published_messages)],
+        ]
+        msg_content = tabulate(table_data, headers=["Description", "Count"], tablefmt="simple")
         await ctx.send(
-            f"{msg_content}\n"
+            f"{box(msg_content, lang='prolog')}\n"
             f"Next Weekly Reset: <t:{next_sunday_reset}:f> (<t:{next_sunday_reset}:R>)\n"
             f"Next Monthly Reset: <t:{next_monthly_reset}:f> (<t:{next_monthly_reset}:R>)\n"
             f"Next Yearly Reset: <t:{next_yearly_reset}:f> (<t:{next_yearly_reset}:R>)"
