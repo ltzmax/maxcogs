@@ -425,23 +425,23 @@ class Counting(commands.Cog):
             title="Counting Settings",
             color=await ctx.embed_color(),
         )
-        embed.add_field(name="Counting Channel", value=channel.mention if channel else "Not set")
-        embed.add_field(name="Toggle", value="Enabled" if toggle else "Disabled")
-        embed.add_field(name="Delete After", value=f"{delete_after} seconds")
+        embed.add_field(name="Counting Channel:", value=channel.mention if channel else "Not set")
+        embed.add_field(name="Toggle:", value="Enabled" if toggle else "Disabled")
+        embed.add_field(name="Delete After:", value=f"{delete_after} seconds")
         embed.add_field(
-            name="Toggle Edit Message", value="Enabled" if toggle_edit_message else "Disabled"
+            name="Toggle Edit Message:", value="Enabled" if toggle_edit_message else "Disabled"
         )
         embed.add_field(
-            name="Toggle Next Number Message",
+            name="Toggle Next Number Message:",
             value="Enabled" if toggle_next_number_message else "Disabled",
         )
         embed.add_field(
-            name="Same User To Count", value="Allowed" if same_user_to_count else "Disallowed"
+            name="Same User To Count:", value="Enabled" if same_user_to_count else "Disabled"
         )
-        embed.add_field(name="Toggle Reactions", value="Enabled" if toggle_reactions else "Disabled")
-        embed.add_field(name="Default Reaction", value=default_reaction)
-        embed.add_field(name="Default Edit Message", value=default_edit_message, inline=False)
+        embed.add_field(name="Toggle Reactions:", value="Enabled" if toggle_reactions else "Disabled")
+        embed.add_field(name="Default Reaction:", value=default_reaction, inline=False)
+        embed.add_field(name="Default Edit Message:", value=default_edit_message, inline=False)
         embed.add_field(
-            name="Default Next Number Message", value=default_next_number_message, inline=False
+            name="Default Next Number Message:", value=default_next_number_message, inline=False
         )
         await ctx.send(embed=embed)
