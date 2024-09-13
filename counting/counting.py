@@ -198,6 +198,12 @@ class Counting(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def count_stats(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get your current counting statistics."""
+        # Check if counting is enabled in the guild
+        if not await self.config.guild(ctx.guild).toggle():
+            return await ctx.send(
+                "Counting is not enabled in this server. Please ask the server admin to enable it and set the counting channel."
+            )
+
         user = user or ctx.author
 
         # Check if the user is a bot
