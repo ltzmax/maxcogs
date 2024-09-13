@@ -294,16 +294,12 @@ class Counting(commands.Cog):
     @countingset.command()
     async def toggle(self, ctx):
         """Toggle counting in the channel"""
-        if not await self.config.guild(ctx.guild).channel():
-            return await ctx.send(
-                "Counting channel is not set. Please set it first using `{prefix}countingset channel`".format(
-                    prefix=ctx.clean_prefix
-                )
-            )
         config = self.config.guild(ctx.guild)
         toggle = await config.toggle()
         await config.toggle.set(not toggle)
-        await ctx.send(f"Counting is now {'enabled' if not toggle else 'disabled'}")
+        await ctx.send(
+            f"Counting is now {'enabled' if not toggle else 'disabled'}\n{'Please set the counting channel using `[p]countingset channel`' if not toggle else ''}"
+        )
 
     @countingset.command()
     async def channel(self, ctx, channel: Optional[discord.TextChannel]):
@@ -324,8 +320,8 @@ class Counting(commands.Cog):
 
         await self.config.guild(ctx.guild).channel.set(channel.id)
         await ctx.send(
-            "Counting channel has been set to {channel}\nMake sure you enable it as well via `{prefix}countingset toggle`".format(
-                prefix=ctx.clean_prefix, channel=channel.mention
+            "Counting channel has been set to {channel}\nPlease enable counting using `{prefix}countingset toggle`".format(
+                channel=channel.mention, prefix=ctx.clean_prefix
             )
         )
 
