@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.3.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -62,6 +62,7 @@ class Counting(commands.Cog):
             "last_user_id": None,
             "toggle_reactions": False,
             "default_reaction": "✅",
+            "use_silent": False,
         }
         default_user = {
             "count": 0,
@@ -109,6 +110,7 @@ class Counting(commands.Cog):
             )
             return
 
+        use_silent = await config.use_silent()
         default_reaction = await config.default_reaction()
         delete_after = await config.delete_after()
         default_next_number_message = await config.default_next_number_message()
@@ -123,6 +125,7 @@ class Counting(commands.Cog):
             return await message.channel.send(
                 "You cannot count consecutively. Please wait for someone else to count.",
                 delete_after=delete_after,
+                silent=use_silent,
             )
 
         if message.content.isdigit() and int(message.content) == next_count:
@@ -148,6 +151,7 @@ class Counting(commands.Cog):
                 await message.channel.send(
                     default_next_number_message.format(next_count=next_count),
                     delete_after=delete_after,
+                    silent=use_silent,
                 )
 
     @commands.Cog.listener()
@@ -182,12 +186,15 @@ class Counting(commands.Cog):
             )
             return
 
+        use_silent = await config.use_silent()
         delete_after = await config.delete_after()
         default_edit_message = await config.default_edit_message()
 
         await after.delete()
         if await config.toggle_edit_message():
-            await after.channel.send(default_edit_message, delete_after=delete_after)
+            await after.channel.send(
+                default_edit_message, delete_after=delete_after, silent=use_silent
+            )
 
     @commands.guild_only()
     @commands.hybrid_group()
@@ -238,7 +245,7 @@ class Counting(commands.Cog):
 
         await ctx.send(f"{msg_box}\nYou Last Counted: {time}")
 
-    @counting.command(name="resetme")
+    @counting.command(name="resetme", with_app_command=False)
     async def reset_me(self, ctx: commands.Context):
         """Reset your counting stats."""
         view = ConfirmView(ctx.author, disable_buttons=True)
@@ -324,6 +331,20 @@ class Counting(commands.Cog):
         config = self.config.guild(ctx.guild)
         await config.default_reaction.set(emoji_input)
         await ctx.send(f"Reaction for correct numbers has been set to {emoji_input}")
+
+    @countingset.command()
+    async def togglesilent(self, ctx: commands.Context):
+        """
+        Toggle silent mode for counting messages.
+
+        Silent is discords new feature.
+        """
+        config = self.config.guild(ctx.guild)
+        toggle = await config.use_silent()
+        await config.use_silent.set(not toggle)
+        await ctx.send(
+            f"Silent messages for counting messages is now {'enabled' if not toggle else 'disabled'}"
+        )
 
     @countingset.command()
     async def toggle(self, ctx):
@@ -421,9 +442,9 @@ class Counting(commands.Cog):
             await ctx.send("Invalid message type. Available types: edit, count")
 
     @countingset.command()
-    async def enable(self, ctx, setting: str):
+    async def togglemessage(self, ctx, setting: str):
         """
-        Toggle to show the edit message or next number message.
+        Toggle to show a message for a specific setting.
 
         Available settings: edit, count
 
@@ -448,7 +469,11 @@ class Counting(commands.Cog):
 
     @countingset.command()
     async def togglesameuser(self, ctx):
-        """Toggle whether the same user can count more than once consecutively."""
+        """
+        Toggle whether the same user can count more than once consecutively.
+
+        Users cannot count consecutively if this is enabled meaning they have to wait for someone else to count.
+        """
         config = self.config.guild(ctx.guild)
         same_user_to_count = await config.same_user_to_count()
         await config.same_user_to_count.set(not same_user_to_count)
@@ -472,6 +497,7 @@ class Counting(commands.Cog):
         same_user_to_count = await config.same_user_to_count()
         default_reaction = await config.default_reaction()
         toggle_reactions = await config.toggle_reactions()
+        silent = await config.use_silent()
 
         embed = discord.Embed(
             title="Counting Settings",
@@ -493,7 +519,8 @@ class Counting(commands.Cog):
         embed.add_field(
             name="Toggle Reactions:", value="Enabled" if toggle_reactions else "Disabled"
         )
-        embed.add_field(name="Default Reaction:", value=default_reaction, inline=False)
+        embed.add_field(name="Default Reaction:", value=default_reaction)
+        embed.add_field(name="Silent Messages:", value="Enabled" if silent else "Disabled")
         embed.add_field(name="Default Edit Message:", value=default_edit_message, inline=False)
         embed.add_field(
             name="Default Next Number Message:", value=default_next_number_message, inline=False

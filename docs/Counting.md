@@ -26,34 +26,44 @@ Counting settings commands.<br/>
  - Usage: `[p]countingset`
  - Restricted to: `ADMIN`
  - Checks: `server_only`
-## [p]countingset enable
-Toggle to show the edit message or next number message.<br/>
-
-Available settings: edit, count<br/>
-
-`count` - Show the next number message when a user sends an incorrect number. Default is disabled<br/>
-`edit` - Shows a message when a user edits their message in the counting channel. Default is disabled<br/>
- - Usage: `[p]countingset enable <setting>`
-## [p]countingset togglereact
-Toggle the reactions for correct numbers.<br/>
- - Usage: `[p]countingset togglereact`
-## [p]countingset reset
-Reset the settings for the counting.<br/>
- - Usage: `[p]countingset reset`
-## [p]countingset togglesameuser
-Toggle whether the same user can count more than once consecutively.<br/>
- - Usage: `[p]countingset togglesameuser`
-## [p]countingset channel
-Set the counting channel<br/>
- - Usage: `[p]countingset channel <channel>`
 ## [p]countingset toggle
 Toggle counting in the channel<br/>
  - Usage: `[p]countingset toggle`
+## [p]countingset togglesameuser
+Toggle whether the same user can count more than once consecutively.<br/>
+
+Users cannot count consecutively if this is enabled meaning they have to wait for someone else to count.<br/>
+ - Usage: `[p]countingset togglesameuser`
+## [p]countingset togglesilent
+Toggle silent mode for counting messages.<br/>
+
+Silent is discords new feature.<br/>
+ - Usage: `[p]countingset togglesilent`
+## [p]countingset reset
+Reset the settings for the counting.<br/>
+ - Usage: `[p]countingset reset`
+## [p]countingset channel
+Set the counting channel<br/>
+ - Usage: `[p]countingset channel <channel>`
 ## [p]countingset deleteafter
 Set the number of seconds to delete the incorrect message<br/>
 
 Default is 5 seconds<br/>
  - Usage: `[p]countingset deleteafter <seconds>`
+## [p]countingset setreaction
+Set the reaction for correct numbers.<br/>
+ - Usage: `[p]countingset setreaction <emoji_input>`
+## [p]countingset togglereact
+Toggle the reactions for correct numbers.<br/>
+ - Usage: `[p]countingset togglereact`
+## [p]countingset togglemessage
+Toggle to show a message for a specific setting.<br/>
+
+Available settings: edit, count<br/>
+
+`count` - Show the next number message when a user sends an incorrect number. Default is disabled<br/>
+`edit` - Shows a message when a user edits their message in the counting channel. Default is disabled<br/>
+ - Usage: `[p]countingset togglemessage <setting>`
 ## [p]countingset setmessage
 Set the default message for a specific type.<br/>
 
@@ -70,9 +80,6 @@ Available message types: edit, count<br/>
 - `<message_type>` The type of message to set (edit or count).<br/>
 - `<message>` The message to set.<br/>
  - Usage: `[p]countingset setmessage <message_type> <message>`
-## [p]countingset setreaction
-Set the reaction for correct numbers.<br/>
- - Usage: `[p]countingset setreaction <emoji_input>`
 ## [p]countingset settings
 Show the current counting settings.<br/>
  - Usage: `[p]countingset settings`
