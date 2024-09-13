@@ -204,6 +204,13 @@ class Counting(commands.Cog):
                 "Counting is not enabled in this server. Please ask the server admin to enable it and set the counting channel."
             )
 
+        # Check if the channel is set
+        channel_id = await self.config.guild(ctx.guild).channel()
+        if channel_id is None or ctx.channel.id != channel_id:
+            return await ctx.send(
+                "Counting channel is not set yet. Please ask the server admin to set it."
+            )
+
         user = user or ctx.author
 
         # Check if the user is a bot
