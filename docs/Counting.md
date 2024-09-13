@@ -11,7 +11,7 @@ Get your current counting statistics.<br/>
  - Slash Usage: `/counting countstats [user=None]`
  - Aliases: `stats`
  - Cooldown: `1 per 10.0 seconds`
-## [p]counting resetme (Hybrid Command)
+## [p]counting resetme
 Reset your counting stats.<br/>
  - Usage: `[p]counting resetme`
  - Slash Usage: `/counting resetme`
