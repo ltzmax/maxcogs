@@ -196,29 +196,28 @@ class Counting(commands.Cog):
 
     @counting.command(name="countstats", aliases=["stats"])
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def count_stats(self, ctx: commands.Context, user: Optional[discord.Member]):
+    async def count_stats(self, ctx: commands.Context, user: Optional[discord.User]):
         """Get your current counting statistics."""
-        if not user:
-            user = ctx.author
-
         # Check if the user is a bot
-        if user.bot:
-            return await ctx.send("Bots can't count anything.")
+        if user and user.bot:
+            return await ctx.send("Bots do not count.")
 
-        config = self.config.guild(ctx.guild)
-        user_config = self.config.user(ctx.author)
-        count = await config.count()
+        user_config = self.config.user(user or ctx.author)
         user_count = await user_config.count()
         last_count_timestamp = await user_config.last_count_timestamp()
 
+        # check if the member is in same guild
+        if user and user not in ctx.guild.members:
+            return await ctx.send("User is not in this server.")
+
+        # check if the user has counted yet
         if not user_count:
             return await ctx.send(f"{user.display_name} has not counted yet.")
 
         table_data = [
-            ["Server Count", humanize_number(count)],
-            ["Your Count", humanize_number(user_count)],
+            ["Your Count:", humanize_number(user_count)],
         ]
-        table = tabulate(table_data, headers=["Statistic", "Count"], tablefmt="plain")
+        table = tabulate(table_data, headers=["Title", "Count"], tablefmt="simple")
         msg_box = box(table, lang="prolog")
         if last_count_timestamp:
             last_count_time = datetime.fromisoformat(last_count_timestamp)
