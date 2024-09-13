@@ -133,20 +133,22 @@ class Counting(commands.Cog):
             await user_config.last_count_timestamp.set(datetime.now().isoformat())
             if await config.toggle_reactions():
                 await asyncio.sleep(0.3)  # Sleep for a bit.
-                try:
-                    await message.add_reaction(default_reaction)
-                except discord.HTTPException:
-                    log.warning(
-                        "Failed to add reaction to message {message_id}".format(
-                            message_id=message.id
+                if message.channel.permissions_for(message.guild.me).add_reactions:
+                    try:
+                        await message.add_reaction(default_reaction)
+                    except discord.HTTPException:
+                        log.warning(
+                            "I don't have permission to add reactions in {channel}".format(
+                                channel=message.channel.name
+                            )
                         )
-                    )
         else:
             await message.delete()
-            await message.channel.send(
-                default_next_number_message.format(next_count=next_count),
-                delete_after=delete_after,
-            )
+            if await config.toggle_next_number_message():
+                await message.channel.send(
+                    default_next_number_message.format(next_count=next_count),
+                    delete_after=delete_after,
+                )
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
