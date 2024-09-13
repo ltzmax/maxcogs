@@ -1,68 +1,78 @@
-# Counting Help
-
 Count from 1 to infinity!
 
-# counting
+# [p]counting (Hybrid Command)
+Counting commands<br/>
  - Usage: `[p]counting`
+ - Slash Usage: `/counting`
  - Checks: `server_only`
-
-Counting commands
-
-## counting countstats
- - Usage: `[p]counting countstats`
+## [p]counting countstats (Hybrid Command)
+Get your current counting statistics.<br/>
+ - Usage: `[p]counting countstats [user=None]`
+ - Slash Usage: `/counting countstats [user=None]`
  - Aliases: `stats`
- - Cooldown: `1 per 60.0 seconds`
-
-Get your current counting statistics.
-
-## counting resetme
+ - Cooldown: `1 per 10.0 seconds`
+## [p]counting resetme (Hybrid Command)
+Reset your counting stats.<br/>
  - Usage: `[p]counting resetme`
-
-Reset your counting stats.
-
-# countingset
+ - Slash Usage: `/counting resetme`
+## [p]counting leaderboard (Hybrid Command)
+Get the counting leaderboard.<br/>
+ - Usage: `[p]counting leaderboard`
+ - Slash Usage: `/counting leaderboard`
+ - Aliases: `lb`
+ - Cooldown: `1 per 10.0 seconds`
+# [p]countingset
+Counting settings commands.<br/>
  - Usage: `[p]countingset`
  - Restricted to: `ADMIN`
  - Checks: `server_only`
+## [p]countingset enable
+Toggle to show the edit message or next number message.<br/>
 
-Counting settings commands.
+Available settings: edit, count<br/>
 
-## countingset toggle
- - Usage: `[p]countingset toggle`
-
-Toggle counting in the channel
-
-## countingset channel
- - Usage: `[p]countingset channel <channel>`
-
-Set the counting channel
-
-## countingset deleteafter
- - Usage: `[p]countingset deleteafter <seconds>`
-
-Set the number of seconds to delete the incorrect message<br/><br/>Default is 5 seconds
-
-## countingset setmessage
- - Usage: `[p]countingset setmessage <message_type> <message>`
-
-Set the default message for a specific type.<br/><br/>Available message types: edit, count<br/><br/>`edit` - The message to show when a user edits their message in the counting channel.<br/>`count` - The message to show when a user sends an incorrect number in the counting channel.<br/><br/>**Examples:**<br/>- `[p]countingset setmessage edit You can't edit your messages here.`<br/>- `[p]countingset setmessage count Next number should be {next_count}`<br/><br/>**Arguments:**<br/>- `<message_type>` The type of message to set (edit or count).<br/>- `<message>` The message to set.
-
-## countingset togglesameuser
- - Usage: `[p]countingset togglesameuser`
-
-Toggle whether the same user can count more than once consecutively.
-
-## countingset reset
- - Usage: `[p]countingset reset`
-
-Reset the settings for the counting
-
-## countingset enable
+`count` - Show the next number message when a user sends an incorrect number. Default is disabled<br/>
+`edit` - Shows a message when a user edits their message in the counting channel. Default is disabled<br/>
  - Usage: `[p]countingset enable <setting>`
+## [p]countingset togglereact
+Toggle the reactions for correct numbers.<br/>
+ - Usage: `[p]countingset togglereact`
+## [p]countingset reset
+Reset the settings for the counting.<br/>
+ - Usage: `[p]countingset reset`
+## [p]countingset togglesameuser
+Toggle whether the same user can count more than once consecutively.<br/>
+ - Usage: `[p]countingset togglesameuser`
+## [p]countingset channel
+Set the counting channel<br/>
+ - Usage: `[p]countingset channel <channel>`
+## [p]countingset toggle
+Toggle counting in the channel<br/>
+ - Usage: `[p]countingset toggle`
+## [p]countingset deleteafter
+Set the number of seconds to delete the incorrect message<br/>
 
-Toggle to show the edit message or next number message.<br/><br/>Available settings: edit, count<br/><br/>`count` - Show the next number message when a user sends an incorrect number. Default is disabled<br/>`edit` - Shows a message when a user edits their message in the counting channel. Default is disabled
+Default is 5 seconds<br/>
+ - Usage: `[p]countingset deleteafter <seconds>`
+## [p]countingset setmessage
+Set the default message for a specific type.<br/>
 
-## countingset settings
+Available message types: edit, count<br/>
+
+`edit` - The message to show when a user edits their message in the counting channel.<br/>
+`count` - The message to show when a user sends an incorrect number in the counting channel.<br/>
+
+**Examples:**<br/>
+- `[p]countingset setmessage edit You can't edit your messages here.`<br/>
+- `[p]countingset setmessage count Next number should be {next_count}`<br/>
+
+**Arguments:**<br/>
+- `<message_type>` The type of message to set (edit or count).<br/>
+- `<message>` The message to set.<br/>
+ - Usage: `[p]countingset setmessage <message_type> <message>`
+## [p]countingset setreaction
+Set the reaction for correct numbers.<br/>
+ - Usage: `[p]countingset setreaction <emoji_input>`
+## [p]countingset settings
+Show the current counting settings.<br/>
  - Usage: `[p]countingset settings`
-
-Show the current counting settings.

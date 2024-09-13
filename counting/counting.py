@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.2.0"
+    __version__: Final[str] = "1.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -118,7 +118,7 @@ class Counting(commands.Cog):
         # Check if the same user is allowed to count more than once
         same_user_to_count = await config.same_user_to_count()
         last_user_id = await config.last_user_id()
-        if not same_user_to_count and last_user_id == message.author.id:
+        if same_user_to_count and last_user_id == message.author.id:
             await message.delete()
             return await message.channel.send(
                 "You cannot count consecutively. Please wait for someone else to count.",
@@ -201,14 +201,11 @@ class Counting(commands.Cog):
         # Check if counting is enabled in the guild
         if not await self.config.guild(ctx.guild).toggle():
             return await ctx.send(
-                "Counting is not enabled in this server. Please ask the server admin to enable it and set the counting channel."
-            )
-
-        # Check if the channel is set
-        channel_id = await self.config.guild(ctx.guild).channel()
-        if channel_id is None or ctx.channel.id != channel_id:
-            return await ctx.send(
-                "Counting channel is not set yet. Please ask the server admin to set it."
+                "Counting is not enabled in this server. "
+                "Please ask the server admin to enable it and set the counting channel.\n"
+                "`{prefix}countingset toggle` to enable counting. `{prefix}countingset channel #channel` to set the counting channel.".format(
+                    prefix=ctx.clean_prefix
+                )
             )
 
         user = user or ctx.author
@@ -257,6 +254,43 @@ class Counting(commands.Cog):
         else:
             await ctx.send("Reset cancelled.")
 
+    @counting.command(name="leaderboard", aliases=["lb"])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def leaderboard(self, ctx: commands.Context):
+        """Get the counting leaderboard."""
+        # Check if counting is enabled in the guild
+        if not await self.config.guild(ctx.guild).toggle():
+            return await ctx.send(
+                "Counting is not enabled in this server. "
+                "Please ask the server admin to enable it and set the counting channel.\n"
+                "`{prefix}countingset toggle` to enable counting. `{prefix}countingset channel #channel` to set the counting channel.".format(
+                    prefix=ctx.clean_prefix
+                )
+            )
+
+        all_users = await self.config.all_users()
+        guild_users = {
+            user_id: data
+            for user_id, data in all_users.items()
+            if ctx.guild.get_member(int(user_id))
+        }
+
+        leaderboard = sorted(guild_users.items(), key=lambda x: x[1]["count"], reverse=True)[:10]
+
+        table_data = []
+        for user_id, data in leaderboard:
+            user = ctx.guild.get_member(int(user_id))
+            place = leaderboard.index((user_id, data))
+            if user:
+                table_data.append([place + 1, user.display_name, humanize_number(data["count"])])
+
+        if not table_data:
+            return await ctx.send("No one has counted in this server yet.")
+
+        table = tabulate(table_data, headers=["Place", "User", "Count"], tablefmt="simple")
+        msg_box = box(table, lang="prolog")
+        await ctx.send(f"**Counting Leaderboard**:\n{msg_box}")
+
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
@@ -298,7 +332,10 @@ class Counting(commands.Cog):
         toggle = await config.toggle()
         await config.toggle.set(not toggle)
         await ctx.send(
-            f"Counting is now {'enabled' if not toggle else 'disabled'}\n{'Please set the counting channel using `[p]countingset channel`' if not toggle else ''}"
+            f"Counting is now {'enabled' if not toggle else 'disabled'}\n"
+            f"{'Please set the counting channel using `{prefix}countingset channel #channel` to enable counting.' if not toggle else ''}".format(
+                prefix=ctx.clean_prefix
+            )
         )
 
     @countingset.command()
@@ -347,7 +384,9 @@ class Counting(commands.Cog):
         await view.wait()
         if view.result:
             await self.config.guild(ctx.guild).clear()
-            await self.config.user.clear()
+            all_users = await self.config.all_users()
+            for user_id in all_users:
+                await self.config.user_from_id(user_id).clear()
             await ctx.send("Counting settings have been reset.")
         else:
             await ctx.send("Reset cancelled")
