@@ -265,16 +265,6 @@ class Counting(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def leaderboard(self, ctx: commands.Context):
         """Get the counting leaderboard."""
-        # Check if counting is enabled in the guild
-        if not await self.config.guild(ctx.guild).toggle():
-            return await ctx.send(
-                "Counting is not enabled in this server. "
-                "Please ask the server admin to enable it and set the counting channel.\n"
-                "`{prefix}countingset toggle` to enable counting. `{prefix}countingset channel #channel` to set the counting channel.".format(
-                    prefix=ctx.clean_prefix
-                )
-            )
-
         all_users = await self.config.all_users()
         guild_users = {
             user_id: data
