@@ -196,21 +196,24 @@ class Counting(commands.Cog):
 
     @counting.command(name="countstats", aliases=["stats"])
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def count_stats(self, ctx: commands.Context, user: Optional[discord.User]):
+    async def count_stats(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get your current counting statistics."""
+        user = user or ctx.author
+
         # Check if the user is a bot
-        if user and user.bot:
+        if user.bot:
             return await ctx.send("Bots do not count.")
 
-        user_config = self.config.user(user or ctx.author)
+        # Check if the user is in the guild
+        member = ctx.guild.get_member(user.id)
+        if not member:
+            return await ctx.send("User is not in this server.")
+
+        user_config = self.config.user(user)
         user_count = await user_config.count()
         last_count_timestamp = await user_config.last_count_timestamp()
 
-        # check if the member is in same guild
-        if user and user not in ctx.guild.members:
-            return await ctx.send("User is not in this server.")
-
-        # check if the user has counted yet
+        # Check if the user has counted yet
         if not user_count:
             return await ctx.send(f"{user.display_name} has not counted yet.")
 
