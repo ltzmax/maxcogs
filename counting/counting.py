@@ -33,7 +33,7 @@ from discord.ext.commands.errors import EmojiNotFound
 from emoji import EMOJI_DATA
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box, humanize_number
-from redbot.core.utils.views import ConfirmView
+from redbot.core.utils.views import ConfirmView, SimpleMenu
 from tabulate import tabulate
 
 log = logging.getLogger("red.maxcogs.counting")
@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.3.1"
+    __version__: Final[str] = "1.3.2"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -205,16 +205,6 @@ class Counting(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def count_stats(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get your current counting statistics."""
-        # Check if counting is enabled in the guild
-        if not await self.config.guild(ctx.guild).toggle():
-            return await ctx.send(
-                "Counting is not enabled in this server. "
-                "Please ask the server admin to enable it and set the counting channel.\n"
-                "`{prefix}countingset toggle` to enable counting. `{prefix}countingset channel #channel` to set the counting channel.".format(
-                    prefix=ctx.clean_prefix
-                )
-            )
-
         user = user or ctx.author
 
         # Check if the user is a bot
@@ -284,9 +274,17 @@ class Counting(commands.Cog):
         if not table_data:
             return await ctx.send("No one has counted in this server yet.")
 
-        table = tabulate(table_data, headers=["Place", "User", "Count"], tablefmt="simple")
-        msg_box = box(table, lang="prolog")
-        await ctx.send(f"**Counting Leaderboard**:\n{msg_box}")
+        pages = []
+        for i in range(0, len(table_data), 15):
+            page_data = table_data[i : i + 15]
+            table = tabulate(page_data, headers=["Place", "User", "Count"], tablefmt="simple")
+            msg_box = box(table, lang="prolog")
+            pages.append(msg_box)
+        await SimpleMenu(
+            pages,
+            disable_after_timeout=True,
+            timeout=120,
+        ).start(ctx)
 
     @commands.group()
     @commands.guild_only()
