@@ -255,11 +255,11 @@ class Counting(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def leaderboard(self, ctx: commands.Context):
         """Get the counting leaderboard."""
-        all_users = await self.config.all_users()
+        guild_config = await self.config.guild(ctx.guild).all_members()
         guild_users = {
             user_id: data
-            for user_id, data in all_users.items()
-            if ctx.guild.get_member(int(user_id)) and data.get("count", 0) > 0
+            for user_id, data in guild_config.items()
+            if data.get("count", 0) > 0
         }
 
         leaderboard = sorted(guild_users.items(), key=lambda x: x[1]["count"], reverse=True)[:10]
