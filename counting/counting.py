@@ -33,7 +33,7 @@ from discord.ext.commands.errors import EmojiNotFound
 from emoji import EMOJI_DATA
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box, humanize_number
-from redbot.core.utils.views import ConfirmView, SimpleMenu
+from redbot.core.utils.views import ConfirmView
 from tabulate import tabulate
 
 log = logging.getLogger("red.maxcogs.counting")
@@ -250,40 +250,6 @@ class Counting(commands.Cog):
             await ctx.send("Your counting stats have been reset.")
         else:
             await ctx.send("Reset cancelled.")
-
-    @counting.command(name="leaderboard", aliases=["lb"])
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def leaderboard(self, ctx: commands.Context):
-        """Get the counting leaderboard."""
-        guild_members = await self.config.all_members(ctx.guild)
-        guild_users = {
-            user_id: data
-            for user_id, data in guild_members.items()
-            if data.get("count", 0) > 0
-        }
-
-        leaderboard = sorted(guild_users.items(), key=lambda x: x[1]["count"], reverse=True)[:10]
-
-        table_data = []
-        for place, (user_id, data) in enumerate(leaderboard, start=1):
-            user = ctx.guild.get_member(int(user_id))
-            if user:
-                table_data.append([place, user.display_name, humanize_number(data["count"])])
-
-        if not table_data:
-            return await ctx.send("No one has counted in this server yet.")
-
-        pages = []
-        for i in range(0, len(table_data), 15):
-            page_data = table_data[i : i + 15]
-            table = tabulate(page_data, headers=["Place", "User", "Count"], tablefmt="simple")
-            msg_box = box(table, lang="prolog")
-            pages.append(msg_box)
-        await SimpleMenu(
-            pages,
-            disable_after_timeout=True,
-            timeout=120,
-        ).start(ctx)
 
     @commands.group()
     @commands.guild_only()
