@@ -259,7 +259,7 @@ class Counting(commands.Cog):
         guild_users = {
             user_id: data
             for user_id, data in all_users.items()
-            if ctx.guild.get_member(int(user_id))
+            if ctx.guild.get_member(int(user_id)) and data.get("count", 0) > 0
         }
 
         leaderboard = sorted(guild_users.items(), key=lambda x: x[1]["count"], reverse=True)[:10]
