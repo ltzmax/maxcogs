@@ -15,7 +15,7 @@
     "permissions": [
         "manage_messages"
     ],
-    "requirements": ["tabulate", "emoji"],
+    "requirements": ["tabulate", "emoji", "apscheduler"],
     "min_python_version": [
         3,
         9,

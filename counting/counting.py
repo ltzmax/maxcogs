@@ -24,10 +24,10 @@ SOFTWARE.
 
 import asyncio
 import logging
-from datetime import datetime
 from typing import Any, Final, Literal, Optional
 
 import discord
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord.ext.commands.converter import EmojiConverter
 from discord.ext.commands.errors import EmojiNotFound
 from emoji import EMOJI_DATA
@@ -36,13 +36,15 @@ from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import ConfirmView
 from tabulate import tabulate
 
+from .utils import get_next_reset_time
+
 log = logging.getLogger("red.maxcogs.counting")
 
 
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.3.2"
+    __version__: Final[str] = "1.3.3"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -68,8 +70,17 @@ class Counting(commands.Cog):
             "count": 0,
             "last_count_timestamp": None,
         }
+        default_global = {
+            "total_monthly_count": 0,
+        }
         self.config.register_guild(**default_guild)
         self.config.register_user(**default_user)
+        self.config.register_global(**default_global)
+        scheduler = AsyncIOScheduler()
+        scheduler.add_job(
+            self.reset_monthly_count, "cron", day=1, hour=0, minute=0, args=["monthly"]
+        )
+        scheduler.start()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -79,6 +90,14 @@ class Counting(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
+
+    async def increment_published_count(self):
+        async with self.config.all() as data:
+            data["total_monthly_count"] = data.get("total_monthly_count", 0) + 1
+
+    async def reset_monthly_count(self, period):
+        if period == "monthly":
+            await self.config.total_monthly_count.set(0)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -133,6 +152,7 @@ class Counting(commands.Cog):
             await config.last_user_id.set(message.author.id)  # Update the last user who counted
             user_count = await user_config.count()
             await user_config.count.set(user_count + 1)
+            await self.increment_published_count()
             await user_config.last_count_timestamp.set(datetime.now().isoformat())
             if await config.toggle_reactions():
                 await asyncio.sleep(0.3)  # Sleep for a bit.
@@ -250,6 +270,29 @@ class Counting(commands.Cog):
             await ctx.send("Your counting stats have been reset.")
         else:
             await ctx.send("Reset cancelled.")
+
+    @commands.is_owner()
+    @counting.command(name="monthlystats", with_app_command=False)
+    async def monthly_stats(self, ctx: commands.Context):
+        """
+        Get the total monthly count.
+
+        This command is only available to the bot owner due to it being a global setting.
+        This count will reset at the first day of each month.
+        """
+        total_monthly_count = await self.config.total_monthly_count()
+
+        if total_monthly_count == 0:
+            return await ctx.send("No counts have been made this month.")
+
+        next_reset = await get_next_reset_time()
+        time_until_reset = discord.utils.format_dt(next_reset, style="R")
+
+        table_data = [
+            ["Total Monthly Count", humanize_number(total_monthly_count)],
+        ]
+        table = tabulate(table_data, headers=["Title", "Count"], tablefmt="simple")
+        await ctx.send(box(table, lang="prolog") + f"\nNext monthly reset: {time_until_reset}")
 
     @commands.group()
     @commands.guild_only()

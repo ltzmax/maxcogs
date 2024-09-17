@@ -15,12 +15,12 @@ Get your current counting statistics.<br/>
 Reset your counting stats.<br/>
  - Usage: `[p]counting resetme`
  - Slash Usage: `/counting resetme`
-## [p]counting leaderboard (Hybrid Command)
-Get the counting leaderboard.<br/>
- - Usage: `[p]counting leaderboard`
- - Slash Usage: `/counting leaderboard`
- - Aliases: `lb`
- - Cooldown: `1 per 10.0 seconds`
+## [p]counting monthlystats
+Get the total monthly count.<br/>
+This command is only available to the bot owner due to it being a global setting.<br/>
+This count will reset at the first day of each month.
+ - Usage: `[p]counting monthlystats`
+ - Restricted to: `Owner`
 # [p]countingset
 Counting settings commands.<br/>
  - Usage: `[p]countingset`
