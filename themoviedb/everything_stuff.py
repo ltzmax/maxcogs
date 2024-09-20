@@ -70,6 +70,16 @@ async def check_results(ctx, data: Dict[str, Any], query: str) -> bool:
     return True
 
 
+async def aio(url: str) -> Optional[Dict[str, Any]]:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status != 200:
+                log.error(f"An error occurred: {response.status}")
+                return None
+            data = await response.read()
+            return orjson.loads(data)
+
+
 async def fetch_data(ctx, url: str) -> Optional[Dict[str, Any]]:
     """
     Fetch data from a URL.
@@ -89,13 +99,7 @@ async def fetch_data(ctx, url: str) -> Optional[Dict[str, Any]]:
         return None
 
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status != 200:
-                    log.error(f"An error occurred: {resp.status}")
-                    return None
-                data = await resp.read()
-                return orjson.loads(data)
+        return await aio(url)
     except Exception as e:
         log.error(f"An error occurred: {e}")
         return None
@@ -119,12 +123,11 @@ async def search_media(ctx, query, media_type, page=1):
     """
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     url = f"{BASE_MEDIA}/{media_type}?api_key={api_key}&query={query}&page={page}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status != 200:
-                return None
-            response_text = await response.text()
-            return orjson.loads(response_text)
+    try:
+        return await aio(url)
+    except Exception as e:
+        log.error(f"An error occurred: {e}")
+        return None
 
 
 async def get_media_data(ctx, media_id: int, media_type: str):
