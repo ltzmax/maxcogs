@@ -31,17 +31,13 @@ from typing import Any, Dict, Optional
 import aiohttp
 import discord
 import orjson
-from redbot.core.utils.chat_formatting import humanize_list, humanize_number
+from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import SimpleMenu
 
 log = logging.getLogger("red.maxcogs.themoviedb.everything_stuff")
 
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
-
-# TODO:
-# - Fix search results with more than 100 pages since currently it won't respond until like 1 minute after requesting.
-# - Clean up unnecessary code and combine it instead of duplicating it.
 
 
 async def check_results(ctx, data: Dict[str, Any], query: str) -> bool:
@@ -205,19 +201,34 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
 
     # Filter out adult content if the channel is not NSFW
     if not ctx.channel.nsfw:
-        filtered_results = [result for result in filtered_results if not result["adult"]]
+        filtered_results = [
+            result for result in filtered_results if not result.get("adult", False)
+        ]
         log.info(f"Filtered {len(all_results) - len(filtered_results)} adult content.")
 
-    # Sort results by normalized popularity
-    filtered_results = sorted(
-        filtered_results,
-        key=lambda x: x.get("popularity", 0),
-        reverse=True,
-    )
+    # Filter out results that are released before 1999
+    # This is to avoid showing outdated or irrelevant results
+    def is_after_1999(result):
+        date_key = "release_date" if media_type == "movie" else "first_air_date"
+        date_str = result.get(date_key, "N/A")
+        if not date_str or date_str == "N/A":
+            return False
+        year = int(date_str[:4])
+        # Include "Friends" and "The Fresh Prince of Bel-Air" specifically since it's a popular TV show that started in 1994 and 1990 respectively
+        # And it's still relevant today as alot of people still watch it and it's still popular
+        # I might need to add more exceptions in the future if I find more popular TV shows / movies that are older than 1999
+        # that people still watch today and are still relevant as of today.
+        if (
+            result.get("name", "").lower() in ["friends", "the fresh prince of bel-air"]
+            and media_type == "tv"
+        ):
+            return True
+        return year >= 1999
 
-    # Check if the search results are empty
+    filtered_results = [result for result in filtered_results if is_after_1999(result)]
+
     if not filtered_results:
-        return await ctx.send("No results found.")
+        return await ctx.send(f"No results found for {query}")
 
     # get the media type for the embed title
     item_type = "movie" if media_type == "movie" else "tv"
@@ -231,32 +242,34 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
         )
         return await ctx.send(embed=embed, view=view)
 
-    # Extract the year and sort the results by year in descending order
-    def extract_year(result):
+    def extract_popularity(result):
+        return result.get("popularity", 0)
+
+    def custom_sort_key(result):
+        # Prioritize items with no release date or a future release date (unreleased)
         date_key = "release_date" if media_type == "movie" else "first_air_date"
-        date_str = result.get(date_key, "N/A")
-        return date_str[:4] if date_str != "N/A" else "0000"
+        release_date = result.get(date_key)
+        if not release_date or release_date > datetime.now().strftime("%Y-%m-%d"):
+            return (0, 0)  # Unreleased items first
+        popularity = result.get("popularity", 0)
+        return (1, -popularity)  # Released items sorted by popularity in descending order
 
-    filtered_results.sort(key=extract_year, reverse=True)
+    filtered_results.sort(key=custom_sort_key)
 
-    # Create a list of embeds for pagination
+    def split_message(content, max_length=2000):
+        """Split content into chunks of max_length."""
+        return [content[i : i + max_length] for i in range(0, len(content), max_length)]
+
     pages = []
     for i in range(0, len(filtered_results), 15):
         description = "\n".join(
             [
-                f"{i+j+1}. {result['title' if media_type == 'movie' else 'name']} ({extract_year(result)})"
+                f"{i+j+1}. {result['title' if media_type == 'movie' else 'name']} ({result.get('release_date' if media_type == 'movie' else 'first_air_date', 'N/A')[:4]}) ({extract_popularity(result)})"
                 for j, result in enumerate(filtered_results[i : i + 15])
             ]
         )
-        embed = discord.Embed(
-            title="Search Results",
-            description=description,
-            colour=await ctx.embed_colour(),
-        )
-        embed.set_footer(
-            text=f"Type a number to select a media.\nPage: {i//15+1}/{len(filtered_results)//15+1}"
-        )
-        pages.append(embed)
+        for page in split_message(description):
+            pages.append("What would you like to select?" + box(page, lang="prolog"))
 
     await SimpleMenu(
         pages,
@@ -336,7 +349,9 @@ async def build_embed(ctx, data, item_id, i, results, item_type="movie"):
                 else None
             ),
             "Status": data.get("status", "No status available."),
-            "Number of Seasons": data.get("number_of_seasons") or None,
+            "Number of {}".format(
+                "Season" if data.get("number_of_seasons", 1) == 1 else "Seasons"
+            ): humanize_number(data.get("number_of_seasons", 0)),
             "Number of Episodes": data.get("number_of_episodes") or None,
             "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])])
             or ["N/A"],
@@ -351,7 +366,7 @@ async def build_embed(ctx, data, item_id, i, results, item_type="movie"):
                 or ["N/A"]
             ),
             "Popularity": humanize_number(data.get("popularity", 0)) or None,
-            "Vote Average": data.get("vote_average") if data.get("vote_average") else None,
+            "Vote Average": (data.get("vote_average") if data.get("vote_average") else None),
             "Vote Count": humanize_number(data.get("vote_count", 0)) or None,
             "Homepage": data.get("homepage") if data.get("homepage") else None,
             "Tagline": data.get("tagline") if data.get("tagline") else None,
@@ -388,11 +403,13 @@ async def build_embed(ctx, data, item_id, i, results, item_type="movie"):
             "Revenue": (
                 f"${humanize_number(data.get('revenue', 0))}" if data.get("revenue") else None
             ),
-            "Budget": f"${humanize_number(data.get('budget', 0))}" if data.get("budget") else None,
+            "Budget": (
+                f"${humanize_number(data.get('budget', 0))}" if data.get("budget") else None
+            ),
             "Popularity": (
                 humanize_number(data.get("popularity", 0)) if data.get("popularity") else None
             ),
-            "Vote Average": data.get("vote_average") if data.get("vote_average") else None,
+            "Vote Average": (data.get("vote_average") if data.get("vote_average") else None),
             "Vote Count": (
                 humanize_number(data.get("vote_count", 0)) if data.get("vote_count") else None
             ),
