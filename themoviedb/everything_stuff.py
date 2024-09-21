@@ -39,6 +39,10 @@ log = logging.getLogger("red.maxcogs.themoviedb.everything_stuff")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
 
+# TODO:
+# - Fix search results with more than 100 pages since currently it won't respond until like 1 minute after requesting.
+# - Clean up unnecessary code and combine it instead of duplicating it.
+
 
 async def check_results(ctx, data: Dict[str, Any], query: str) -> bool:
     """
@@ -215,12 +219,16 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
     if not filtered_results:
         return await ctx.send("No results found.")
 
+    # get the media type for the embed title
+    item_type = "movie" if media_type == "movie" else "tv"
     # If there's only one result, send the embed directly
     if len(filtered_results) == 1:
         selected_media = filtered_results[0]
         data = await get_media_data(ctx, selected_media["id"], media_type)
         media_id = selected_media["id"]
-        embed, view = await build_embed(ctx, data, media_id, 0, filtered_results)
+        embed, view = await build_embed(
+            ctx, data, media_id, 0, filtered_results, item_type=item_type
+        )
         return await ctx.send(embed=embed, view=view)
 
     # Extract the year and sort the results by year in descending order
@@ -275,76 +283,131 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
         selected_media = filtered_results[index]
         data = await get_media_data(ctx, selected_media["id"], media_type)
         media_id = selected_media["id"]
-        embed, view = await build_embed(ctx, data, media_id, index, filtered_results)
+        embed, view = await build_embed(
+            ctx, data, media_id, index, filtered_results, item_type=item_type
+        )
         await ctx.send(embed=embed, view=view)
         break  # Break out of the loop after.
 
 
-async def build_tvshow_embed(ctx, data, tv_id, i, results):
+async def build_embed(ctx, data, item_id, i, results, item_type="movie"):
     """
-    Builds an embed for a TV show.
+    Builds an embed for a TV show or movie.
 
     Parameters:
     ------------
     ctx: commands.Context
         The invocation context.
     data: dict
-        The TV show data from TMDB.
-    tv_id: int
-        The TMDB ID for the TV show.
+        The TV show or movie data from TMDB.
+    item_id: int
+        The TMDB ID for the TV show or movie.
     i: int
-        The index of the current TV show in the list of results.
+        The index of the current item in the list of results.
     results: list
         The list of results from TMDB.
+    item_type: str
+        The type of item, either "tv" or "movie".
 
     Returns:
     --------
     discord.Embed
-        The embed for the TV show.
+        The embed for the TV show or movie.
     """
+    if item_type == "tv":
+        title = data.get("name", "No title available.")[:256]
+        url = f"https://www.themoviedb.org/tv/{item_id}"
+        description = data.get("overview", "No description available.")[:1048]
+        fields = {
+            "Original Name": data.get("original_name"),
+            "First Air Date": (
+                f"<t:{int(datetime.strptime(data['first_air_date'], '%Y-%m-%d').timestamp())}:D>"
+                if data.get("first_air_date")
+                else None
+            ),
+            "Last Air Date": (
+                f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>"
+                if data.get("last_air_date")
+                else None
+            ),
+            "Next Episode Air Date": (
+                f"<t:{int(datetime.strptime(data.get('next_episode_to_air', {}).get('air_date'), '%Y-%m-%d').timestamp())}:D>"
+                if data.get("next_episode_to_air") and data["next_episode_to_air"].get("air_date")
+                else None
+            ),
+            "Status": data.get("status", "No status available."),
+            "Number of Seasons": data.get("number_of_seasons") or None,
+            "Number of Episodes": data.get("number_of_episodes") or None,
+            "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])])
+            or ["N/A"],
+            "Production Companies": humanize_list(
+                [company["name"] for company in data.get("production_companies", [])] or ["N/A"]
+            ),
+            "Production Countries": humanize_list(
+                [country["name"] for country in data.get("production_countries", [])] or ["N/A"]
+            ),
+            "Spoken Languages": humanize_list(
+                [language["english_name"] for language in data.get("spoken_languages", [])]
+                or ["N/A"]
+            ),
+            "Popularity": humanize_number(data.get("popularity", 0)) or None,
+            "Vote Average": data.get("vote_average") if data.get("vote_average") else None,
+            "Vote Count": humanize_number(data.get("vote_count", 0)) or None,
+            "Homepage": data.get("homepage") if data.get("homepage") else None,
+            "Tagline": data.get("tagline") if data.get("tagline") else None,
+        }
+        emoji = "📺"
+    elif item_type == "movie":
+        title = data.get("title", data.get("original_title", "No title available."))[:256]
+        url = f"https://www.themoviedb.org/movie/{item_id}"
+        description = data.get("overview", "No description available.")[:1048]
+        fields = {
+            "Original Title": data.get("original_title"),
+            "Release Date": (
+                f"<t:{int(datetime.strptime(data.get('release_date', ''), '%Y-%m-%d').timestamp())}:D>"
+                if data.get("release_date")
+                else None
+            ),
+            "Runtime": f"{data.get('runtime', 0)} minutes",
+            "Status": data.get("status", "No status available."),
+            "Belongs to Collection": (
+                data.get("belongs_to_collection", {}).get("name")
+                if data.get("belongs_to_collection")
+                else None
+            ),
+            "Genres": humanize_list([i["name"] for i in data.get("genres", [])]) or ["N/A"],
+            "Production Companies": humanize_list(
+                [i["name"] for i in data.get("production_companies", [])] or ["N/A"],
+            ),
+            "Production Countries": humanize_list(
+                [i["name"] for i in data.get("production_countries", [])] or ["N/A"],
+            ),
+            "Spoken Languages": humanize_list(
+                [i["english_name"] for i in data.get("spoken_languages", [])] or ["N/A"],
+            ),
+            "Revenue": (
+                f"${humanize_number(data.get('revenue', 0))}" if data.get("revenue") else None
+            ),
+            "Budget": f"${humanize_number(data.get('budget', 0))}" if data.get("budget") else None,
+            "Popularity": (
+                humanize_number(data.get("popularity", 0)) if data.get("popularity") else None
+            ),
+            "Vote Average": data.get("vote_average") if data.get("vote_average") else None,
+            "Vote Count": (
+                humanize_number(data.get("vote_count", 0)) if data.get("vote_count") else None
+            ),
+            "Adult": "Yes" if data.get("adult") is True else "No",
+            "Homepage": data.get("homepage") if data.get("homepage") else None,
+            "Tagline": data.get("tagline") if data.get("tagline") else None,
+        }
+        emoji = "🎥"
+
     embed = discord.Embed(
-        title=data.get("name", "No title available.")[:256],
-        url=f"https://www.themoviedb.org/tv/{tv_id}",
-        description=data.get("overview", "No description available.")[:1048],
+        title=title,
+        url=url,
+        description=description,
         colour=await ctx.embed_colour(),
     )
-
-    fields = {
-        "Original Name": data.get("original_name"),
-        "First Air Date": (
-            f"<t:{int(datetime.strptime(data['first_air_date'], '%Y-%m-%d').timestamp())}:D>"
-            if data.get("first_air_date")
-            else None
-        ),
-        "Last Air Date": (
-            f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>"
-            if data.get("last_air_date")
-            else None
-        ),
-        "Next Episode Air Date": (
-            f"<t:{int(datetime.strptime(data.get('next_episode_to_air', {}).get('air_date'), '%Y-%m-%d').timestamp())}:D>"
-            if data.get("next_episode_to_air") and data["next_episode_to_air"].get("air_date")
-            else None
-        ),
-        "Status": data.get("status", "No status available."),
-        "Number of Seasons": data.get("number_of_seasons") or None,
-        "Number of Episodes": data.get("number_of_episodes") or None,
-        "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])]) or ["N/A"],
-        "Production Companies": humanize_list(
-            [company["name"] for company in data.get("production_companies", [])] or ["N/A"]
-        ),
-        "Production Countries": humanize_list(
-            [country["name"] for country in data.get("production_countries", [])] or ["N/A"]
-        ),
-        "Spoken Languages": humanize_list(
-            [language["english_name"] for language in data.get("spoken_languages", [])] or ["N/A"]
-        ),
-        "Popularity": humanize_number(data.get("popularity", 0)) or None,
-        "Vote Average": data.get("vote_average") if data.get("vote_average") else None,
-        "Vote Count": humanize_number(data.get("vote_count", 0)) or None,
-        "Homepage": data.get("homepage") if data.get("homepage") else None,
-        "Tagline": data.get("tagline") if data.get("tagline") else None,
-    }
 
     total_length = len(embed.title) + len(embed.description)
     for name, value in fields.items():
@@ -360,126 +423,23 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
                 "Production Countries",
                 "Spoken Languages",
                 "Homepage",
-            ]
-            embed.add_field(name=name, value=value, inline=inline)
-            total_length += field_length
-
-    if data.get("poster_path"):
-        embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/original{data['poster_path']}")
-    # if data.get("seasons"):
-    #    embed.set_image(
-    #        url=f"https://image.tmdb.org/t/p/original{data['seasons'][0]['poster_path']}"
-    #    )
-    embed.set_footer(text="Powered by TMDB")
-    view = discord.ui.View()
-    style = discord.ButtonStyle.gray
-    series = discord.ui.Button(
-        style=style,
-        label=data.get("name", "No title available.")[:80],
-        url=f"https://www.themoviedb.org/tv/{tv_id}",
-        emoji="📺",
-    )
-    view.add_item(series)
-    return embed, view
-
-
-async def build_movie_embed(ctx, data, movie_id, i, results):
-    """
-    Builds an embed for a movie.
-
-    Parameters:
-    ------------
-    ctx: commands.Context
-        The invocation context.
-    data: dict
-        The movie data from TMDB.
-    movie_id: int
-        The TMDB ID for the movie.
-    i: int
-        The index of the current movie in the list of results.
-    results: list
-        The list of results from TMDB.
-
-    Returns:
-    --------
-    discord.Embed
-        The embed for the movie.
-    """
-    embed = discord.Embed(
-        title=data.get("title", "No title available.")[:256],
-        url=f"https://www.themoviedb.org/movie/{movie_id}",
-        description=(data.get("overview", "No description available.")[:1048]),
-        colour=await ctx.embed_colour(),
-    )
-    fields = {
-        "Original Title": data.get("original_title"),
-        "Release Date": (
-            f"<t:{int(datetime.strptime(data.get('release_date', ''), '%Y-%m-%d').timestamp())}:D>"
-            if data.get("release_date")
-            else None
-        ),
-        "Runtime": f"{data.get('runtime', 0)} minutes",
-        "Status": data.get("status", "No status available."),
-        "Belongs to Collection": (
-            data.get("belongs_to_collection", {}).get("name")
-            if data.get("belongs_to_collection")
-            else None
-        ),
-        "Genres": humanize_list([i["name"] for i in data.get("genres", [])]) or ["N/A"],
-        "Production Companies": humanize_list(
-            [i["name"] for i in data.get("production_companies", [])] or ["N/A"],
-        ),
-        "Production Countries": humanize_list(
-            [i["name"] for i in data.get("production_countries", [])] or ["N/A"],
-        ),
-        "Spoken Languages": humanize_list(
-            [i["english_name"] for i in data.get("spoken_languages", [])] or ["N/A"],
-        ),
-        "Revenue": (
-            f"${humanize_number(data.get('revenue', 0))}" if data.get("revenue") else None
-        ),
-        "Budget": f"${humanize_number(data.get('budget', 0))}" if data.get("budget") else None,
-        "Popularity": (
-            humanize_number(data.get("popularity", 0)) if data.get("popularity") else None
-        ),
-        "Vote Average": data.get("vote_average") if data.get("vote_average") else None,
-        "Vote Count": (
-            humanize_number(data.get("vote_count", 0)) if data.get("vote_count") else None
-        ),
-        "Adult": "Yes" if data.get("adult") is True else "No",
-        "Homepage": data.get("homepage") if data.get("homepage") else None,
-        "Tagline": data.get("tagline") if data.get("tagline") else None,
-    }
-    total_length = len(embed.title) + len(embed.description)
-    for name, value in fields.items():
-        if value is not None:
-            field_length = len(name) + len(str(value))
-            if total_length + field_length > 6000:
-                break
-            inline = name not in [
                 "Original Title",
-                "Tagline",
-                "Homepage",
-                "Production Companies",
-                "Genres",
                 "Belongs to Collection",
-                "Production Countries",
-                "Spoken Languages",
             ]
             embed.add_field(name=name, value=value, inline=inline)
             total_length += field_length
+
     if data.get("poster_path"):
         embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/original{data['poster_path']}")
-    # if data.get("backdrop_path"):
-    #    embed.set_image(url=f"https://image.tmdb.org/t/p/original{data['backdrop_path']}")
     embed.set_footer(text="Powered by TMDB")
+
     view = discord.ui.View()
     style = discord.ButtonStyle.gray
-    movie = discord.ui.Button(
+    button = discord.ui.Button(
         style=style,
-        label=data.get("title") or "No title available."[:80],
-        url=f"https://www.themoviedb.org/movie/{movie_id}",
-        emoji="🎥",
+        label=title[:80],
+        url=url,
+        emoji=emoji,
     )
-    view.add_item(movie)
+    view.add_item(button)
     return embed, view

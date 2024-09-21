@@ -27,12 +27,12 @@ import discord
 from redbot.core import app_commands, commands
 from redbot.core.utils.views import SetApiView
 
-from .everything_stuff import (
-    build_movie_embed,
-    build_tvshow_embed,
-    get_media_data,
-    search_and_display,
-)
+from .everything_stuff import build_embed, get_media_data, search_and_display
+
+# TODO:
+# - Add upcoming movies (https://developer.themoviedb.org/reference/movie-upcoming-list)
+# - Add Airing today tv shows (https://developer.themoviedb.org/reference/tv-series-airing-today-list)
+# - Add person (https://developer.themoviedb.org/reference/search-person)
 
 
 # Taken from flare's Dank memer cog.
@@ -49,7 +49,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "0.0.3b"
+    __version__ = "0.0.4b"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/TheMovieDB.md"
 
     def __init__(self, bot):
@@ -120,7 +120,7 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The movie you want to search for.
         """
-        await search_and_display(ctx, query, "movie", get_media_data, build_movie_embed)
+        await search_and_display(ctx, query, "movie", get_media_data, build_embed)
 
     @commands.check(apicheck)
     @commands.hybrid_command(aliases=["tv"])
@@ -138,4 +138,4 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The TV show you want to search for.
         """
-        await search_and_display(ctx, query, "tv", get_media_data, build_tvshow_embed)
+        await search_and_display(ctx, query, "tv", get_media_data, build_embed)
