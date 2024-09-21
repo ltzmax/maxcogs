@@ -269,7 +269,7 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
             ]
         )
         for page in split_message(description):
-            pages.append("What would you like to select?" + box(page, lang="prolog"))
+            pages.append("What would you like to select?" + box(page, lang="md"))
 
     await SimpleMenu(
         pages,
