@@ -327,21 +327,21 @@ async def build_tvshow_embed(ctx, data, tv_id, i, results):
             else None
         ),
         "Status": data.get("status", "No status available."),
-        "Number of Seasons": data.get("number_of_seasons"),
-        "Number of Episodes": data.get("number_of_episodes"),
-        "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])]),
+        "Number of Seasons": data.get("number_of_seasons") or None,
+        "Number of Episodes": data.get("number_of_episodes") or None,
+        "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])]) or ["N/A"],
         "Production Companies": humanize_list(
-            [company["name"] for company in data.get("production_companies", [])]
+            [company["name"] for company in data.get("production_companies", [])] or ["N/A"]
         ),
         "Production Countries": humanize_list(
-            [country["name"] for country in data.get("production_countries", [])]
+            [country["name"] for country in data.get("production_countries", [])] or ["N/A"]
         ),
         "Spoken Languages": humanize_list(
-            [language["english_name"] for language in data.get("spoken_languages", [])]
+            [language["english_name"] for language in data.get("spoken_languages", [])] or ["N/A"]
         ),
-        "Popularity": humanize_number(data.get("popularity", 0)),
+        "Popularity": humanize_number(data.get("popularity", 0)) or None,
         "Vote Average": data.get("vote_average") if data.get("vote_average") else None,
-        "Vote Count": humanize_number(data.get("vote_count", 0)),
+        "Vote Count": humanize_number(data.get("vote_count", 0)) or None,
         "Homepage": data.get("homepage") if data.get("homepage") else None,
         "Tagline": data.get("tagline") if data.get("tagline") else None,
     }
