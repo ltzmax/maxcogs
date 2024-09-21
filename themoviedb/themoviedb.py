@@ -25,16 +25,13 @@ SOFTWARE.
 import aiohttp
 import discord
 from redbot.core import app_commands, commands
-from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SetApiView
 
 from .everything_stuff import (
     build_movie_embed,
     build_tvshow_embed,
-    check_results,
     get_media_data,
     search_and_display,
-    search_media,
 )
 
 
