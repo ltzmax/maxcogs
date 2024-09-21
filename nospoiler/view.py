@@ -86,7 +86,8 @@ class KickBanUserSelect(discord.ui.Select):
     async def handle_kick(self, interaction: discord.Interaction):
         if not interaction.user.guild_permissions.kick_members:
             await interaction.response.send_message(
-                "You do not have permission `kick_members` to kick a user.", ephemeral=True
+                "You do not have permission `kick_members` to kick a user.",
+                ephemeral=True,
             )
             return
 
@@ -122,7 +123,8 @@ class KickBanUserSelect(discord.ui.Select):
     async def handle_ban(self, interaction: discord.Interaction):
         if not interaction.user.guild_permissions.ban_members:
             await interaction.response.send_message(
-                "You do not have permission `ban_members` to ban a user.", ephemeral=True
+                "You do not have permission `ban_members` to ban a user.",
+                ephemeral=True,
             )
             return
 

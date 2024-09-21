@@ -67,7 +67,12 @@ class AutoPublisher(commands.Cog):
         # Schedule weekly count reset.
         scheduler = AsyncIOScheduler()
         scheduler.add_job(
-            self.reset_count, "cron", day_of_week="sun", hour=0, minute=0, args=["weekly"]
+            self.reset_count,
+            "cron",
+            day_of_week="sun",
+            hour=0,
+            minute=0,
+            args=["weekly"],
         )
         scheduler.add_job(self.reset_count, "cron", day=1, hour=0, minute=0, args=["monthly"])
         scheduler.add_job(
