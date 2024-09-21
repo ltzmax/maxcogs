@@ -2,11 +2,16 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
-    -   id: end-of-file-fixer
     -   id: mixed-line-ending
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
+        exclude: docs/*.md
+    - id: pretty-format-json
+      args: [
+        --autofix,
+        --no-sort-keys,
+      ]
+    -   id: check-yaml
 -   repo: https://github.com/psf/black
     rev: 24.8.0
     hooks:
