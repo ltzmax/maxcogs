@@ -448,7 +448,8 @@ async def build_embed(ctx, data, item_id, i, results, item_type="movie"):
 
     if data.get("poster_path"):
         embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/original{data['poster_path']}")
-    embed.set_footer(text="Powered by TMDB")
+
+    embed.set_footer(text="Powered by TMDB", icon_url="https://cdn.maxapp.tv/tmdblogo.png")
 
     view = discord.ui.View()
     style = discord.ButtonStyle.gray

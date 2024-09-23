@@ -91,8 +91,7 @@ class TheMovieDB(commands.Cog):
             "and select the Developer option. Fill out the form and wait for them to approve your request.\n"
             "3. **Get your API key**: Once approved, you will get your API key. Copy it and use the command:\n"
             f"`{ctx.clean_prefix}set api tmdb api_key <your api key>`\n"
-            "The API key is used to fetch information about movies and TV shows from TheMovieDB.org.\n"
-            "Note that you will need to respect their API usage policy: <https://www.themoviedb.org/documentation/english/api/terms-of-use>"
+            "The API key is used to fetch information about movies and TV shows from TheMovieDB.org."
         )
         default_keys = {"api_key": ""}
         view = SetApiView("tmdb", default_keys)
