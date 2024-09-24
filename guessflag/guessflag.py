@@ -139,7 +139,12 @@ class GuessFlag(commands.Cog):
             not await self.config.user(user).stats_won()
             and not await self.config.user(user).stats_lost()
         ):
-            return await ctx.send("You haven't played this game yet.")
+            user_not_played = (
+                "You haven't played this game yet."
+                if user == ctx.author
+                else f"{user} hasn't played this game yet."
+            )
+            return await ctx.send(user_not_played)
 
         stats_won = await self.config.user(user).stats_won()
         stats_lost = await self.config.user(user).stats_lost()
