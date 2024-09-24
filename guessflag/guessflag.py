@@ -144,7 +144,10 @@ class GuessFlag(commands.Cog):
             headers=["Title", "Stats"],
             tablefmt="simple",
         )
-        await ctx.send(box(table, lang="prolog"))
+        user_stats = (
+            "You are viewing your own" if user == ctx.author else f"You are viewing {user}'s"
+        )
+        await ctx.send(f"{user_stats} stats:\n{box(table, lang='prolog')}")
 
 
 # Too lazy to make a separate file for this class
