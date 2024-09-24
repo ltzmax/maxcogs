@@ -131,6 +131,10 @@ class GuessFlag(commands.Cog):
         """View your stats or another user's stats."""
         user = user or ctx.author
 
+        # check if its a bot
+        if user.bot:
+            return await ctx.send("Bots don't have stats.")
+
         if (
             not await self.config.user(user).stats_won()
             and not await self.config.user(user).stats_lost()
