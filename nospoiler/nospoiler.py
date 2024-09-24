@@ -31,8 +31,6 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_number
 
-from .view import KickBanUserView
-
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 WARNING_MESSAGE = "Usage of spoiler is not allowed in this server."
 
@@ -90,9 +88,7 @@ class NoSpoiler(commands.Cog):
             )
             return
 
-        target_user = message.author
         color = await self.bot.get_embed_color(log_channel)
-        view = KickBanUserView(target_user)
         embed = discord.Embed(
             title="Spoiler Message Deleted",
             description=f"Message sent by {message.author.mention} in {message.channel.mention} was deleted due to spoiler content.",
@@ -109,13 +105,8 @@ class NoSpoiler(commands.Cog):
                 ),
                 inline=False,
             )
-        try:
-            if not self.bot.get_cog("Mod"):
-                await log_channel.send(embed=embed)
-            else:
-                view.message = await log_channel.send(embed=embed, view=view)
-        except discord.Forbidden as e:
-            log.error(e)
+        await log_channel.send(embed=embed)
+
 
     async def handle_spoiler_message(
         self, message: discord.Message, attachments: List[discord.Attachment] = None
