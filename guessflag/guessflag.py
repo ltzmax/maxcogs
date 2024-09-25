@@ -115,7 +115,7 @@ class GuessFlag(commands.Cog):
 
         credit_loss = await self.config.default_credit_loss()
         credit_name = await bank.get_currency_name(ctx.guild)
-        if not await bank.withdraw_credits(ctx.author, credit_loss):
+        if await bank.get_balance(ctx.author) < credit_loss:
             return await ctx.send(
                 f"You need at least {humanize_number(credit_loss)} {credit_name} to play."
             )
