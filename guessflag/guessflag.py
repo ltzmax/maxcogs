@@ -44,7 +44,7 @@ class GuessFlag(commands.Cog):
     Win credits to your `[p]bank balance` if you guess the flag correctly and lose credits from your `[p]bank balance` if you guess it wrong.
     """
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/GuessFlag.md"
 
@@ -112,6 +112,13 @@ class GuessFlag(commands.Cog):
         """
         if not self.flags:
             return await ctx.send("Flags are still loading, please try again later.")
+
+        credit_loss = await self.config.default_credit_loss()
+        credit_name = await bank.get_currency_name(ctx.guild)
+        if not await bank.withdraw_credits(ctx.author, credit_loss):
+            return await ctx.send(
+                f"You need at least {humanize_number(credit_loss)} {credit_name} to play."
+            )
 
         country, flag_url, options = get_random_flag(self.flags)
 
