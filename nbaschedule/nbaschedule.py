@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import logging
-from typing import Final, Optional
+from typing import Final, Optional, List
 
 import aiohttp
 import discord
@@ -35,6 +35,39 @@ from .converter import get_games
 
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 log = logging.getLogger("red.maxcogs.nbaschedule")
+
+TEAM_NAMES = [
+    "heat",
+    "bucks",
+    "bulls",
+    "cavaliers",
+    "celtics",
+    "clippers",
+    "grizzlies",
+    "hawks",
+    "hornets",
+    "jazz",
+    "kings",
+    "knicks",
+    "lakers",
+    "magic",
+    "mavericks",
+    "nets",
+    "nuggets",
+    "pacers",
+    "pelicans",
+    "pistons",
+    "raptors",
+    "rockets",
+    "sixers",
+    "spurs",
+    "suns",
+    "thunder",
+    "timberwolves",
+    "trail blazers",
+    "warriors",
+    "wizards",
+]
 
 
 class NBASchedule(commands.Cog):
@@ -56,14 +89,15 @@ class NBASchedule(commands.Cog):
     @commands.hybrid_command(aliases=["nschedule"])
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
+    @app_commands.describe(team="The team name to filter the schedule for, i.e 'heat'.")
     @app_commands.allowed_installs(guilds=False, users=True)
     async def nbaschedule(self, ctx: commands.Context, *, team: Optional[str] = None):
         """
         Get the current NBA schedule for next game.
-        
+
         **Arguments:**
             - `<team>`: The team name to filter the schedule.
-        
+
         **Vaild Team Names:**
         - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trailblazers, warriors, wizards
         """
@@ -84,6 +118,10 @@ class NBASchedule(commands.Cog):
         games = get_games(schedule)
         if team:
             team = team.lower()
+            if team not in TEAM_NAMES:
+                return await ctx.send(
+                    "Invalid team name provided.\nCheck <https://www.nba.com/schedule> for more information."
+                )
             games = [
                 game
                 for game in games
@@ -116,3 +154,12 @@ class NBASchedule(commands.Cog):
             disable_after_timeout=True,
             timeout=120,
         ).start(ctx)
+
+    @nbaschedule.autocomplete("team")
+    async def nbaschedule_autocomplete(
+        self,
+        interaction: discord.Interaction,
+        current: str,
+    ) -> List[app_commands.Choice]:
+        choices = [team for team in TEAM_NAMES if current.lower() in team.lower()]
+        return [app_commands.Choice(name=team, value=team) for team in choices]
