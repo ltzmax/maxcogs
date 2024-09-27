@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import logging
-from typing import Final
+from typing import Final, Optional
 
 import aiohttp
 import discord
@@ -57,8 +57,16 @@ class NBASchedule(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     @app_commands.allowed_installs(guilds=False, users=True)
-    async def nbaschedule(self, ctx: commands.Context):
-        """Get the current NBA schedule for next game."""
+    async def nbaschedule(self, ctx: commands.Context, *, team: Optional[str] = None):
+        """
+        Get the current NBA schedule for next game.
+        
+        **Arguments:**
+            - `<team>`: The team name to filter the schedule.
+        
+        **Vaild Team Names:**
+        - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trailblazers, warriors, wizards
+        """
         url = SCHEDULE_URL
         await ctx.typing()
         async with aiohttp.request("GET", url) as resp:
@@ -74,9 +82,17 @@ class NBASchedule(commands.Cog):
             )
 
         games = get_games(schedule)
+        if team:
+            team = team.lower()
+            games = [
+                game
+                for game in games
+                if team in game["home_team"].lower() or team in game["away_team"].lower()
+            ]
+
         if not games:
             return await ctx.send(
-                "No games data found in the schedule at this moment.\nCheck <https://www.nba.com/schedule> for more information."
+                "No games found for the specified team.\nCheck <https://www.nba.com/schedule> for more information."
             )
 
         pages = []
