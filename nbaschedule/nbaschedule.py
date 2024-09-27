@@ -40,7 +40,7 @@ log = logging.getLogger("red.maxcogs.nbaschedule")
 class NBASchedule(commands.Cog):
     """Get the current NBA schedule for next game."""
 
-    __version__: Final[str] = "1.0.1"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBASchedule.md"
 
@@ -69,9 +69,16 @@ class NBASchedule(commands.Cog):
             )
         schedule = orjson.loads(data)
         if "leagueSchedule" not in schedule or "gameDates" not in schedule["leagueSchedule"]:
-            log.info("There is no game data to generate!")
+            return await ctx.send(
+                "No games data found in the schedule at this moment.\nCheck <https://www.nba.com/schedule> for more information."
+            )
 
         games = get_games(schedule)
+        if not games:
+            return await ctx.send(
+                "No games data found in the schedule at this moment.\nCheck <https://www.nba.com/schedule> for more information."
+            )
+
         pages = []
         for i in range(0, len(games), 5):
             embed = discord.Embed(
@@ -88,9 +95,6 @@ class NBASchedule(commands.Cog):
             embed.set_footer(text="Provided by NBA.com")
             pages.append(embed)
 
-        return await ctx.send(
-            "No games data found in the schedule at this moment.\nCheck <https://www.nba.com/schedule> for more information."
-        )
         await SimpleMenu(
             pages,
             disable_after_timeout=True,
