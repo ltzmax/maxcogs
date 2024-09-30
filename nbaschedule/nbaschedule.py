@@ -96,7 +96,7 @@ class NBASchedule(commands.Cog):
         Get the current NBA schedule for next game.
 
         **Arguments:**
-            - `<team>`: The team name to filter the schedule.
+            - `[team]`: The team name to filter the schedule.
 
         **Vaild Team Names:**
         - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trail blazers, warriors, wizards
