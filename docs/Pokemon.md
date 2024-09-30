@@ -1,6 +1,6 @@
 # Pokemon Help
 
-This is pokemon related stuff cog.<br/>- Can you guess Who's That Pokémon?<br/>- Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).
+This is pokemon related stuff cog.<br/>- Can you guess Who's That Pokémon?<br/>- Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG)<br/>- Get information about a Pokémon.
 
 # whosthatpokemon (Hybrid Command)
  - Usage: `[p]whosthatpokemon [generation=None]`
