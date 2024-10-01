@@ -54,6 +54,7 @@ class Pokemon(commands.Cog):
     This is pokemon related stuff cog.
     - Can you guess Who's That Pokémon?
     - Fetch Pokémon cards based on Pokémon Trading Card Game (a.k.a Pokémon TCG).
+    - Get information about a Pokémon.
     """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
