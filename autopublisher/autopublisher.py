@@ -96,19 +96,17 @@ class AutoPublisher(commands.Cog):
             data["published_monthly_count"] = data.get("published_monthly_count", 0) + 1
             data["published_yearly_count"] = data.get("published_yearly_count", 0) + 1
 
-    async def reset_count(self, period):
-        """Reset the published count based on the period."""
-        if period == "weekly":
-            await self.config.published_weekly_count.set(0)
-            log.info("Reset published_weekly_count to 0")
-        elif period == "monthly":
-            await self.config.published_monthly_count.set(0)
-            log.info("Reset published_monthly_count to 0")
-        elif period == "yearly":
-            await self.config.published_yearly_count.set(0)
-            log.info("Reset published_yearly_count to 0")
-        else:
-            log.error(f"Unknown period: {period}")
+    async def reset_count(self, period: Literal["weekly", "monthly", "yearly"]) -> None:
+        async with self.config.all() as data:
+            if period == "weekly":
+                data["published_weekly_count"] = 0
+                log.info("Weekly published messages count has been reset.")
+            if period == "monthly":
+                data["published_monthly_count"] = 0
+                log.info("Monthly published messages count has been reset.")
+            if period == "yearly":
+                data["published_yearly_count"] = 0
+                log.info("Yearly published messages count has been reset.")
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
