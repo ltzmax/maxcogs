@@ -233,7 +233,11 @@ class Counting(commands.Cog):
             last_count_time = datetime.fromisoformat(last_count_timestamp)
             time = discord.utils.format_dt(last_count_time, style="R")
 
-        await ctx.send(f"{msg_box}\nYou Last Counted: {time}")
+        await ctx.send(
+            f"{msg_box}\nYou Last Counted: {time}",
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+            mention_author=False,
+        )
 
     @counting.command(name="resetme", with_app_command=False)
     async def reset_me(self, ctx: commands.Context):
@@ -247,9 +251,17 @@ class Counting(commands.Cog):
             user_config = self.config.user(ctx.author)
             await user_config.count.set(0)
             await user_config.last_count_timestamp.clear()
-            await ctx.send("Your counting stats have been reset.")
+            await ctx.send(
+                "Your counting stats have been reset.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
         else:
-            await ctx.send("Reset cancelled.")
+            await ctx.send(
+                "Reset cancelled.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
 
     @commands.group()
     @commands.guild_only()
