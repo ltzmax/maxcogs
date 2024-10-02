@@ -230,15 +230,41 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
     if not filtered_results:
         return await ctx.send(f"No results found for {query}")
 
-    # get the media type for the embed title
     item_type = "movie" if media_type == "movie" else "tv"
-    # If there's only one result, send the embed directly
-    if len(filtered_results) == 1:
-        selected_media = filtered_results[0]
+
+    # List of blocked titles
+    blocked_titles = [
+        "22 July",
+        "22 July 2011",
+        "Utøya: July 22",
+        "Utoya: July 22",
+        "July 22",
+        "July 22, 2011"
+    ]
+    def blocked_result(result):
+        # Check if the result's title, name, or original title is in the blocked titles list
+        title = result.get("title", "").lower()
+        name = result.get("name", "").lower()
+        original_title = result.get("original_title", "").lower()
+        
+        for blocked_title in blocked_titles:
+            if blocked_title.lower() in title or blocked_title.lower() in name or blocked_title.lower() in original_title:
+                return False
+        return True
+
+    # Filter out blocked results
+    allowed_results = [result for result in filtered_results if blocked_result(result)]
+
+    if not allowed_results:
+        return await ctx.send("You can't search for this movie or TV show due to content restrictions.")
+
+    # If there's only one allowed result, send the embed directly
+    if len(allowed_results) == 1:
+        selected_media = allowed_results[0]
         data = await get_media_data(ctx, selected_media["id"], media_type)
         media_id = selected_media["id"]
         embed, view = await build_embed(
-            ctx, data, media_id, 0, filtered_results, item_type=item_type
+            ctx, data, media_id, 0, allowed_results, item_type=item_type
         )
         return await ctx.send(embed=embed, view=view)
 
@@ -249,27 +275,34 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
         # Prioritize items with no release date or a future release date (unreleased)
         date_key = "release_date" if media_type == "movie" else "first_air_date"
         release_date = result.get(date_key)
-        if not release_date or release_date > datetime.now().strftime("%Y-%m-%d"):
+        today = datetime.now().strftime("%Y-%m-%d")
+        if not release_date or release_date > today:
             return (0, 0)  # Unreleased items first
-        popularity = result.get("popularity", 0)
-        return (1, -popularity)  # Released items sorted by popularity in descending order
+        elif release_date == today:
+            popularity = result.get("popularity", 0)
+            return (1, -popularity)  # Today's released items sorted by popularity in descending order
+        else:
+            popularity = result.get("popularity", 0)
+            return (2, -popularity)  # Released items sorted by popularity in descending order
 
-    filtered_results.sort(key=custom_sort_key)
+
+    # Sort the allowed results
+    allowed_results.sort(key=custom_sort_key)
 
     def split_message(content, max_length=2000):
         """Split content into chunks of max_length."""
         return [content[i : i + max_length] for i in range(0, len(content), max_length)]
 
     pages = []
-    for i in range(0, len(filtered_results), 15):
+    for i in range(0, len(allowed_results), 15):
         description = "\n".join(
             [
                 f"{i+j+1}. {result['title' if media_type == 'movie' else 'name']} ({result.get('release_date' if media_type == 'movie' else 'first_air_date', 'N/A')[:4]}) ({extract_popularity(result)})"
-                for j, result in enumerate(filtered_results[i : i + 15])
+                for j, result in enumerate(allowed_results[i : i + 15])
             ]
         )
         for page in split_message(description):
-            pages.append("What would you like to select?" + box(page, lang="md"))
+            pages.append("## What would you like to select?\n" + (page))
 
     await SimpleMenu(
         pages,

@@ -49,7 +49,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "0.0.5b"
+    __version__ = "1.0.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/TheMovieDB.md"
 
     def __init__(self, bot):
