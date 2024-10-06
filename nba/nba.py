@@ -35,32 +35,15 @@ from redbot.core import Config, app_commands, commands
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
-from sqlalchemy import Column, Integer, String, create_engine
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import declarative_base, sessionmaker
 
 from .converter import (
     ESPN_NBA_NEWS,
-    PLAYBYPLAY,
     SCHEDULE_URL,
     TEAM_NAMES,
-    TODAY_SCOREBOARD,
     get_games,
-    parse_duration,
 )
 
 log = logging.getLogger("red.maxcogs.nba")
-Base = declarative_base()
-
-
-class Scores(Base):
-    __tablename__ = "scores"
-    id = Column(Integer, primary_key=True)
-    game_id = Column(String, unique=True)
-    home_team = Column(String)
-    away_team = Column(String)
-    home_score = Column(Integer)
-    away_score = Column(Integer)
 
 
 class NBA(commands.Cog):
@@ -81,13 +64,6 @@ class NBA(commands.Cog):
         }
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
-        self.periodic_check.start()
-
-        # Initialize the database engine and session
-        self.engine = create_engine("sqlite:///{}".format(cog_data_path(self) / "nba.db"))
-        Base.metadata.create_all(self.engine)
-        self.Session = sessionmaker(bind=self.engine)
-        self.db_session = self.Session()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -95,129 +71,7 @@ class NBA(commands.Cog):
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     def cog_unload(self):
-        self.periodic_check.cancel()
         self.bot.loop.create_task(self.session.close())
-
-    @commands.Cog.listener()
-    async def on_guild_remove(self, guild: discord.Guild):
-        await self.config.guild(guild).clear()
-
-    @tasks.loop(seconds=60)
-    async def periodic_check(self):
-        """
-        A coroutine function that periodically checks the NBA game scores and updates the scores in a Discord channel.
-        """
-        async with aiohttp.ClientSession() as session:
-            for guild in self.bot.guilds:
-                channel = await self.config.guild(guild).channel()
-                team = await self.config.guild(guild).team()
-                if not channel or not team:
-                    continue
-                channel = guild.get_channel(channel)
-                if (
-                    not channel.permissions_for(guild.me).send_messages
-                    and not channel.permissions_for(guild.me).embed_links
-                ):
-                    log.warning(
-                        "I don't have permissions to send messages or embed links in {channel}.".format(
-                            channel=channel.mention
-                        ),
-                    )
-                    continue
-
-                async with session.get(TODAY_SCOREBOARD) as resp:
-                    data = await resp.text()
-                games_data = orjson.loads(data)["scoreboard"]["games"]
-                if not games_data:
-                    continue
-                for game in games_data:
-                    if not game:
-                        continue
-                    home_team = game["homeTeam"]["teamName"]
-                    away_team = game["awayTeam"]["teamName"]
-                    home_score = game["homeTeam"]["score"]
-                    away_score = game["awayTeam"]["score"]
-                    game_id = game["gameId"]
-                    gameclock = parse_duration(game["gameClock"])
-
-                    # Get the previous scores from the database
-                    score = self.db_session.query(Scores).filter_by(game_id=game_id).first()
-                    if score:
-                        previous_home_score = score.home_score
-                        previous_away_score = score.away_score
-                    else:
-                        previous_home_score = 0
-                        previous_away_score = 0
-
-                    # Check if the game has just started
-                    game_started = (
-                        previous_home_score == 0
-                        and previous_away_score == 0
-                        and (home_score > 0 or away_score > 0)
-                    )
-
-                    # Check if the scores have changed
-                    scores_changed = (
-                        home_score != previous_home_score or away_score != previous_away_score
-                    )
-
-                    # if scores changed or game just started send the update
-                    if scores_changed:
-                        if score:
-                            score.home_score = home_score
-                            score.away_score = away_score
-                        else:
-                            score = Scores(
-                                game_id=game_id,
-                                home_team=home_team,
-                                away_team=away_team,
-                                home_score=home_score,
-                                away_score=away_score,
-                            )
-                            self.db_session.add(score)
-                        self.db_session.commit()
-
-                        async with session.get(
-                            f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{game_id}.json"
-                        ) as resp:
-                            play_by_play_data = await resp.json()
-                        last_6_actions = play_by_play_data["game"]["actions"][-6:]
-
-                        embed = discord.Embed(
-                            title="NBA Scoreboard Update",
-                            color=0xE91E63,
-                            description=f"**{home_team}** vs **{away_team}**\n**Q{game['period']} with time Left**: {gameclock}",
-                        )
-                        embed.add_field(
-                            name=f"{home_team}:",
-                            value=box(f"Score: {home_score}", lang="json"),
-                        )
-                        embed.add_field(
-                            name=f"{away_team}:",
-                            value=box(f"Score: {away_score}", lang="json"),
-                        )
-                        embed.add_field(name=" ", value=" ", inline=False)
-                        for action in last_6_actions:
-                            # This would be cool in pillow ngl with a basketball arena background.
-                            embed.add_field(
-                                name=f"Team: {action.get('teamTricode', 'N/A')}",
-                                value=f"**Description**: {action.get('description', 'N/A')}\n**Area**: {action.get('area', 'N/A')}\n**Area Details**: {action.get('areaDetail', 'N/A')}\n**SubType**: {action.get('subType', 'N/A')}\n**Side**: {action.get('side', 'N/A')}",
-                            )
-                        embed.set_footer(text="🏀Provided by NBA.com")
-                        view = discord.ui.View()
-                        style = discord.ButtonStyle.gray
-                        game = discord.ui.Button(
-                            style=style,
-                            label="Watch Full Game",
-                            url=f"https://www.nba.com/game/{game_id}",
-                            emoji="🏀",
-                        )
-                        view.add_item(item=game)
-                        await channel.send(embed=embed, view=view)
-
-    @periodic_check.before_loop
-    async def before_periodic_check(self):
-        await self.bot.wait_until_ready()
 
     @commands.hybrid_group()
     @commands.guild_only()
@@ -346,84 +200,3 @@ class NBA(commands.Cog):
             disable_after_timeout=True,
             timeout=120,
         ).start(ctx)
-
-    @commands.group()
-    @commands.guild_only()
-    @commands.admin_or_permissions(administrator=True)
-    async def nbaset(self, ctx: commands.Context):
-        """Set the NBA game updates channel and team."""
-
-    @nbaset.command()
-    async def channel(
-        self, ctx: commands.Context, channel: commands.Greedy[discord.TextChannel], *, team: str
-    ):
-        """
-        Set the channel to send NBA game updates.
-
-        NOTE: you can only set one channel for NBA game updates, it is not possible to set multiple channels for different teams.
-
-        **Arguments:**
-        - `<channel>`: The channel to send NBA game updates.
-        - `<team>`: The team name to get the game updates from.
-            - The team you are selecting, will be the team you will get the game updates for in the channel with the latest scores with the team they are playing against.
-
-        **Valid Team Names:**
-        - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trail blazers, warriors, wizards
-        """
-        team = team.lower()
-        if team not in TEAM_NAMES:
-            return await ctx.send("Invalid team name provided.")
-
-        if not channel:
-            return await ctx.send("No channel provided.")
-
-        # Assuming you want to set the first channel in the list
-        selected_channel = channel[0]
-
-        await self.config.guild(ctx.guild).team.set(team)
-        await self.config.guild(ctx.guild).channel.set(selected_channel.id)
-        await ctx.send(
-            f"Set the channel to {selected_channel.mention} for NBA game updates for {team}."
-        )
-
-    @nbaset.command()
-    async def clear(self, ctx: commands.Context):
-        """
-        Clear the NBA game updates channel and team.
-        """
-        await self.config.guild(ctx.guild).clear()
-        await ctx.send("Cleared the NBA game updates channel and team.")
-
-    @nbaset.command()
-    async def team(self, ctx: commands.Context, *, team: str):
-        """
-        Update a new team to get the NBA game updates for.
-
-        **Arguments:**
-        - `<team>`: The team name to get the game updates from.
-            - The team you are selecting, will be the team you will get the game updates for in the channel with the latest scores with the team they are playing against.
-
-        **Vaild Team Names:**
-        - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trail blazers, warriors, wizards
-        """
-        if not await self.config.guild(ctx.guild).channel():
-            return await ctx.send("No NBA game updates channel set.")
-        team = team.lower()
-        if team not in TEAM_NAMES:
-            return await ctx.send("Invalid team name provided.")
-        await self.config.guild(ctx.guild).team.set(team)
-        await ctx.send(f"Set the team to get the NBA game updates for {team}.")
-
-    @nbaset.command()
-    async def view(self, ctx: commands.Context):
-        """
-        View the current NBA game updates channel and team.
-        """
-        channel = await self.config.guild(ctx.guild).channel()
-        team = await self.config.guild(ctx.guild).team()
-        if not channel or not team:
-            return await ctx.send("No NBA game updates channel and team set.")
-        channel = ctx.guild.get_channel(channel)
-        await ctx.send(
-            f"Current NBA game updates channel: {channel.mention}\nCurrent team: {team}"
-        )

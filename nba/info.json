@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "NBA",
-    "install_msg": "Thanks for installing.\nSee `[p]nbaset` for setting up autoposter. Base commands for everyone is available under `[p]nba`.",
+    "install_msg": "Thanks for installing.\nBase commands for everyone is available under `[p]nba`.",
     "description": "NBA Cog that provides NBA game updates, schedules, and news.",
     "short": "NBA Cog that provides NBA game updates, schedules, and news.",
     "hidden": false,
@@ -16,7 +16,7 @@
     "permissions": [
         "embed_links"
     ],
-    "requirements": ["orjson", "feedparser", "sqlalchemy"],
+    "requirements": ["orjson", "feedparser"],
     "min_python_version": [
         3,
         10,
