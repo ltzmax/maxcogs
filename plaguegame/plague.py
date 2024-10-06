@@ -30,12 +30,7 @@ from collections import Counter
 import discord
 from redbot.core import Config, app_commands, bank, commands
 from redbot.core.utils import AsyncIter
-from redbot.core.utils.chat_formatting import (
-    box,
-    humanize_list,
-    humanize_number,
-    pagify,
-)
+from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number, pagify
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu, start_adding_reactions
 from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.views import ConfirmView

@@ -239,16 +239,21 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
         "Utøya: July 22",
         "Utoya: July 22",
         "July 22",
-        "July 22, 2011"
+        "July 22, 2011",
     ]
+
     def blocked_result(result):
         # Check if the result's title, name, or original title is in the blocked titles list
         title = result.get("title", "").lower()
         name = result.get("name", "").lower()
         original_title = result.get("original_title", "").lower()
-        
+
         for blocked_title in blocked_titles:
-            if blocked_title.lower() in title or blocked_title.lower() in name or blocked_title.lower() in original_title:
+            if (
+                blocked_title.lower() in title
+                or blocked_title.lower() in name
+                or blocked_title.lower() in original_title
+            ):
                 return False
         return True
 
@@ -256,7 +261,9 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
     allowed_results = [result for result in filtered_results if blocked_result(result)]
 
     if not allowed_results:
-        return await ctx.send("You can't search for this movie or TV show due to content restrictions.")
+        return await ctx.send(
+            "You can't search for this movie or TV show due to content restrictions."
+        )
 
     # If there's only one allowed result, send the embed directly
     if len(allowed_results) == 1:
@@ -280,11 +287,13 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
             return (0, 0)  # Unreleased items first
         elif release_date == today:
             popularity = result.get("popularity", 0)
-            return (1, -popularity)  # Today's released items sorted by popularity in descending order
+            return (
+                1,
+                -popularity,
+            )  # Today's released items sorted by popularity in descending order
         else:
             popularity = result.get("popularity", 0)
             return (2, -popularity)  # Released items sorted by popularity in descending order
-
 
     # Sort the allowed results
     allowed_results.sort(key=custom_sort_key)

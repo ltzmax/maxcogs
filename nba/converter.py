@@ -61,14 +61,6 @@ TEAM_NAMES = [
     "warriors",
     "wizards",
 ]
-periods = {
-    0: "Pre-Game",
-    1: "1st Quarter",
-    2: "2nd Quarter",
-    3: "3rd Quarter",
-    4: "4th Quarter",
-    5: "Overtime",
-}
 
 
 def parse_duration(duration):

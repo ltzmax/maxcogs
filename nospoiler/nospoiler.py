@@ -107,7 +107,6 @@ class NoSpoiler(commands.Cog):
             )
         await log_channel.send(embed=embed)
 
-
     async def handle_spoiler_message(
         self, message: discord.Message, attachments: List[discord.Attachment] = None
     ) -> None:
