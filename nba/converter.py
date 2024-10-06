@@ -22,7 +22,66 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
 from datetime import datetime, timezone
+
+TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
+SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
+ESPN_NBA_NEWS = "http://www.espn.com/espn/rss/nba/news"
+PLAYBYPLAY = "https://cdn.nba.com/static/json"
+TEAM_NAMES = [
+    "heat",
+    "bucks",
+    "bulls",
+    "cavaliers",
+    "celtics",
+    "clippers",
+    "grizzlies",
+    "hawks",
+    "hornets",
+    "jazz",
+    "kings",
+    "knicks",
+    "lakers",
+    "magic",
+    "mavericks",
+    "nets",
+    "nuggets",
+    "pacers",
+    "pelicans",
+    "pistons",
+    "raptors",
+    "rockets",
+    "sixers",
+    "spurs",
+    "suns",
+    "thunder",
+    "timberwolves",
+    "trail blazers",
+    "warriors",
+    "wizards",
+]
+periods = {
+    0: "Pre-Game",
+    1: "1st Quarter",
+    2: "2nd Quarter",
+    3: "3rd Quarter",
+    4: "4th Quarter",
+    5: "Overtime",
+}
+
+
+def parse_duration(duration):
+    """
+    Parse the duration string from the NBA API.
+    """
+    match = re.match(r"PT(?:(\d+)M)?(?:(\d+\.\d+)?S)?", duration)
+    if match:
+        minutes = match.group(1) or "0"
+        seconds = int(float(match.group(2))) if match.group(2) else 0
+        return f"{minutes}:{str(seconds).zfill(2)}"
+    else:
+        return "0:00"
 
 
 def get_games(schedule):
@@ -31,16 +90,16 @@ def get_games(schedule):
     """
     games = [
         {
-            "home_team": game["homeTeam"]["teamName"],
-            "away_team": game["awayTeam"]["teamName"],
+            "home_team": game["homeTeam"].get("teamName", "Unknown"),
+            "away_team": game["awayTeam"].get("teamName", "Unknown"),
             "timestamp": int(
                 datetime.strptime(game["gameDateTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
                 .replace(tzinfo=timezone.utc)
                 .timestamp()
             ),
-            "arena": game["arenaName"],
-            "arenastate": game["arenaState"],
-            "arena_city": game["arenaCity"],
+            "arena": game.get("arenaName", "Unknown"),
+            "arenastate": game.get("arenaState", "Unknown"),
+            "arena_city": game.get("arenaCity", "Unknown"),
         }
         for date in schedule["leagueSchedule"]["gameDates"]
         for game in date["games"]
