@@ -36,12 +36,7 @@ from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
 
-from .converter import (
-    ESPN_NBA_NEWS,
-    SCHEDULE_URL,
-    TEAM_NAMES,
-    get_games,
-)
+from .converter import ESPN_NBA_NEWS, SCHEDULE_URL, TEAM_NAMES, get_games
 
 log = logging.getLogger("red.maxcogs.nba")
 
