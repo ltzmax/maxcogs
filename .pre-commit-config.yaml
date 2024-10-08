@@ -1,13 +1,13 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
     -   id: mixed-line-ending
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
         exclude: docs/
 -   repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 24.10.0
     hooks:
     -   id: black
         args: [--target-version=py39, --line-length=99]
