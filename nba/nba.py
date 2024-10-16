@@ -341,9 +341,7 @@ class NBA(commands.Cog):
 
         if not pages:
             return await ctx.send(
-                "That team is not playing today or you specified an invalid team.\nCheck ``{prefix}nba teams`` for a list of vaild teams.".format(
-                    prefix=ctx.clean_prefix
-                ),
+                "That team is not playing today or you specified an invalid team."
             )
         await SimpleMenu(
             pages,
