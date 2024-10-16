@@ -21,14 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import pytz
 
-import re
 from datetime import datetime, timezone
 
-# TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
+TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 ESPN_NBA_NEWS = "http://www.espn.com/espn/rss/nba/news"
-# PLAYBYPLAY = "https://cdn.nba.com/static/json"
+#PLAYBYPLAY = "https://cdn.nba.com/static/json"
 TEAM_NAMES = [
     "heat",
     "bucks",
@@ -62,8 +62,7 @@ TEAM_NAMES = [
     "wizards",
 ]
 
-
-# def parse_duration(duration):
+#def parse_duration(duration):
 #    """
 #    Parse the duration string from the NBA API.
 #    """
@@ -75,6 +74,50 @@ TEAM_NAMES = [
 #    else:
 #        return "0:00"
 
+periods = {
+    0: "Pre-Game",
+    1: "1st Quarter",
+    2: "2nd Quarter",
+    3: "3rd Quarter",
+    4: "4th Quarter",
+    5: "Overtime",
+}
+
+def get_time_bounds():
+    """
+    Get the start and end timestamps for the current hour in Eastern Time.
+    This function is used to when the scoreboard is updated each day(s).
+    """
+    now_utc = datetime.now(pytz.utc)
+    now_et = now_utc.astimezone(pytz.timezone("US/Eastern"))
+    # Define the start and end times in Eastern Time
+    start_time_et = now_et.replace(hour=12, minute=0, second=0, microsecond=0)
+    end_time_et = now_et.replace(hour=13, minute=0, second=0, microsecond=0)
+    # Convert the start and end times to UTC
+    start_time_utc = start_time_et.astimezone(pytz.utc)
+    end_time_utc = end_time_et.astimezone(pytz.utc)
+    # Get the start and end timestamps
+    start_timestamp = int(start_time_utc.timestamp())
+    end_timestamp = int(end_time_utc.timestamp())
+    return start_timestamp, end_timestamp
+
+
+def get_leaders_info(game):
+    """
+    Get the leaders information for the home and away teams.
+    """
+    game_leaders = game["gameLeaders"]
+    home_leaders_str = away_leaders_str = "N/A"
+    if game_leaders:
+        home_leaders = game_leaders.get("homeLeaders")
+        if home_leaders:
+            home_leaders_str = f"**Name**: {home_leaders['name']}\n**JerseyNum**: {home_leaders['jerseyNum']}\n**Position**: {home_leaders['position']}\n**Points**: {home_leaders['points']}\n**Rebounds**: {home_leaders['rebounds']}\n**Assists**: {home_leaders['assists']}"
+
+        away_leaders = game_leaders.get("awayLeaders")
+        if away_leaders:
+            away_leaders_str = f"**Name**: {away_leaders['name']}\n**JerseyNum**: {away_leaders['jerseyNum']}\n**Position**: {away_leaders['position']}\n**Points**: {away_leaders['points']}\n**Rebounds**: {away_leaders['rebounds']}\n**Assists**: {away_leaders['assists']}"
+
+    return home_leaders_str, away_leaders_str
 
 def get_games(schedule):
     """
