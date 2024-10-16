@@ -21,14 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import pytz
 
 from datetime import datetime, timezone
+
+import pytz
 
 TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 ESPN_NBA_NEWS = "http://www.espn.com/espn/rss/nba/news"
-#PLAYBYPLAY = "https://cdn.nba.com/static/json"
+# PLAYBYPLAY = "https://cdn.nba.com/static/json"
 TEAM_NAMES = [
     "heat",
     "bucks",
@@ -62,7 +63,7 @@ TEAM_NAMES = [
     "wizards",
 ]
 
-#def parse_duration(duration):
+# def parse_duration(duration):
 #    """
 #    Parse the duration string from the NBA API.
 #    """
@@ -82,6 +83,7 @@ periods = {
     4: "4th Quarter",
     5: "Overtime",
 }
+
 
 def get_time_bounds():
     """
@@ -118,6 +120,7 @@ def get_leaders_info(game):
             away_leaders_str = f"**Name**: {away_leaders['name']}\n**JerseyNum**: {away_leaders['jerseyNum']}\n**Position**: {away_leaders['position']}\n**Points**: {away_leaders['points']}\n**Rebounds**: {away_leaders['rebounds']}\n**Assists**: {away_leaders['assists']}"
 
     return home_leaders_str, away_leaders_str
+
 
 def get_games(schedule):
     """

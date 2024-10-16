@@ -293,7 +293,10 @@ async def search_and_display(ctx, query, media_type, get_media_data, build_embed
             )  # Today's released items sorted by popularity in descending order
         else:
             popularity = result.get("popularity", 0)
-            return (2, -popularity)  # Released items sorted by popularity in descending order
+            return (
+                2,
+                -popularity,
+            )  # Released items sorted by popularity in descending order
 
     # Sort the allowed results
     allowed_results.sort(key=custom_sort_key)

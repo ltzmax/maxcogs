@@ -24,6 +24,7 @@ SOFTWARE.
 
 import logging
 import math
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Final, List, Optional, Union
 
 import aiohttp
@@ -31,20 +32,19 @@ import discord
 import feedparser
 import orjson
 from discord.ext import tasks
-from datetime import datetime, timedelta, timezone
 from redbot.core import Config, app_commands, commands
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
 
 from .converter import (
-    ESPN_NBA_NEWS, 
-    SCHEDULE_URL, 
-    TEAM_NAMES, 
-    get_games, 
-    TODAY_SCOREBOARD, 
-    get_time_bounds, 
+    ESPN_NBA_NEWS,
+    SCHEDULE_URL,
+    TEAM_NAMES,
+    TODAY_SCOREBOARD,
+    get_games,
     get_leaders_info,
+    get_time_bounds,
     periods,
 )
 
