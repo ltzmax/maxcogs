@@ -344,7 +344,11 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
         )
         fields["Runtime"] = f"{data.get('runtime', 0)} minutes"
         fields["Status"] = data.get("status", "No status available.")
-        fields["Belongs to Collection"] = data.get("belongs_to_collection", {}).get("name") if data.get("belongs_to_collection") else None
+        fields["Belongs to Collection"] = (
+            data.get("belongs_to_collection", {}).get("name")
+            if data.get("belongs_to_collection")
+            else None
+        )
         fields["Genres"] = (
             humanize_list([genre["name"] for genre in data.get("genres", [])]) or "N/A"
         )
