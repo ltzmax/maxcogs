@@ -169,6 +169,7 @@ async def search_and_display(ctx, query, media_type, fetch_media_data, create_em
         fetch_media_data (Callable[[commands.Context, int, str], coroutine]): Function to fetch media data.
         create_embed (Callable[[commands.Context, Dict[str, Any], int, int, List[Dict[str, Any]]], coroutine]): Function to create an embed.
     """
+    await ctx.typing()
     results = []
     page = 1
 
