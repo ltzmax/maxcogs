@@ -56,7 +56,7 @@ class NBA(commands.Cog):
     NBA Cog that provides NBA game updates, schedules, and news.
     """
 
-    __version__: Final[str] = "2.1.0"
+    __version__: Final[str] = "2.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -80,7 +80,7 @@ class NBA(commands.Cog):
 
     @commands.hybrid_group()
     @commands.guild_only()
-    @app_commands.allowed_installs(guilds=False, users=True)
+    #@app_commands.allowed_installs(guilds=False, users=True)
     async def nba(self, ctx: commands.Context):
         """Get the current NBA schedule for next game."""
 
