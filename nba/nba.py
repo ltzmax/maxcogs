@@ -188,7 +188,7 @@ class NBA(commands.Cog):
                 title = article["title"]
                 article_description = article["summary"]
                 url = article["link"]
-                description += f"## {title}\n{article_description}\n[Read More Here]({url})\n"
+                description += f"## {title}\n{article_description}\n> [Read More Here]({url})\n"
                 # Wait for red to release 3.5.14 for the header support
                 # description += f"{header(title, 'medium')}\n{box(article_description, lang='yaml')}\n[Read More Here]({url})\n"
             embed = discord.Embed(
