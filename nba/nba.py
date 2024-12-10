@@ -31,8 +31,8 @@ import aiohttp
 import discord
 import feedparser
 import orjson
-from discord.ext import tasks
-from redbot.core import Config, app_commands, commands
+#from discord.ext import tasks
+from redbot.core import app_commands, commands
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
@@ -62,12 +62,12 @@ class NBA(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=1234567891011)
-        default_guild: Dict[str, Union[bool]] = {
-            "channel": None,
-            "team": None,
-        }
-        self.config.register_guild(**default_guild)
+        #self.config = Config.get_conf(self, identifier=1234567891011)
+        #default_guild: Dict[str, Union[bool]] = {
+        #    "channel": None,
+        #    "team": None,
+        #}
+        #self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
