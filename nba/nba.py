@@ -76,7 +76,7 @@ class NBA(commands.Cog):
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     def cog_unload(self):
-        self.bot.loop.create_task(self.session.close())
+        self.session.close()
 
     @commands.hybrid_group()
     @commands.guild_only()
