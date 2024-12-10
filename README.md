@@ -31,7 +31,7 @@ To install any cog you want:
 | Counting | Count from 1 to infinity! with some customizable settings. | 1.3.3 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.3.0 | ltzmax | ✅ |
-| NBA | NBA Cog that provides NBA game updates, schedules, and news. | 2.3.0 | ltzmax | ✅ |
+| NBA | NBA Cog that provides NBA game updates, schedules, and news. | 2.3.1 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 2.3.1 | ltzmax | ✅ |

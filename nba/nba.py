@@ -56,7 +56,7 @@ class NBA(commands.Cog):
     NBA Cog that provides NBA game updates, schedules, and news.
     """
 
-    __version__: Final[str] = "2.3.0"
+    __version__: Final[str] = "2.3.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 

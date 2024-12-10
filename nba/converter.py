@@ -108,16 +108,30 @@ def get_leaders_info(game):
     """
     Get the leaders information for the home and away teams.
     """
-    game_leaders = game["gameLeaders"]
     home_leaders_str = away_leaders_str = "N/A"
-    if game_leaders:
+    game_leaders = game.get("gameLeaders")
+    if game_leaders is not None:
         home_leaders = game_leaders.get("homeLeaders")
-        if home_leaders:
-            home_leaders_str = f"**Name**: {home_leaders['name']}\n**JerseyNum**: {home_leaders['jerseyNum']}\n**Position**: {home_leaders['position']}\n**Points**: {home_leaders['points']}\n**Rebounds**: {home_leaders['rebounds']}\n**Assists**: {home_leaders['assists']}"
+        if home_leaders is not None:
+            home_leaders_str = (
+                f"**Name**: {home_leaders.get('name') or 'N/A'}\n"
+                f"**JerseyNum**: {home_leaders.get('jerseyNum') or 'N/A'}\n"
+                f"**Position**: {home_leaders.get('position') or 'N/A'}\n"
+                f"**Points**: {home_leaders.get('points') or 'N/A'}\n"
+                f"**Rebounds**: {home_leaders.get('rebounds') or 'N/A'}\n"
+                f"**Assists**: {home_leaders.get('assists') or 'N/A'}"
+            )
 
         away_leaders = game_leaders.get("awayLeaders")
-        if away_leaders:
-            away_leaders_str = f"**Name**: {away_leaders['name']}\n**JerseyNum**: {away_leaders['jerseyNum']}\n**Position**: {away_leaders['position']}\n**Points**: {away_leaders['points']}\n**Rebounds**: {away_leaders['rebounds']}\n**Assists**: {away_leaders['assists']}"
+        if away_leaders is not None:
+            away_leaders_str = (
+                f"**Name**: {away_leaders.get('name') or 'N/A'}\n"
+                f"**JerseyNum**: {away_leaders.get('jerseyNum') or 'N/A'}\n"
+                f"**Position**: {away_leaders.get('position') or 'N/A'}\n"
+                f"**Points**: {away_leaders.get('points') or 'N/A'}\n"
+                f"**Rebounds**: {away_leaders.get('rebounds') or 'N/A'}\n"
+                f"**Assists**: {away_leaders.get('assists') or 'N/A'}"
+            )
 
     return home_leaders_str, away_leaders_str
 
@@ -126,26 +140,32 @@ def get_games(schedule):
     """
     Get scheduled games from the NBA json.
     """
-    games = [
-        {
-            "home_team": game["homeTeam"].get("teamName", "Unknown"),
-            "away_team": game["awayTeam"].get("teamName", "Unknown"),
-            "timestamp": int(
-                datetime.strptime(game["gameDateTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
-                .replace(tzinfo=timezone.utc)
-                .timestamp()
-            ),
-            "arena": game.get("arenaName", "Unknown"),
-            "arenastate": game.get("arenaState", "Unknown"),
-            "arena_city": game.get("arenaCity", "Unknown"),
-        }
-        for date in schedule["leagueSchedule"]["gameDates"]
-        for game in date["games"]
-        if int(
-            datetime.strptime(game["gameDateTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
-            .replace(tzinfo=timezone.utc)
-            .timestamp()
-        )
-        >= datetime.utcnow().replace(tzinfo=timezone.utc).timestamp()
-    ]
+    games = []
+    try:
+        game_dates = schedule.get("leagueSchedule", {}).get("gameDates", [])
+        for date in game_dates:
+            for game in date.get("games", []):
+                try:
+                    game_time = game.get("gameDateTimeUTC")
+                    if game_time:
+                        timestamp = int(
+                            datetime.strptime(game_time, "%Y-%m-%dT%H:%M:%SZ")
+                            .replace(tzinfo=timezone.utc)
+                            .timestamp()
+                        )
+                        if timestamp >= datetime.utcnow().replace(tzinfo=timezone.utc).timestamp():
+                            games.append(
+                                {
+                                    "home_team": game["homeTeam"].get("teamName", "Unknown"),
+                                    "away_team": game["awayTeam"].get("teamName", "Unknown"),
+                                    "timestamp": timestamp,
+                                    "arena": game.get("arenaName", "Unknown"),
+                                    "arenastate": game.get("arenaState", "Unknown"),
+                                    "arena_city": game.get("arenaCity", "Unknown"),
+                                }
+                            )
+                except (KeyError, ValueError) as e:
+                    log.error(f"Error processing game data: {e}")
+    except Exception as e:
+        log.error(f"Error processing schedule data: {e}")
     return games
