@@ -158,7 +158,9 @@ class NBA(commands.Cog):
                     value=f"- **Start Time**: <t:{game['timestamp']}:F> (<t:{game['timestamp']}:R>)\n- **Arena**: {game.get('arena', 'Unknown')}\n- **City**: {game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}",
                     inline=False,
                 )
-            embed.set_footer(text="🏀Provided by NBA.com")
+            embed.set_footer(
+                text=f"Page: {math.ceil(i / 5) + 1}/{math.ceil(len(games) / 5)} | 🏀Provided by NBA"
+            )
             pages.append(embed)
 
         await SimpleMenu(
@@ -354,7 +356,7 @@ class NBA(commands.Cog):
             if series_game_number:
                 embed.add_field(name="Series Game Number:", value=series_game_number)
 
-            footer_text = f"Game ID {game_id} |🏀Provided by NBA.com"
+            footer_text = f"Game ID {game_id} | 🏀Provided by NBA.com"
             if not team:
                 footer_text += f" | Page: {games.index(game) + 1}/{len(games)}"
             embed.set_footer(text=footer_text)
