@@ -56,7 +56,7 @@ class NBA(commands.Cog):
     NBA Cog that provides NBA game updates, schedules, and news.
     """
 
-    __version__: Final[str] = "2.2.0"
+    __version__: Final[str] = "2.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -80,7 +80,7 @@ class NBA(commands.Cog):
 
     @commands.hybrid_group()
     @commands.guild_only()
-    #@app_commands.allowed_installs(guilds=False, users=True)
+    # @app_commands.allowed_installs(guilds=False, users=True)
     async def nba(self, ctx: commands.Context):
         """Get the current NBA schedule for next game."""
 
@@ -89,8 +89,7 @@ class NBA(commands.Cog):
     @commands.cooldown(1, 3, commands.BucketType.user)
     @app_commands.describe(team="The team name to filter the schedule for, i.e 'heat'.")
     async def schedule(self, ctx: commands.Context, *, team: Optional[str] = None):
-        """
-        Get the current NBA schedule for next game.
+        """Get the current NBA schedule for next game.
 
         **Arguments:**
             - `[team]`: The team name to filter the schedule.
@@ -103,18 +102,30 @@ class NBA(commands.Cog):
         **Vaild Team Names:**
         - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trailblazers, warriors, wizards
         """
-        url = SCHEDULE_URL
-        await ctx.typing()
-        async with aiohttp.request("GET", url) as resp:
-            data = await resp.text()
+        try:
+            async with aiohttp.request("GET", SCHEDULE_URL) as resp:
+                data = await resp.text()
+        except aiohttp.ClientError as e:
+            log.error(f"Failed to fetch the NBA schedule: {e}")
+            return await ctx.send("Failed to fetch the NBA schedule. Please try again later.")
+
         if resp.status != 200 or not data:
-            return await ctx.send(
-                "The NBA schedule data is currently unavailable.\nPlease try again later or check the NBA schedule at <https://www.nba.com/schedule>."
+            log.error(
+                "The NBA schedule data is currently unavailable.\n"
+                "Please try again later or check the NBA schedule at <https://www.nba.com/schedule>."
             )
-        schedule = orjson.loads(data)
-        if "leagueSchedule" not in schedule or "gameDates" not in schedule["leagueSchedule"]:
             return await ctx.send(
-                "No games data found in the schedule at this moment.\nCheck <https://www.nba.com/schedule> for more information."
+                "The NBA schedule data is currently unavailable.\n"
+                "Please try again later or check the NBA schedule at <https://www.nba.com/schedule>."
+            )
+
+        try:
+            schedule = orjson.loads(data)
+        except orjson.JSONDecodeError as e:
+            log.error(f"Failed to decode the NBA schedule data: {e}")
+            return await ctx.send(
+                "Failed to decode the NBA schedule data.\n"
+                "Please report this issue to the developers."
             )
 
         games = get_games(schedule)
@@ -130,11 +141,9 @@ class NBA(commands.Cog):
 
         if not games:
             return await ctx.send(
-                "No games found for the specified team.\nCheck <https://www.nba.com/schedule> for more information."
+                "No games found for the specified team.\n"
+                "Please try again later or check the NBA schedule at <https://www.nba.com/schedule>."
             )
-
-        def format_timestamp(timestamp, format_type):
-            return f"<t:{timestamp}:{format_type}>"
 
         pages = []
         for i in range(0, len(games), 5):
@@ -144,12 +153,9 @@ class NBA(commands.Cog):
                 color=await ctx.embed_color(),
             )
             for game in games[i : i + 5]:
-                timestamp = game.get("timestamp", "Unknown")
-                formatted_timestamp_full = format_timestamp(timestamp, "F")
-                formatted_timestamp_relative = format_timestamp(timestamp, "R")
                 embed.add_field(
-                    name=f"{game.get('home_team', 'Unknown')} vs {game.get('away_team', 'Unknown')}",
-                    value=f"- **Start Time**: {formatted_timestamp_full} ({formatted_timestamp_relative})\n- **Arena**: {game.get('arena', 'Unknown')}\n- **City**: {game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}",
+                    name=f"{game['home_team'] if game['home_team'] != game['away_team'] else 'TBD'} vs {game['away_team'] if game['home_team'] != game['away_team'] else 'TBD'}",
+                    value=f"- **Start Time**: <t:{game['timestamp']}:F> (<t:{game['timestamp']}:R>)\n- **Arena**: {game.get('arena', 'Unknown')}\n- **City**: {game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}",
                     inline=False,
                 )
             embed.set_footer(text="🏀Provided by NBA.com")
@@ -178,19 +184,41 @@ class NBA(commands.Cog):
         url = ESPN_NBA_NEWS
         await ctx.typing()
         async with self.session.get(url) as resp:
+            if resp.status != 200:
+                log.error(f"Failed to fetch news from ESPN: {resp.status}")
+                return await ctx.send("Failed to fetch news from ESPN.")
             data = await resp.text()
-        feed = feedparser.parse(data)
-        news = feed["entries"]
+        try:
+            feed = feedparser.parse(data)
+        except Exception as e:
+            log.error(f"Failed to parse the ESPN news feed: {e}")
+            return await ctx.send("Failed to parse the ESPN news feed.")
+        news = feed.get("entries")
+        if not news:
+            log.error("No news entries found in the ESPN news feed.")
+            return await ctx.send("No news entries found in the ESPN news feed.")
         pages = []
         for i in range(0, len(news), 5):
             description = ""
             for article in news[i : i + 5]:
-                title = article["title"]
-                article_description = article["summary"]
-                url = article["link"]
+                title = article.get("title")
+                if not title:
+                    log.error(f"No title found for article {article}")
+                    continue
+                article_description = article.get("summary")
+                if not article_description:
+                    log.error(f"No summary found for article {article}")
+                    continue
+                url = article.get("link")
+                if not url:
+                    log.error(f"No link found for article {article}")
+                    continue
                 description += f"## {title}\n{article_description}\n> [Read More Here]({url})\n"
                 # Wait for red to release 3.5.14 for the header support
                 # description += f"{header(title, 'medium')}\n{box(article_description, lang='yaml')}\n[Read More Here]({url})\n"
+            if not description:
+                log.error("No description found for the news page.")
+                return await ctx.send("No description found for the news page.")
             embed = discord.Embed(
                 title="Latest NBA News",
                 description=description,
@@ -200,6 +228,9 @@ class NBA(commands.Cog):
                 text=f"🏀Provided by ESPN | Page {math.ceil(i / 5) + 1}/{math.ceil(len(news) / 5)}"
             )
             pages.append(embed)
+        if not pages:
+            log.error("No pages found for the news.")
+            return await ctx.send("No pages found for the news.")
         await SimpleMenu(
             pages,
             disable_after_timeout=True,
@@ -229,122 +260,109 @@ class NBA(commands.Cog):
         """
         await ctx.typing()
         async with aiohttp.ClientSession() as session:
-            async with session.get(TODAY_SCOREBOARD) as resp:
-                data = await resp.text()
-        games_data = orjson.loads(data)["scoreboard"]["games"]
-        # Get the current time in UTC and Eastern Time
+            async with session.get(TODAY_SCOREBOARD) as response:
+                data = await response.text()
+        games = orjson.loads(data).get("scoreboard", {}).get("games", [])
+
         start_timestamp, end_timestamp = get_time_bounds()
-        if not games_data:
+        if not games:
             return await ctx.send(
-                f"There are no games today to display unfortunately.\nCheck NBA for more information <https://www.nba.com/schedule>\n**Note**: Scoreboard will not update each day(s) until between <t:{start_timestamp}:t> and <t:{end_timestamp}:t>."
+                "There are no games today to display unfortunately.\n"
+                "Check NBA for more information <https://www.nba.com/schedule>\n"
+                f"**Note**: Scoreboard will not update each day(s) until between <t:{start_timestamp}:t> and <t:{end_timestamp}:t>."
             )
 
         pages = []
-        for game in games_data:
-            # When the game starts
-            dt = datetime.strptime(game["gameTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
-            timestamp = int(dt.replace(tzinfo=timezone.utc).timestamp())
-            # Time left in the game
+        for game in games:
+            start_time_utc = datetime.strptime(game["gameTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
+            start_timestamp = int(start_time_utc.replace(tzinfo=timezone.utc).timestamp())
+
             if game["gameClock"]:
                 minutes, seconds = game["gameClock"].replace("PT", "").replace("S", "").split("M")
                 total_seconds = int(minutes) * 60 + int(float(seconds))
-                current_time = datetime.now()
-                end_time = current_time + timedelta(seconds=total_seconds)
-                stamp = int(end_time.replace(tzinfo=timezone.utc).timestamp())
+                end_time = datetime.now() + timedelta(seconds=total_seconds)
+                ongoing_timestamp = int(end_time.replace(tzinfo=timezone.utc).timestamp())
             else:
-                stamp = None
+                ongoing_timestamp = None
 
-            hometeamtricode = game["homeTeam"]["teamTricode"]
-            awayteamtricode = game["awayTeam"]["teamTricode"]
-            home_team = game["homeTeam"]["teamName"]
-            away_team = game["awayTeam"]["teamName"]
+            home_team_name = game["homeTeam"]["teamName"]
+            away_team_name = game["awayTeam"]["teamName"]
+            home_tricode = game["homeTeam"]["teamTricode"]
+            away_tricode = game["awayTeam"]["teamTricode"]
 
-            # If a team is specified, skip this game if it doesn't involve the team
-            if team and not any(
-                team.lower() in t.lower()
-                for t in (home_team, away_team, hometeamtricode, awayteamtricode)
-            ):
+            if team and team.lower() not in [
+                home_team_name.lower(),
+                away_team_name.lower(),
+                home_tricode.lower(),
+                away_tricode.lower(),
+            ]:
                 continue
 
-            # Get the game data
             home_score = game["homeTeam"]["score"]
             away_score = game["awayTeam"]["score"]
             game_status = game["gameStatusText"]
-            time_left = f"<t:{stamp}:R>" if stamp else "No ongoing game."
-            if game_status == "Final":
-                start_time = "Game has ended."
-            else:
-                start_time = f"<t:{timestamp}:F> (<t:{timestamp}:R>)"
+            time_left = f"<t:{ongoing_timestamp}:R>" if ongoing_timestamp else "No ongoing game."
+            start_time = (
+                "Game has ended."
+                if game_status == "Final"
+                else f"<t:{start_timestamp}:F> (<t:{start_timestamp}:R>)"
+            )
             city = game["homeTeam"]["teamCity"]
-            losses = game["homeTeam"]["losses"]
-            wins = game["homeTeam"]["wins"]
-            home_record = f"{wins}-{losses}"
-            losses = game["awayTeam"]["losses"]
-            wins = game["awayTeam"]["wins"]
-            away_record = f"{wins}-{losses}"
-            gameid = game["gameId"]
-            period = periods.get(game["period"])
-            if not period:
-                period = "Post Game"
+            home_record = f"{game['homeTeam']['wins']}-{game['homeTeam']['losses']}"
+            away_record = f"{game['awayTeam']['wins']}-{game['awayTeam']['losses']}"
+            game_id = game["gameId"]
+            current_period = periods.get(game["period"], "Post Game")
 
-            # Playoff and play-in tournament data
-            gamelabel = game["gameLabel"] if game["gameLabel"] else "N/A"
-            seriesconferece = game["seriesConference"] if game["seriesConference"] else "N/A"
-            seriestext = game["seriesText"] if game["seriesText"] else "N/A"
-            seriesgamenumber = game["seriesGameNumber"] if game["seriesGameNumber"] else "N/A"
+            game_label = game.get("gameLabel", "N/A")
+            series_conference = game.get("seriesConference", "N/A")
+            series_text = game.get("seriesText", "N/A")
+            series_game_number = game.get("seriesGameNumber", "N/A")
 
             home_leaders_str, away_leaders_str = get_leaders_info(game)
-            # Build the embed
+
             embed = discord.Embed(
                 title="NBA Scoreboard" if not team else f"NBA Scoreboard for {team}",
                 color=await ctx.embed_color(),
-                description=f"**Period**: {period}\n**Time Left**: {time_left}\n**Full Game**: https://www.nba.com/game/{gameid}",
+                description=f"**Period**: {current_period}\n**Time Left**: {time_left}\n**Full Game**: https://www.nba.com/game/{game_id}",
             )
             embed.add_field(
-                name=f"{home_team}:",
+                name=f"{home_team_name}:",
                 value=box(f"Score: {home_score}\nRecord: {home_record}", lang="json"),
             )
             embed.add_field(
-                name=f"{away_team}:",
+                name=f"{away_team_name}:",
                 value=box(f"Score: {away_score}\nRecord: {away_record}", lang="json"),
             )
-            if stamp:
-                embed.add_field(name="Game Status:", value="Game is ongoing.", inline=False)
-            else:
-                embed.add_field(name="Start Time:", value=start_time, inline=False)
+            embed.add_field(
+                name="Game Status:",
+                value="Game is ongoing." if ongoing_timestamp else start_time,
+                inline=False,
+            )
             embed.add_field(name="Location:", value=city)
-            embed.add_field(name="Home:", value=home_team)
+            embed.add_field(name="Home:", value=home_team_name)
             embed.add_field(name=" ", value=" ", inline=False)
             embed.add_field(name="Home Leader:", value=home_leaders_str)
             embed.add_field(name="Away Leader:", value=away_leaders_str)
             embed.add_field(name=" ", value=" ", inline=False)
-            if gamelabel:
-                embed.add_field(name="Game Label:", value=gamelabel)
-            if seriesconferece:
-                embed.add_field(name="Series Conferece:", value=seriesconferece)
+            if game_label:
+                embed.add_field(name="Game Label:", value=game_label)
+            if series_conference:
+                embed.add_field(name="Series Conference:", value=series_conference)
             embed.add_field(name=" ", value=" ", inline=False)
-            if seriestext:
-                embed.add_field(name="Series:", value=seriestext)
-            if seriesgamenumber:
-                embed.add_field(name="Series Game Number:", value=seriesgamenumber)
+            if series_text:
+                embed.add_field(name="Series:", value=series_text)
+            if series_game_number:
+                embed.add_field(name="Series Game Number:", value=series_game_number)
+
+            footer_text = f"Game ID {game_id} |🏀Provided by NBA.com"
             if not team:
-                embed.set_footer(
-                    text="Game ID {gameid} | Provided by NBA.com | Page: {}/{}".format(
-                        games_data.index(game) + 1, len(games_data), gameid=gameid
-                    )
-                )
-            if team:
-                embed.set_footer(
-                    text="Game ID {gameid} | Provided by NBA.com".format(gameid=gameid)
-                )
+                footer_text += f" | Page: {games.index(game) + 1}/{len(games)}"
+            embed.set_footer(text=footer_text)
             pages.append(embed)
 
         if not pages:
             return await ctx.send(
                 "That team is not playing today or you specified an invalid team."
             )
-        await SimpleMenu(
-            pages,
-            disable_after_timeout=True,
-            timeout=120,
-        ).start(ctx)
+
+        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
