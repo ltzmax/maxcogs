@@ -72,7 +72,7 @@ class URLModal(discord.ui.View):
         await interaction.response.send_modal(modal)
         await modal.wait()
         url = modal.forkurl.value  # Access the TextInput value from the modal
-        if not GITHUB.match(url):
+        if not url or not GITHUB.match(url):
             await interaction.followup.send(
                 f"This is not a valid url for your fork.\nCheck `redset whatlink` for more information.",
                 ephemeral=True,
@@ -90,7 +90,14 @@ class URLModal(discord.ui.View):
         if data == url:
             await interaction.followup.send("This url is already set.", ephemeral=True)
             return
-        await self.config.redupdate_url.set(url)
+        try:
+            await self.config.redupdate_url.set(url)
+        except Exception as e:
+            await interaction.followup.send(
+                f"An error occured while setting the URL: {e}", ephemeral=True
+            )
+            log.error(f"An error occured while setting the URL: {e}")
+            return
         await interaction.followup.send("URL has been set successfully.", ephemeral=True)
 
     async def on_error(

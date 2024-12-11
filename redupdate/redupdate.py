@@ -68,7 +68,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.7.0"
+    __version__: Final[str] = "1.8.0"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/RedUpdate.md"
 
     def __init__(self, bot):
@@ -106,13 +106,17 @@ class RedUpdate(commands.Cog):
         )
 
     @redupdateset.command(name="whatlink", aliases=["whaturl"])
-    async def redupdateset_whatlink(self, ctx: commands.Context):
+    async def redupdateset_whatlink(self, ctx: commands.Context) -> None:
         """Show what a valid link looks like."""
         embed = discord.Embed(
             title="What a valid link looks like",
             color=await ctx.embed_color(),
             description="This is what a valid link should look like for your fork or if you are using red's main development url.",
         )
+
+        public_fork_example = "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+        private_fork_example = "git+ssh://git@github.com/yourusername/yourrepo@YOUR_BRANCH_HERE#egg=Red-DiscordBot"
+
         embed.add_field(
             name="Public Forks:",
             value="For public forks, you need to use the `https` link.",
@@ -120,10 +124,7 @@ class RedUpdate(commands.Cog):
         )
         embed.add_field(
             name="Example Link:",
-            value=box(
-                "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot",
-                lang="yaml",
-            ),
+            value=box(public_fork_example, lang="yaml"),
         )
         embed.add_field(
             name="Private Forks:",
@@ -132,10 +133,7 @@ class RedUpdate(commands.Cog):
         )
         embed.add_field(
             name="Example Link:",
-            value=box(
-                "git+ssh://git@github.com/yourusername/yourrepo@YOUR_BRANCH_HERE#egg=Red-DiscordBot",
-                lang="yaml",
-            ),
+            value=box(private_fork_example, lang="yaml"),
         )
         embed.add_field(
             name="Link should end with:",
@@ -205,9 +203,9 @@ class RedUpdate(commands.Cog):
         version: Optional[Literal["dev"]],
     ):
         """
-        update [botname] to latest changes.
+        Update [botname] to latest changes.
 
-        it will update to latest stable changes by default unless you specify `dev` as version.
+        It will update to latest stable changes by default unless you specify `dev` as version.
 
         Arguments:
         - `[version]`: `dev` to update to latest dev changes. `stable` by default already.
@@ -217,62 +215,48 @@ class RedUpdate(commands.Cog):
             if not version
             else "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
         )
+        confirm_view = ConfirmView(ctx.author, disable_buttons=True)
         if not version:
-            shell = self.bot.get_cog("Shell")
-            try:
-                await shell._shell_command(
-                    ctx,
-                    f"pip install -U --force-reinstall {package}",
-                    send_message_on_success=False,
-                )
-            except AttributeError as e:
-                return await failedupdate(self, ctx)
-                log.error(e)
-            await redupdate(self, ctx)
-            log.info("Updated to latest stable changes.")
-        view = ConfirmView(ctx.author, disable_buttons=True)
-        if version == "dev":
-            embed = discord.Embed(
-                title="Red Update Information",
-                color=await ctx.embed_color(),
-            )
-            embed.add_field(
-                name="⚠️Warning⚠️",
-                value="This will update to latest dev changes and may include breaking changes that can break cogs that does not support latest dev changes. Are you sure you want to continue?",
-                inline=False,
-            )
-            embed.add_field(
-                name="Note:",
-                value="If you are not sure what you are doing, it is recommended to update to latest stable changes instead of dev changes. Use ``{prefix}updatered`` to update to latest stable changes without specifying ``dev``.".format(
-                    prefix=ctx.clean_prefix
-                ),
-                inline=False,
-            )
-            embed.set_footer(
-                text="Be sure you want to update to latest dev changes before continuing!"
-            )
-            view.message = await ctx.send(embed=embed, view=view)
-            await view.wait()
-            if view.result:
-                shell = self.bot.get_cog("Shell")
-                try:
-                    await shell._shell_command(
-                        ctx,
-                        f"pip install -U --force-reinstall {package}",
-                        send_message_on_success=False,
-                    )
-                except AttributeError as e:
-                    return await failedupdate(self, ctx)
-                    log.error(e)
-                await redupdate(self, ctx)
-                log.info("Updated to latest dev changes.")
-            else:
-                embed = discord.Embed(
-                    title="Update Cancelled",
-                    description="Cancelled updating {}.".format(self.bot.user.name),
-                    color=await ctx.embed_color(),
-                )
-                await ctx.send(embed=embed, silent=True)
+            await self._update(ctx, package)
+            return
+
+        embed = discord.Embed(
+            title="Red Update Information",
+            color=await ctx.embed_color(),
+        )
+        embed.add_field(
+            name="⚠️Warning⚠️",
+            value="This will update to latest dev changes and may include breaking changes that can break cogs that does not support latest dev changes. Are you sure you want to continue?",
+            inline=False,
+        )
+        embed.add_field(
+            name="Note:",
+            value="If you are not sure what you are doing, it is recommended to update to latest stable changes instead of dev changes. Use ``{prefix}updatered`` to update to latest stable changes without specifying ``dev``.".format(
+                prefix=ctx.clean_prefix
+            ),
+            inline=False,
+        )
+        embed.set_footer(
+            text="Be sure you want to update to latest dev changes before continuing!"
+        )
+        confirm_view.message = await ctx.send(embed=embed, view=confirm_view)
+        await confirm_view.wait()
+        if confirm_view.result:
+            await self._update(ctx, package)
+        else:
+            await ctx.send("You have cancelled the update to latest dev changes.")
+
+    async def _update(self, ctx: commands.Context, package: str):
+        shell = self.bot.get_cog("Shell")
+        if not shell:
+            await failedupdate(self, ctx)
+            return
+        await shell._shell_command(
+            ctx,
+            f"pip install -U --force-reinstall {package}",
+            send_message_on_success=False,
+        )
+        await redupdate(self, ctx)
 
     @commands.is_owner()
     @commands.command(aliases=["updatefork"])
@@ -284,33 +268,23 @@ class RedUpdate(commands.Cog):
 
         Note: If you do not have a fork, you can use `updatered` to update to latest stable changes.
         """
-        package = await self.config.redupdate_url()
-        if not package:
+        fork_url = await self.config.redupdate_url()
+        if not fork_url:
             return await ctx.send(
                 "You need to set your fork url using `{prefix}redset url` before using this command.".format(
                     prefix=ctx.clean_prefix
-                ),
+                )
             )
-        # When it's used for the first time, it will store the old url in the config.
-        # This is to prevent the user from using the command without setting their own fork.
-        # If they want to update to red's main repo to dev changes, they can use `updatered dev`.
-        elif (
-            package
-            == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
-        ):
+        if fork_url == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot":
             return await ctx.send(
                 "You cannot use this command until you've set your fork. Please remember to set your fork url using `{prefix}redset url`.".format(
                     prefix=ctx.clean_prefix
-                ),
+                )
             )
-        shell = self.bot.get_cog("Shell")
         try:
-            await shell._shell_command(
-                ctx,
-                f"pip install -U --force-reinstall {package}",
-                send_message_on_success=False,
+            await ctx.bot.get_cog("Shell")._shell_command(
+                ctx, f"pip install -U --force-reinstall {fork_url}", send_message_on_success=False
             )
-        except AttributeError as e:
+        except AttributeError:
             return await failedupdate(self, ctx)
-            log.error(e)
         await redupdate(self, ctx)
