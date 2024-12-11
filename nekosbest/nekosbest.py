@@ -40,41 +40,10 @@ log = logging.getLogger("red.maxcogs.nekosbest")
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
 
-async def api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
-    await ctx.typing()
-    async with self.session.get(NEKOS + endpoint) as response:
-        if response.status != 200:
-            return await ctx.send("Something went wrong while trying to contact API.")
-            log.error("Something went wrong while trying to contact API.")
-        data = await response.read()
-        url = orjson.loads(data)
-        return url
-
-    # ------- Image Commands Handler ------->
-
-
-async def imgembedgen(ctx: commands.Context, url: Dict[str, Any], endpoint: str) -> None:
-    result = url["results"][0]
-    artist_name = result["artist_name"]
-    source_url = result["source_url"]
-    artist_href = result["artist_href"]
-    image = result["url"]
-
-    emb = discord.Embed(
-        title=f"Here's a picture of a {endpoint}",
-        description=f"**Artist:** [{artist_name}]({artist_href})\n**Source:** {source_url}",
-    )
-    emb.colour = await ctx.embed_color()
-    emb.set_image(url=image)
-    emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
-    view = ImageButtonView(artist_href, source_url, image)
-    await ctx.send(embed=emb, view=view)
-
-
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best + RolePlay Commands."""
 
-    __version__: Final[str] = "2.3.1"
+    __version__: Final[str] = "2.4.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NekosBest.md"
 
@@ -99,10 +68,40 @@ class NekosBest(commands.Cog):
     async def red_get_data_for_user(self, *, user_id: int):
         return
 
-    # ------- RolePlay Commands Handler ------>
+    async def _api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
+        async with self.session.get(NEKOS + endpoint) as response:
+            if response.status != 200:
+                log.error(
+                    "Something went wrong while trying to contact API. " "Status code: %s",
+                    response.status,
+                )
+                return await ctx.send(
+                    "Something went wrong while trying to contact API. " "Please try again later.",
+                )
+            data = await response.read()
+            return orjson.loads(data)
+
+    async def imgembedgen(
+        self, ctx: commands.Context, response: Dict[str, Any], category: str
+    ) -> None:
+        data = response["results"][0]
+        artist = data["artist_name"]
+        source = data["source_url"]
+        artist_link = data["artist_href"]
+        image_url = data["url"]
+
+        embed = discord.Embed(
+            title=f"Here's a picture of a {category}",
+            description=f"**Artist:** [{artist}]({artist_link})\n**Source:** {source}",
+            color=await ctx.embed_color(),
+        )
+        embed.set_image(url=image_url)
+        embed.set_footer(text="Powered by nekos.best", icon_url=ICON)
+        view = ImageButtonView(artist_link, source, image_url)
+        await ctx.send(embed=embed, view=view)
 
     async def embedgen(self, ctx: commands.Context, member: discord.Member, action: str) -> None:
-        url = await api_call(self, ctx, action)
+        url = await self._api_call(ctx, action)
         if url is None:
             return
         # Count the command usage
@@ -174,29 +173,29 @@ class NekosBest(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def waifu(self, ctx: commands.Context) -> None:
         """Send a random waifu image."""
-        url = await api_call(self, ctx, "waifu")
-        await imgembedgen(ctx, url, "waifu")
+        url = await self._api_call(ctx, "waifu")
+        await self.imgembedgen(ctx, url, "waifu")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def nekos(self, ctx: commands.Context) -> None:
         """Send a random neko image."""
-        url = await api_call(self, ctx, "neko")
-        await imgembedgen(ctx, url, "neko")
+        url = await self._api_call(ctx, "neko")
+        await self.imgembedgen(ctx, url, "neko")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def kitsune(self, ctx: commands.Context) -> None:
         """Send a random kitsune image."""
-        url = await api_call(self, ctx, "kitsune")
-        await imgembedgen(ctx, url, "kitsune")
+        url = await self._api_call(ctx, "kitsune")
+        await self.imgembedgen(ctx, url, "kitsune")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     async def husbando(self, ctx: commands.Context) -> None:
         """Send a random husbando image."""
-        url = await api_call(self, ctx, "husbando")
-        await imgembedgen(ctx, url, "husbando")
+        url = await self._api_call(ctx, "husbando")
+        await self.imgembedgen(ctx, url, "husbando")
 
     # --------- ROLEPLAY COMMANDS ------------>
 
