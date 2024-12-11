@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.3.3"
+    __version__: Final[str] = "1.4.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -82,6 +82,19 @@ class Counting(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        """
+        Handle messages for the counting game.
+
+        This listener checks if a message is sent in the designated counting
+        channel and verifies if the message content is the expected next number
+        in the count. If the message is valid, it updates the count and reacts
+        to the message if configured. Otherwise, it deletes the message and
+        sends a notification with the correct next number if enabled.
+
+        Parameters:
+            message (discord.Message): The message object containing information
+            about the message sent in the Discord channel.
+        """
         if message.author.bot:
             return
 
@@ -146,27 +159,53 @@ class Counting(commands.Cog):
                             )
                         )
         else:
-            await message.delete()
-            if await config.toggle_next_number_message():
-                await message.channel.send(
-                    default_next_number_message.format(next_count=next_count),
-                    delete_after=delete_after,
-                    silent=use_silent,
+            try:
+                await message.delete()
+                if await config.toggle_next_number_message():
+                    try:
+                        await message.channel.send(
+                            default_next_number_message.format(next_count=next_count),
+                            delete_after=delete_after,
+                            silent=use_silent,
+                        )
+                    except discord.HTTPException:
+                        log.warning(
+                            "I don't have permission to send messages in {channel}".format(
+                                channel=message.channel.name
+                            )
+                        )
+            except discord.HTTPException:
+                log.warning(
+                    "I don't have permission to delete messages in {channel}".format(
+                        channel=message.channel.name
+                    )
                 )
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
         """
-        Delete the message if it's edited in the counting channel.
+        Handle message edits for the counting game.
+
+        This listener checks if a message is edited in the designated counting
+        channel and verifies if the counting feature is enabled for the guild.
+        If the edited message is from a bot or the channel is not the designated
+        counting channel, the function returns early. The function ensures that
+        the bot has the necessary permissions to manage and send messages in the
+        channel. If the permissions are sufficient and the toggle for edit messages
+        is enabled, it deletes the edited message and sends a notification with
+        the default edit message.
+
+        Parameters:
+            before (discord.Message): The message object before it was edited.
+            after (discord.Message): The message object after it was edited.
         """
-        if after.author.bot:
+        if after.author is None or after.author.bot:
             return
 
-        guild = after.guild
-        if guild is None:
+        if after.guild is None:
             return
 
-        config = self.config.guild(guild)
+        config = self.config.guild(after.guild)
         toggle = await config.toggle()
         if not toggle:
             return
@@ -176,12 +215,13 @@ class Counting(commands.Cog):
             return
 
         if (
-            not after.channel.permissions_for(after.guild.me).manage_messages
+            after.channel is None
+            or not after.channel.permissions_for(after.guild.me).manage_messages
             or not after.channel.permissions_for(after.guild.me).send_messages
         ):
             log.warning(
                 "I don't have permission to manage messages or send messages in {channel} ({channel_id})".format(
-                    channel=after.channel.name, channel_id=after.channel.id
+                    channel=after.channel.name if after.channel else "unknown", channel_id=channel_id
                 )
             )
             return
@@ -190,11 +230,26 @@ class Counting(commands.Cog):
         delete_after = await config.delete_after()
         default_edit_message = await config.default_edit_message()
 
-        await after.delete()
-        if await config.toggle_edit_message():
-            await after.channel.send(
-                default_edit_message, delete_after=delete_after, silent=use_silent
+        try:
+            await after.delete()
+        except discord.HTTPException:
+            log.warning(
+                "I don't have permission to delete messages in {channel} ({channel_id})".format(
+                    channel=after.channel.name, channel_id=after.channel.id
+                )
             )
+
+        if await config.toggle_edit_message():
+            try:
+                await after.channel.send(
+                    default_edit_message, delete_after=delete_after, silent=use_silent
+                )
+            except discord.HTTPException:
+                log.warning(
+                    "I don't have permission to send messages in {channel} ({channel_id})".format(
+                        channel=after.channel.name, channel_id=after.channel.id
+                    )
+                )
 
     @commands.guild_only()
     @commands.hybrid_group()
@@ -311,18 +366,19 @@ class Counting(commands.Cog):
             f"Silent messages for counting messages is now {'enabled' if not toggle else 'disabled'}"
         )
 
-    @countingset.command()
-    async def toggle(self, ctx):
+    @countingset.command(name="toggle")
+    async def toggle_counting(self, ctx: commands.Context):
         """Toggle counting in the channel"""
-        config = self.config.guild(ctx.guild)
-        toggle = await config.toggle()
-        await config.toggle.set(not toggle)
-        await ctx.send(
-            f"Counting is now {'enabled' if not toggle else 'disabled'}\n"
-            f"{'Please set the counting channel using `{prefix}countingset channel #channel` to enable counting.' if not toggle else ''}".format(
-                prefix=ctx.clean_prefix
+        guild_config = self.config.guild(ctx.guild)
+        is_enabled = await guild_config.toggle()
+        await guild_config.toggle.set(not is_enabled)
+
+        message = f"Counting is now {'enabled' if not is_enabled else 'disabled'}"
+        if not await guild_config.channel() and not is_enabled:
+            message += (
+                f"\nPlease set a counting channel using `{ctx.clean_prefix}countingset channel` to enable counting."
             )
-        )
+        await ctx.send(message)
 
     @countingset.command()
     async def channel(self, ctx, channel: Optional[discord.TextChannel]):
@@ -341,12 +397,13 @@ class Counting(commands.Cog):
                 )
             )
 
-        await self.config.guild(ctx.guild).channel.set(channel.id)
-        await ctx.send(
-            "Counting channel has been set to {channel}\nPlease enable counting using `{prefix}countingset toggle`".format(
-                channel=channel.mention, prefix=ctx.clean_prefix
+        message = f"Counting channel has been set to {channel.mention}"
+        if not await self.config.guild(ctx.guild).toggle():
+            message += (
+                f"\nPlease enable counting using `{ctx.clean_prefix}countingset toggle` to enable counting."
             )
-        )
+        await self.config.guild(ctx.guild).channel.set(channel.id)
+        await ctx.send(message)
 
     @countingset.command()
     async def deleteafter(self, ctx, seconds: commands.Range[int, 5, 300]):
