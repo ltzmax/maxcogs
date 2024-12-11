@@ -35,7 +35,7 @@ To install any cog you want:
 | NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 2.3.1 | ltzmax | ✅ |
-| Pokemon | Play a game of Who's That Pokemon or Fetch Pokemon cards based on Pokemon Trading Card Game.| 1.7.2 | ltzmax, o-wo, flame442 | ✅ |
+| Pokemon | Play a game of Who's That Pokemon or Fetch Pokemon cards based on Pokemon Trading Card Game.| 1.8.0 | ltzmax, o-wo, flame442 | ✅ |
 | RedUpdate | Update your bot to latest dev changes.| 1.8.0 | ltzmax, kuro | ✅ |
 | TheMovieDB | Search for informations of movies and TV shows from themoviedb.org. | 1.2.0 | ltzmax | ✅ |
 
