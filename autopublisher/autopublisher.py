@@ -110,7 +110,38 @@ class AutoPublisher(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
-        """Automatically publish messages in news channels."""
+        """Listen for messages without commands.
+
+        This function is a listener that listens for messages without
+        commands. If the message is from a news channel and the
+        AutoPublisher cog is enabled in that guild, it will attempt to
+        publish the message.
+
+        If the message is not from a news channel and the
+        AutoPublisher cog is enabled in that guild, it will disable the
+        AutoPublisher cog in that guild and log a warning.
+
+        If the message is from a news channel and the AutoPublisher cog
+        is enabled in that guild but the bot does not have the necessary
+        permissions to publish the message, it will log an error.
+
+        If the message is from a news channel and the AutoPublisher cog
+        is enabled in that guild but the message is not published
+        within 60 seconds, it will log an error.
+
+        If the message is from a news channel and the AutoPublisher cog
+        is enabled in that guild, it will increment the published count
+        by one and log an info message.
+
+        Parameters
+        ----------
+        message : discord.Message
+            The message object that triggered this event.
+
+        Returns
+        -------
+        None
+        """
         if message.guild is None:
             return
 
@@ -162,35 +193,33 @@ class AutoPublisher(commands.Cog):
     @commands.is_owner()
     @autopublisher.command(name="stats")
     async def _stats(self, ctx: commands.Context) -> None:
-        """
-        Show the number of published messages.
-        """
-        data = await self.config.all()
+        """Show the number of published messages."""
+        config_data = await self.config.all()
 
-        total_published_messages = data.get("published_count", 0)
-        weekly_published_messages = data.get("published_weekly_count", 0)
-        monthly_published_messages = data.get("published_monthly_count", 0)
-        yearly_published_messages = data.get("published_yearly_count", 0)
+        total_count = config_data.get("published_count", 0)
+        weekly_count = config_data.get("published_weekly_count", 0)
+        monthly_count = config_data.get("published_monthly_count", 0)
+        yearly_count = config_data.get("published_yearly_count", 0)
 
-        now = datetime.utcnow()
+        current_time = datetime.utcnow()
         try:
-            next_sunday_reset = await get_next_reset_timestamp(now, target_weekday=6)
-            next_monthly_reset = await get_next_reset_timestamp(now, target_day=1)
-            next_yearly_reset = await get_next_reset_timestamp(now, target_day=1, target_month=1)
-        except (ValueError, TypeError) as e:
-            log.error("Error getting next reset timestamp", exc_info=e)
+            next_weekly_reset = await get_next_reset_timestamp(current_time, target_weekday=6)
+            next_monthly_reset = await get_next_reset_timestamp(current_time, target_day=1)
+            next_yearly_reset = await get_next_reset_timestamp(current_time, target_day=1, target_month=1)
+        except (ValueError, TypeError) as error:
+            log.error("Failed to determine next reset timestamp", exc_info=error)
             return
 
-        table_data = [
-            ["Total Weekly Published", humanize_number(weekly_published_messages)],
-            ["Total Monthly Published", humanize_number(monthly_published_messages)],
-            ["Total Yearly Published", humanize_number(yearly_published_messages)],
-            ["Total Published Messages", humanize_number(total_published_messages)],
+        stats_table = [
+            ["Total Weekly Published", humanize_number(weekly_count)],
+            ["Total Monthly Published", humanize_number(monthly_count)],
+            ["Total Yearly Published", humanize_number(yearly_count)],
+            ["Total Published Messages", humanize_number(total_count)],
         ]
-        msg_content = tabulate(table_data, headers=["Description", "Count"], tablefmt="simple")
+        formatted_table = tabulate(stats_table, headers=["Description", "Count"], tablefmt="simple")
         await ctx.send(
-            f"{box(msg_content, lang='prolog')}\n"
-            f"Next Weekly Reset: <t:{next_sunday_reset}:f> (<t:{next_sunday_reset}:R>)\n"
+            f"{box(formatted_table, lang='prolog')}\n"
+            f"Next Weekly Reset: <t:{next_weekly_reset}:f> (<t:{next_weekly_reset}:R>)\n"
             f"Next Monthly Reset: <t:{next_monthly_reset}:f> (<t:{next_monthly_reset}:R>)\n"
             f"Next Yearly Reset: <t:{next_yearly_reset}:f> (<t:{next_yearly_reset}:R>)"
         )
