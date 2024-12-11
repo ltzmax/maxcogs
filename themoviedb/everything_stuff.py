@@ -170,47 +170,30 @@ async def search_and_display(ctx, query, media_type, fetch_media_data, create_em
         create_embed (Callable[[commands.Context, Dict[str, Any], int, int, List[Dict[str, Any]]], coroutine]): Function to create an embed.
     """
     await ctx.typing()
-    results = []
-    page = 1
 
+    # Fetch all pages of results
+    results, page = [], 1
     while True:
         data = await search_media(ctx, query, media_type, page)
-        if not data:
+        if not data or not await check_results(ctx, data, query):
             return await ctx.send("Something went wrong with TMDB. Please try again later.")
-        if not await check_results(ctx, data, query):
-            return
 
         results.extend(data.get("results", []))
-
         if data.get("page", 0) >= data.get("total_pages", 0):
             break
         page += 1
 
+    # Filter results
     filtered_results = [
-        result
-        for result in results
-        if query.lower() in result.get("title" if media_type == "movie" else "name", "").lower()
-    ]
-
-    if not ctx.channel.nsfw:
-        filtered_results = [
-            result for result in filtered_results if not result.get("adult", False)
-        ]
-
-    filtered_results = [
-        result
-        for result in filtered_results
-        if result.get("release_date", "N/A")[:4] >= "1999"
-        or result.get("name", "").lower() in ["friends", "the fresh prince of bel-air"]
-    ]
-
-    if not filtered_results:
-        return await ctx.send(f"No results found for {query}")
-
-    allowed_results = [
-        result
-        for result in filtered_results
-        if result.get("title", "").lower()
+        r
+        for r in results
+        if query.lower() in r.get("title" if media_type == "movie" else "name", "").lower()
+        and (ctx.channel.nsfw or not r.get("adult", False))
+        and (
+            r.get("release_date", "N/A")[:4] >= "1999"
+            or r.get("name", "").lower() in ["friends", "the fresh prince of bel-air"]
+        )
+        and r.get("title", "").lower()
         not in [
             "22 july",
             "22 july 2011",
@@ -221,201 +204,174 @@ async def search_and_display(ctx, query, media_type, fetch_media_data, create_em
         ]
     ]
 
-    if not allowed_results:
-        return await ctx.send(
-            "You can't search for this movie or TV show due to content restrictions."
-        )
+    if not filtered_results:
+        return await ctx.send(f"No results found for {query}")
 
-    if len(allowed_results) == 1:
-        selected_media = allowed_results[0]
+    # Handle single or multiple results
+    if len(filtered_results) == 1:
+        selected_media = filtered_results[0]
         data = await fetch_media_data(ctx, selected_media["id"], media_type)
         if not data:
             return await ctx.send("Something went wrong with TMDB. Please try again later.")
         embed, view = await create_embed(
-            ctx, data, selected_media["id"], 0, allowed_results, item_type=media_type
+            ctx, data, selected_media["id"], 0, filtered_results, item_type=media_type
         )
         return await ctx.send(embed=embed, view=view)
 
-    pages = []
-    for i in range(0, len(allowed_results), 15):
-        description = "\n".join(
-            [
-                f"{i+j+1}. {result['title' if media_type == 'movie' else 'name']} ({result.get('release_date' if media_type == 'movie' else 'first_air_date', 'N/A')[:4]}) ({result.get('popularity', 0)})"
-                for j, result in enumerate(allowed_results[i : i + 15])
-            ]
+    # Paginate results
+    pages = [
+        "## What would you like to select?\n"
+        + "\n".join(
+            f"{i+j+1}. {result['title' if media_type == 'movie' else 'name']} ({result.get('release_date' if media_type == 'movie' else 'first_air_date', 'N/A')[:4]}) ({result.get('popularity', 0)})"
+            for j, result in enumerate(filtered_results[i : i + 15])
         )
-        for page in [description[i : i + 2000] for i in range(0, len(description), 2000)]:
-            pages.append("## What would you like to select?\n" + page)
+        for i in range(0, len(filtered_results), 15)
+    ]
 
-    await SimpleMenu(
-        pages,
-        use_select_menu=True,
-        disable_after_timeout=True,
-        timeout=120,
-    ).start(ctx)
+    await SimpleMenu(pages, use_select_menu=True, disable_after_timeout=True, timeout=120).start(
+        ctx
+    )
 
+    # Wait for user selection
     def check(m):
         return m.author == ctx.author and m.channel == ctx.channel
 
-    while True:
-        try:
-            msg = await ctx.bot.wait_for("message", check=check, timeout=60)
-            if not msg.content.isdigit():
-                return await ctx.send("Invalid input. Exiting the selection process.")
-            index = int(msg.content) - 1
-            if index < 0 or index >= len(filtered_results):
-                return await ctx.send("Invalid number. Exiting the selection process.")
-        except asyncio.TimeoutError:
-            return await ctx.send("You took too long to respond. Exiting the selection process.")
+    try:
+        msg = await ctx.bot.wait_for("message", check=check, timeout=60)
+        index = int(msg.content) - 1
+        if not msg.content.isdigit() or index < 0 or index >= len(filtered_results):
+            return await ctx.send("Invalid input. Exiting the selection process.")
+    except asyncio.TimeoutError:
+        return await ctx.send("You took too long to respond. Exiting the selection process.")
 
-        selected_media = filtered_results[index]
-        data = await fetch_media_data(ctx, selected_media["id"], media_type)
-        if not data:
-            return await ctx.send("Something went wrong with TMDB. Please try again later.")
-        embed, view = await create_embed(
-            ctx,
-            data,
-            selected_media["id"],
-            index,
-            filtered_results,
-            item_type=media_type,
-        )
-        await ctx.send(embed=embed, view=view)
-        break
+    selected_media = filtered_results[index]
+    data = await fetch_media_data(ctx, selected_media["id"], media_type)
+    if not data:
+        return await ctx.send("Something went wrong with TMDB. Please try again later.")
+    embed, view = await create_embed(
+        ctx, data, selected_media["id"], index, filtered_results, item_type=media_type
+    )
+    await ctx.send(embed=embed, view=view)
 
 
 async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
     """
-    Builds an embed for a TV show or movie.
+    Build and return a Discord embed for a given media item from TMDB.
+
+    Args:
+        ctx (commands.Context): The invocation context.
+        data (Dict[str, Any]): The media data obtained from TMDB.
+        item_id (int): The ID of the media item.
+        index (int): The index of the selected media in the results.
+        results (List[Dict[str, Any]]): The list of search results.
+        item_type (str, optional): The type of media, either "movie" or "tv". Defaults to "movie".
+
+    Returns:
+        Tuple[discord.Embed, discord.ui.View]: A tuple containing the embed and an interactive view.
+
+    Raises:
+        ValueError: If the data is null or no fields were added to the embed.
     """
+    if not data:
+        raise ValueError("Data is null")
+
     url = f"https://www.themoviedb.org/{item_type}/{item_id}"
     title = data.get("title" if item_type == "movie" else "name", "No title available.")[:256]
     description = data.get("overview", "No description available.")[:1048]
 
-    fields = {}
-
-    if item_type == "tv":
-        fields["Original Name"] = data.get("original_name", "N/A")
-        fields["First Air Date"] = (
-            f"<t:{int(datetime.strptime(data['first_air_date'], '%Y-%m-%d').timestamp())}:D>"
+    fields = {
+        "Original Name": data.get("original_name"),
+        "First Air Date": (
+            f"<t:{int(datetime.strptime(data.get('first_air_date', ''), '%Y-%m-%d').timestamp())}:D>"
             if data.get("first_air_date")
-            else "N/A"
-        )
-        fields["Last Air Date"] = (
-            f"<t:{int(datetime.strptime(data['last_air_date'], '%Y-%m-%d').timestamp())}:D>"
-            if data.get("last_air_date")
-            else "N/A"
-        )
-        fields["Next Episode Air Date"] = (
-            f"<t:{int(datetime.strptime(data.get('next_episode_to_air', {}).get('air_date'), '%Y-%m-%d').timestamp())}:D>"
-            if data.get("next_episode_to_air") and data["next_episode_to_air"].get("air_date")
-            else "N/A"
-        )
-        fields["Status"] = data.get("status", "No status available.")
-        fields["Number of Seasons"] = humanize_number(data.get("number_of_seasons", 0))
-        fields["Number of Episodes"] = data.get("number_of_episodes", "N/A")
-        fields["Genres"] = (
-            humanize_list([genre["name"] for genre in data.get("genres", [])]) or "N/A"
-        )
-        fields["Production Companies"] = humanize_list(
-            [company["name"] for company in data.get("production_companies", [])] or "N/A"
-        )
-        fields["Production Countries"] = humanize_list(
-            [country["name"] for country in data.get("production_countries", [])] or "N/A"
-        )
-        fields["Spoken Languages"] = (
-            humanize_list(
-                [language["english_name"] for language in data.get("spoken_languages", [])]
-            )
-            or "N/A"
-        )
-        fields["Popularity"] = humanize_number(data.get("popularity", 0)) or "N/A"
-        fields["Vote Average"] = data.get("vote_average", "N/A")
-        fields["Vote Count"] = humanize_number(data.get("vote_count", 0)) or "N/A"
-        fields["Homepage"] = data.get("homepage", "N/A")
-        fields["Tagline"] = data.get("tagline", "N/A")
-
-    elif item_type == "movie":
-        fields["Original Title"] = data.get("original_title", "N/A")
-        fields["Release Date"] = (
-            f"<t:{int(datetime.strptime(data.get('release_date', ''), '%Y-%m-%d').timestamp())}:D>"
-            if data.get("release_date")
-            else "N/A"
-        )
-        fields["Runtime"] = f"{data.get('runtime', 0)} minutes"
-        fields["Status"] = data.get("status", "No status available.")
-        fields["Belongs to Collection"] = (
-            data.get("belongs_to_collection", {}).get("name")
-            if data.get("belongs_to_collection")
             else None
-        )
-        fields["Genres"] = (
-            humanize_list([genre["name"] for genre in data.get("genres", [])]) or "N/A"
-        )
-        fields["Production Companies"] = humanize_list(
-            [company["name"] for company in data.get("production_companies", [])] or "N/A"
-        )
-        fields["Production Countries"] = humanize_list(
-            [country["name"] for country in data.get("production_countries", [])] or "N/A"
-        )
-        fields["Spoken Languages"] = (
-            humanize_list(
-                [language["english_name"] for language in data.get("spoken_languages", [])]
-            )
-            or "N/A"
-        )
-        fields["Revenue"] = (
-            f"${humanize_number(data.get('revenue', 0))}" if data.get("revenue") else "N/A"
-        )
-        fields["Budget"] = (
-            f"${humanize_number(data.get('budget', 0))}" if data.get("budget") else "N/A"
-        )
-        fields["Popularity"] = humanize_number(data.get("popularity", 0)) or "N/A"
-        fields["Vote Average"] = data.get("vote_average", "N/A")
-        fields["Vote Count"] = humanize_number(data.get("vote_count", 0)) or "N/A"
-        fields["Adult"] = "Yes" if data.get("adult") else "No"
-        fields["Homepage"] = data.get("homepage", "N/A")
-        fields["Tagline"] = data.get("tagline", "N/A")
+        ),
+        "Last Air Date": (
+            f"<t:{int(datetime.strptime(data.get('last_air_date', ''), '%Y-%m-%d').timestamp())}:D>"
+            if data.get("last_air_date")
+            else None
+        ),
+        "Next Episode Air Date": (
+            f"<t:{int(datetime.strptime(data.get('next_episode_to_air', {}).get('air_date', ''), '%Y-%m-%d').timestamp())}:D>"
+            if data.get("next_episode_to_air") and data.get("next_episode_to_air").get("air_date")
+            else None
+        ),
+        "Status": data.get("status"),
+        "Number of Seasons": data.get("number_of_seasons"),
+        "Number of Episodes": data.get("number_of_episodes"),
+        "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])]),
+        "Production Companies": humanize_list(
+            [company["name"] for company in data.get("production_companies", [])]
+        ),
+        "Production Countries": humanize_list(
+            [country["name"] for country in data.get("production_countries", [])]
+        ),
+        "Spoken Languages": humanize_list(
+            [language["english_name"] for language in data.get("spoken_languages", [])]
+        ),
+        "Popularity": humanize_number(data.get("popularity", 0)),
+        "Vote Average": data.get("vote_average"),
+        "Vote Count": humanize_number(data.get("vote_count", 0)),
+        "Homepage": data.get("homepage"),
+        "Tagline": data.get("tagline"),
+    }
 
+    if item_type == "movie":
+        fields.update(
+            {
+                "Original Title": data.get("original_title"),
+                "Release Date": (
+                    f"<t:{int(datetime.strptime(data.get('release_date', ''), '%Y-%m-%d').timestamp())}:D>"
+                    if data.get("release_date")
+                    else None
+                ),
+                "Runtime": f"{data.get('runtime', 0)} minutes",
+                "Belongs to Collection": data.get("belongs_to_collection", {}).get("name"),
+                "Revenue": f"${humanize_number(data.get('revenue', 0))}",
+                "Budget": f"${humanize_number(data.get('budget', 0))}",
+                "Adult": "Yes" if data.get("adult") else "No",
+            }
+        )
+
+    fields = {k: v for k, v in fields.items() if v}
     embed = discord.Embed(
-        title=title,
-        url=url,
-        description=description,
-        colour=await ctx.embed_colour(),
+        title=title, url=url, description=description, colour=await ctx.embed_colour()
     )
 
     total_length = len(embed.title) + len(embed.description)
     for name, value in fields.items():
-        if value:
-            field_length = len(name) + len(str(value))
-            if total_length + field_length > 6000:
-                break
-            inline = name not in [
-                "Original Name",
-                "Tagline",
-                "Production Companies",
-                "Genres",
-                "Production Countries",
-                "Spoken Languages",
-                "Homepage",
-                "Original Title",
-                "Belongs to Collection",
-            ]
-            embed.add_field(name=name, value=value, inline=inline)
-            total_length += field_length
+        field_length = len(name) + len(str(value))
+        if total_length + field_length > 6000:
+            break
+        inline = name not in [
+            "Original Name",
+            "Tagline",
+            "Production Companies",
+            "Genres",
+            "Production Countries",
+            "Spoken Languages",
+            "Homepage",
+            "Original Title",
+            "Belongs to Collection",
+        ]
+        embed.add_field(name=name, value=value, inline=inline)
+        total_length += field_length
 
     if data.get("poster_path"):
         embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/original{data['poster_path']}")
 
     embed.set_footer(text="Powered by TMDB", icon_url="https://i.maxapp.tv/tmdblogo.png")
 
+    if not embed.fields:
+        raise ValueError("No fields were added to the embed")
+
     view = discord.ui.View()
-    style = discord.ButtonStyle.gray
-    button = discord.ui.Button(
-        style=style,
-        label=title[:80],
-        url=url,
-        emoji="📺" if item_type == "tv" else "🎥",
+    view.add_item(
+        discord.ui.Button(
+            style=discord.ButtonStyle.gray,
+            label=title[:80],
+            url=url,
+            emoji="📺" if item_type == "tv" else "🎥",
+        )
     )
-    view.add_item(button)
     return embed, view
