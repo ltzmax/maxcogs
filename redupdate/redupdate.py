@@ -114,8 +114,12 @@ class RedUpdate(commands.Cog):
             description="This is what a valid link should look like for your fork or if you are using red's main development url.",
         )
 
-        public_fork_example = "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
-        private_fork_example = "git+ssh://git@github.com/yourusername/yourrepo@YOUR_BRANCH_HERE#egg=Red-DiscordBot"
+        public_fork_example = (
+            "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+        )
+        private_fork_example = (
+            "git+ssh://git@github.com/yourusername/yourrepo@YOUR_BRANCH_HERE#egg=Red-DiscordBot"
+        )
 
         embed.add_field(
             name="Public Forks:",
@@ -275,7 +279,10 @@ class RedUpdate(commands.Cog):
                     prefix=ctx.clean_prefix
                 )
             )
-        if fork_url == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot":
+        if (
+            fork_url
+            == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+        ):
             return await ctx.send(
                 "You cannot use this command until you've set your fork. Please remember to set your fork url using `{prefix}redset url`.".format(
                     prefix=ctx.clean_prefix
