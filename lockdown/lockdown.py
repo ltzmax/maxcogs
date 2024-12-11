@@ -38,7 +38,7 @@ class Lockdown(commands.Cog):
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.4.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Lockdown.md"
 
@@ -127,95 +127,70 @@ class Lockdown(commands.Cog):
     async def manage_lock(
         self, ctx: commands.Context, action: str, reason: Optional[str] = None
     ) -> None:
-        actions = {
-            "lock": {
-                "title": "Channel Locked",
-                "description": f"🔒 Locked channel {ctx.channel.mention} for everyone",
-                "color": 0xFF0000,
-                "log_event": "Channel Locked",
-                "send_messages": False,
-                "already_set_message": "❌ This channel is already locked.",
-            },
-            "unlock": {
-                "title": "Channel Unlocked",
-                "description": f"🔓 Unlocked channel {ctx.channel.mention} for everyone",
-                "color": 0x00FF00,
-                "log_event": "Channel Unlocked",
-                "send_messages": None,
-                "already_set_message": "❌ This channel is already unlocked.",
-            },
-        }
-        if isinstance(ctx.channel, discord.Thread):
+        """
+        Manage the channel lock.
+
+        Parameters
+        ----------
+        ctx : commands.Context
+            The command invocation context.
+        action : str
+            The action to take, either "lock" or "unlock".
+        reason : Optional[str]
+            The reason for the action, if any.
+
+        Returns
+        -------
+        None
+        """
+        if not isinstance(ctx.channel, discord.abc.GuildChannel):
             return await ctx.send(
-                "❌ You can't lock/unlock a thread channel(s) with this command.\nUse `[p]thread lockdown` or `[p]thread close` instead.".replace(
-                    "[p]", ctx.clean_prefix
-                ),
+                f"❌ You can't {action} a thread channel(s) with this command.\nUse `{ctx.clean_prefix}thread {action}` instead."
             )
-        action_props = actions.get(action)
-        overwrites = (
-            ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
-        )
-        if overwrites.send_messages == action_props["send_messages"]:
+
+        is_lock = action == "lock"
+        title = "Channel Locked" if is_lock else "Channel Unlocked"
+        description = f"{'🔒' if is_lock else '🔓'} {'Locked' if is_lock else 'Unlocked'} channel {ctx.channel.mention} for everyone"
+        color = 0xFF0000 if is_lock else 0x00FF00
+        log_event = "Channel Locked" if is_lock else "Channel Unlocked"
+        already_set_message = f"❌ This channel is already {'locked' if is_lock else 'unlocked'}."
+        send_messages = False if is_lock else None
+
+        overwrites = ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
+
+        if overwrites.send_messages == send_messages:
             return await ctx.send(
-                action_props["already_set_message"],
+                already_set_message,
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
                 mention_author=False,
             )
 
-        if action == "lock":
-            view = UnlockView(ctx)
-            if await self.config.guild(ctx.guild).use_embed():
-                embed = discord.Embed(
-                    title=action_props["title"],
-                    description=action_props["description"],
-                    color=action_props["color"],
-                )
-                if reason:
-                    embed.add_field(
-                        name="Reason:",
-                        value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}",
-                    )
-                embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
-                view.message = await ctx.send(embed=embed, view=view)
-            else:
-                view.message = await ctx.send(
-                    f"{action_props['description']}\n{'Reason: ' + reason if reason else ''}",
-                    view=view,
-                )
+        embed = discord.Embed(
+            title=title,
+            description=description,
+            color=color,
+        )
+        if reason:
+            embed.add_field(
+                name="Reason:",
+                value=f"{reason if len(reason) < 2024 else 'Reason is too long.'}",
+            )
+        embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
 
-        # Attempt to set the permissions after sending the message
+        if is_lock:
+            view = UnlockView(ctx)
+            view.message = await ctx.send(embed=embed, view=view)
+        else:
+            await ctx.send(embed=embed)
+
         try:
-            if action == "lock":
-                overwrites.send_messages = False
-                await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
-            if action == "unlock":
-                overwrites.send_messages = None
-                await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
+            overwrites.send_messages = send_messages
+            await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
         except discord.Forbidden:
             log.error(
-                f"I don't have the permissions to {'lock' if action == 'lock' else 'unlock'} this channel."
+                f"I don't have the permissions to {'lock' if is_lock else 'unlock'} this channel."
             )
 
-        if action == "unlock":
-            if await self.config.guild(ctx.guild).use_embed():
-                embed = discord.Embed(
-                    title=action_props["title"],
-                    description=action_props["description"],
-                    color=action_props["color"],
-                )
-                if reason:
-                    embed.add_field(
-                        name="Reason:",
-                        value=f"{reason if len(reason) < 2024 else 'Reason is too long.'}",
-                    )
-                embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
-                await ctx.send(embed=embed)
-            else:
-                await ctx.send(
-                    f"{action_props['description']}\n{'Reason: ' + reason if reason else ''}"
-                )
-        # Log the event
-        log_event = action_props["log_event"]
         await self.log_channel(ctx, ctx.guild, event=log_event, reason=reason)
 
     @commands.guild_only()
