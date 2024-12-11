@@ -221,7 +221,8 @@ class Counting(commands.Cog):
         ):
             log.warning(
                 "I don't have permission to manage messages or send messages in {channel} ({channel_id})".format(
-                    channel=after.channel.name if after.channel else "unknown", channel_id=channel_id
+                    channel=after.channel.name if after.channel else "unknown",
+                    channel_id=channel_id,
                 )
             )
             return
@@ -375,9 +376,7 @@ class Counting(commands.Cog):
 
         message = f"Counting is now {'enabled' if not is_enabled else 'disabled'}"
         if not await guild_config.channel() and not is_enabled:
-            message += (
-                f"\nPlease set a counting channel using `{ctx.clean_prefix}countingset channel` to enable counting."
-            )
+            message += f"\nPlease set a counting channel using `{ctx.clean_prefix}countingset channel` to enable counting."
         await ctx.send(message)
 
     @countingset.command()
@@ -399,9 +398,7 @@ class Counting(commands.Cog):
 
         message = f"Counting channel has been set to {channel.mention}"
         if not await self.config.guild(ctx.guild).toggle():
-            message += (
-                f"\nPlease enable counting using `{ctx.clean_prefix}countingset toggle` to enable counting."
-            )
+            message += f"\nPlease enable counting using `{ctx.clean_prefix}countingset toggle` to enable counting."
         await self.config.guild(ctx.guild).channel.set(channel.id)
         await ctx.send(message)
 

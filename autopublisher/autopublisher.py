@@ -205,7 +205,9 @@ class AutoPublisher(commands.Cog):
         try:
             next_weekly_reset = await get_next_reset_timestamp(current_time, target_weekday=6)
             next_monthly_reset = await get_next_reset_timestamp(current_time, target_day=1)
-            next_yearly_reset = await get_next_reset_timestamp(current_time, target_day=1, target_month=1)
+            next_yearly_reset = await get_next_reset_timestamp(
+                current_time, target_day=1, target_month=1
+            )
         except (ValueError, TypeError) as error:
             log.error("Failed to determine next reset timestamp", exc_info=error)
             return
@@ -216,7 +218,9 @@ class AutoPublisher(commands.Cog):
             ["Total Yearly Published", humanize_number(yearly_count)],
             ["Total Published Messages", humanize_number(total_count)],
         ]
-        formatted_table = tabulate(stats_table, headers=["Description", "Count"], tablefmt="simple")
+        formatted_table = tabulate(
+            stats_table, headers=["Description", "Count"], tablefmt="simple"
+        )
         await ctx.send(
             f"{box(formatted_table, lang='prolog')}\n"
             f"Next Weekly Reset: <t:{next_weekly_reset}:f> (<t:{next_weekly_reset}:R>)\n"
