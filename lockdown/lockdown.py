@@ -156,7 +156,9 @@ class Lockdown(commands.Cog):
         already_set_message = f"❌ This channel is already {'locked' if is_lock else 'unlocked'}."
         send_messages = False if is_lock else None
 
-        overwrites = ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
+        overwrites = (
+            ctx.channel.overwrites_for(ctx.guild.default_role) or discord.PermissionOverwrite()
+        )
 
         if overwrites.send_messages == send_messages:
             return await ctx.send(
