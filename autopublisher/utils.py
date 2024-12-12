@@ -50,7 +50,9 @@ async def get_next_reset_timestamp(now, target_weekday=None, target_day=None, ta
         next_target = now + timedelta(days=days_until_target)
     elif target_day is not None and target_month is None:
         if now.month == 2:
-            days_in_month = 29 if now.year % 4 == 0 and (now.year % 100 != 0 or now.year % 400 == 0) else 28
+            days_in_month = (
+                29 if now.year % 4 == 0 and (now.year % 100 != 0 or now.year % 400 == 0) else 28
+            )
         elif now.month in [1, 3, 5, 7, 8, 10, 12]:
             days_in_month = 31
         else:
