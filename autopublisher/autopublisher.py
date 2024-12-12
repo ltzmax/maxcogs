@@ -69,12 +69,14 @@ class AutoPublisher(commands.Cog):
         scheduler.add_job(
             self.reset_count,
             "cron",
-            day_of_week="sun",
+            day="28-31",
             hour=0,
             minute=0,
             args=["weekly"],
         )
-        scheduler.add_job(self.reset_count, "cron", day=1, hour=0, minute=0, args=["monthly"])
+        scheduler.add_job(
+            self.reset_count, "cron", month="*", day="28-31", hour=0, minute=0, args=["monthly"]
+        )
         scheduler.add_job(
             self.reset_count, "cron", month=1, day=1, hour=0, minute=0, args=["yearly"]
         )
@@ -110,38 +112,6 @@ class AutoPublisher(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
-        """Listen for messages without commands.
-
-        This function is a listener that listens for messages without
-        commands. If the message is from a news channel and the
-        AutoPublisher cog is enabled in that guild, it will attempt to
-        publish the message.
-
-        If the message is not from a news channel and the
-        AutoPublisher cog is enabled in that guild, it will disable the
-        AutoPublisher cog in that guild and log a warning.
-
-        If the message is from a news channel and the AutoPublisher cog
-        is enabled in that guild but the bot does not have the necessary
-        permissions to publish the message, it will log an error.
-
-        If the message is from a news channel and the AutoPublisher cog
-        is enabled in that guild but the message is not published
-        within 60 seconds, it will log an error.
-
-        If the message is from a news channel and the AutoPublisher cog
-        is enabled in that guild, it will increment the published count
-        by one and log an info message.
-
-        Parameters
-        ----------
-        message : discord.Message
-            The message object that triggered this event.
-
-        Returns
-        -------
-        None
-        """
         if message.guild is None:
             return
 
