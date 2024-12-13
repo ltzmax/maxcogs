@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import logging
+import re
 from datetime import datetime, timezone
 
 import pytz
@@ -31,7 +32,7 @@ log = logging.getLogger("red.maxcogs.nba.converter")
 TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 ESPN_NBA_NEWS = "http://www.espn.com/espn/rss/nba/news"
-# PLAYBYPLAY = "https://cdn.nba.com/static/json"
+PLAYBYPLAY = "https://cdn.nba.com/static/json"
 TEAM_NAMES = [
     "heat",
     "bucks",
@@ -65,17 +66,19 @@ TEAM_NAMES = [
     "wizards",
 ]
 
-# def parse_duration(duration):
-#    """
-#    Parse the duration string from the NBA API.
-#    """
-#    match = re.match(r"PT(?:(\d+)M)?(?:(\d+\.\d+)?S)?", duration)
-#    if match:
-#        minutes = match.group(1) or "0"
-#        seconds = int(float(match.group(2))) if match.group(2) else 0
-#        return f"{minutes}:{str(seconds).zfill(2)}"
-#    else:
-#        return "0:00"
+
+def parse_duration(duration):
+    """
+    Parse the duration string from the NBA API.
+    """
+    match = re.match(r"PT(?:(\d+)M)?(?:(\d+\.\d+)?S)?", duration)
+    if match:
+        minutes = match.group(1) or "0"
+        seconds = int(float(match.group(2))) if match.group(2) else 0
+        return f"{minutes}:{str(seconds).zfill(2)}"
+    else:
+        return "0:00"
+
 
 periods = {
     0: "Pre-Game",
