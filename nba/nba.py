@@ -281,13 +281,17 @@ class NBA(commands.Cog):
             start_timestamp = int(start_time_utc.replace(tzinfo=timezone.utc).timestamp())
 
             if game["gameClock"]:
-                minutes, seconds = game["gameClock"].replace("PT", "").replace("S", "").split("M")
-                total_seconds = int(minutes) * 60 + int(float(seconds))
-                end_time = datetime.now() + timedelta(seconds=total_seconds)
-                ongoing_timestamp = int(end_time.replace(tzinfo=timezone.utc).timestamp())
+                try:
+                    minutes, seconds = (
+                        game["gameClock"].replace("PT", "").replace("S", "").split("M")
+                    )
+                    total_seconds = int(minutes) * 60 + int(float(seconds))
+                    end_time = datetime.now() + timedelta(seconds=total_seconds)
+                    ongoing_timestamp = int(end_time.replace(tzinfo=timezone.utc).timestamp())
+                except ValueError:
+                    ongoing_timestamp = None
             else:
                 ongoing_timestamp = None
-
             home_team_name = game["homeTeam"]["teamName"]
             away_team_name = game["awayTeam"]["teamName"]
             home_tricode = game["homeTeam"]["teamTricode"]
