@@ -146,7 +146,7 @@ class NBA(commands.Cog):
                                 f"Deleted game data for {home_team} vs {away_team} from Redis. Game_id: {game_id}"
                             )
 
-                    gameclock = parse_duration(game.get("gameClock", ""))
+                    gameclock = parse_duration(game["gameClock"])
                     # Get the previous scores from Redis and convert them to integers
                     # If the scores are not in Redis, default to 0
                     previous_home_score = int(self.redis_client.get(home_score_key) or 0)
