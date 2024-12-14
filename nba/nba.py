@@ -61,7 +61,7 @@ class NBA(commands.Cog):
     NBA Cog that provides NBA game updates, schedules, and news.
     """
 
-    __version__: Final[str] = "2.4.0"
+    __version__: Final[str] = "2.5.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -102,65 +102,64 @@ class NBA(commands.Cog):
         """
         A coroutine function that periodically checks the NBA game scores and updates the scores in a Discord channel.
         """
-        for guild in self.bot.guilds:
-            channel_id = await self.config.guild(guild).channel()
-            team = await self.config.guild(guild).team()
-            if not channel_id or not team:
-                continue
-            channel = guild.get_channel(channel_id)
-            if not channel:
-                continue
-            if (
-                not channel.permissions_for(guild.me).send_messages
-                and not channel.permissions_for(guild.me).embed_links
-            ):
-                continue
-            # if redis is not running.
-            if not self.redis_installed:
-                continue
+        async with aiohttp.ClientSession() as session:
+            async with session.get(TODAY_SCOREBOARD) as response:
+                data = await response.text()
+            games = orjson.loads(data).get("scoreboard", {}).get("games", [])
 
-            async with aiohttp.ClientSession() as session:
-                async with session.get(TODAY_SCOREBOARD) as resp:
-                    data = await resp.text()
-                games = orjson.loads(data).get("scoreboard", {}).get("games", [])
-                for game in games:
-                    if not game:
+            for game in games:
+                if not game:
+                    continue
+
+                home_team_name = game.get("homeTeam", {}).get("teamName")
+                away_team_name = game.get("awayTeam", {}).get("teamName")
+
+                for guild in self.bot.guilds:
+                    channel_id = await self.config.guild(guild).channel()
+                    team_name = await self.config.guild(guild).team()
+                    # If the channel or team name is not set, skip this guild
+                    if (
+                        not channel_id
+                        or not team_name
+                        or team_name.lower()
+                        not in (home_team_name.lower(), away_team_name.lower())
+                    ):
                         continue
-                    home_team = game.get("homeTeam", {}).get("teamName")
-                    away_team = game.get("awayTeam", {}).get("teamName")
-                    if team.lower() not in (home_team.lower(), away_team.lower()):
+
+                    channel = guild.get_channel(channel_id)
+                    if not channel or (
+                        not channel.permissions_for(guild.me).send_messages
+                        and not channel.permissions_for(guild.me).embed_links
+                    ):
+                        continue
+
+                    if not self.redis_installed:
                         continue
 
                     home_score = game.get("homeTeam", {}).get("score")
                     away_score = game.get("awayTeam", {}).get("score")
                     game_id = game.get("gameId")
 
-                    home_score_key = f"{home_team}_{game_id}"
-                    away_score_key = f"{away_team}_{game_id}"
+                    home_score_key = f"{home_team_name}_{game_id}"
+                    away_score_key = f"{away_team_name}_{game_id}"
 
-                    # Check if the game is over and delete the data from Redis
                     if game.get("gameStatusText") == "Final":
-                        if self.redis_installed and self.redis_client.exists(game_id):
+                        if self.redis_client.exists(game_id):
                             self.redis_client.delete(game_id)  # Delete the game data
                             log.info(
-                                f"Deleted game data for {home_team} vs {away_team} from Redis. Game_id: {game_id}"
+                                f"Deleted game data for {home_team_name} vs {away_team_name} from Redis. Game_id: {game_id}"
                             )
-
                     gameclock = parse_duration(game["gameClock"])
-                    # Get the previous scores from Redis and convert them to integers
-                    # If the scores are not in Redis, default to 0
                     previous_home_score = int(self.redis_client.get(home_score_key) or 0)
                     previous_away_score = int(self.redis_client.get(away_score_key) or 0)
 
-                    # Check if the scores have changed
                     scores_changed = (
                         home_score != previous_home_score or away_score != previous_away_score
                     )
-                    # If the scores have changed, update them in Redis and send a message
                     if scores_changed:
                         score_data = {
-                            "home_team": home_team,
-                            "away_team": away_team,
+                            "home_team": home_team_name,
+                            "away_team": away_team_name,
                             "home_score": home_score,
                             "away_score": away_score,
                         }
@@ -168,44 +167,44 @@ class NBA(commands.Cog):
                         self.redis_client.set(home_score_key, home_score)
                         self.redis_client.set(away_score_key, away_score)
 
-                        # If the scores have changed, use the new scores, otherwise use the previous scores
                         home_score = home_score if scores_changed else previous_home_score
                         away_score = away_score if scores_changed else previous_away_score
 
                         async with session.get(
                             f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{game_id}.json"
-                        ) as resp:
-                            play_by_play_data = await resp.json()
-                        last_5_actions = play_by_play_data["game"]["actions"][-6:]
+                        ) as response:
+                            play_by_play_data = await response.json()
+                        last_6_actions = play_by_play_data["game"]["actions"][-6:]
 
                         embed = discord.Embed(
                             title="NBA Scoreboard Update",
                             color=0xE91E63,
-                            description=f"**{home_team}** vs **{away_team}**\n**Q{game['period']} with time Left**: {gameclock}",
+                            description=f"**{home_team_name}** vs **{away_team_name}**\n**Q{game['period']} with time Left**: {gameclock}",
                         )
                         embed.add_field(
-                            name=f"{home_team}:",
+                            name=f"{home_team_name}:",
                             value=box(f"Score: {home_score}", lang="json"),
                         )
                         embed.add_field(
-                            name=f"{away_team}:",
+                            name=f"{away_team_name}:",
                             value=box(f"Score: {away_score}", lang="json"),
                         )
                         embed.add_field(name=" ", value=" ", inline=False)
-                        for action in last_5_actions:
+                        for action in last_6_actions:
                             embed.add_field(
                                 name=f"Team: {action.get('teamTricode', 'N/A')}",
                                 value=f"**Description**: {action.get('description', 'N/A')}\n**Area**: {action.get('area', 'N/A')}\n**Area Details**: {action.get('areaDetail', 'N/A')}\n**SubType**: {action.get('subType', 'N/A')}\n**Side**: {action.get('side', 'N/A')}",
                             )
-                        embed.set_footer(text="Provided by NBA.com")
+                        embed.set_footer(text="🏀Provided by NBA.com")
                         view = discord.ui.View()
                         style = discord.ButtonStyle.gray
-                        game = discord.ui.Button(
+                        game_button = discord.ui.Button(
                             style=style,
                             label="Watch Full Game",
+                            emoji="🏀",
                             url=f"https://www.nba.com/game/{game_id}",
                         )
-                        view.add_item(item=game)
+                        view.add_item(item=game_button)
                         await channel.send(embed=embed, view=view)
 
     async def cog_unload(self):
