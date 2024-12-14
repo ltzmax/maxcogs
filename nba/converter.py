@@ -66,6 +66,7 @@ TEAM_NAMES = [
     "wizards",
 ]
 
+
 def parse_duration(duration):
     """
     Parse the duration string from the NBA API.
@@ -77,6 +78,7 @@ def parse_duration(duration):
         return f"{minutes}:{str(seconds).zfill(2)}"
     else:
         return "0:00"
+
 
 periods = {
     0: "Pre-Game",
