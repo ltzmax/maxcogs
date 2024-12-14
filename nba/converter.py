@@ -67,19 +67,30 @@ TEAM_NAMES = [
 ]
 
 
-def parse_duration(duration):
+def parse_duration(duration_str: str) -> str:
     """
     Parse the duration string from the NBA API and return it as minutes and seconds.
     """
-    match = re.match(r"PT(?:(\d+)M)?(?:(\d+\.\d+)?S)?", duration)
-    if match:
-        minutes = int(match.group(1) or 0)
-        seconds = float(match.group(2) or 0)
-        total_seconds = minutes * 60 + seconds
-        minutes, seconds = divmod(int(total_seconds), 60)
-        return f"{minutes}:{str(seconds).zfill(2)}"
-    if duration.endswith("S"):
-        return duration[:-1]
+    if duration_str is None:
+        return "0:00"
+
+    try:
+        match = re.match(r"PT(?:(\d+)M)?(?:(\d+\.\d+)?S)?", duration_str)
+        if match:
+            minutes, seconds = match.groups()
+            minutes = int(minutes or 0)
+            seconds = float(seconds or 0)
+            return f"{minutes}:{int(seconds):02d}"
+
+        if duration_str.endswith("S"):
+            seconds = int(float(duration_str[:-1]))
+            minutes = seconds // 60
+            seconds = seconds % 60
+            return f"{minutes}:{seconds:02d}"
+
+    except (ValueError, AttributeError, TypeError):
+        log.exception("Failed to parse duration string %r", duration_str)
+
     return "0:00"
 
 
