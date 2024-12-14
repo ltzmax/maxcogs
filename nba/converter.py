@@ -78,6 +78,8 @@ def parse_duration(duration):
         total_seconds = minutes * 60 + seconds
         minutes, seconds = divmod(int(total_seconds), 60)
         return f"{minutes}:{str(seconds).zfill(2)}"
+    if duration.endswith("S"):
+        return duration[:-1]
     return "0:00"
 
 
