@@ -69,14 +69,29 @@ TEAM_NAMES = [
 
 def parse_duration(duration):
     """
-    Parse the duration string from the NBA API.
+    Parse the duration string from the NBA API, handling various cases where 
+    minutes or seconds might not be explicitly stated.
     """
-    match = re.match(r"PT(?:(\d+)M)?(?:(\d+\.\d+)?S)?", duration)
+    match = re.match(r"PT(?:(\d+)M)?(?:(\d+)(?:\.(\d+))?S)?", duration)
     if match:
-        minutes = match.group(1) or "0"
-        seconds = int(float(match.group(2))) if match.group(2) else 0
-        return f"{minutes}:{str(seconds).zfill(2)}"
+        minutes = int(match.group(1) or 0)
+        seconds = int(match.group(2) or 0)
+        milliseconds = int(match.group(3) or 0)
+        
+        # Cap minutes at 12 for NBA quarters
+        minutes = min(minutes, 12)
+        
+        # Handle cases where only one part (minutes or seconds) is specified
+        if minutes == 0 and seconds == 0 and milliseconds == 0:
+            return "0:00"
+        
+        total_seconds = minutes * 60 + seconds + (milliseconds / 1000 if milliseconds else 0)
+        minutes_left = int(total_seconds // 60)
+        seconds_left = int(total_seconds % 60)
+        
+        return f"{minutes_left}:{str(seconds_left).zfill(2)}"
     else:
+        #log.info(f"Unexpected duration format: {duration} - defaulting to 0:00", exc_info=True)
         return "0:00"
 
 
