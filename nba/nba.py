@@ -42,7 +42,6 @@ from redis.exceptions import ConnectionError
 
 from .converter import (
     ESPN_NBA_NEWS,
-    PLAYBYPLAY,
     SCHEDULE_URL,
     TEAM_NAMES,
     TODAY_SCOREBOARD,
@@ -52,6 +51,7 @@ from .converter import (
     parse_duration,
     periods,
 )
+from .view import PlayByPlay
 
 log = logging.getLogger("red.maxcogs.nba")
 
@@ -61,7 +61,7 @@ class NBA(commands.Cog):
     NBA Cog that provides NBA game updates, schedules, and news.
     """
 
-    __version__: Final[str] = "2.5.0"
+    __version__: Final[str] = "2.6.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -97,7 +97,7 @@ class NBA(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=10)
     async def periodic_check(self):
         """
         A coroutine function that periodically checks the NBA game scores and updates the scores in a Discord channel.
@@ -149,7 +149,6 @@ class NBA(commands.Cog):
                             log.info(
                                 f"Deleted game data for {home_team_name} vs {away_team_name} from Redis. Game_id: {game_id}"
                             )
-                    gameclock = parse_duration(game["gameClock"])
                     previous_home_score = int(self.redis_client.get(home_score_key) or 0)
                     previous_away_score = int(self.redis_client.get(away_score_key) or 0)
 
@@ -169,17 +168,12 @@ class NBA(commands.Cog):
 
                         home_score = home_score if scores_changed else previous_home_score
                         away_score = away_score if scores_changed else previous_away_score
-
-                        async with session.get(
-                            f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{game_id}.json"
-                        ) as response:
-                            play_by_play_data = await response.json()
-                        last_6_actions = play_by_play_data["game"]["actions"][-6:]
+                        gameclock = parse_duration(game["gameClock"])
 
                         embed = discord.Embed(
                             title="NBA Scoreboard Update",
                             color=0xE91E63,
-                            description=f"**{home_team_name}** vs **{away_team_name}**\n**Q{game['period']} with time Left**: {gameclock}",
+                            description=f"**{home_team_name}** vs **{away_team_name}**\n**Q{game['period']} with time Left**: {gameclock}\n**Watch full game**: https://www.nba.com/game/{game_id}",
                         )
                         embed.add_field(
                             name=f"{home_team_name}:",
@@ -189,22 +183,8 @@ class NBA(commands.Cog):
                             name=f"{away_team_name}:",
                             value=box(f"Score: {away_score}", lang="json"),
                         )
-                        embed.add_field(name=" ", value=" ", inline=False)
-                        for action in last_6_actions:
-                            embed.add_field(
-                                name=f"Team: {action.get('teamTricode', 'N/A')}",
-                                value=f"**Description**: {action.get('description', 'N/A')}\n**Area**: {action.get('area', 'N/A')}\n**Area Details**: {action.get('areaDetail', 'N/A')}\n**SubType**: {action.get('subType', 'N/A')}\n**Side**: {action.get('side', 'N/A')}",
-                            )
                         embed.set_footer(text="🏀Provided by NBA.com")
-                        view = discord.ui.View()
-                        style = discord.ButtonStyle.gray
-                        game_button = discord.ui.Button(
-                            style=style,
-                            label="Watch Full Game",
-                            emoji="🏀",
-                            url=f"https://www.nba.com/game/{game_id}",
-                        )
-                        view.add_item(item=game_button)
+                        view = PlayByPlay(game_id)
                         await channel.send(embed=embed, view=view)
 
     async def cog_unload(self):
