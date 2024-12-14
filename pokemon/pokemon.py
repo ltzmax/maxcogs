@@ -29,7 +29,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from random import randint
-from typing import Any, Final, List, Optional, Dict
+from typing import Any, Dict, Final, List, Optional
 
 import aiohttp
 import discord
