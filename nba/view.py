@@ -46,7 +46,7 @@ class PlayByPlay(discord.ui.View):
         embed = discord.Embed(
             title="Play by Play",
             color=0x3820F0,
-            description="Latest Play by Play update before score update",
+            description="Latest Play by Play update before score(s). Only the last 9 actions will be shown.\n**NOTE** The button will not work if the game is over.",
         )
         for action in last_actions:
             description = action.get("description", "N/A")
