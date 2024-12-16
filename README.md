@@ -28,7 +28,7 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisher | Automatically push news channel messages. | 2.6.0 | ltzmax, AAA3A | ✅ |
-| Counting | Count from 1 to infinity! with some customizable settings. | 1.4.0 | ltzmax | ✅ |
+| Counting | Count from 1 to infinity! with some customizable settings. | 1.5.0 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
 | NBA | NBA Cog that provides NBA game updates, schedules, and news. | 2.6.0 | ltzmax | ✅ |

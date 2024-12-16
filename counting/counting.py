@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.4.0"
+    __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -82,123 +82,81 @@ class Counting(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        """
-        Handle messages for the counting game.
-
-        This listener checks if a message is sent in the designated counting
-        channel and verifies if the message content is the expected next number
-        in the count. If the message is valid, it updates the count and reacts
-        to the message if configured. Otherwise, it deletes the message and
-        sends a notification with the correct next number if enabled.
-
-        Parameters:
-            message (discord.Message): The message object containing information
-            about the message sent in the Discord channel.
-        """
-        if message.author.bot:
+        if message.author.bot or message.guild is None:
             return
 
-        guild = message.guild
-        if guild is None:
-            return
-
-        config = self.config.guild(guild)
+        config = self.config.guild(message.guild)
         user_config = self.config.user(message.author)
-        toggle = await config.toggle()
-        if not toggle:
+
+        if not await config.toggle():
             return
 
-        channel_id = await config.channel()
-        if channel_id is None or message.channel.id != channel_id:
+        if message.channel.id != await config.channel():
             return
 
-        if (
-            not message.channel.permissions_for(message.guild.me).manage_messages
-            or not message.channel.permissions_for(message.guild.me).send_messages
-        ):
+        permissions = message.channel.permissions_for(message.guild.me)
+        if not permissions.manage_messages or not permissions.send_messages:
             log.warning(
-                "I don't have permission to manage messages or send messages in {channel} ({channel_id})".format(
-                    channel=message.channel.name, channel_id=message.channel.id
-                )
+                f"I don't have permission to manage or send messages in {message.channel.name} ({message.channel.id})"
             )
             return
 
         use_silent = await config.use_silent()
-        default_reaction = await config.default_reaction()
+        reaction = await config.default_reaction()
         delete_after = await config.delete_after()
-        default_next_number_message = await config.default_next_number_message()
-        count = await config.count()
-        next_count = count + 1
+        next_number_message = await config.default_next_number_message()
+        current_count = await config.count()
+        expected_count = current_count + 1
 
-        # Check if the same user is allowed to count more than once
-        same_user_to_count = await config.same_user_to_count()
-        last_user_id = await config.last_user_id()
-        if same_user_to_count and last_user_id == message.author.id:
-            await message.delete()
-            return await message.channel.send(
+        if await config.same_user_to_count() and await config.last_user_id() == message.author.id:
+            await self._handle_invalid_count(
+                message,
                 "You cannot count consecutively. Please wait for someone else to count.",
-                delete_after=delete_after,
-                silent=use_silent,
+                delete_after,
+                use_silent,
+            )
+            return
+
+        if message.content.isdigit() and int(message.content) == expected_count:
+            await config.count.set(expected_count)
+            await config.last_user_id.set(message.author.id)
+            await user_config.count.set(await user_config.count() + 1)
+            await user_config.last_count_timestamp.set(datetime.now().isoformat())
+
+            if await config.toggle_reactions() and permissions.add_reactions:
+                await self._add_reaction(message, reaction)
+        else:
+            await self._handle_invalid_count(
+                message,
+                next_number_message.format(next_count=expected_count),
+                delete_after,
+                use_silent,
+                await config.toggle_next_number_message(),
             )
 
-        if message.content.isdigit() and int(message.content) == next_count:
-            await config.count.set(next_count)
-            await config.last_user_id.set(message.author.id)  # Update the last user who counted
-            user_count = await user_config.count()
-            await user_config.count.set(user_count + 1)
-            await user_config.last_count_timestamp.set(datetime.now().isoformat())
-            if await config.toggle_reactions():
-                await asyncio.sleep(0.3)  # Sleep for a bit.
-                if message.channel.permissions_for(message.guild.me).add_reactions:
-                    try:
-                        await message.add_reaction(default_reaction)
-                    except discord.HTTPException:
-                        log.warning(
-                            "I don't have permission to add reactions in {channel}".format(
-                                channel=message.channel.name
-                            )
-                        )
-        else:
+    async def _handle_invalid_count(
+        self, message, response, delete_after, use_silent, send_response=True
+    ):
+        try:
+            await message.delete()
+        except discord.HTTPException:
+            log.warning(f"I don't have permission to delete messages in {message.channel.name}")
+
+        if send_response:
             try:
-                await message.delete()
-                if await config.toggle_next_number_message():
-                    try:
-                        await message.channel.send(
-                            default_next_number_message.format(next_count=next_count),
-                            delete_after=delete_after,
-                            silent=use_silent,
-                        )
-                    except discord.HTTPException:
-                        log.warning(
-                            "I don't have permission to send messages in {channel}".format(
-                                channel=message.channel.name
-                            )
-                        )
+                await message.channel.send(response, delete_after=delete_after, silent=use_silent)
             except discord.HTTPException:
-                log.warning(
-                    "I don't have permission to delete messages in {channel}".format(
-                        channel=message.channel.name
-                    )
-                )
+                log.warning(f"I don't have permission to send messages in {message.channel.name}")
+
+    async def _add_reaction(self, message, reaction):
+        try:
+            await asyncio.sleep(0.3)
+            await message.add_reaction(reaction)
+        except discord.HTTPException:
+            log.warning(f"I don't have permission to add reactions in {message.channel.name}")
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        """
-        Handle message edits for the counting game.
-
-        This listener checks if a message is edited in the designated counting
-        channel and verifies if the counting feature is enabled for the guild.
-        If the edited message is from a bot or the channel is not the designated
-        counting channel, the function returns early. The function ensures that
-        the bot has the necessary permissions to manage and send messages in the
-        channel. If the permissions are sufficient and the toggle for edit messages
-        is enabled, it deletes the edited message and sends a notification with
-        the default edit message.
-
-        Parameters:
-            before (discord.Message): The message object before it was edited.
-            after (discord.Message): The message object after it was edited.
-        """
         if after.author is None or after.author.bot:
             return
 
@@ -214,14 +172,17 @@ class Counting(commands.Cog):
         if channel_id is None or after.channel.id != channel_id:
             return
 
+        if after.channel is None:
+            log.warning("Channel for message edit is None. Unable to take action.")
+            return
+
         if (
-            after.channel is None
-            or not after.channel.permissions_for(after.guild.me).manage_messages
+            not after.channel.permissions_for(after.guild.me).manage_messages
             or not after.channel.permissions_for(after.guild.me).send_messages
         ):
             log.warning(
                 "I don't have permission to manage messages or send messages in {channel} ({channel_id})".format(
-                    channel=after.channel.name if after.channel else "unknown",
+                    channel=after.channel.name,
                     channel_id=channel_id,
                 )
             )
@@ -233,10 +194,16 @@ class Counting(commands.Cog):
 
         try:
             await after.delete()
-        except discord.HTTPException:
+        except discord.Forbidden:
             log.warning(
                 "I don't have permission to delete messages in {channel} ({channel_id})".format(
                     channel=after.channel.name, channel_id=after.channel.id
+                )
+            )
+        except discord.HTTPException as e:
+            log.warning(
+                "There was an error deleting a message in {channel} ({channel_id}). {error}".format(
+                    channel=after.channel.name, channel_id=after.channel.id, error=e.text
                 )
             )
 
@@ -245,10 +212,16 @@ class Counting(commands.Cog):
                 await after.channel.send(
                     default_edit_message, delete_after=delete_after, silent=use_silent
                 )
-            except discord.HTTPException:
+            except discord.Forbidden:
                 log.warning(
                     "I don't have permission to send messages in {channel} ({channel_id})".format(
                         channel=after.channel.name, channel_id=after.channel.id
+                    )
+                )
+            except discord.HTTPException as e:
+                log.warning(
+                    "There was an error sending a message in {channel} ({channel_id}). {error}".format(
+                        channel=after.channel.name, channel_id=after.channel.id, error=e.text
                     )
                 )
 
@@ -263,34 +236,29 @@ class Counting(commands.Cog):
         """Get your current counting statistics."""
         user = user or ctx.author
 
-        # Check if the user is a bot
         if user.bot:
             return await ctx.send("Bots do not count.")
 
-        # Check if the user is in the guild
         member = ctx.guild.get_member(user.id)
         if not member:
             return await ctx.send("User is not in this server.")
 
         user_config = self.config.user(user)
-        user_count = await user_config.count()
-        last_count_timestamp = await user_config.last_count_timestamp()
+        user_data = await user_config.all()
 
-        # Check if the user has counted yet
+        user_count = user_data.get("count", 0)
+        last_count_timestamp = user_data.get("last_count_timestamp", None)
+
         if not user_count:
             return await ctx.send(f"{user.display_name} has not counted yet.")
 
-        table_data = [
-            ["Your Count:", humanize_number(user_count)],
-        ]
-        table = tabulate(table_data, headers=["Title", "Count"], tablefmt="simple")
-        msg_box = f"{user.display_name}'s Counting Stats\n" + box(table, lang="prolog")
-        if last_count_timestamp:
-            last_count_time = datetime.fromisoformat(last_count_timestamp)
-            time = discord.utils.format_dt(last_count_time, style="R")
+        last_count_time = datetime.fromisoformat(last_count_timestamp)
+        time = discord.utils.format_dt(last_count_time, style="R")
 
         await ctx.send(
-            f"{msg_box}\nYou Last Counted: {time}",
+            f"{user.display_name}'s Counting Stats\n"
+            f"Count: {humanize_number(user_count)}\n"
+            f"Last Counted: {time}",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
