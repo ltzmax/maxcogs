@@ -262,15 +262,22 @@ class NoSpoiler(commands.Cog):
     @nospoiler.command(aliases=["view", "views"])
     async def settings(self, ctx: commands.Context) -> None:
         """Show the settings."""
-        all = await self.config.guild(ctx.guild).all()
+        settings = await self.config.guild(ctx.guild).all()
+        log_channel = ctx.guild.get_channel(settings["log_channel"])
+        log_channel_mention = log_channel.mention if log_channel else "Not Set"
+        spoiler_warning_message = (
+            box(settings["spoiler_warn_message"], lang="yaml")
+            if len(settings["spoiler_warn_message"]) < 2000
+            else "Message too long to display."
+        )
         await ctx.send(
             "## NoSpoiler Settings\n"
-            f"**Enabled**: {all['enabled']}\n"
-            f"**Log Channel**: {ctx.guild.get_channel(all['log_channel']).mention if all['log_channel'] else 'Not Set'}\n"
-            f"**Spoiler Warning**: {all['spoiler_warn']}\n"
-            f"**Use Embed**: {all['useembed']}\n"
-            f"**Delete After**: {all['timeout']} seconds\n"
-            f"**Spoiler Warning Message**:\n{box(all['spoiler_warn_message'], lang='yaml') if len(all['spoiler_warn_message']) < 2000 else 'Message too long to display.'}"
+            f"**Enabled**: {settings['enabled']}\n"
+            f"**Log Channel**: {log_channel_mention}\n"
+            f"**Spoiler Warning**: {settings['spoiler_warn']}\n"
+            f"**Use Embed**: {settings['useembed']}\n"
+            f"**Delete After**: {settings['timeout']} seconds\n"
+            f"**Spoiler Warning Message**:\n{spoiler_warning_message}"
         )
 
     @commands.bot_has_permissions(embed_links=True)
