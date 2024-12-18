@@ -472,49 +472,48 @@ class Counting(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx: commands.Context):
         """Show the current counting settings."""
-        config = self.config.guild(ctx.guild)
-        channel_id = await config.channel()
+        guild_config = self.config.guild(ctx.guild)
+
+        channel_id = await guild_config.channel()
         channel = ctx.guild.get_channel(channel_id) if channel_id else None
-        toggle = await config.toggle()
-        delete_after = await config.delete_after()
-        default_edit_message = await config.default_edit_message()
-        default_next_number_message = await config.default_next_number_message()
-        toggle_edit_message = await config.toggle_edit_message()
-        toggle_next_number_message = await config.toggle_next_number_message()
-        same_user_to_count = await config.same_user_to_count()
-        default_reaction = await config.default_reaction()
-        toggle_reactions = await config.toggle_reactions()
-        silent = await config.use_silent()
+        is_enabled = await guild_config.toggle()
+        delete_after_seconds = await guild_config.delete_after()
+        edit_message = await guild_config.default_edit_message()
+        next_number_message = await guild_config.default_next_number_message()
+        is_edit_message_enabled = await guild_config.toggle_edit_message()
+        is_next_number_message_enabled = await guild_config.toggle_next_number_message()
+        is_same_user_count_enabled = await guild_config.same_user_to_count()
+        reaction_emoji = await guild_config.default_reaction()
+        are_reactions_enabled = await guild_config.toggle_reactions()
+        is_silent_mode_enabled = await guild_config.use_silent()
 
         embed = discord.Embed(
             title="Counting Settings",
             color=await ctx.embed_color(),
         )
         embed.add_field(name="Counting Channel:", value=channel.mention if channel else "Not set")
-        embed.add_field(name="Toggle:", value="Enabled" if toggle else "Disabled")
-        embed.add_field(name="Delete After:", value=f"{delete_after} seconds")
+        embed.add_field(name="Counting Enabled:", value="Enabled" if is_enabled else "Disabled")
+        embed.add_field(name="Delete After:", value=f"{delete_after_seconds} seconds")
         embed.add_field(
-            name="Toggle Edit Message:",
-            value="Enabled" if toggle_edit_message else "Disabled",
+            name="Edit Message:", value="Enabled" if is_edit_message_enabled else "Disabled"
         )
         embed.add_field(
-            name="Toggle Next Number Message:",
-            value="Enabled" if toggle_next_number_message else "Disabled",
+            name="Next Number Message:",
+            value="Enabled" if is_next_number_message_enabled else "Disabled",
         )
         embed.add_field(
-            name="Same User To Count:",
-            value="Enabled" if same_user_to_count else "Disabled",
+            name="Same User Count:", value="Enabled" if is_same_user_count_enabled else "Disabled"
         )
         embed.add_field(
-            name="Toggle Reactions:",
-            value="Enabled" if toggle_reactions else "Disabled",
+            name="Reactions:", value="Enabled" if are_reactions_enabled else "Disabled"
         )
-        embed.add_field(name="Default Reaction:", value=default_reaction)
-        embed.add_field(name="Silent Messages:", value="Enabled" if silent else "Disabled")
-        embed.add_field(name="Default Edit Message:", value=default_edit_message, inline=False)
+        embed.add_field(name="Reaction Emoji:", value=reaction_emoji)
         embed.add_field(
-            name="Default Next Number Message:",
-            value=default_next_number_message,
-            inline=False,
+            name="Silent Mode:", value="Enabled" if is_silent_mode_enabled else "Disabled"
         )
+        embed.add_field(name="Edit Message Content:", value=edit_message, inline=False)
+        embed.add_field(
+            name="Next Number Message Content:", value=next_number_message, inline=False
+        )
+
         await ctx.send(embed=embed)
