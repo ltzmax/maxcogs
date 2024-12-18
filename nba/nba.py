@@ -98,7 +98,7 @@ class NBA(commands.Cog):
         """Nothing to delete."""
         return
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=40)
     async def periodic_check(self):
         async with aiohttp.ClientSession() as session:
             async with session.get(TODAY_SCOREBOARD) as response:
@@ -114,17 +114,17 @@ class NBA(commands.Cog):
 
                 for guild in self.bot.guilds:
                     channel_id = await self.config.guild(guild).channel()
+                    channel = guild.get_channel_or_thread(channel_id)
                     team_name = await self.config.guild(guild).team()
                     # If the channel or team name is not set, skip this guild
                     if (
-                        not channel_id
+                        not channel
                         or not team_name
                         or team_name.lower()
                         not in (home_team_name.lower(), away_team_name.lower())
                     ):
                         continue
 
-                    channel = guild.get_channel(channel_id)
                     if not channel or (
                         not channel.permissions_for(guild.me).send_messages
                         and not channel.permissions_for(guild.me).embed_links
@@ -201,7 +201,9 @@ class NBA(commands.Cog):
         """Settings for NBA."""
 
     @nbaset.command(name="channel")
-    async def nbaset_channel(self, ctx: commands.Context, channel: discord.TextChannel, team: str):
+    async def nbaset_channel(
+        self, ctx: commands.Context, channel: Union[discord.TextChannel, discord.Thread], team: str
+    ):
         """
         Set the channel to send NBA game updates to.
 
