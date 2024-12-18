@@ -30,7 +30,7 @@ from .converter import PLAYBYPLAY
 
 class PlayByPlay(discord.ui.View):
     def __init__(self, game_id):
-        super().__init__()
+        super().__init__(timeout=None)
         self.game_id = game_id
 
     @discord.ui.button(label="View Play by Play", style=discord.ButtonStyle.blurple, emoji="🏀")
@@ -46,7 +46,7 @@ class PlayByPlay(discord.ui.View):
         embed = discord.Embed(
             title="Play by Play",
             color=0x3820F0,
-            description="Latest Play by Play update before score(s). Only the last 9 actions will be shown.\n**NOTE** The button will not work if the game is over.",
+            description="Only the last 9 actions is displayed",
         )
         for action in last_actions:
             description = action.get("description", "N/A")

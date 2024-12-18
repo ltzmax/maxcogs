@@ -1,19 +1,13 @@
-## NOTE (OPTIONAL)
-This cog uses ``redis`` for the auto updates of scores under which you set from ``[p]nbaset channel``. You can follow the instructions here: <https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/> for your operating system. 
-
-## NBA Cog that provides NBA game updates, schedules, and news.
+NBA Cog that provides NBA game updates, schedules, and news.
 
 # [p]nbaset
 Settings for NBA.<br/>
  - Usage: `[p]nbaset`
  - Restricted to: `ADMIN`
  - Checks: `server_only`
-## [p]nbaset view
+## [p]nbaset settings
 View the channel and team settings.<br/>
- - Usage: `[p]nbaset view`
-## [p]nbaset clear
-Clear the channel and team settings.<br/>
- - Usage: `[p]nbaset clear`
+ - Usage: `[p]nbaset settings`
 ## [p]nbaset channel
 Set the channel to send NBA game updates to.<br/>
 
@@ -30,11 +24,19 @@ You can only set one channel and one team per server.<br/>
 **Vaild Team Names:**<br/>
 - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trailblazers, warriors, wizards<br/>
  - Usage: `[p]nbaset channel <channel> <team>`
+## [p]nbaset reset
+Reset the channel and team settings.<br/>
+ - Usage: `[p]nbaset reset`
 # [p]nba (Hybrid Command)
 Get the current NBA schedule for next game.<br/>
  - Usage: `[p]nba`
  - Slash Usage: `/nba`
  - Checks: `server_only`
+## [p]nba news (Hybrid Command)
+Get latest nba news<br/>
+ - Usage: `[p]nba news`
+ - Slash Usage: `/nba news`
+ - Cooldown: `1 per 3.0 seconds`
 ## [p]nba scoreboard (Hybrid Command)
 Get the current NBA scoreboard.<br/>
 
@@ -55,11 +57,6 @@ Get the current NBA scoreboard.<br/>
  - Usage: `[p]nba scoreboard [team=None]`
  - Slash Usage: `/nba scoreboard [team=None]`
  - Aliases: `score and scores`
-## [p]nba news (Hybrid Command)
-Get latest nba news<br/>
- - Usage: `[p]nba news`
- - Slash Usage: `/nba news`
- - Cooldown: `1 per 3.0 seconds`
 ## [p]nba schedule (Hybrid Command)
 Get the current NBA schedule for next game.<br/>
 

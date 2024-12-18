@@ -25,20 +25,19 @@ SOFTWARE.
 import logging
 import math
 import os
+import sqlite3
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Final, List, Optional, Union
+from typing import Any, Dict, Final, List, Optional, Union
 
 import aiohttp
 import discord
 import feedparser
 import orjson
-import redis
 from discord.ext import tasks
 from redbot.core import Config, app_commands, commands
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
-from redis.exceptions import ConnectionError
 
 from .converter import (
     ESPN_NBA_NEWS,
@@ -61,7 +60,7 @@ class NBA(commands.Cog):
     NBA Cog that provides NBA game updates, schedules, and news.
     """
 
-    __version__: Final[str] = "2.6.0"
+    __version__: Final[str] = "2.6.5"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -75,33 +74,32 @@ class NBA(commands.Cog):
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
         self.periodic_check.start()
-        # Yes this is not the best way to do this, but it works for now as it's temporary.
-        try:
-            host = os.getenv("REDIS_HOST", "localhost")
-            port = int(os.getenv("REDIS_PORT", 6379))
-            password = os.getenv("REDIS_PASSWORD", None)
-            self.redis_client = redis.Redis(host=host, port=port, db=0, password=password)
-            self.redis_client.ping()
-            self.redis_installed = True
-        except ConnectionError:
-            self.redis_installed = False
-
-    # You might wonder why I'm using Redis here.
-    # I didn't want to use it, but I couldn't find a better way like SQLite to store the game scores.
-    # Redis worked for this purpose while SQLite didn't properly handle the large amount of scores that happens every small amount of time,
-    # it ended up skipping a lot of game updates which caused me move away from SQLite to use Redis as a temporary solution until I find a better way.
-    # Note that Redis is not a perfect solution, but it is a good start for this purpose to handle the large amount of game scores that happens every small amount of time.
+        self.conn = sqlite3.connect("{path}/nba.db".format(path=cog_data_path(self)))
+        self.cursor = self.conn.cursor()
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS games (
+                game_id TEXT PRIMARY KEY,
+                home_team TEXT,
+                away_team TEXT,
+                home_score INTEGER,
+                away_score INTEGER
+            )
+        """
+        )
+        self.conn.commit()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
+    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+        """Nothing to delete."""
+        return
+
     @tasks.loop(seconds=10)
     async def periodic_check(self):
-        """
-        A coroutine function that periodically checks the NBA game scores and updates the scores in a Discord channel.
-        """
         async with aiohttp.ClientSession() as session:
             async with session.get(TODAY_SCOREBOARD) as response:
                 data = await response.text()
@@ -133,38 +131,38 @@ class NBA(commands.Cog):
                     ):
                         continue
 
-                    if not self.redis_installed:
-                        continue
-
                     home_score = game.get("homeTeam", {}).get("score")
                     away_score = game.get("awayTeam", {}).get("score")
                     game_id = game.get("gameId")
 
-                    home_score_key = f"{home_team_name}_{game_id}"
-                    away_score_key = f"{away_team_name}_{game_id}"
-
+                    # Check game status
                     if game.get("gameStatusText") == "Final":
-                        if self.redis_client.exists(game_id):
-                            self.redis_client.delete(game_id)  # Delete the game data
-                            log.info(
-                                f"Deleted game data for {home_team_name} vs {away_team_name} from Redis. Game_id: {game_id}"
-                            )
-                    previous_home_score = int(self.redis_client.get(home_score_key) or 0)
-                    previous_away_score = int(self.redis_client.get(away_score_key) or 0)
+                        self.cursor.execute("DELETE FROM games WHERE game_id = ?", (game_id,))
+                        self.conn.commit()
+                        log.info(
+                            f"Deleted game data for {home_team_name} vs {away_team_name} from SQLite. Game_id: {game_id}"
+                        )
+
+                    # Fetch previous scores
+                    self.cursor.execute(
+                        "SELECT home_score, away_score FROM games WHERE game_id = ?", (game_id,)
+                    )
+                    result = self.cursor.fetchone()
+
+                    previous_home_score, previous_away_score = (0, 0) if result is None else result
 
                     scores_changed = (
                         home_score != previous_home_score or away_score != previous_away_score
                     )
                     if scores_changed:
-                        score_data = {
-                            "home_team": home_team_name,
-                            "away_team": away_team_name,
-                            "home_score": home_score,
-                            "away_score": away_score,
-                        }
-                        self.redis_client.set(game_id, orjson.dumps(score_data))
-                        self.redis_client.set(home_score_key, home_score)
-                        self.redis_client.set(away_score_key, away_score)
+                        self.cursor.execute(
+                            """
+                            INSERT OR REPLACE INTO games (game_id, home_team, away_team, home_score, away_score)
+                            VALUES (?, ?, ?, ?, ?)
+                        """,
+                            (game_id, home_team_name, away_team_name, home_score, away_score),
+                        )
+                        self.conn.commit()
 
                         home_score = home_score if scores_changed else previous_home_score
                         away_score = away_score if scores_changed else previous_away_score
@@ -172,7 +170,7 @@ class NBA(commands.Cog):
 
                         embed = discord.Embed(
                             title="NBA Scoreboard Update",
-                            color=0xE91E63,
+                            color=0xEE6730,
                             description=f"**{home_team_name}** vs **{away_team_name}**\n**Q{game['period']} with time Left**: {gameclock}\n**Watch full game**: https://www.nba.com/game/{game_id}",
                         )
                         embed.add_field(
@@ -190,6 +188,7 @@ class NBA(commands.Cog):
     async def cog_unload(self):
         await self.session.close()
         self.periodic_check.cancel()
+        self.conn.close()
 
     @periodic_check.before_loop
     async def before_periodic_check(self):
@@ -201,8 +200,8 @@ class NBA(commands.Cog):
     async def nbaset(self, ctx: commands.Context):
         """Settings for NBA."""
 
-    @nbaset.command()
-    async def channel(self, ctx: commands.Context, channel: discord.TextChannel, team: str):
+    @nbaset.command(name="channel")
+    async def nbaset_channel(self, ctx: commands.Context, channel: discord.TextChannel, team: str):
         """
         Set the channel to send NBA game updates to.
 
@@ -219,38 +218,44 @@ class NBA(commands.Cog):
         **Vaild Team Names:**
         - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trailblazers, warriors, wizards
         """
-        if not self.redis_installed:
+        if not TEAM_NAMES:
             return await ctx.send(
-                "This requires ``redis`` to be running and accessible to store the necessary data of each games.\n"
-                "You can follow the instructions here: <https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/> for your operating system.\n"
-                "-# The default port that is used is 6379.",
+                "That is not a vaild team",
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
             )
-        if not TEAM_NAMES:
-            return await ctx.send("That is not a vaild team")
-        await self.config.guild(ctx.guild).team.set(team)
         await self.config.guild(ctx.guild).channel.set(channel.id)
+        await self.config.guild(ctx.guild).team.set(team.lower())
         await ctx.send(
-            f"Set the channel for the NBA game updates to {channel.mention} and the team to {team}."
+            f"Set channel to {channel} and team to {team}.",
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+            mention_author=False,
         )
 
-    @nbaset.command()
-    async def clear(self, ctx: commands.Context):
-        """Clear the channel and team settings."""
-        await self.config.guild(ctx.guild).channel.clear()
-        await self.config.guild(ctx.guild).team.clear()
-        await ctx.send("Cleared the channel and team settings.")
+    @nbaset.command(name="reset")
+    async def nbaset_reset(self, ctx: commands.Context):
+        """Reset the channel and team settings."""
+        await self.config.guild(ctx.guild).clear()
+        await ctx.send(
+            "Cleared channel and team settings.",
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+            mention_author=False,
+        )
 
-    @nbaset.command()
-    async def view(self, ctx: commands.Context):
+    @nbaset.command(name="settings")
+    async def nbaset_settings(self, ctx: commands.Context):
         """View the channel and team settings."""
-        channel = await self.config.guild(ctx.guild).channel()
-        team = await self.config.guild(ctx.guild).team()
-        await ctx.send(f"Channel: <#{channel}>\nTeam: {team}")
+        all = await self.config.guild(ctx.guild).all()
+        channel_id = all["channel"]
+        channel = ctx.guild.get_channel(channel_id)
+        team = all["team"]
+        await ctx.send(
+            f"Channel: {channel.mention if channel else channel_id}\nTeam: {team}",
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+            mention_author=False,
+        )
 
     @commands.hybrid_group()
     @commands.guild_only()
-    # @app_commands.allowed_installs(guilds=False, users=True)
     async def nba(self, ctx: commands.Context):
         """Get the current NBA schedule for next game."""
 
