@@ -24,13 +24,13 @@ SOFTWARE.
 
 import asyncio
 import logging
+import os
 import typing
 from datetime import datetime, timedelta
 from typing import Any, Dict, Final, List, Literal, Union
 
 import aiosqlite
 import discord
-import os
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core import Config, commands
 from redbot.core.bot import Red

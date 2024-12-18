@@ -23,10 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 import typing
 
 import discord
 from redbot.core import commands
+
+log = logging.getLogger("red.maxcogs.autopublisher.view")
 
 
 # Credit: AAA3A for the original code and idea of this view.py file.
