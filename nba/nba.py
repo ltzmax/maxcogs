@@ -449,7 +449,7 @@ class NBA(commands.Cog):
             return await ctx.send(
                 "There are no games today to display unfortunately.\n"
                 "Check NBA for more information <https://www.nba.com/schedule>\n"
-                f"**Note**: Scoreboard will not update each day(s) until between <t:{start_timestamp}:t> and <t:{end_timestamp}:t>."
+                f"The scoreboard updates everyday between <t:{start_timestamp}:t> and <t:{end_timestamp}:t>"
             )
 
         pages = []
