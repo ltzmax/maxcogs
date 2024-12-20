@@ -136,12 +136,14 @@ class NBA(commands.Cog):
                     game_id = game.get("gameId")
 
                     # Check game status
-                    if game.get("gameStatusText") == "Final":
+                    game_status = game.get("gameStatusText")
+                    if game_status == "Final":
                         self.cursor.execute("DELETE FROM games WHERE game_id = ?", (game_id,))
                         self.conn.commit()
                         log.info(
                             f"Deleted game data for {home_team_name} vs {away_team_name} from SQLite. Game_id: {game_id}"
                         )
+                        continue  # Skip further processing for this game
 
                     # Fetch previous scores
                     self.cursor.execute(
