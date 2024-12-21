@@ -134,6 +134,15 @@ class AutoPublisher(commands.Cog):
             await db.commit()
 
     async def migrate_data_from_config(self):
+        """
+        Migrate data from config to SQLite,
+        This is only applicable for users who have used the config version of the cog.
+
+        The migration here is scheduled removal sometimes in Q1 2025.
+        You should have migrated before the removal, otherwise,
+        the data from your config will not be using sql and is not
+        recoverable without reverting to later version back to where config was used.
+        """
         if not await self.config.migration_done():
             config_data = await self.config.all()
             async with aiosqlite.connect(self.db_path) as db:
