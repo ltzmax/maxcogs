@@ -1,7 +1,16 @@
-Changelog
-Version 3.0.0
-Date: 2024-12-21
+**Changelog**
+**Version 3.1.0**
+**Date: 2024-12-21**
+## Improvements:
+- Final Game Data Reset: 
+    - Reworked the final part of the code to ensure that all game data is properly reset to zero at the end of each game session. This change ensures a clean slate for each new game, preventing carry-over issues from previous sessions.
+- Cache Removal: 
+    - Removed the `final_game_cache`. This removal allows for continuous updates to the game data without interference from cached information, enhancing performance and ensuring that each game starts with the latest game state.
+________________________________________________________________
 
+**Changelog**
+**Version 3.0.0**
+**Date: 2024-12-21**
 ## Reverted from SQL to In-Memory Cache with orjson:
 - Reverted the use of SQLite for storing game data due to issues with proper data removal after games and unnecessary spamming.
 - Implemented an in-memory cache using orjson to store game data, ensuring data is saved to JSON files for persistence across bot restarts.

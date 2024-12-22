@@ -63,7 +63,7 @@ class NBA(commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.0.0"
+    __version__: Final[str] = "3.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -77,7 +77,6 @@ class NBA(commands.Cog):
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
         self.data_path = cog_data_path(self)
-        self.final_game_cache = set(self.load_cache(self.data_path / "final_game_cache.json"))
         self.game_scores = self.load_cache(self.data_path / "game_scores.json")
         self.periodic_check.start()
 
@@ -114,25 +113,25 @@ class NBA(commands.Cog):
                 if not game:
                     continue
 
+                home_team_name = game.get("homeTeam", {}).get("teamName")
+                away_team_name = game.get("awayTeam", {}).get("teamName")
                 game_id = game.get("gameId")
                 game_status = game.get("gameStatusText")
 
-                if game_id in self.final_game_cache:
-                    log.debug(f"Skipping already processed final game {game_id}")
-                    continue
-
                 if game_status == "Final":
-                    self.final_game_cache.add(game_id)
-                    self.save_cache(
-                        self.data_path / "final_game_cache.json", list(self.final_game_cache)
-                    )
-                    log.info(f"Game {game_id} marked as final.")
+                    # Reset the scores to 0 for the final game
+                    self.game_scores[game_id] = {
+                        "home_team": home_team_name,
+                        "away_team": away_team_name,
+                        "home_score": 0,
+                        "away_score": 0,
+                    }
+                    self.save_cache(self.data_path / "game_scores.json", self.game_scores)
+                    # Needs to be reset to 0 for the next game to begin correctly updated.
+                    log.info(f"Game {game_id} marked as final and scores reset to 0.")
                     continue
 
                 # Only process games that are not final
-                home_team_name = game.get("homeTeam", {}).get("teamName")
-                away_team_name = game.get("awayTeam", {}).get("teamName")
-
                 previous_scores = self.game_scores.get(game_id, {"home_score": 0, "away_score": 0})
                 previous_home_score = previous_scores["home_score"]
                 previous_away_score = previous_scores["away_score"]
@@ -195,7 +194,6 @@ class NBA(commands.Cog):
 
     async def cog_unload(self):
         self.periodic_check.cancel()
-        self.save_cache(self.data_path / "final_game_cache.json", list(self.final_game_cache))
         self.save_cache(self.data_path / "game_scores.json", self.game_scores)
         await self.session.close()
 
@@ -238,7 +236,7 @@ class NBA(commands.Cog):
             mention_author=False,
         )
 
-    @nbaset.command(name="reset")
+    @nbaset.command(name="reset", aliases=["clear"])
     async def nbaset_reset(self, ctx: commands.Context):
         """Reset the channel and team settings."""
         await self.config.guild(ctx.guild).clear()
