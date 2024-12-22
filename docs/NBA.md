@@ -1,4 +1,8 @@
-NBA Cog that provides NBA game updates, schedules, and news.
+NBA information cog for Red-DiscordBot.
+- Get the current NBA schedule for the next game.
+- Get the current NBA scoreboard.
+- Get the latest NBA news.
+- Set the channel to send NBA game updates to.
 
 # [p]nbaset
 Settings for NBA.<br/>

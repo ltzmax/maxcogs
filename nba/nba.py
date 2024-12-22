@@ -25,7 +25,6 @@ SOFTWARE.
 import logging
 import math
 import os
-import sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Final, List, Optional, Union
 
@@ -57,10 +56,14 @@ log = logging.getLogger("red.maxcogs.nba")
 
 class NBA(commands.Cog):
     """
-    NBA Cog that provides NBA game updates, schedules, and news.
+    NBA information cog for Red-DiscordBot.
+    - Get the current NBA schedule for the next game.
+    - Get the current NBA scoreboard.
+    - Get the latest NBA news.
+    - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "2.6.5"
+    __version__: Final[str] = "3.0.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -73,21 +76,10 @@ class NBA(commands.Cog):
         }
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
+        self.data_path = cog_data_path(self)
+        self.final_game_cache = set(self.load_cache(self.data_path / "final_game_cache.json"))
+        self.game_scores = self.load_cache(self.data_path / "game_scores.json")
         self.periodic_check.start()
-        self.conn = sqlite3.connect("{path}/nba.db".format(path=cog_data_path(self)))
-        self.cursor = self.conn.cursor()
-        self.cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS games (
-                game_id TEXT PRIMARY KEY,
-                home_team TEXT,
-                away_team TEXT,
-                home_score INTEGER,
-                away_score INTEGER
-            )
-        """
-        )
-        self.conn.commit()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -97,6 +89,19 @@ class NBA(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
+
+    def load_cache(self, filepath):
+        try:
+            with open(filepath, "rb") as f:
+                return orjson.loads(f.read())
+        except FileNotFoundError:
+            return {}
+        except orjson.JSONDecodeError:
+            return {}
+
+    def save_cache(self, filepath, cache):
+        with open(filepath, "wb") as f:
+            f.write(orjson.dumps(cache))
 
     @tasks.loop(seconds=40)
     async def periodic_check(self):
@@ -109,65 +114,62 @@ class NBA(commands.Cog):
                 if not game:
                     continue
 
+                game_id = game.get("gameId")
+                game_status = game.get("gameStatusText")
+
+                if game_id in self.final_game_cache:
+                    log.debug(f"Skipping already processed final game {game_id}")
+                    continue
+
+                if game_status == "Final":
+                    self.final_game_cache.add(game_id)
+                    self.save_cache(
+                        self.data_path / "final_game_cache.json", list(self.final_game_cache)
+                    )
+                    log.info(f"Game {game_id} marked as final.")
+                    continue
+
+                # Only process games that are not final
                 home_team_name = game.get("homeTeam", {}).get("teamName")
                 away_team_name = game.get("awayTeam", {}).get("teamName")
 
-                for guild in self.bot.guilds:
-                    channel_id = await self.config.guild(guild).channel()
-                    channel = guild.get_channel_or_thread(channel_id)
-                    team_name = await self.config.guild(guild).team()
-                    # If the channel or team name is not set, skip this guild
-                    if (
-                        not channel
-                        or not team_name
-                        or team_name.lower()
-                        not in (home_team_name.lower(), away_team_name.lower())
-                    ):
-                        continue
+                previous_scores = self.game_scores.get(game_id, {"home_score": 0, "away_score": 0})
+                previous_home_score = previous_scores["home_score"]
+                previous_away_score = previous_scores["away_score"]
 
-                    if not channel or (
-                        not channel.permissions_for(guild.me).send_messages
-                        and not channel.permissions_for(guild.me).embed_links
-                    ):
-                        continue
+                home_score = game.get("homeTeam", {}).get("score")
+                away_score = game.get("awayTeam", {}).get("score")
 
-                    home_score = game.get("homeTeam", {}).get("score")
-                    away_score = game.get("awayTeam", {}).get("score")
-                    game_id = game.get("gameId")
+                scores_changed = (
+                    home_score != previous_home_score or away_score != previous_away_score
+                )
+                if scores_changed:
+                    self.game_scores[game_id] = {
+                        "home_team": home_team_name,
+                        "away_team": away_team_name,
+                        "home_score": home_score,
+                        "away_score": away_score,
+                    }
+                    self.save_cache(self.data_path / "game_scores.json", self.game_scores)
 
-                    # Check game status
-                    game_status = game.get("gameStatusText")
-                    if game_status == "Final":
-                        self.cursor.execute("DELETE FROM games WHERE game_id = ?", (game_id,))
-                        self.conn.commit()
-                        log.info(
-                            f"Deleted game data for {home_team_name} vs {away_team_name} from SQLite. Game_id: {game_id}"
-                        )
-                        continue  # Skip further processing for this game
+                    for guild in self.bot.guilds:
+                        channel_id = await self.config.guild(guild).channel()
+                        channel = guild.get_channel_or_thread(channel_id)
+                        team_name = await self.config.guild(guild).team()
+                        if (
+                            not channel
+                            or not team_name
+                            or team_name.lower()
+                            not in (home_team_name.lower(), away_team_name.lower())
+                        ):
+                            continue
 
-                    # Fetch previous scores
-                    self.cursor.execute(
-                        "SELECT home_score, away_score FROM games WHERE game_id = ?", (game_id,)
-                    )
-                    result = self.cursor.fetchone()
+                        if not channel or (
+                            not channel.permissions_for(guild.me).send_messages
+                            and not channel.permissions_for(guild.me).embed_links
+                        ):
+                            continue
 
-                    previous_home_score, previous_away_score = (0, 0) if result is None else result
-
-                    scores_changed = (
-                        home_score != previous_home_score or away_score != previous_away_score
-                    )
-                    if scores_changed:
-                        self.cursor.execute(
-                            """
-                            INSERT OR REPLACE INTO games (game_id, home_team, away_team, home_score, away_score)
-                            VALUES (?, ?, ?, ?, ?)
-                        """,
-                            (game_id, home_team_name, away_team_name, home_score, away_score),
-                        )
-                        self.conn.commit()
-
-                        home_score = home_score if scores_changed else previous_home_score
-                        away_score = away_score if scores_changed else previous_away_score
                         gameclock = parse_duration(game["gameClock"])
 
                         embed = discord.Embed(
@@ -187,14 +189,15 @@ class NBA(commands.Cog):
                         view = PlayByPlay(game_id)
                         await channel.send(embed=embed, view=view)
 
-    async def cog_unload(self):
-        await self.session.close()
-        self.periodic_check.cancel()
-        self.conn.close()
-
     @periodic_check.before_loop
     async def before_periodic_check(self):
         await self.bot.wait_until_ready()
+
+    async def cog_unload(self):
+        self.periodic_check.cancel()
+        self.save_cache(self.data_path / "final_game_cache.json", list(self.final_game_cache))
+        self.save_cache(self.data_path / "game_scores.json", self.game_scores)
+        await self.session.close()
 
     @commands.group()
     @commands.guild_only()

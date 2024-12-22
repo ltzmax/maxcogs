@@ -16,7 +16,7 @@
     "permissions": [
         "embed_links"
     ],
-    "requirements": ["orjson", "feedparser", "pytz", "redis"],
+    "requirements": ["orjson", "feedparser", "pytz"],
     "min_python_version": [
         3,
         10,
