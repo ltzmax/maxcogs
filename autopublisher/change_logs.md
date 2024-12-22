@@ -1,4 +1,15 @@
 Changelog
+Version 2.7.1
+Date: 2024-12-21
+
+## Removed View:
+- Removed the IgnoredNewsChannelsView from the bottom of the file.
+## Added Missing Import:
+- Added the missing import for the actual view used in the cog.
+## Patch Notes:
+This update removes an view from the bottom of the file and adds the missing import for the actual view used in the AutoPublisher cog.
+________________________________________________________
+Changelog
 Version 2.7.0
 Date: 2024-12-21
 
