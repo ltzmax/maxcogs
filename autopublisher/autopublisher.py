@@ -29,18 +29,15 @@ import typing
 from datetime import datetime, timedelta
 from typing import Any, Dict, Final, List, Literal, Union
 
-import aiosqlite
 import discord
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView
 from tabulate import tabulate
 
 from .utils import get_next_reset_timestamp
-from .view import IgnoredNewsChannelsView
 
 log = logging.getLogger("red.maxcogs.autopublisher")
 
@@ -59,29 +56,34 @@ class AutoPublisher(commands.Cog):
             "toggle": False,
             "ignored_channels": [],
         }
+        default_global = {
+            "published_count": 0,
+            "published_weekly_count": 0,
+            "published_monthly_count": 0,
+            "published_yearly_count": 0,
+            "last_count_time": None,
+        }
         self.config.register_guild(**default_guild)
-        self.config.register_global(
-            migration_done=False
-        )  # Register a setting to track if migration is done
-        self.db_path = "{path}/stats.db".format(path=cog_data_path(self))
+        self.config.register_global(**default_global)
 
         # Schedule weekly count reset.
-        scheduler = AsyncIOScheduler()
-        scheduler.add_job(
+        self.scheduler = AsyncIOScheduler()
+        self.scheduler.add_job(
             self.reset_count,
             "cron",
-            day="28-31",
+            day_of_week="sun",
             hour=0,
             minute=0,
             args=["weekly"],
         )
-        scheduler.add_job(
-            self.reset_count, "cron", month="*", day="28-31", hour=0, minute=0, args=["monthly"]
+        self.scheduler.add_job(
+            self.reset_count, "cron", day="last", hour=0, minute=0, args=["monthly"]
         )
-        scheduler.add_job(
+        self.scheduler.add_job(
             self.reset_count, "cron", month=1, day=1, hour=0, minute=0, args=["yearly"]
         )
-        scheduler.start()
+        self.scheduler.start()
+        log.info("Scheduler started with weekly, monthly, and yearly reset jobs.")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -93,94 +95,23 @@ class AutoPublisher(commands.Cog):
         return
 
     async def increment_published_count(self):
-        async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(
-                """
-                UPDATE stats 
-                SET published_count = published_count + 1, 
-                    published_weekly_count = published_weekly_count + 1, 
-                    published_monthly_count = published_monthly_count + 1, 
-                    published_yearly_count = published_yearly_count + 1
-            """
-            )
-            await db.commit()
-
-    async def init_db(self):
-        async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(
-                """
-                CREATE TABLE IF NOT EXISTS stats (
-                    published_count INTEGER DEFAULT 0,
-                    published_weekly_count INTEGER DEFAULT 0,
-                    published_monthly_count INTEGER DEFAULT 0,
-                    published_yearly_count INTEGER DEFAULT 0
-                )
-            """
-            )
-            await db.execute("INSERT OR IGNORE INTO stats VALUES (0, 0, 0, 0)")
-            await db.commit()
+        async with self.config.all() as data:
+            data["published_count"] = data.get("published_count", 0) + 1
+            data["published_weekly_count"] = data.get("published_weekly_count", 0) + 1
+            data["published_monthly_count"] = data.get("published_monthly_count", 0) + 1
+            data["published_yearly_count"] = data.get("published_yearly_count", 0) + 1
 
     async def reset_count(self, period: Literal["weekly", "monthly", "yearly"]) -> None:
-        async with aiosqlite.connect(self.db_path) as db:
+        async with self.config.all() as data:
             if period == "weekly":
-                await db.execute("UPDATE stats SET published_weekly_count = 0")
+                data["published_weekly_count"] = 0
                 log.info("Weekly published messages count has been reset.")
             elif period == "monthly":
-                await db.execute("UPDATE stats SET published_monthly_count = 0")
+                data["published_monthly_count"] = 0
                 log.info("Monthly published messages count has been reset.")
             elif period == "yearly":
-                await db.execute("UPDATE stats SET published_yearly_count = 0")
+                data["published_yearly_count"] = 0
                 log.info("Yearly published messages count has been reset.")
-            await db.commit()
-
-    async def migrate_data_from_config(self):
-        """
-        Migrate data from config to SQLite,
-        This is only applicable for users who have used the config version of the cog.
-
-        The migration here is scheduled removal sometimes in Q1 2025.
-        You should have migrated before the removal, otherwise,
-        the data from your config will not be using sql and is not
-        recoverable without reverting to later version back to where config was used.
-        """
-        if not await self.config.migration_done():
-            config_data = await self.config.all()
-            async with aiosqlite.connect(self.db_path) as db:
-                # Ensure the table exists before inserting data
-                await db.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS stats (
-                        published_count INTEGER DEFAULT 0,
-                        published_weekly_count INTEGER DEFAULT 0,
-                        published_monthly_count INTEGER DEFAULT 0,
-                        published_yearly_count INTEGER DEFAULT 0
-                    )
-                """
-                )
-
-                # Insert or update with the existing config data
-                await db.execute(
-                    """
-                    INSERT OR REPLACE INTO stats (published_count, published_weekly_count, published_monthly_count, published_yearly_count)
-                    VALUES (?, ?, ?, ?)
-                """,
-                    (
-                        config_data.get("published_count", 0),
-                        config_data.get("published_weekly_count", 0),
-                        config_data.get("published_monthly_count", 0),
-                        config_data.get("published_yearly_count", 0),
-                    ),
-                )
-                await db.commit()
-                log.info("Data migrated from config to SQLite.")
-                # Set the migration flag to True after migration
-                await self.config.migration_done.set(True)
-        else:
-            log.info("Migration has already been performed. Skipping.")
-
-    async def cog_load(self):
-        await self.init_db()
-        await self.migrate_data_from_config()
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
@@ -219,6 +150,7 @@ class AutoPublisher(commands.Cog):
                 await asyncio.sleep(0.5)
                 await asyncio.wait_for(message.publish(), timeout=60)
                 await self.increment_published_count()
+                await self.config.last_count_time.set(datetime.utcnow().isoformat())
             except (
                 discord.HTTPException,
                 discord.Forbidden,
@@ -233,28 +165,33 @@ class AutoPublisher(commands.Cog):
         """Manage AutoPublisher setting."""
 
     @commands.is_owner()
-    @autopublisher.group(invoke_without_command=True)
-    async def stats(self, ctx: commands.Context) -> None:
+    @autopublisher.command(name="stats")
+    async def _stats(self, ctx: commands.Context) -> None:
         """Show the number of published messages."""
-        async with aiosqlite.connect(self.db_path) as db:
-            async with db.execute(
-                "SELECT published_count, published_weekly_count, published_monthly_count, published_yearly_count FROM stats"
-            ) as cursor:
-                row = await cursor.fetchone()
-                if row is None:
-                    return await ctx.send("No stats found in the database.")
-                total_count, weekly_count, monthly_count, yearly_count = row
+        config_data = await self.config.all()
+        weekly_count = config_data.get("published_weekly_count", 0)
+        monthly_count = config_data.get("published_monthly_count", 0)
+        yearly_count = config_data.get("published_yearly_count", 0)
+        total_count = config_data.get("published_count", 0)
 
-        current_time = datetime.utcnow()
-        try:
-            next_weekly_reset = await get_next_reset_timestamp(current_time, target_weekday=6)
-            next_monthly_reset = await get_next_reset_timestamp(current_time, target_day=1)
-            next_yearly_reset = await get_next_reset_timestamp(
-                current_time, target_day=1, target_month=1
-            )
-        except (ValueError, TypeError) as error:
-            log.error("Failed to determine next reset timestamp", exc_info=error)
+        # Get when last updated
+        last_count_timestamp = config_data.get("last_count_time")
+        if last_count_timestamp:
+            last_count_time = datetime.fromisoformat(last_count_timestamp)
+            last_published = discord.utils.format_dt(last_count_time, style="R")
+        else:
+            last_published = "Not published anything yet."
 
+        # Calculate next reset timestamps
+        next_weekly_reset = await get_next_reset_timestamp(
+            datetime.utcnow(), target_weekday=6, target_day=None, target_month=None
+        )
+        next_monthly_reset = await get_next_reset_timestamp(
+            datetime.utcnow(), target_weekday=None, target_day=1, target_month=None
+        )
+        next_yearly_reset = await get_next_reset_timestamp(
+            datetime.utcnow(), target_weekday=None, target_day=1, target_month=1
+        )
         stats_table = [
             ["Total Weekly Published", humanize_number(weekly_count)],
             ["Total Monthly Published", humanize_number(monthly_count)],
@@ -268,16 +205,9 @@ class AutoPublisher(commands.Cog):
             f"{box(formatted_table, lang='prolog')}\n"
             f"Next Weekly Reset: <t:{next_weekly_reset}:f> (<t:{next_weekly_reset}:R>)\n"
             f"Next Monthly Reset: <t:{next_monthly_reset}:f> (<t:{next_monthly_reset}:R>)\n"
-            f"Next Yearly Reset: <t:{next_yearly_reset}:f> (<t:{next_yearly_reset}:R>)"
+            f"Next Yearly Reset: <t:{next_yearly_reset}:f> (<t:{next_yearly_reset}:R>)\n"
+            f"Last Updated: {last_published}"
         )
-
-    @stats.command(name="dbsize")
-    @commands.is_owner()
-    async def stats_dbsize(self, ctx: commands.Context):
-        """Show the size of the database."""
-        db_size_bytes = os.path.getsize(self.db_path)
-        db_size_mb = db_size_bytes / (1024 * 1024)
-        await ctx.send(f"Database size: {db_size_mb:.2f} MB")
 
     @autopublisher.command()
     @commands.bot_has_permissions(manage_messages=True, view_channel=True)
@@ -441,29 +371,100 @@ class AutoPublisher(commands.Cog):
         view = ConfirmView(ctx.author, disable_buttons=True)
         embed = discord.Embed(
             title="Reset Published Messages Count",
-            description="Are you sure you want to reset **all** published messages counts?",
+            description="Are you sure you want to reset the published messages count?",
             color=await ctx.embed_color(),
         )
         embed.add_field(
             name="⚠️WARNING⚠️",
-            value="This action will reset all published messages counts to `0` and cannot be undone unless you have a backup of the data.",
+            value="This action will reset the published messages count to `0` and cannot be undone unless you have a backup of the data.",
             inline=False,
         )
         embed.set_footer(text="Be careful with this action.")
         view.message = await ctx.send(embed=embed, view=view)
         await view.wait()
         if view.result:
-            async with aiosqlite.connect(self.db_path) as db:
-                await db.execute(
-                    """
-                    UPDATE stats
-                    SET published_count = 0,
-                        published_weekly_count = 0,
-                        published_monthly_count = 0,
-                        published_yearly_count = 0
-                """
-                )
-                await db.commit()
-            await ctx.send("All published messages counts have been reset.")
+            await self.config.published_count.set(0)
+            await ctx.send("Published messages count has been reset.")
         else:
-            await ctx.send("All published messages counts reset has been cancelled.")
+            await ctx.send("Published messages count reset has been cancelled.")
+
+
+# -------------VIEW----------------
+# Credit: AAA3A.
+# https://discord.com/channels/133049272517001216/133251234164375552/1280854205497737216
+class IgnoredNewsChannelsView(discord.ui.View):
+    def __init__(self, cog: commands.Cog) -> None:
+        super().__init__(timeout=180)
+        self.cog: commands.Cog = cog
+        self.ctx: commands.Context = None
+        self.message: discord.Message = None
+        self.ignored_channels: typing.List[discord.ForumChannel] = []
+
+    async def start(self, ctx: commands.Context) -> None:
+        self.ctx: commands.Context = ctx
+        self.ignored_channels: typing.List[discord.ForumChannel] = [
+            channel
+            for channel_id in await self.cog.config.guild(self.ctx.guild).ignored_channels()
+            if (channel := self.ctx.guild.get_channel(channel_id))
+        ]
+        self.select.default_values = self.ignored_channels
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id not in [self.ctx.author.id] + list(self.ctx.bot.owner_ids):
+            await interaction.response.send_message(
+                "You are not allowed to use this interaction.", ephemeral=True
+            )
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item: discord.ui.Item
+            item.disabled = True
+        try:
+            await self.message.edit(view=self)
+        except discord.HTTPException as e:
+            log.error(e)
+
+    @discord.ui.select(
+        cls=discord.ui.ChannelSelect,
+        channel_types=[discord.ChannelType.news],
+        min_values=0,
+        placeholder="Select the news channels to ignore.",
+    )
+    async def select(
+        self, interaction: discord.Interaction, select: discord.ui.ChannelSelect
+    ) -> None:
+        await interaction.response.defer()
+        selected_channels = select.values
+        current_ignored_channels = await self.cog.config.guild(self.ctx.guild).ignored_channels()
+
+        for channel in selected_channels:
+            if channel.id in current_ignored_channels:
+                current_ignored_channels.remove(channel.id)
+            else:
+                current_ignored_channels.append(channel.id)
+        self.ignored_channels = [
+            self.ctx.guild.get_channel(channel_id) for channel_id in current_ignored_channels
+        ]
+
+        await interaction.followup.send(
+            f"Click on the button to Confirm the selected news channels.",
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.success)
+    async def save(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        new_ignored_channels = [channel.id for channel in self.ignored_channels]
+
+        # Check if the channel is already ignored
+        if new_ignored_channels == await self.cog.config.guild(self.ctx.guild).ignored_channels():
+            return await interaction.response.send_message(
+                "No changes were made because the selected news channel is already ignored.",
+                ephemeral=True,
+            )
+
+        await self.cog.config.guild(self.ctx.guild).ignored_channels.set(new_ignored_channels)
+        await interaction.response.send_message(
+            ":white_check_mark: Ignored news channels saved!", ephemeral=True
+        )

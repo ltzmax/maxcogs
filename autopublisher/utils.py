@@ -59,18 +59,25 @@ async def get_next_reset_timestamp(
         return 31 if month in (1, 3, 5, 7, 8, 10, 12) else 30
 
     if target_weekday is not None:
-        delta = (target_weekday - current_time.weekday()) % 7
-        if current_time.weekday() + delta > 6:
-            delta -= 7
+        # Calculate the number of days until the next target weekday
+        delta = (target_weekday - current_time.weekday() + 7) % 7
+        if delta == 0:
+            delta = 7  # Ensure it is always in the future
         next_target_date = current_time + timedelta(days=delta)
 
     elif target_day is not None and target_month is None:
-        days_until = (target_day - current_time.day) % days_in_month(
-            current_time.month, current_time.year
-        ) or days_in_month(current_time.month, current_time.year)
+        # Calculate the number of days until the next target day of the month
+        days_until = (
+            target_day - current_time.day + days_in_month(current_time.month, current_time.year)
+        ) % days_in_month(current_time.month, current_time.year)
+        if days_until == 0:
+            days_until = days_in_month(
+                current_time.month, current_time.year
+            )  # Ensure it is always in the future
         next_target_date = current_time + timedelta(days=days_until)
 
     elif target_day is not None and target_month is not None:
+        # Calculate the next target date with the given day and month
         next_year = current_time.year + (
             current_time.month > target_month
             or (current_time.month == target_month and current_time.day >= target_day)
