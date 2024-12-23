@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.5.0"
+    __version__: Final[str] = "1.6.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -59,6 +59,7 @@ class Counting(commands.Cog):
             "toggle_edit_message": False,
             "toggle_next_number_message": False,
             "same_user_to_count": False,
+            "same_user_to_count_msg": "You cannot count consecutively. Please wait for someone else to count.",
             "last_user_id": None,
             "toggle_reactions": False,
             "default_reaction": "✅",
@@ -101,6 +102,7 @@ class Counting(commands.Cog):
             )
             return
 
+        same_user_to_count_msg = await config.same_user_to_count_msg()
         use_silent = await config.use_silent()
         reaction = await config.default_reaction()
         delete_after = await config.delete_after()
@@ -111,7 +113,7 @@ class Counting(commands.Cog):
         if await config.same_user_to_count() and await config.last_user_id() == message.author.id:
             await self._handle_invalid_count(
                 message,
-                "You cannot count consecutively. Please wait for someone else to count.",
+                same_user_to_count_msg,
                 delete_after,
                 use_silent,
             )
@@ -408,13 +410,14 @@ class Counting(commands.Cog):
 
         `edit` - The message to show when a user edits their message in the counting channel.
         `count` - The message to show when a user sends an incorrect number in the counting channel.
+        `sameuser` - The message to show when a user tries to count consecutively.
 
         **Examples:**
         - `[p]countingset setmessage edit You can't edit your messages here.`
         - `[p]countingset setmessage count Next number should be {next_count}`
 
         **Arguments:**
-        - `<message_type>` The type of message to set (edit or count).
+        - `<message_type>` The type of message to set (edit, sameuser or count).
         - `<message>` The message to set.
         """
         config = self.config.guild(ctx.guild)
@@ -425,8 +428,11 @@ class Counting(commands.Cog):
         elif message_type.lower() == "count":
             await config.default_next_number_message.set(message)
             await ctx.send("Default message for wrong number set")
+        elif message_type.lower() == "sameuser":
+            await config.same_user_to_count_msg.set(message)
+            await ctx.send("Default message for same user counting set")
         else:
-            await ctx.send("Invalid message type. Available types: edit, count")
+            await ctx.send("Invalid message type. Available types: edit, count, sameuser")
 
     @countingset.command()
     async def togglemessage(self, ctx, setting: str):
@@ -486,6 +492,7 @@ class Counting(commands.Cog):
         reaction_emoji = await guild_config.default_reaction()
         are_reactions_enabled = await guild_config.toggle_reactions()
         is_silent_mode_enabled = await guild_config.use_silent()
+        same_user_to_count_msg = await guild_config.same_user_to_count_msg()
 
         embed = discord.Embed(
             title="Counting Settings",
@@ -515,5 +522,5 @@ class Counting(commands.Cog):
         embed.add_field(
             name="Next Number Message Content:", value=next_number_message, inline=False
         )
-
+        embed.add_field(name="Same User Count Message:", value=same_user_to_count_msg, inline=False)
         await ctx.send(embed=embed)
