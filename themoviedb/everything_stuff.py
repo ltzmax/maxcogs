@@ -238,7 +238,10 @@ async def search_and_display(ctx, query, media_type, fetch_media_data, create_em
 
     try:
         msg = await ctx.bot.wait_for("message", check=check, timeout=60)
-        index = int(msg.content) - 1
+        try:
+            index = int(msg.content) - 1
+        except ValueError:
+            return await ctx.send("That is not a valid number. Exiting the selection process.")
         if not msg.content.isdigit() or index < 0 or index >= len(filtered_results):
             return await ctx.send("Invalid input. Exiting the selection process.")
     except asyncio.TimeoutError:
