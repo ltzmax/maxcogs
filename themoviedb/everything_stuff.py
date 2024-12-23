@@ -299,8 +299,9 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
             if data.get("next_episode_to_air") and data.get("next_episode_to_air").get("air_date")
             else None
         ),
+        season_grammar = "Season" if data.get("number_of_seasons", 0) == 1 else "Seasons",
         "Status": data.get("status"),
-        "Number of Seasons": data.get("number_of_seasons"),
+        f"Number of {season_grammar}": data.get("number_of_seasons"),
         "Number of Episodes": data.get("number_of_episodes"),
         "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])]),
         "Production Companies": humanize_list(
