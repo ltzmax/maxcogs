@@ -522,5 +522,7 @@ class Counting(commands.Cog):
         embed.add_field(
             name="Next Number Message Content:", value=next_number_message, inline=False
         )
-        embed.add_field(name="Same User Count Message:", value=same_user_to_count_msg, inline=False)
+        embed.add_field(
+            name="Same User Count Message:", value=same_user_to_count_msg, inline=False
+        )
         await ctx.send(embed=embed)
