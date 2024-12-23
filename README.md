@@ -42,10 +42,6 @@ To install any cog you want:
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
 
-- [fixator10](https://github.com/fixator10) For helping doing alot of help.
-
-- [Preda](https://github.com/PredaaA/predacogs) For help.
-
 ## License
 My cogs are under the MIT License. Please see [`LICENSE file`](https://github.com/ltzmax/maxcogs/blob/master/LICENSE) for more information.
 
