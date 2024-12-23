@@ -130,7 +130,8 @@ class NBA(commands.Cog):
                     # Needs to be reset to 0 for the next game to begin correctly updated.
                     log.info(f"Game {game_id} marked as final and scores reset to 0.")
                     continue
-
+                home_record = f"{game['homeTeam']['wins']}-{game['homeTeam']['losses']}"
+                away_record = f"{game['awayTeam']['wins']}-{game['awayTeam']['losses']}"
                 # Only process games that are not final
                 previous_scores = self.game_scores.get(game_id, {"home_score": 0, "away_score": 0})
                 previous_home_score = previous_scores["home_score"]
@@ -174,7 +175,7 @@ class NBA(commands.Cog):
                         embed = discord.Embed(
                             title="NBA Scoreboard Update",
                             color=0xEE6730,
-                            description=f"**{home_team_name}** vs **{away_team_name}**\n**Q{game['period']} with time Left**: {gameclock}\n**Watch full game**: https://www.nba.com/game/{game_id}",
+                            description=f"**{home_team_name}** vs **{away_team_name}**\n**Q{game['period']} with time Left**: {gameclock}\n**Home Record**: {home_record}\n**Away Record**: {away_record}\n**Watch full game**: https://www.nba.com/game/{game_id}",
                         )
                         embed.add_field(
                             name=f"{home_team_name}:",
