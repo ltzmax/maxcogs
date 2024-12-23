@@ -328,13 +328,13 @@ class NBA(commands.Cog):
             )
 
         pages = []
-        for i in range(0, len(games), 5):
+        for i in range(0, len(games), 6):
             embed = discord.Embed(
                 title=f"NBA Schedule for {'All Teams' if not team else team.capitalize()}",
                 description="Upcoming NBA games.",
                 color=await ctx.embed_color(),
             )
-            for game in games[i : i + 5]:
+            for game in games[i : i + 6]:
                 embed.add_field(
                     name=f"{game['home_team'] if game['home_team'] != game['away_team'] else 'TBD'} vs {game['away_team'] if game['home_team'] != game['away_team'] else 'TBD'}",
                     value=f"- **Start Time**: <t:{game['timestamp']}:F> (<t:{game['timestamp']}:R>)\n- **Arena**: {game.get('arena', 'Unknown')}\n- **City**: {game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}",
