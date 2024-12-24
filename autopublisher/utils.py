@@ -33,7 +33,7 @@ async def get_next_reset_timestamp(
     *,
     target_weekday: int = None,
     target_day: int = None,
-    target_month: int = None
+    target_month: int = None,
 ) -> int:
     """
     Calculate the next timestamp for a given target based on current time, weekday, day, and month.
