@@ -331,7 +331,7 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
                     else None
                 ),
                 "Runtime": f"{data.get('runtime', 0)} minutes",
-                "Belongs to Collection": data.get("belongs_to_collection", {}).get("name"),
+                "Belongs to Collection": data.get("belongs_to_collection", {}).get("name") if data.get("belongs_to_collection") else None,
                 "Revenue": f"${humanize_number(data.get('revenue', 0))}",
                 "Budget": f"${humanize_number(data.get('budget', 0))}",
                 "Adult": "Yes" if data.get("adult") else "No",
