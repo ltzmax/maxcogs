@@ -35,7 +35,7 @@ import orjson
 from discord.ext import tasks
 from redbot.core import Config, app_commands, commands
 from redbot.core.data_manager import cog_data_path
-from redbot.core.utils.chat_formatting import box
+from redbot.core.utils.chat_formatting import box, header
 from redbot.core.utils.views import SimpleMenu
 
 from .converter import (
@@ -397,9 +397,7 @@ class NBA(commands.Cog):
                 if not url:
                     log.error(f"No link found for article {article}")
                     continue
-                description += f"## {title}\n{article_description}\n> [Read More Here]({url})\n"
-                # Wait for red to release 3.5.14 for the header support
-                # description += f"{header(title, 'medium')}\n{box(article_description, lang='yaml')}\n[Read More Here]({url})\n"
+                description += f"{header(title, 'medium')}\n{box(article_description, lang='yaml')}\n> [Read More Here]({url})\n"
             if not description:
                 log.error("No description found for the news page.")
                 return await ctx.send("No description found for the news page.")
