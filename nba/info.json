@@ -7,7 +7,7 @@
     "description": "NBA Cog that provides NBA game updates, schedules, and news.",
     "short": "NBA Cog that provides NBA game updates, schedules, and news.",
     "hidden": false,
-    "min_bot_version": "3.5.13",
+    "min_bot_version": "3.5.14",
     "tags": [
         "basketball",
         "nba",
