@@ -24,6 +24,7 @@ SOFTWARE.
 
 import aiohttp
 import discord
+from typing import Dict, Optional, Union
 from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView
 
