@@ -7,7 +7,7 @@
     "description": "Search for informations of movies and TV shows from themoviedb.org.",
     "short": "Search for informations of movies and TV shows from themoviedb.org.",
     "hidden": false,
-    "min_bot_version": "3.5.13",
+    "min_bot_version": "3.5.14",
     "tags": [
         "movies",
         "movie",
