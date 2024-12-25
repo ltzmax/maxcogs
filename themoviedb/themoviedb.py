@@ -24,7 +24,7 @@ SOFTWARE.
 
 import aiohttp
 import discord
-from redbot.core import app_commands, commands
+from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView
 
 from .everything_stuff import build_embed, get_media_data, search_and_display
@@ -49,12 +49,17 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "1.2.1"
+    __version__ = "1.3.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/TheMovieDB.md"
 
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.config: Config = Config.get_conf(self, identifier=1234567890, force_registration=True)
+        default_global: Dict[str, Union[bool, Optional[int]]] = {
+            "use_box": False,
+        }
+        self.config.register_global(**default_global)
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -74,6 +79,17 @@ class TheMovieDB(commands.Cog):
         """
         Configure TheMovieDB cog settings.
         """
+
+    @tmdbset.command(name="usebox")
+    async def tmdbset_usebox(self, ctx: commands.Context, value: bool):
+        """
+        Set if you want to use the box in the choose of movie/tv show.
+
+        - `True` to use the box art in the embeds.
+        - `False` to not use the box art in the embeds.
+        """
+        await self.config.use_box.set(value)
+        await ctx.send(f"Use box art set to `{value}`.")
 
     @tmdbset.command(name="creds")
     @commands.bot_has_permissions(embed_links=True)
@@ -119,7 +135,7 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The movie you want to search for.
         """
-        await search_and_display(ctx, query, "movie", get_media_data, build_embed)
+        await search_and_display(ctx, query, "movie", get_media_data, build_embed, self.config)
 
     @commands.check(apicheck)
     @commands.hybrid_command(aliases=["tv"])
@@ -137,4 +153,4 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The TV show you want to search for.
         """
-        await search_and_display(ctx, query, "tv", get_media_data, build_embed)
+        await search_and_display(ctx, query, "tv", get_media_data, build_embed, self.config)

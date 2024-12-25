@@ -31,7 +31,13 @@ from typing import Any, Dict, Optional
 import aiohttp
 import discord
 import orjson
-from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
+from redbot.core.utils.chat_formatting import (
+    box,
+    header,
+    humanize_list,
+    humanize_number,
+    rich_markup,
+)
 from redbot.core.utils.views import SimpleMenu
 
 log = logging.getLogger("red.maxcogs.themoviedb.everything_stuff")
@@ -153,7 +159,11 @@ async def get_media_data(ctx, media_id: int, media_type: str):
         return None
 
 
-async def search_and_display(ctx, query, media_type, fetch_media_data, create_embed):
+async def get_response_format(config, guild: discord.Guild) -> bool:
+    return await config.use_box()
+
+
+async def search_and_display(ctx, query, media_type, fetch_media_data, create_embed, config):
     """
     Search for a movie or TV show on TMDB and display the results to the user.
 
@@ -218,15 +228,22 @@ async def search_and_display(ctx, query, media_type, fetch_media_data, create_em
         )
         return await ctx.send(embed=embed, view=view)
 
-    # Paginate results
+    response_in_box = await get_response_format(config, ctx.guild)
+    txt = "What would you like to select?"
+    header_text = f"{header(txt, 'medium')}\n"
     pages = [
-        "## What would you like to select?\n"
+        header_text
         + "\n".join(
             f"{i+j+1}. {result['title' if media_type == 'movie' else 'name']} ({result.get('release_date' if media_type == 'movie' else 'first_air_date', 'N/A')[:4]}) ({result.get('popularity', 0)})"
             for j, result in enumerate(filtered_results[i : i + 15])
         )
         for i in range(0, len(filtered_results), 15)
     ]
+
+    if response_in_box:
+        pages = [
+            header_text + rich_markup(page[len(header_text) :], markup=True) for page in pages
+        ]
 
     await SimpleMenu(pages, use_select_menu=True, disable_after_timeout=True, timeout=120).start(
         ctx
