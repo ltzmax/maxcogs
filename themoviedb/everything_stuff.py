@@ -375,7 +375,7 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
             "Production Companies",
             "Genres",
             "Production Countries",
-            "Spoken Languages",
+            "Spoken Language",
             "Homepage",
             "Original Title",
             "Belongs to Collection",
