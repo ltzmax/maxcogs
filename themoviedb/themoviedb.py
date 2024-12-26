@@ -86,6 +86,8 @@ class TheMovieDB(commands.Cog):
         """
         Set if you want to use the box in the choose of movie/tv show.
 
+        Disabled by default.
+
         - `True` to use the box art in the embeds.
         - `False` to not use the box art in the embeds.
         """

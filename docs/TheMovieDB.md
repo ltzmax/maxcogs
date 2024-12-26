@@ -1,7 +1,3 @@
-## This cog is in BETA
-Please note that this cog is still in beta and may not function as expected. 
-
-## Information
 Search for informations of movies and TV shows from themoviedb.org.
 
 # [p]tmdbset
@@ -13,6 +9,14 @@ Guide to setting up the TMDB API key.<br/>
 
 This command will give you information on how to set up the API key.<br/>
  - Usage: `[p]tmdbset creds`
+## [p]tmdbset usebox
+Set if you want to use the box in the choose of movie/tv show.<br/>
+
+Disabled by default.<br/>
+
+- `True` to use the box art in the embeds.<br/>
+- `False` to not use the box art in the embeds.<br/>
+ - Usage: `[p]tmdbset usebox <value>`
 # [p]movie (Hybrid Command)
 Search for a movie.<br/>
 
