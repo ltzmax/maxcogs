@@ -319,15 +319,17 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
         "Status": data.get("status"),
         f"Number of {'Season' if data.get('number_of_seasons', 0) == 1 else 'Seasons'}": data.get("number_of_seasons"),
         "Number of Episodes": data.get("number_of_episodes"),
-        "Genres": humanize_list([genre["name"] for genre in data.get("genres", [])]),
+        f"{'Genere' if len(data.get('genres', [])) == 1 else 'Genres'}": humanize_list(
+            [genre["name"] for genre in data.get("genres", [])]
+        ),
         f"Production {'Company' if len(data.get('production_companies', [])) == 1 else 'Companies'}": humanize_list(
             [company["name"] for company in data.get("production_companies", [])]
         ),
         f"Production {'Country' if len(data.get('production_countries', [])) == 1 else 'Countries'}": humanize_list(
             [country["name"] for country in data.get("production_countries", [])]
         ),
-        "Spoken Languages": humanize_list(
-            [language["english_name"] for language in data.get("spoken_languages", [])]
+        f"{'Spoken Language' if len(data.get('spoken_languages', [])) == 1 else 'Spoken Languages'}": humanize_list(
+            [language["name"] for language in data.get("spoken_languages", [])]
         ),
         "Popularity": humanize_number(data.get("popularity", 0)),
         "Vote Average": data.get("vote_average"),
