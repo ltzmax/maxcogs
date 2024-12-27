@@ -177,11 +177,15 @@ class NBA(commands.Cog):
                         )
                         embed.add_field(
                             name=f"{home_team_name}:",
-                            value=box(f"Score: {home_score}", lang="json"),
+                            value=rich_markup(
+                                f"[bold green]Score:[/bold green] {home_score}", markup=True
+                            ),
                         )
                         embed.add_field(
                             name=f"{away_team_name}:",
-                            value=box(f"Score: {away_score}", lang="json"),
+                            value=rich_markup(
+                                f"[bold red]Score:[/bold red] {away_score}", markup=True
+                            ),
                         )
                         embed.set_footer(text="🏀Provided by NBA.com")
                         view = PlayByPlay(game_id)
@@ -511,11 +515,17 @@ class NBA(commands.Cog):
             )
             embed.add_field(
                 name=f"{home_team_name}:",
-                value=rich_markup(f"Score: {home_score}\nRecord: {home_record}", markup=True),
+                value=rich_markup(
+                    f"[bold red]Score:[/bold red] {home_score}\n[bold blue]Record:[/bold blue] {home_record}",
+                    markup=True,
+                ),
             )
             embed.add_field(
                 name=f"{away_team_name}:",
-                value=rich_markup(f"Score: {away_score}\nRecord: {away_record}", markup=True),
+                value=rich_markup(
+                    f"[bold red]Score:[/bold red] {away_score}\n[bold blue]Record:[/bold blue] {away_record}",
+                    markup=True,
+                ),
             )
             embed.add_field(
                 name="Game Status:",
