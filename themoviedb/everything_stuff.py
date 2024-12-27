@@ -317,7 +317,9 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
             else None
         ),
         "Status": data.get("status"),
-        f"Number of {'Season' if data.get('number_of_seasons', 0) == 1 else 'Seasons'}": data.get("number_of_seasons"),
+        f"Number of {'Season' if data.get('number_of_seasons', 0) == 1 else 'Seasons'}": data.get(
+            "number_of_seasons"
+        ),
         "Number of Episodes": data.get("number_of_episodes"),
         f"{'Genere' if len(data.get('genres', [])) == 1 else 'Genres'}": humanize_list(
             [genre["name"] for genre in data.get("genres", [])]

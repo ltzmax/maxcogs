@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Dict, Optional, Union
+
 import aiohttp
 import discord
-from typing import Dict, Optional, Union
 from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView
 
