@@ -127,8 +127,6 @@ class NBA(commands.Cog):
                         "away_score": 0,
                     }
                     self.save_cache(self.data_path / "game_scores.json", self.game_scores)
-                    # Needs to be reset to 0 for the next game to begin correctly updated.
-                    log.info(f"Game {game_id} marked as final and scores reset to 0.")
                     continue
                 # Only process games that are not final
                 previous_scores = self.game_scores.get(game_id, {"home_score": 0, "away_score": 0})
