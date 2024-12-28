@@ -176,7 +176,7 @@ class NBA(commands.Cog):
                         embed.add_field(
                             name=f"{home_team_name}:",
                             value=rich_markup(
-                                f"[bold green]Score:[/bold green] {home_score}", markup=True
+                                f"[bold magenta]Score:[/bold magenta] {home_score}", markup=True
                             ),
                         )
                         embed.add_field(
@@ -514,7 +514,7 @@ class NBA(commands.Cog):
             embed.add_field(
                 name=f"{home_team_name}:",
                 value=rich_markup(
-                    f"[bold red]Score:[/bold red] {home_score}\n[bold blue]Record:[/bold blue] {home_record}",
+                    f"[bold magenta]Score:[/bold magenta] {home_score}\n[bold blue]Record:[/bold blue] {home_record}",
                     markup=True,
                 ),
             )
