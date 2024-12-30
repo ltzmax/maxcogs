@@ -36,22 +36,13 @@ from .everything_stuff import build_embed, get_media_data, search_and_display
 # - Add Airing today tv shows (https://developer.themoviedb.org/reference/tv-series-airing-today-list)
 # - Add person (https://developer.themoviedb.org/reference/search-person)
 
-
-# Taken from flare's Dank memer cog.
-# https://github.com/flaree/flare-cogs/blob/1cc1ef9734f40daf2878f2c9dfe68a61e8767eab/dankmemer/dankmemer.py#L16-L19
-async def apicheck(ctx):
-    """Check if the TheMovieDB api key is set."""
-    token = await ctx.bot.get_shared_api_tokens("tmdb")
-    return bool(token.get("api_key"))
-
-
 class TheMovieDB(commands.Cog):
     """
     Search for informations of movies and TV shows from themoviedb.org.
     """
 
     __author__ = "MAX"
-    __version__ = "1.3.0"
+    __version__ = "1.4.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/TheMovieDB.md"
 
     def __init__(self, bot):
@@ -123,7 +114,6 @@ class TheMovieDB(commands.Cog):
         embed.set_footer(text="You can also set your API key by using the button.")
         await ctx.send(embed=embed, view=view)
 
-    @commands.check(apicheck)
     @commands.hybrid_command(aliases=["movies"])
     @app_commands.describe(query="The movie you want to search for.")
     @commands.bot_has_permissions(embed_links=True)
@@ -139,9 +129,14 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The movie you want to search for.
         """
+        token = await ctx.bot.get_shared_api_tokens("tmdb")
+        if token.get("api_key") is None:
+            return await ctx.send(
+                "The bot owner has not set up the API key for TheMovieDB. "
+                "Please ask them to set it up."
+            )
         await search_and_display(ctx, query, "movie", get_media_data, build_embed, self.config)
 
-    @commands.check(apicheck)
     @commands.hybrid_command(aliases=["tv"])
     @app_commands.describe(query="The series you want to search for.")
     @commands.bot_has_permissions(embed_links=True)
@@ -157,4 +152,10 @@ class TheMovieDB(commands.Cog):
         **Arguments:**
         - `<query>` - The TV show you want to search for.
         """
+        token = await ctx.bot.get_shared_api_tokens("tmdb")
+        if token.get("api_key") is None:
+            return await ctx.send(
+                "The bot owner has not set up the API key for TheMovieDB. "
+                "Please ask them to set it up."
+            )
         await search_and_display(ctx, query, "tv", get_media_data, build_embed, self.config)
