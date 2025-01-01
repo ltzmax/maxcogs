@@ -30,6 +30,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Final, List, Literal, Union
 
 import discord
+from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -46,7 +47,7 @@ log = logging.getLogger("red.maxcogs.autopublisher")
 class AutoPublisher(commands.Cog):
     """Automatically push news channel messages."""
 
-    __version__: Final[str] = "2.7.1"
+    __version__: Final[str] = "2.8.0"
     __author__: Final[str] = "MAX, AAA3A"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/AutoPublisher.md"
 
@@ -77,8 +78,26 @@ class AutoPublisher(commands.Cog):
             minute=0,
             args=["weekly"],
         )
+        # Monthly reset on the last day of the month at midnight
         self.scheduler.add_job(
-            self.reset_count, "cron", day="last", hour=0, minute=0, args=["monthly"]
+            self.reset_count,
+            CronTrigger(
+                day="1",  # Run on the 1st day of the month
+                hour=0,  # At midnight
+                minute=0,
+                second=0,
+            ),
+            args=["monthly"],
+            misfire_grace_time=3600,  # Allows for 1 hour of grace time for missed executions
+        )
+        self.scheduler.add_job(
+            self.reset_count,
+            "cron",
+            month=1,
+            day=1,
+            hour=0,
+            minute=0,
+            args=["yearly"],
         )
         self.scheduler.add_job(
             self.reset_count, "cron", month=1, day=1, hour=0, minute=0, args=["yearly"]
@@ -108,8 +127,10 @@ class AutoPublisher(commands.Cog):
                 data["published_weekly_count"] = 0
                 log.info("Weekly published messages count has been reset.")
             elif period == "monthly":
-                data["published_monthly_count"] = 0
-                log.info("Monthly published messages count has been reset.")
+                # Check if today is the 1st of the month to ensure this is the right time for reset
+                if datetime.now().day == 1:
+                    data["published_monthly_count"] = 0
+                    log.info("Monthly published messages count has been reset.")
             elif period == "yearly":
                 data["published_yearly_count"] = 0
                 log.info("Yearly published messages count has been reset.")
