@@ -32,9 +32,10 @@ from redbot.core.utils.views import SetApiView
 from .everything_stuff import build_embed, get_media_data, search_and_display
 
 # TODO:
-# - Add upcoming movies (https://developer.themoviedb.org/reference/movie-upcoming-list)
-# - Add Airing today tv shows (https://developer.themoviedb.org/reference/tv-series-airing-today-list)
-# - Add person (https://developer.themoviedb.org/reference/search-person)
+# - Add upcoming movies (https://developer.themoviedb.org/reference/movie-upcoming-list) (Subject to change)
+# - Add Airing today tv shows (https://developer.themoviedb.org/reference/tv-series-airing-today-list) (Subject to change)
+# - Add person (https://developer.themoviedb.org/reference/search-person) (In progress)
+# - Add Recommnedations (https://developer.themoviedb.org/reference/movie-recommendations) (Will be added in future update)
 
 class TheMovieDB(commands.Cog):
     """
