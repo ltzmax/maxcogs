@@ -55,7 +55,7 @@ class HoneyCombs(commands.Cog):
             "players": {},
             "game_active": False,
             "default_start_image": "https://i.maxapp.tv/4c76241E.png",
-            "shapes": ["circle ⭕️", "triangle △", "star ⭐️", "umbrella ☂️"],
+            "shapes": ["circle⭕️", "triangle△", "star⭐️", "umbrella☂️"],
             "mod_only_command": False,
             "max_players": 5,
         }
@@ -111,7 +111,12 @@ class HoneyCombs(commands.Cog):
             if user:
                 shape = data["shape"]
                 # Players have a 20% chance to win
-                if random.random() < 0.2:
+                # Players with an umbrella have a 5% chance to win
+                # umbrellas were said to be the hardest to pass
+                if shape == "umbrella☂️":
+                    if random.random() < 0.05:
+                else:
+                    if random.random() < 0.2:
                     try:
                         await bank.deposit_credits(user, winning_price)
                         passed_players.append(
