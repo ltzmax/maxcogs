@@ -44,7 +44,7 @@ log = logging.getLogger("red.maxcogs.honeycombs")
 class HoneyCombs(commands.Cog):
     """Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game."""
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/SquidGame.md"
 
@@ -52,12 +52,13 @@ class HoneyCombs(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=34562809777, force_registration=True)
         default_guild = {
-            "players": {},
-            "game_active": False,
-            "default_start_image": "https://i.maxapp.tv/4c76241E.png",
-            "shapes": ["circle⭕️", "triangle△", "star⭐️", "umbrella☂️"],
-            "mod_only_command": False,
-            "max_players": 5,
+            "players": {},  # List of players
+            "game_active": False,  # Default game is inactive
+            "default_start_image": "https://i.maxapp.tv/4c76241E.png",  # Default start image
+            "shapes": ["circle⭕️", "triangle△", "star⭐️", "umbrella☂️"],  # Default shapes
+            "mod_only_command": False,  # Default mod only command is False
+            "max_players": 5,  # Default minimum number of players
+            "default_minutes": 10,  # Default minutes to 10.
         }
         default_global = {
             "winning_price": 100,  # Default winning price
@@ -90,7 +91,8 @@ class HoneyCombs(commands.Cog):
         if not players:
             return
 
-        end_time = int((datetime.utcnow() + timedelta(minutes=10)).timestamp())
+        default_minutes = await guild_config.default_minutes()
+        end_time = int((datetime.utcnow() + timedelta(minutes=default_minutes)).timestamp())
         embed = discord.Embed(
             title="Sugar Honeycombs Challenge",
             color=await ctx.embed_color(),
@@ -99,7 +101,7 @@ class HoneyCombs(commands.Cog):
         embed.add_field(name="Players:", value=len(players))
         embed.set_footer(text="I would like to expend a heartfelt welcome to you all.")
         await ctx.send(embed=embed)
-        await discord.utils.sleep_until(datetime.utcnow() + timedelta(minutes=10))
+        await discord.utils.sleep_until(datetime.utcnow() + timedelta(minutes=default_minutes))
 
         winning_price = await self.config.winning_price()
         losing_price = await self.config.losing_price()
@@ -113,10 +115,7 @@ class HoneyCombs(commands.Cog):
                 # Players have a 20% chance to win
                 # Players with an umbrella have a 5% chance to win
                 # umbrellas were said to be the hardest to pass
-                if shape == "umbrella☂️":
-                    if random.random() < 0.05:
-                else:
-                    if random.random() < 0.2:
+                if random.random() < 0.2:
                     try:
                         await bank.deposit_credits(user, winning_price)
                         passed_players.append(
@@ -345,8 +344,35 @@ class HoneyCombs(commands.Cog):
         await ctx.send(f"Mod only command has been set to {state}.")
 
     @commands.admin()
+    @honeycombset.command(name="defaultminutes")
+    async def default_minutes(
+        self, ctx: commands.Context, default_minutes: commands.Range[int, 10, 360]
+    ):
+        """
+        Change the default minutes for the game to run for.
+
+        **Please note**
+        - This is for the length of the game to run for, not the length of when the game starts.
+
+        The default minutes is 10.
+        The maximum number of minutes is 360 (6 hours).
+
+        **Examples**:
+        - `[p]honeycombset defaultminutes 20` - Set the default number of minutes to 20 minutes.
+        - `[p]honeycombset defaultminutes 60` - Set the default number of minutes to 60 minutes. (1 hour)
+        You can use [unitconverters](https://www.unitconverters.net/time/minutes-to-hours.htm) to convert minutes to hours.
+
+        **Arguments**:
+        - `<default_minutes>`: The default number of minutes for the game.
+        """
+        await self.config.guild(ctx.guild).default_minutes.set(default_minutes)
+        await ctx.send(f"The default minutes has been set to {default_minutes} minutes.")
+
+    @commands.admin()
     @honeycombset.command(name="minimumplayers")
-    async def minimum_players(self, ctx: commands.Context, minimum_players: commands.Range[int, 2, 15]):
+    async def minimum_players(
+        self, ctx: commands.Context, minimum_players: commands.Range[int, 2, 15]
+    ):
         """
         Set the minimum number of players needed to start a game.
 
