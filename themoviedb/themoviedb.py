@@ -33,7 +33,6 @@ from .everything_stuff import build_embed, get_media_data, person_embed, search_
 
 # TODO:
 # - Add upcoming movies (https://developer.themoviedb.org/reference/movie-upcoming-list) (Subject to change)
-# - Add Airing today tv shows (https://developer.themoviedb.org/reference/tv-series-airing-today-list) (Subject to change)
 # - Add Recommnedations (https://developer.themoviedb.org/reference/movie-recommendations) (Will be added in future update)
 
 

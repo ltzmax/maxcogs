@@ -275,23 +275,6 @@ async def search_and_display(ctx, query, media_type, fetch_media_data, create_em
 
 
 async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
-    """
-    Build and return a Discord embed for a given media item from TMDB.
-
-    Args:
-        ctx (commands.Context): The invocation context.
-        data (Dict[str, Any]): The media data obtained from TMDB.
-        item_id (int): The ID of the media item.
-        index (int): The index of the selected media in the results.
-        results (List[Dict[str, Any]]): The list of search results.
-        item_type (str, optional): The type of media, either "movie" or "tv". Defaults to "movie".
-
-    Returns:
-        Tuple[discord.Embed, discord.ui.View]: A tuple containing the embed and an interactive view.
-
-    Raises:
-        ValueError: If the data is null or no fields were added to the embed.
-    """
     if not data:
         raise ValueError("Data is null")
 

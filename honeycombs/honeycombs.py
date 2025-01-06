@@ -44,7 +44,7 @@ log = logging.getLogger("red.maxcogs.honeycombs")
 class HoneyCombs(commands.Cog):
     """Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/SquidGame.md"
 
@@ -57,6 +57,7 @@ class HoneyCombs(commands.Cog):
             "default_start_image": "https://i.maxapp.tv/4c76241E.png",
             "shapes": ["circle ⭕️", "triangle △", "star ⭐️", "umbrella ☂️"],
             "mod_only_command": False,
+            "max_players": 5,
         }
         default_global = {
             "winning_price": 100,  # Default winning price
@@ -211,7 +212,8 @@ class HoneyCombs(commands.Cog):
         img = await guild_config.default_start_image()
         if img:
             embed.set_image(url=img)
-        embed.set_footer(text="Need at least 5 players to start the game.")
+        max_players = await guild_config.max_players()
+        embed.set_footer(text=f"Need at least {max_players} players to start the game.")
 
         message = await ctx.send(embed=embed, view=view)
         view.message = message
@@ -220,10 +222,11 @@ class HoneyCombs(commands.Cog):
     async def wait_for_players(self, ctx: commands.Context):
         await discord.utils.sleep_until(datetime.utcnow() + timedelta(minutes=2))
 
+        max_players = await self.config.max_players()
         players = await self.config.guild(ctx.guild).players()
-        if len(players) < 5 and not await self.config.guild(ctx.guild).game_active():
+        if len(players) < max_players and not await self.config.guild(ctx.guild).game_active():
             return  # game has been reset, no need to send a message
-        elif len(players) < 5:
+        elif len(players) < max_players:
             await ctx.send("Not enough players entered the game. Game has been canceled.")
         await self.config.guild(ctx.guild).clear()
         await self.run_game(ctx)
@@ -336,6 +339,17 @@ class HoneyCombs(commands.Cog):
         await self.config.guild(ctx.guild).mod_only_command.set(state)
         await ctx.send(f"Mod only command has been set to {state}.")
 
+    @commands.admin()
+    @honeycombset.command(name="minimumplayers")
+    async def minimum_players(self, ctx: commands.Context, minimum_players: commands.Range[int, 2, 15]):
+        """
+        Set the minimum number of players needed to start a game.
+
+        The default maximum number of players is 5.
+        """
+        await self.config.guild(ctx.guild).max_players.set(max_players)
+        await ctx.send(f"The minimum number of players has been set to {minimum_players}.")
+
     @commands.is_owner()
     @honeycombset.command(name="winningprice")
     async def winning_price(
@@ -402,6 +416,9 @@ class HoneyCombs(commands.Cog):
             )
         embed.add_field(
             name="Mod Only Command", value=guild_data.get("mod_only_command", False), inline=False
+        )
+        embed.add_field(
+            name="Minimum Players", value=guild_data.get("max_players", 5), inline=False
         )
         start_image_url = guild_data.get("default_start_image", None)
         if start_image_url:
