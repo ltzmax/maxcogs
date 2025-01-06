@@ -92,7 +92,7 @@ class HoneyCombs(commands.Cog):
             return
 
         default_minutes = await guild_config.default_minutes()
-        end_time = int((datetime.utcnow() + timedelta(minutes=default_minutes)).timestamp())
+        end_time = int((datetime.now() + timedelta(minutes=default_minutes)).timestamp())
         embed = discord.Embed(
             title="Sugar Honeycombs Challenge",
             color=await ctx.embed_color(),
@@ -101,7 +101,7 @@ class HoneyCombs(commands.Cog):
         embed.add_field(name="Players:", value=len(players))
         embed.set_footer(text="I would like to expend a heartfelt welcome to you all.")
         await ctx.send(embed=embed)
-        await discord.utils.sleep_until(datetime.utcnow() + timedelta(minutes=default_minutes))
+        await discord.utils.sleep_until(datetime.now() + timedelta(minutes=default_minutes))
 
         winning_price = await self.config.winning_price()
         losing_price = await self.config.losing_price()
@@ -192,7 +192,7 @@ class HoneyCombs(commands.Cog):
             )
 
         await guild_config.game_active.set(True)
-        end_time = int((datetime.utcnow() + timedelta(minutes=2)).timestamp())
+        end_time = int((datetime.now() + timedelta(minutes=2)).timestamp())
         view = HoneycombView(self)
         winning_price = await self.config.winning_price()
         losing_price = await self.config.losing_price()
@@ -224,7 +224,7 @@ class HoneyCombs(commands.Cog):
         asyncio.create_task(self.wait_for_players(ctx))
 
     async def wait_for_players(self, ctx: commands.Context):
-        await discord.utils.sleep_until(datetime.utcnow() + timedelta(minutes=2))
+        await discord.utils.sleep_until(datetime.now() + timedelta(minutes=2))
 
         max_players = await self.config.max_players()
         players = await self.config.guild(ctx.guild).players()
@@ -346,7 +346,7 @@ class HoneyCombs(commands.Cog):
     @commands.admin()
     @honeycombset.command(name="defaultminutes")
     async def default_minutes(
-        self, ctx: commands.Context, default_minutes: commands.Range[int, 10, 360]
+        self, ctx: commands.Context, default_minutes: commands.Range[int, 10, 720]
     ):
         """
         Change the default minutes for the game to run for.
@@ -355,7 +355,7 @@ class HoneyCombs(commands.Cog):
         - This is for the length of the game to run for, not the length of when the game starts.
 
         The default minutes is 10.
-        The maximum number of minutes is 360 (6 hours).
+        The maximum number of minutes is 720 (12 hours).
 
         **Examples**:
         - `[p]honeycombset defaultminutes 20` - Set the default number of minutes to 20 minutes.
