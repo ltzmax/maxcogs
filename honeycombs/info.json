@@ -1,0 +1,30 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "HoneyCombs",
+    "install_msg": "Thanks for installing.\nRun `[p]honeycombs` to start the game.",
+    "description": "Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.",
+    "short": "Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.",
+    "hidden": false,
+    "min_bot_version": "3.5.14",
+    "tags": [
+        "squid game",
+        "honeycombs",
+        "Sugar honeycombs",
+        "fun",
+        "enonomy"
+    ],
+    "permissions": [
+        "embed_links",
+        "attach_files"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog saves Discord user IDs to add you to the games you participate in, but these IDs are deleted once the game concludes. It does not store any End User Data.",
+    "type": "COG"
+}
