@@ -49,13 +49,6 @@ This command will show the current game settings for the server.<br/>
  - Usage: `[p]honeycombset settings`
  - Restricted to: `MOD`
  - Cooldown: `1 per 5.0 seconds`
-## [p]honeycombset channel
-Set a channel where the game will be played.<br/>
-
-If set, the game will be played in the specified channel only and not in any other channel.<br/>
-If not set, the game will be able to be played in any channel.<br/>
- - Usage: `[p]honeycombset channel [channel=None]`
- - Restricted to: `ADMIN`
 ## [p]honeycombset startimage
 Set the start image for the game.<br/>
 

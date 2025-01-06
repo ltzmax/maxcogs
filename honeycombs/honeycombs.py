@@ -387,7 +387,7 @@ class HoneyCombs(commands.Cog):
         embed = discord.Embed(
             title="Current Game Settings",
             description="View the current game settings.",
-            color=await ctx.embed_color()
+            color=await ctx.embed_color(),
         )
         # Only owner can see the winning and losing price
         # since they are the only ones who can change them.

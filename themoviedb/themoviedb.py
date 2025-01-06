@@ -37,6 +37,7 @@ from .everything_stuff import build_embed, get_media_data, search_and_display
 # - Add person (https://developer.themoviedb.org/reference/search-person) (In progress)
 # - Add Recommnedations (https://developer.themoviedb.org/reference/movie-recommendations) (Will be added in future update)
 
+
 class TheMovieDB(commands.Cog):
     """
     Search for informations of movies and TV shows from themoviedb.org.
