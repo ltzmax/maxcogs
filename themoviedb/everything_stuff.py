@@ -142,7 +142,7 @@ async def get_media_data(ctx, media_id: int, media_type: str):
     Args:
         ctx (commands.Context): The invocation context.
         media_id (int): The ID of the media.
-        media_type (str): The type of media. Can be "movie" or "tv".
+        media_type (str): The type of media. Can be "movie", "tv" or "person".
 
     Returns:
         Optional[Dict[str, Any]]: The media data if successful, otherwise None.
@@ -403,3 +403,96 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
         )
     )
     return embed, view
+
+
+async def person_embed(ctx, query):
+    await ctx.typing()
+
+    people = await search_media(ctx, query, "person")
+
+    if not people or not people.get("results"):
+        return await ctx.send("No information found for this person.")
+
+    # Sort people by popularity descending
+    sorted_people = sorted(people["results"], key=lambda x: x.get("popularity", 0), reverse=True)
+
+    embeds = []
+    for person in sorted_people:
+        person_id = person["id"]
+        data = await get_media_data(ctx, person_id, "person")
+
+        if data is None:
+            continue
+
+        name = data.get("name")
+        adult = data.get("adult", False)
+        gender = data.get("gender", 0)
+        known_for_department = data.get("known_for_department")
+        original_name = data.get("original_name")
+        popularity = data.get("popularity", 0.0)
+        profile_path = data.get("profile_path")
+        birthday = (
+            f"<t:{int(datetime.strptime(data.get('birthday', ''), '%Y-%m-%d').timestamp())}:D>"
+            if data.get("birthday")
+            else None
+        )
+        deathday = (
+            f"<t:{int(datetime.strptime(data.get('deathday', ''), '%Y-%m-%d').timestamp())}:D>"
+            if data.get("deathday")
+            else None
+        )
+        place_of_birth = data.get("place_of_birth")
+        imdb_id = data.get("imdb_id")
+        homepage = data.get("homepage")
+        description = data.get("biography", "" if name else "No biography available.")
+        if len(description) > 3048:
+            description = description[:3045] + "..."
+        url = f"https://www.themoviedb.org/person/{person_id}"
+
+        embed = discord.Embed(
+            title=name or original_name,
+            url=url,
+            description=description,
+            colour=await ctx.embed_colour(),
+        )
+
+        if adult is not None:
+            embed.add_field(name="Adult", value="Yes" if adult else "No")
+
+        if birthday:
+            embed.add_field(name="Birthday", value=birthday)
+
+        if deathday:
+            embed.add_field(name="Deathday", value=deathday)
+
+        if place_of_birth:
+            embed.add_field(name="Place of Birth", value=place_of_birth)
+
+        if imdb_id:
+            embed.add_field(name="IMDB ID", value=imdb_id)
+
+        if homepage:
+            embed.add_field(name="Homepage", value=homepage)
+
+        if gender:
+            gender_text = {0: "Not specified", 1: "Female", 2: "Male"}.get(gender, "Unknown")
+            embed.add_field(name="Gender", value=gender_text)
+
+        if known_for_department:
+            embed.add_field(name="Known For", value=known_for_department)
+
+        if popularity:
+            embed.add_field(name="Popularity", value=f"{popularity:.2f}")
+
+        if profile_path:
+            embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/w500{profile_path}")
+
+        embed.set_footer(text="Powered by TMDB", icon_url="https://i.maxapp.tv/tmdblogo.png")
+        embeds.append(embed)
+
+    if not embeds:
+        return await ctx.send("No information found for this person.")
+
+    await SimpleMenu(embeds, use_select_menu=True, disable_after_timeout=True, timeout=120).start(
+        ctx
+    )

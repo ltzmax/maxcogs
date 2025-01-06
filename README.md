@@ -38,7 +38,7 @@ To install any cog you want:
 | NekosBest | Sends random images from nekos.best. | 2.4.0 | ltzmax | ✅ |
 | Pokemon | Play a game of Who's That Pokemon or Fetch Pokemon cards based on Pokemon Trading Card Game.| 1.8.0 | ltzmax, o-wo, flame442 | ✅ |
 | RedUpdate | Update your bot to latest dev changes.| 1.8.0 | ltzmax, kuro | ✅ |
-| TheMovieDB | Search for informations of movies and TV shows from themoviedb.org. | 1.4.0 | ltzmax | ✅ |
+| TheMovieDB | Search for informations of movies and TV shows from themoviedb.org. | 1.5.0 | ltzmax | ✅ |
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.

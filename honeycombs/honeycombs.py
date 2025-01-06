@@ -24,12 +24,12 @@ SOFTWARE.
 
 import asyncio
 import logging
-import aiohttp
 import random
 from datetime import datetime, timedelta
 from io import StringIO
 from typing import Any, Final, Optional
 
+import aiohttp
 import discord
 from redbot.core import Config, bank, commands, errors
 from redbot.core.bot import Red
