@@ -39,7 +39,7 @@ View the current game settings.<br/>
 ## [p]honeycombset minimumplayers
 Set the minimum number of players needed to start a game.<br/>
 
-The default maximum number of players is 5.<br/>
+The default minimum number of players is 5.<br/>
  - Usage: `[p]honeycombset minimumplayers <minimum_players>`
  - Restricted to: `ADMIN`
 ## [p]honeycombset checklist

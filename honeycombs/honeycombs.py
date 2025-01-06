@@ -345,7 +345,7 @@ class HoneyCombs(commands.Cog):
         """
         Set the minimum number of players needed to start a game.
 
-        The default maximum number of players is 5.
+        The default minimum number of players is 5.
         """
         await self.config.guild(ctx.guild).max_players.set(max_players)
         await ctx.send(f"The minimum number of players has been set to {minimum_players}.")
