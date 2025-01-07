@@ -226,7 +226,7 @@ class HoneyCombs(commands.Cog):
     async def wait_for_players(self, ctx: commands.Context):
         await discord.utils.sleep_until(datetime.now() + timedelta(minutes=2))
 
-        max_players = await self.config.max_players()
+        max_players = await self.config.guild(ctx.guild).max_players()
         players = await self.config.guild(ctx.guild).players()
         if len(players) < max_players and not await self.config.guild(ctx.guild).game_active():
             return  # game has been reset, no need to send a message
