@@ -203,13 +203,13 @@ class AutoPublisher(commands.Cog):
 
         # Calculate next reset timestamps
         next_weekly_reset = await get_next_reset_timestamp(
-            datetime.utcnow(), target_weekday=6, target_day=None, target_month=None
+            datetime.now(), target_weekday=6, target_day=None, target_month=None
         )
         next_monthly_reset = await get_next_reset_timestamp(
-            datetime.utcnow(), target_weekday=None, target_day=1, target_month=None
+            datetime.now(), target_weekday=None, target_day=1, target_month=None
         )
         next_yearly_reset = await get_next_reset_timestamp(
-            datetime.utcnow(), target_weekday=None, target_day=1, target_month=1
+            datetime.now(), target_weekday=None, target_day=1, target_month=1
         )
         stats_table = [
             ["Total Weekly Published", humanize_number(weekly_count)],
