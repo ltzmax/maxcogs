@@ -59,6 +59,7 @@ class HoneyCombs(commands.Cog):
             "mod_only_command": False,  # Default mod only command is False
             "max_players": 5,  # Default minimum number of players
             "default_minutes": 10,  # Default minutes to 10.
+            "default_start_minutes": 2,  # Default start minutes to 2
         }
         default_global = {
             "winning_price": 100,  # Default winning price
@@ -192,7 +193,8 @@ class HoneyCombs(commands.Cog):
             )
 
         await guild_config.game_active.set(True)
-        end_time = int((datetime.now() + timedelta(minutes=2)).timestamp())
+        default_start_time = await guild_config.default_start_minutes()
+        end_time = int((datetime.now() + timedelta(minutes=default_start_time)).timestamp())
         view = HoneycombView(self)
         winning_price = await self.config.winning_price()
         losing_price = await self.config.losing_price()
@@ -224,7 +226,8 @@ class HoneyCombs(commands.Cog):
         asyncio.create_task(self.wait_for_players(ctx))
 
     async def wait_for_players(self, ctx: commands.Context):
-        await discord.utils.sleep_until(datetime.now() + timedelta(minutes=2))
+        default_start_minutes = await self.config.guild(ctx.guild).default_start_minutes()
+        await discord.utils.sleep_until(datetime.now() + timedelta(minutes=default_start_minutes))
 
         max_players = await self.config.guild(ctx.guild).max_players()
         players = await self.config.guild(ctx.guild).players()
@@ -344,12 +347,10 @@ class HoneyCombs(commands.Cog):
         await ctx.send(f"Mod only command has been set to {state}.")
 
     @commands.admin()
-    @honeycombset.command(name="defaultminutes")
-    async def default_minutes(
-        self, ctx: commands.Context, default_minutes: commands.Range[int, 10, 720]
-    ):
+    @honeycombset.command(name="endtime")
+    async def endtime(self, ctx: commands.Context, default_minutes: commands.Range[int, 10, 720]):
         """
-        Change the default minutes for the game to run for.
+        Change the default minutes for when the game should end.
 
         **Please note**
         - This is for the length of the game to run for, not the length of when the game starts.
@@ -367,6 +368,23 @@ class HoneyCombs(commands.Cog):
         """
         await self.config.guild(ctx.guild).default_minutes.set(default_minutes)
         await ctx.send(f"The default minutes has been set to {default_minutes} minutes.")
+
+    @commands.admin()
+    @honeycombset.command(name="starttime")
+    async def starttime(
+        self, ctx: commands.Context, default_start_minutes: commands.Range[int, 2, 20]
+    ):
+        """
+        Change the default minutes for the game to start for.
+
+        **Please note**
+        - This is for the length of the game to start for, not the length of when the game ends.
+
+        The default minutes is 2.
+        The maximum minutes is 20.
+        """
+        await self.config.guild(ctx.guild).default_start_minutes.set(default_start_minutes)
+        await ctx.send(f"The default minutes has been set to {default_start_minutes} minutes.")
 
     @commands.admin()
     @honeycombset.command(name="minimumplayers")
