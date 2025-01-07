@@ -57,7 +57,7 @@ class HoneyCombs(commands.Cog):
             "default_start_image": "https://i.maxapp.tv/4c76241E.png",  # Default start image
             "shapes": ["circle⭕️", "triangle△", "star⭐️", "umbrella☂️"],  # Default shapes
             "mod_only_command": False,  # Default mod only command is False
-            "max_players": 5,  # Default minimum number of players
+            "minimum_players": 5,  # Default minimum number of players
             "default_minutes": 10,  # Default minutes to 10.
             "default_start_minutes": 2,  # Default start minutes to 2
         }
@@ -218,8 +218,8 @@ class HoneyCombs(commands.Cog):
         img = await guild_config.default_start_image()
         if img:
             embed.set_image(url=img)
-        max_players = await guild_config.max_players()
-        embed.set_footer(text=f"Need at least {max_players} players to start the game.")
+        minimum_players = await guild_config.minimum_players()
+        embed.set_footer(text=f"Need at least {minimum_players} players to start the game.")
 
         message = await ctx.send(embed=embed, view=view)
         view.message = message
@@ -229,11 +229,11 @@ class HoneyCombs(commands.Cog):
         default_start_minutes = await self.config.guild(ctx.guild).default_start_minutes()
         await discord.utils.sleep_until(datetime.now() + timedelta(minutes=default_start_minutes))
 
-        max_players = await self.config.guild(ctx.guild).max_players()
+        minimum_players = await self.config.guild(ctx.guild).minimum_players()
         players = await self.config.guild(ctx.guild).players()
-        if len(players) < max_players and not await self.config.guild(ctx.guild).game_active():
+        if len(players) < minimum_players and not await self.config.guild(ctx.guild).game_active():
             return  # game has been reset, no need to send a message
-        elif len(players) < max_players:
+        elif len(players) < minimum_players:
             await ctx.send("Not enough players entered the game. Game has been canceled.")
         await self.config.guild(ctx.guild).clear()
         await self.run_game(ctx)
@@ -396,7 +396,7 @@ class HoneyCombs(commands.Cog):
 
         The default minimum number of players is 5.
         """
-        await self.config.guild(ctx.guild).max_players.set(max_players)
+        await self.config.guild(ctx.guild).minimum_players.set(minimum_players)
         await ctx.send(f"The minimum number of players has been set to {minimum_players}.")
 
     @commands.is_owner()
