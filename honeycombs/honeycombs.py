@@ -44,7 +44,7 @@ log = logging.getLogger("red.maxcogs.honeycombs")
 class HoneyCombs(commands.Cog):
     """Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game."""
 
-    __version__: Final[str] = "1.2.0"
+    __version__: Final[str] = "1.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/SquidGame.md"
 
