@@ -44,7 +44,7 @@ log = logging.getLogger("red.maxcogs.honeycombs")
 class HoneyCombs(commands.Cog):
     """Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game."""
 
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.3.2"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/SquidGame.md"
 
@@ -469,6 +469,14 @@ class HoneyCombs(commands.Cog):
         )
         embed.add_field(
             name="Minimum Players", value=guild_data.get("max_players", 5), inline=False
+        )
+        embed.add_field(
+            name="Default ongoing game minutes", value=guild_data.get("default_minutes", 10), inline=False
+        )
+        embed.add_field(
+            name="Default Start Minutes",
+            value=guild_data.get("default_start_minutes", 2),
+            inline=False,
         )
         start_image_url = guild_data.get("default_start_image", None)
         if start_image_url:
