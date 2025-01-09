@@ -468,7 +468,7 @@ class HoneyCombs(commands.Cog):
             name="Mod Only Command", value=guild_data.get("mod_only_command", False), inline=False
         )
         embed.add_field(
-            name="Minimum Players", value=guild_data.get("max_players", 5), inline=False
+            name="Minimum Players", value=guild_data.get("minimum_players", 5), inline=False
         )
         embed.add_field(
             name="Default ongoing game minutes", value=guild_data.get("default_minutes", 10), inline=False
