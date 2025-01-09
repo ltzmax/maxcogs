@@ -114,9 +114,10 @@ class HoneyCombs(commands.Cog):
             if user:
                 shape = data["shape"]
                 # Players have a 20% chance to win
-                # Players with an umbrella have a 5% chance to win
+                # Players with an umbrella have a 8% chance to win
                 # umbrellas were said to be the hardest to pass
-                if random.random() < 0.2:
+                chance = 0.08 if shape == "umbrella☂️" else 0.2
+                if random.random() < chance:
                     try:
                         await bank.deposit_credits(user, winning_price)
                         passed_players.append(
