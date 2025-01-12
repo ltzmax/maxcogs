@@ -1,11 +1,11 @@
 ## PR infomation
-- Feel free to do bug fixes when you see something that aren't working or are missing.
-    - If you're unsure of how to do something, ask for help with the code you're trying to fix.
-    - If you're unable to ask for help with the issue you found in a source code, create an issue.
-- If you wanna do more than just bug fixes, i kindly ask you to talk with me on discord first. MAX (ltzmax)
-    - If you are unable to talk with me on discord, create an issue and we'll discuss it there.
-- If you have a good idea for a new feature, please create an issue or talk with me on discord.
-    - I do love new good ideas, but I'm not sure if I'll accept them or not therefore an issue or talk with me on discord first to see if this is something i want.
+- Feel free to make bug fixes when you see something that isn't working or is missing:
+    - If you're unsure how to fix something, ask for help with the code you're working on.
+    - If you can't ask for help with an issue you've found in the source code, create an issue.
+- If you want to do more than just bug fixes, I kindly ask that you talk with me on Discord first. **MAX (ltzmax)**
+    - If you're unable to talk with me on Discord, create an issue, and we'll discuss it there.
+- If you have a good idea for a new feature, please create an issue or talk with me on Discord:
+    - I do love good new ideas, but I'm not sure if I'll accept them, so please create an issue or talk with me on Discord first to see if it's something I want.
 
 ## When you do PR's you need to remember two things:
 always use following:
