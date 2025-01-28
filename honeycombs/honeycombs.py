@@ -471,7 +471,9 @@ class HoneyCombs(commands.Cog):
             name="Minimum Players", value=guild_data.get("minimum_players", 5), inline=False
         )
         embed.add_field(
-            name="Default ongoing game minutes", value=guild_data.get("default_minutes", 10), inline=False
+            name="Default ongoing game minutes",
+            value=guild_data.get("default_minutes", 10),
+            inline=False,
         )
         embed.add_field(
             name="Default Start Minutes",
