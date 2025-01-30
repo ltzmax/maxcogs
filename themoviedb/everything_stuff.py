@@ -200,7 +200,7 @@ async def search_and_display(ctx, query, media_type, fetch_media_data, create_em
         if query.lower() in r.get("title" if media_type == "movie" else "name", "").lower()
         and (ctx.channel.nsfw or not r.get("adult", False))
         and (
-            r.get("release_date", "N/A")[:4] >= "1999"
+            r.get("release_date", "N/A")[:4] >= "1899"
             or r.get("name", "").lower() in ["friends", "the fresh prince of bel-air"]
         )
         and r.get("title", "").lower()
