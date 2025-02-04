@@ -63,3 +63,46 @@ class PlayByPlay(discord.ui.View):
             )
             embed.set_footer(text="🏀Provided by NBA")
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class GameMenu(discord.ui.View):
+    def __init__(self, pages, ctx):
+        super().__init__(timeout=120)
+        self.pages = pages
+        self.current_page = 0
+        self.author = ctx[0].author if isinstance(ctx, list) else ctx.author
+
+        options = [
+            discord.SelectOption(
+                label=f"{embed.fields[0].name.replace(':', '')} vs {embed.fields[1].name.replace(':', '')}",
+                value=str(i),
+            )
+            for i, embed in enumerate(pages)
+        ]
+
+        self.select_menu = discord.ui.Select(options=options, placeholder="Choose a match")
+        self.select_menu.callback = self.select_callback
+        self.add_item(self.select_menu)
+
+    async def on_timeout(self) -> None:
+        for item in self.children:
+            item: discord.ui.Item
+            item.disabled = True
+        try:
+            await self.message.edit(view=self)
+        except discord.HTTPException as e:
+            log.error(e)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.author:
+            await interaction.response.defer(ephemeral=True)
+            await interaction.followup.send(
+                "I cannot let you interact with this menu because you are not the author.",
+                ephemeral=True,
+            )
+            return False
+        return True
+
+    async def select_callback(self, interaction: discord.Interaction):
+        self.current_page = int(self.select_menu.values[0])
+        await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)

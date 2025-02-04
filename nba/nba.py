@@ -49,7 +49,7 @@ from .converter import (
     parse_duration,
     periods,
 )
-from .view import PlayByPlay
+from .view import GameMenu, PlayByPlay
 
 log = logging.getLogger("red.maxcogs.nba")
 
@@ -63,7 +63,7 @@ class NBA(commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.1.0"
+    __version__: Final[str] = "3.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -489,11 +489,10 @@ class NBA(commands.Cog):
             game_status = game["gameStatusText"]
             time_left = f"<t:{ongoing_timestamp}:R>" if ongoing_timestamp else "No ongoing game."
             start_time = (
-                "Game has ended."
-                if game_status == "Final"
-                else f"<t:{start_timestamp}:F> (<t:{start_timestamp}:R>)"
+                f"<t:{start_timestamp}:F> (<t:{start_timestamp}:R>)"
+                if game_status.lower() != "final"
+                else "Game has ended."
             )
-            city = game["homeTeam"]["teamCity"]
             home_record = f"{game['homeTeam']['wins']}-{game['homeTeam']['losses']}"
             away_record = f"{game['awayTeam']['wins']}-{game['awayTeam']['losses']}"
             game_id = game["gameId"]
@@ -514,7 +513,7 @@ class NBA(commands.Cog):
             embed.add_field(
                 name=f"{home_team_name}:",
                 value=rich_markup(
-                    f"[bold magenta]Score:[/bold magenta] {home_score}\n[bold blue]Record:[/bold blue] {home_record}",
+                    f"[bold red]Score:[/bold red] {home_score}\n[bold blue]Record:[/bold blue] {home_record}",
                     markup=True,
                 ),
             )
@@ -530,9 +529,6 @@ class NBA(commands.Cog):
                 value="Game is ongoing." if ongoing_timestamp else start_time,
                 inline=False,
             )
-            embed.add_field(name="Location:", value=city)
-            embed.add_field(name="Home:", value=home_team_name)
-            embed.add_field(name=" ", value=" ", inline=False)
             embed.add_field(name="Home Leader:", value=home_leaders_str)
             embed.add_field(name="Away Leader:", value=away_leaders_str)
             embed.add_field(name=" ", value=" ", inline=False)
@@ -545,8 +541,7 @@ class NBA(commands.Cog):
                 embed.add_field(name="Series:", value=series_text)
             if series_game_number:
                 embed.add_field(name="Series Game Number:", value=series_game_number)
-
-            footer_text = f"Game ID {game_id} | 🏀Provided by NBA.com"
+            footer_text = "🏀Provided by NBA.com"
             if not team:
                 footer_text += f" | Page: {games.index(game) + 1}/{len(games)}"
             embed.set_footer(text=footer_text)
@@ -556,5 +551,5 @@ class NBA(commands.Cog):
             return await ctx.send(
                 "That team is not playing today or you specified an invalid team."
             )
-
-        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+        view = GameMenu(pages, ctx)
+        view.message = await ctx.send(embed=pages[0], view=view)
