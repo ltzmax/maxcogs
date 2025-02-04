@@ -6,12 +6,12 @@ repos:
     -   id: end-of-file-fixer
         exclude: docs/
 -   repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
     -   id: black
         args: [--target-version=py39, --line-length=99]
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.0.0
     hooks:
     -   id: isort
         args: [--profile=black, --line-length=99]
