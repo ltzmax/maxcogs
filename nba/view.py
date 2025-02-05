@@ -22,13 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
+
 import aiohttp
 import discord
-import logging
 
 from .converter import PLAYBYPLAY
 
 log = logging.getLogger("red.maxcogs.nba.view")
+
 
 class PlayByPlay(discord.ui.View):
     def __init__(self, game_id):
