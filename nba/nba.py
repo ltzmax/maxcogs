@@ -63,7 +63,7 @@ class NBA(commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.2.0"
+    __version__: Final[str] = "3.2.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -444,10 +444,10 @@ class NBA(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(TODAY_SCOREBOARD) as response:
                 data = await response.text()
-        games = orjson.loads(data).get("scoreboard", {}).get("games", [])
+        games_data = orjson.loads(data).get("scoreboard", {}).get("games", [])
 
         start_timestamp, end_timestamp = get_time_bounds()
-        if not games:
+        if not games_data:
             return await ctx.send(
                 "There are no games today to display unfortunately.\n"
                 "Check NBA for more information <https://www.nba.com/schedule>\n"
@@ -455,10 +455,11 @@ class NBA(commands.Cog):
             )
 
         pages = []
-        for game in games:
+        for game in games_data:
             start_time_utc = datetime.strptime(game["gameTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
             start_timestamp = int(start_time_utc.replace(tzinfo=timezone.utc).timestamp())
 
+            ongoing_timestamp = None
             if game["gameClock"]:
                 try:
                     minutes, seconds = (
@@ -469,16 +470,15 @@ class NBA(commands.Cog):
                     ongoing_timestamp = int(end_time.replace(tzinfo=timezone.utc).timestamp())
                 except ValueError:
                     ongoing_timestamp = None
-            else:
-                ongoing_timestamp = None
-            home_team_name = game["homeTeam"]["teamName"]
-            away_team_name = game["awayTeam"]["teamName"]
+
+            home_team = game["homeTeam"]["teamName"]
+            away_team = game["awayTeam"]["teamName"]
             home_tricode = game["homeTeam"]["teamTricode"]
             away_tricode = game["awayTeam"]["teamTricode"]
 
             if team and team.lower() not in [
-                home_team_name.lower(),
-                away_team_name.lower(),
+                home_team.lower(),
+                away_team.lower(),
                 home_tricode.lower(),
                 away_tricode.lower(),
             ]:
@@ -486,11 +486,11 @@ class NBA(commands.Cog):
 
             home_score = game["homeTeam"]["score"]
             away_score = game["awayTeam"]["score"]
-            game_status = game["gameStatusText"]
+            status_text = game["gameStatusText"]
             time_left = f"<t:{ongoing_timestamp}:R>" if ongoing_timestamp else "No ongoing game."
             start_time = (
                 f"<t:{start_timestamp}:F> (<t:{start_timestamp}:R>)"
-                if game_status.lower() != "final"
+                if status_text.lower() != "final"
                 else "Game has ended."
             )
             home_record = f"{game['homeTeam']['wins']}-{game['homeTeam']['losses']}"
@@ -503,7 +503,7 @@ class NBA(commands.Cog):
             series_text = game.get("seriesText", "N/A")
             series_game_number = game.get("seriesGameNumber", "N/A")
 
-            home_leaders_str, away_leaders_str = get_leaders_info(game)
+            home_leader_info, away_leader_info = get_leaders_info(game)
 
             embed = discord.Embed(
                 title="NBA Scoreboard" if not team else f"NBA Scoreboard for {team}",
@@ -511,14 +511,14 @@ class NBA(commands.Cog):
                 description=f"**Period**: {current_period}\n**Time Left**: {time_left}\n**Full Game**: https://www.nba.com/game/{game_id}",
             )
             embed.add_field(
-                name=f"{home_team_name}:",
+                name=f"{home_team}:",
                 value=rich_markup(
                     f"[bold red]Score:[/bold red] {home_score}\n[bold blue]Record:[/bold blue] {home_record}",
                     markup=True,
                 ),
             )
             embed.add_field(
-                name=f"{away_team_name}:",
+                name=f"{away_team}:",
                 value=rich_markup(
                     f"[bold red]Score:[/bold red] {away_score}\n[bold blue]Record:[/bold blue] {away_record}",
                     markup=True,
@@ -529,8 +529,8 @@ class NBA(commands.Cog):
                 value="Game is ongoing." if ongoing_timestamp else start_time,
                 inline=False,
             )
-            embed.add_field(name="Home Leader:", value=home_leaders_str)
-            embed.add_field(name="Away Leader:", value=away_leaders_str)
+            embed.add_field(name="Home Leader:", value=home_leader_info)
+            embed.add_field(name="Away Leader:", value=away_leader_info)
             embed.add_field(name=" ", value=" ", inline=False)
             if game_label:
                 embed.add_field(name="Game Label:", value=game_label)
@@ -543,7 +543,7 @@ class NBA(commands.Cog):
                 embed.add_field(name="Series Game Number:", value=series_game_number)
             footer_text = "🏀Provided by NBA.com"
             if not team:
-                footer_text += f" | Page: {games.index(game) + 1}/{len(games)}"
+                footer_text += f" | Page: {games_data.index(game) + 1}/{len(games_data)}"
             embed.set_footer(text=footer_text)
             pages.append(embed)
 

@@ -80,9 +80,7 @@ class GameMenu(discord.ui.View):
             for i, embed in enumerate(pages)
         ]
 
-        self.select_menu = discord.ui.Select(options=options, placeholder="Choose a match")
-        self.select_menu.callback = self.select_callback
-        self.add_item(self.select_menu)
+        self.select_menu.options = options
 
     async def on_timeout(self) -> None:
         for item in self.children:
@@ -103,6 +101,7 @@ class GameMenu(discord.ui.View):
             return False
         return True
 
-    async def select_callback(self, interaction: discord.Interaction):
+    @discord.ui.select(placeholder="Choose a match", options=[])
+    async def select_menu(self, interaction: discord.Interaction, select: discord.ui.Select):
         self.current_page = int(self.select_menu.values[0])
         await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
