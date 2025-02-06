@@ -32,7 +32,7 @@ To install any cog you want:
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.3.2 | ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
-| NBA | NBA Cog that provides NBA game updates, schedules, and news. | 3.2.1 | ltzmax | ✅ |
+| NBA | NBA Cog that provides NBA game updates, schedules, and news. | 3.3.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 2.4.0 | ltzmax | ✅ |

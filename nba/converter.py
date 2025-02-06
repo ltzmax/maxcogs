@@ -66,6 +66,40 @@ TEAM_NAMES = [
     "wizards",
 ]
 
+# Please do not change the names of the teams, as they are used to match the team names from the NBA API.
+team_emojis = {
+    "Heat": "<:heat:1337072557286756444>",
+    "Bucks": "<:milwaukee_bucks:1337077115157479576>",
+    "Bulls": "<:chicago_bulls:1337076752098394193>",
+    "Cavaliers": "<:cleveland_cavaliers:1337076799103963198>",
+    "Celtics": "<:boston_celtics:1337076672217743453>",
+    "Clippers": "<:los_angeles_clippers:1337077028632924221>",
+    "Grizzlies": "<:memphis_grizzlies:1337077212364410982>",
+    "Hawks": "<:atlanta_hawks:1337076371045744723>",
+    "Hornets": "<:charlotte_hornets:1337076774516953119>",
+    "Jazz": "<:utah_jazz:1337076534271279175>",
+    "Kings": "<:sacramento_kings:1337076620640518174>",
+    "Knicks": "<:new_york_knicks:1337077172656934964>",
+    "Lakers": "<:los_angeles_lakers:1337077057170964481>",
+    "Magic": "<:orlando_magic:1337077193729114214>",
+    "Mavericks": "<:dallas_mavericks:1337076831672733796>",
+    "Nets": "<:brooklyn_nets:1337076712424603668>",
+    "Nuggets": "<:denver_nuggets:1337077238717222923>",
+    "Pacers": "<:indiana_pacers:1337076420467228756>",
+    "Pelicans": "<:new_orleans_pelicans:1337077141136736297>",
+    "Pistons": "<:detroit_pistons:1337076923469402192>",
+    "Raptors": "<:toronto_raptors:1337076580270346301>",
+    "Rockets": "<:houston_rockets:1337077003614027796>",
+    "76ers": "<:philadelphia_76ers:1337076955631194214>",
+    "Spurs": "<:san_antonio_spurs:1337076455536070686>",
+    "Suns": "<:phoenix_suns:1337077081124769822>",
+    "Thunder": "<:oklahoma_city_thunder:1337076867278045184>",
+    "Timberwolves": "<:minnesota_timberwolves:1337077256505262162>",
+    "Trail Blazers": "<:portland_trail_blazers:1337076642866135072>",
+    "Warriors": "<:golden_state_warriors:1337076978112528405>",
+    "Wizards": "<:washington_wizards:1337076493716815903>",
+}
+
 
 def parse_duration(duration):
     """

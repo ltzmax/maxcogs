@@ -48,6 +48,7 @@ from .converter import (
     get_time_bounds,
     parse_duration,
     periods,
+    team_emojis,
 )
 from .view import GameMenu, PlayByPlay
 
@@ -63,7 +64,7 @@ class NBA(commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.2.1"
+    __version__: Final[str] = "3.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
 
@@ -504,6 +505,8 @@ class NBA(commands.Cog):
             series_game_number = game.get("seriesGameNumber", "N/A")
 
             home_leader_info, away_leader_info = get_leaders_info(game)
+            home_team_emoji = team_emojis.get(home_team, "")
+            away_team_emoji = team_emojis.get(away_team, "")
 
             embed = discord.Embed(
                 title="NBA Scoreboard" if not team else f"NBA Scoreboard for {team}",
@@ -529,8 +532,19 @@ class NBA(commands.Cog):
                 value="Game is ongoing." if ongoing_timestamp else start_time,
                 inline=False,
             )
-            embed.add_field(name="Home Leader:", value=home_leader_info)
-            embed.add_field(name="Away Leader:", value=away_leader_info)
+            # To only show the emojis for the bot in the home and away leader fields
+            # This prevent other bots to just see names and id of the emojis instead of actual emojis.
+            # The emojis are stored on the developer panel of the bot owner account and are not public to other bots.
+            # if you want your own emojis, please do edit the code to your own emojis under `team_emojis` in converter.py from line 69 to 99.
+            # Remember to change the bot id below here if you do so.
+            if ctx.bot.user.id == 563787458135719967:
+                home_team_field_name = f"{home_team_emoji} Home Leader:"
+                away_team_field_name = f"{away_team_emoji} Away Leader:"
+            else:
+                home_team_field_name = "Home Leader:"
+                away_team_field_name = "Away Leader:"
+            embed.add_field(name=home_team_field_name, value=home_leader_info)
+            embed.add_field(name=away_team_field_name, value=away_leader_info)
             embed.add_field(name=" ", value=" ", inline=False)
             if game_label:
                 embed.add_field(name="Game Label:", value=game_label)
