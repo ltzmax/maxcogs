@@ -102,7 +102,9 @@ class Counting(commands.Cog):
         try:
             await message.delete()
         except discord.HTTPException as e:
-            log.warning(f"Error deleting message in {message.channel.name} ({message.channel.id}): {e}")
+            log.warning(
+                f"Error deleting message in {message.channel.name} ({message.channel.id}): {e}"
+            )
 
     async def _handle_invalid_count(
         self,
@@ -123,7 +125,9 @@ class Counting(commands.Cog):
             await asyncio.sleep(0.3)
             await message.add_reaction(reaction)
         except discord.HTTPException as e:
-            log.warning(f"No permission to add reactions in {message.channel.name} ({message.channel.id}): {e}")
+            log.warning(
+                f"No permission to add reactions in {message.channel.name} ({message.channel.id}): {e}"
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -461,7 +465,9 @@ class Counting(commands.Cog):
             "Counting Enabled": "Enabled" if settings["toggle"] else "Disabled",
             "Delete After": f"{settings['delete_after']} seconds",
             "Edit Message": "Enabled" if settings["toggle_edit_message"] else "Disabled",
-            "Next Number Message": "Enabled" if settings["toggle_next_number_message"] else "Disabled",
+            "Next Number Message": (
+                "Enabled" if settings["toggle_next_number_message"] else "Disabled"
+            ),
             "Same User Count": "Enabled" if settings["same_user_to_count"] else "Disabled",
             "Reactions": "Enabled" if settings["toggle_reactions"] else "Disabled",
             "Reaction Emoji": settings["default_reaction"],
@@ -473,6 +479,10 @@ class Counting(commands.Cog):
 
         embed = discord.Embed(title="Counting Settings", color=await ctx.embed_color())
         for name, value in embed_fields.items():
-            inline = name not in ["Edit Message Content", "Next Number Message Content", "Same User Count Message"]
+            inline = name not in [
+                "Edit Message Content",
+                "Next Number Message Content",
+                "Same User Count Message",
+            ]
             embed.add_field(name=name, value=value, inline=inline)
         await ctx.send(embed=embed)
