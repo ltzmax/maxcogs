@@ -42,7 +42,7 @@ log = logging.getLogger("red.maxcogs.counting")
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.6.0"
+    __version__: Final[str] = "1.7.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Counting.md"
 
@@ -81,151 +81,119 @@ class Counting(commands.Cog):
         """Nothing to delete."""
         return
 
+    async def _send_message(
+        self,
+        channel: discord.TextChannel,
+        content: str,
+        delete_after: Optional[int] = None,
+        silent: bool = False,
+    ) -> Optional[discord.Message]:
+        """Send a message with error handling."""
+        try:
+            return await channel.send(content, delete_after=delete_after, silent=silent)
+        except discord.Forbidden as e:
+            log.warning(f"No permission to send in {channel.name} ({channel.id}): {e}")
+        except discord.HTTPException as e:
+            log.warning(f"Error sending message in {channel.name} ({channel.id}): {e}")
+        return None
+
+    async def _delete_message(self, message: discord.Message) -> None:
+        """Delete a message with error handling."""
+        try:
+            await message.delete()
+        except discord.HTTPException as e:
+            log.warning(f"Error deleting message in {message.channel.name} ({message.channel.id}): {e}")
+
+    async def _handle_invalid_count(
+        self,
+        message: discord.Message,
+        response: str,
+        delete_after: int,
+        use_silent: bool,
+        send_response: bool = True,
+    ) -> None:
+        """Handle invalid counting attempts by deleting the message and optionally responding."""
+        await self._delete_message(message)
+        if send_response:
+            await self._send_message(message.channel, response, delete_after, use_silent)
+
+    async def _add_reaction(self, message: discord.Message, reaction: str) -> None:
+        """Add a reaction to a message with a slight delay."""
+        try:
+            await asyncio.sleep(0.3)
+            await message.add_reaction(reaction)
+        except discord.HTTPException as e:
+            log.warning(f"No permission to add reactions in {message.channel.name} ({message.channel.id}): {e}")
+
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
+        """Process messages to manage the counting game."""
         if message.author.bot or message.guild is None:
             return
 
-        config = self.config.guild(message.guild)
+        guild_config = self.config.guild(message.guild)
+        settings = await guild_config.all()
+        if not settings["toggle"] or message.channel.id != settings["channel"]:
+            return
+
+        perms = message.channel.permissions_for(message.guild.me)
+        if not (perms.manage_messages and perms.send_messages):
+            log.warning(f"No permissions in {message.channel.name} ({message.channel.id})")
+            return
+
         user_config = self.config.user(message.author)
+        expected_count = settings["count"] + 1
 
-        if not await config.toggle():
-            return
-
-        if message.channel.id != await config.channel():
-            return
-
-        permissions = message.channel.permissions_for(message.guild.me)
-        if not permissions.manage_messages or not permissions.send_messages:
-            log.warning(
-                f"I don't have permission to manage or send messages in {message.channel.name} ({message.channel.id})"
-            )
-            return
-
-        same_user_to_count_msg = await config.same_user_to_count_msg()
-        use_silent = await config.use_silent()
-        reaction = await config.default_reaction()
-        delete_after = await config.delete_after()
-        next_number_message = await config.default_next_number_message()
-        current_count = await config.count()
-        expected_count = current_count + 1
-
-        if await config.same_user_to_count() and await config.last_user_id() == message.author.id:
+        if settings["same_user_to_count"] and settings["last_user_id"] == message.author.id:
             await self._handle_invalid_count(
                 message,
-                same_user_to_count_msg,
-                delete_after,
-                use_silent,
+                settings["same_user_to_count_msg"],
+                settings["delete_after"],
+                settings["use_silent"],
             )
             return
 
         if message.content.isdigit() and int(message.content) == expected_count:
-            await config.count.set(expected_count)
-            await config.last_user_id.set(message.author.id)
+            await guild_config.count.set(expected_count)
+            await guild_config.last_user_id.set(message.author.id)
             await user_config.count.set(await user_config.count() + 1)
             await user_config.last_count_timestamp.set(datetime.now().isoformat())
-
-            if await config.toggle_reactions() and permissions.add_reactions:
-                await self._add_reaction(message, reaction)
+            if settings["toggle_reactions"] and perms.add_reactions:
+                await self._add_reaction(message, settings["default_reaction"])
         else:
+            response = settings["default_next_number_message"].format(next_count=expected_count)
             await self._handle_invalid_count(
                 message,
-                next_number_message.format(next_count=expected_count),
-                delete_after,
-                use_silent,
-                await config.toggle_next_number_message(),
+                response,
+                settings["delete_after"],
+                settings["use_silent"],
+                settings["toggle_next_number_message"],
             )
-
-    async def _handle_invalid_count(
-        self, message, response, delete_after, use_silent, send_response=True
-    ):
-        try:
-            await message.delete()
-        except discord.HTTPException:
-            log.warning(f"I don't have permission to delete messages in {message.channel.name}")
-
-        if send_response:
-            try:
-                await message.channel.send(response, delete_after=delete_after, silent=use_silent)
-            except discord.HTTPException:
-                log.warning(f"I don't have permission to send messages in {message.channel.name}")
-
-    async def _add_reaction(self, message, reaction):
-        try:
-            await asyncio.sleep(0.3)
-            await message.add_reaction(reaction)
-        except discord.HTTPException:
-            log.warning(f"I don't have permission to add reactions in {message.channel.name}")
 
     @commands.Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message):
-        if after.author is None or after.author.bot:
+    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+        """Prevent editing in the counting channel by deleting edited messages."""
+        if after.author.bot or after.guild is None or after.channel is None:
             return
 
-        if after.guild is None:
+        guild_config = self.config.guild(after.guild)
+        settings = await guild_config.all()
+        if not settings["toggle"] or after.channel.id != settings["channel"]:
             return
 
-        config = self.config.guild(after.guild)
-        toggle = await config.toggle()
-        if not toggle:
+        perms = after.channel.permissions_for(after.guild.me)
+        if not (perms.manage_messages and perms.send_messages):
+            log.warning(f"No permissions in {after.channel.name} ({after.channel.id})")
             return
 
-        channel_id = await config.channel()
-        if channel_id is None or after.channel.id != channel_id:
-            return
-
-        if after.channel is None:
-            log.warning("Channel for message edit is None. Unable to take action.")
-            return
-
-        if (
-            not after.channel.permissions_for(after.guild.me).manage_messages
-            or not after.channel.permissions_for(after.guild.me).send_messages
-        ):
-            log.warning(
-                "I don't have permission to manage messages or send messages in {channel} ({channel_id})".format(
-                    channel=after.channel.name,
-                    channel_id=channel_id,
-                )
+        await self._delete_message(after)
+        if settings["toggle_edit_message"]:
+            await self._send_message(
+                after.channel,
+                settings["default_edit_message"],
+                settings["delete_after"],
+                settings["use_silent"],
             )
-            return
-
-        use_silent = await config.use_silent()
-        delete_after = await config.delete_after()
-        default_edit_message = await config.default_edit_message()
-
-        try:
-            await after.delete()
-        except discord.Forbidden:
-            log.warning(
-                "I don't have permission to delete messages in {channel} ({channel_id})".format(
-                    channel=after.channel.name, channel_id=after.channel.id
-                )
-            )
-        except discord.HTTPException as e:
-            log.warning(
-                "There was an error deleting a message in {channel} ({channel_id}). {error}".format(
-                    channel=after.channel.name, channel_id=after.channel.id, error=e.text
-                )
-            )
-
-        if await config.toggle_edit_message():
-            try:
-                await after.channel.send(
-                    default_edit_message, delete_after=delete_after, silent=use_silent
-                )
-            except discord.Forbidden:
-                log.warning(
-                    "I don't have permission to send messages in {channel} ({channel_id})".format(
-                        channel=after.channel.name, channel_id=after.channel.id
-                    )
-                )
-            except discord.HTTPException as e:
-                log.warning(
-                    "There was an error sending a message in {channel} ({channel_id}). {error}".format(
-                        channel=after.channel.name, channel_id=after.channel.id, error=e.text
-                    )
-                )
 
     @commands.guild_only()
     @commands.hybrid_group()
@@ -401,38 +369,42 @@ class Counting(commands.Cog):
         else:
             await ctx.send("Reset cancelled")
 
-    @countingset.command()
-    async def setmessage(self, ctx, message_type: str, *, message: str):
+    @countingset.command(name="setmessage")
+    async def set_message(self, ctx: commands.Context, message_type: str, *, message: str) -> None:
         """
         Set the default message for a specific type.
 
-        Available message types: edit, count
-
-        `edit` - The message to show when a user edits their message in the counting channel.
-        `count` - The message to show when a user sends an incorrect number in the counting channel.
-        `sameuser` - The message to show when a user tries to count consecutively.
+        **Available message types:**
+        - `edit`: Message shown when a user edits their message in the counting channel.
+        - `count`: Message shown when a user sends an incorrect number.
+        - `sameuser`: Message shown when a user tries to count consecutively.
 
         **Examples:**
         - `[p]countingset setmessage edit You can't edit your messages here.`
         - `[p]countingset setmessage count Next number should be {next_count}`
 
         **Arguments:**
-        - `<message_type>` The type of message to set (edit, sameuser or count).
-        - `<message>` The message to set.
+        - `message_type`: The type of message to set (edit, count, or sameuser).
+        - `message`: The message content to set.
         """
-        config = self.config.guild(ctx.guild)
+        if not message.strip():
+            await ctx.send("The message cannot be empty.")
+            return
 
-        if message_type.lower() == "edit":
-            await config.default_edit_message.set(message)
-            await ctx.send("Default message for edit in counting channel set")
-        elif message_type.lower() == "count":
-            await config.default_next_number_message.set(message)
-            await ctx.send("Default message for wrong number set")
-        elif message_type.lower() == "sameuser":
-            await config.same_user_to_count_msg.set(message)
-            await ctx.send("Default message for same user counting set")
+        config = self.config.guild(ctx.guild)
+        message_types = {
+            "edit": "default_edit_message",
+            "count": "default_next_number_message",
+            "sameuser": "same_user_to_count_msg",
+        }
+
+        type_lower = message_type.lower()
+        if type_lower in message_types:
+            await config.set_raw(message_types[type_lower], value=message)
+            await ctx.send(f"Default message for '{type_lower}' has been set.")
         else:
-            await ctx.send("Invalid message type. Available types: edit, count, sameuser")
+            available_types = ", ".join(message_types.keys())
+            await ctx.send(f"Invalid message type. Available types: {available_types}")
 
     @countingset.command()
     async def togglemessage(self, ctx, setting: str):
@@ -474,55 +446,33 @@ class Counting(commands.Cog):
             f"Same user counting consecutively is now {'allowed' if not same_user_to_count else 'disallowed'}"
         )
 
-    @countingset.command()
+    @countingset.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
-    async def settings(self, ctx: commands.Context):
-        """Show the current counting settings."""
+    async def show_settings(self, ctx: commands.Context) -> None:
+        """Show the current counting settings in an embed."""
         guild_config = self.config.guild(ctx.guild)
+        settings = await guild_config.all()
 
-        channel_id = await guild_config.channel()
+        channel_id = settings["channel"]
         channel = ctx.guild.get_channel(channel_id) if channel_id else None
-        is_enabled = await guild_config.toggle()
-        delete_after_seconds = await guild_config.delete_after()
-        edit_message = await guild_config.default_edit_message()
-        next_number_message = await guild_config.default_next_number_message()
-        is_edit_message_enabled = await guild_config.toggle_edit_message()
-        is_next_number_message_enabled = await guild_config.toggle_next_number_message()
-        is_same_user_count_enabled = await guild_config.same_user_to_count()
-        reaction_emoji = await guild_config.default_reaction()
-        are_reactions_enabled = await guild_config.toggle_reactions()
-        is_silent_mode_enabled = await guild_config.use_silent()
-        same_user_to_count_msg = await guild_config.same_user_to_count_msg()
 
-        embed = discord.Embed(
-            title="Counting Settings",
-            color=await ctx.embed_color(),
-        )
-        embed.add_field(name="Counting Channel:", value=channel.mention if channel else "Not set")
-        embed.add_field(name="Counting Enabled:", value="Enabled" if is_enabled else "Disabled")
-        embed.add_field(name="Delete After:", value=f"{delete_after_seconds} seconds")
-        embed.add_field(
-            name="Edit Message:", value="Enabled" if is_edit_message_enabled else "Disabled"
-        )
-        embed.add_field(
-            name="Next Number Message:",
-            value="Enabled" if is_next_number_message_enabled else "Disabled",
-        )
-        embed.add_field(
-            name="Same User Count:", value="Enabled" if is_same_user_count_enabled else "Disabled"
-        )
-        embed.add_field(
-            name="Reactions:", value="Enabled" if are_reactions_enabled else "Disabled"
-        )
-        embed.add_field(name="Reaction Emoji:", value=reaction_emoji)
-        embed.add_field(
-            name="Silent Mode:", value="Enabled" if is_silent_mode_enabled else "Disabled"
-        )
-        embed.add_field(name="Edit Message Content:", value=edit_message, inline=False)
-        embed.add_field(
-            name="Next Number Message Content:", value=next_number_message, inline=False
-        )
-        embed.add_field(
-            name="Same User Count Message:", value=same_user_to_count_msg, inline=False
-        )
+        embed_fields = {
+            "Counting Channel": channel.mention if channel else "Not set",
+            "Counting Enabled": "Enabled" if settings["toggle"] else "Disabled",
+            "Delete After": f"{settings['delete_after']} seconds",
+            "Edit Message": "Enabled" if settings["toggle_edit_message"] else "Disabled",
+            "Next Number Message": "Enabled" if settings["toggle_next_number_message"] else "Disabled",
+            "Same User Count": "Enabled" if settings["same_user_to_count"] else "Disabled",
+            "Reactions": "Enabled" if settings["toggle_reactions"] else "Disabled",
+            "Reaction Emoji": settings["default_reaction"],
+            "Silent Mode": "Enabled" if settings["use_silent"] else "Disabled",
+            "Edit Message Content": settings["default_edit_message"],
+            "Next Number Message Content": settings["default_next_number_message"],
+            "Same User Count Message": settings["same_user_to_count_msg"],
+        }
+
+        embed = discord.Embed(title="Counting Settings", color=await ctx.embed_color())
+        for name, value in embed_fields.items():
+            inline = name not in ["Edit Message Content", "Next Number Message Content", "Same User Count Message"]
+            embed.add_field(name=name, value=value, inline=inline)
         await ctx.send(embed=embed)
