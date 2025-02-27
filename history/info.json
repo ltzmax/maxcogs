@@ -7,7 +7,7 @@
     "description": "A cog to display historical events for the current day.",
     "short": "A cog to display historical events for the current day.",
     "hidden": false,
-    "min_bot_version": "3.5.14",
+    "min_bot_version": "3.5.13",
     "tags": [
         "history",
         "history of the day",
