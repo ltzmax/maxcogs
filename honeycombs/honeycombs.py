@@ -44,9 +44,9 @@ log = logging.getLogger("red.maxcogs.honeycombs")
 class HoneyCombs(commands.Cog):
     """Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game."""
 
-    __version__: Final[str] = "1.3.2"
+    __version__: Final[str] = "1.4.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/SquidGame.md"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/HoneyCombs.md"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -78,8 +78,6 @@ class HoneyCombs(commands.Cog):
         """Nothing to delete."""
         return
 
-    # incase the cog gets unloaded for some reason or something while a game is in progress
-    # the game will end automatically and the game settings will be reset so they can start a new game
     async def cog_unload(self) -> None:
         await self.session.close()
         for guild in self.bot.guilds:
@@ -88,8 +86,10 @@ class HoneyCombs(commands.Cog):
 
     async def run_game(self, ctx):
         guild_config = self.config.guild(ctx.guild)
-        players = await guild_config.players.all()
+        players = await guild_config.players()
         if not players:
+            await ctx.send("No players joined the game.")
+            await guild_config.game_active.set(False)
             return
 
         default_minutes = await guild_config.default_minutes()
@@ -113,9 +113,6 @@ class HoneyCombs(commands.Cog):
             user = ctx.guild.get_member(data["user_id"])
             if user:
                 shape = data["shape"]
-                # Players have a 20% chance to win
-                # Players with an umbrella have a 8% chance to win
-                # umbrellas were said to be the hardest to pass
                 chance = 0.08 if shape == "umbrella☂️" else 0.2
                 if random.random() < chance:
                     try:
@@ -196,7 +193,7 @@ class HoneyCombs(commands.Cog):
         await guild_config.game_active.set(True)
         default_start_time = await guild_config.default_start_minutes()
         end_time = int((datetime.now() + timedelta(minutes=default_start_time)).timestamp())
-        view = HoneycombView(self)
+        view = HoneycombView(self, ctx.guild)
         winning_price = await self.config.winning_price()
         losing_price = await self.config.losing_price()
         total_price = winning_price + losing_price
@@ -224,19 +221,26 @@ class HoneyCombs(commands.Cog):
 
         message = await ctx.send(embed=embed, view=view)
         view.message = message
-        asyncio.create_task(self.wait_for_players(ctx))
+        await self.wait_for_players(ctx, view)
 
-    async def wait_for_players(self, ctx: commands.Context):
-        default_start_minutes = await self.config.guild(ctx.guild).default_start_minutes()
+    async def wait_for_players(self, ctx: commands.Context, view: HoneycombView):
+        guild_config = self.config.guild(ctx.guild)
+        default_start_minutes = await guild_config.default_start_minutes()
+        minimum_players = await guild_config.minimum_players()
         await discord.utils.sleep_until(datetime.now() + timedelta(minutes=default_start_minutes))
 
-        minimum_players = await self.config.guild(ctx.guild).minimum_players()
-        players = await self.config.guild(ctx.guild).players()
-        if len(players) < minimum_players and not await self.config.guild(ctx.guild).game_active():
-            return  # game has been reset, no need to send a message
-        elif len(players) < minimum_players:
-            await ctx.send("Not enough players entered the game. Game has been canceled.")
-        await self.config.guild(ctx.guild).clear()
+        players = await guild_config.players()
+        if len(players) < minimum_players:
+            await ctx.send(
+                f"Not enough players entered the game ({len(players)}/{minimum_players}). Game has been canceled."
+            )
+            await guild_config.game_active.set(False)
+            await guild_config.players.clear()
+            return
+
+        for item in view.children:
+            item.disabled = True
+        await view.message.edit(view=view)
         await self.run_game(ctx)
 
     @commands.group(aliases=["squidgame", "sg"])

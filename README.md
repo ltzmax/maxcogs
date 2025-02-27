@@ -31,7 +31,7 @@ To install any cog you want:
 | Counting | Count from 1 to infinity! with some customizable settings. | 1.7.0 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | History | A cog to display historical events for the current day in your timezone. | 1.0.0 | ltzmax | ✅ |
-| HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.3.2 | ltzmax | ✅ |
+| HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.4.0 | ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
 | NBA | NBA Cog that provides NBA game updates, schedules, and news. | 3.3.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |

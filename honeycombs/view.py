@@ -32,9 +32,17 @@ log = logging.getLogger("red.maxcogs.honeycombs.view")
 
 
 class HoneycombView(discord.ui.View):
-    def __init__(self, game):
+    def __init__(self, game, guild):
         super().__init__(timeout=120)
         self.game = game
+        self.guild = guild
+        self.join_button.label = "Enter The Game (Loading...)"
+        self.player_count = 0
+
+    async def setup(self):
+        player_data = await self.game.config.guild(self.guild).players()
+        self.player_count = len(player_data)
+        self.join_button.label = f"Enter The Game ({self.player_count}/456)"
 
     async def on_timeout(self):
         for item in self.children:
@@ -55,6 +63,7 @@ class HoneycombView(discord.ui.View):
         winning_price = await self.game.config.winning_price()
         losing_price = await self.game.config.losing_price()
         user_balance = await bank.get_balance(interaction.user)
+
         if user_balance < winning_price + losing_price:
             return await interaction.response.send_message(
                 f"You do not have enough {credit_name} to enter the game.", ephemeral=True
@@ -62,31 +71,37 @@ class HoneycombView(discord.ui.View):
 
         player_data = await self.game.config.guild(interaction.guild).players()
         player_ids = {player["user_id"] for player in player_data.values()}
+
         if interaction.user.id in player_ids:
-            return await interaction.response.send_message(
-                "You have already joined the game. You cannot leave.", ephemeral=True
-            )
+            for number, data in player_data.items():
+                if data["user_id"] == interaction.user.id:
+                    return await interaction.response.send_message(
+                        f"You are already in the game as `Player {number}` with shape {data['shape']}. You cannot leave.",
+                        ephemeral=True,
+                    )
 
         if len(player_data) >= 456:
             return await interaction.response.send_message(
                 "The game is already full. Please wait for the next game to start.", ephemeral=True
             )
 
-        available_numbers = [i for i in range(1, 457) if i not in player_data]
+        available_numbers = [i for i in range(1, 457) if str(i) not in player_data]
         player_number = random.choice(available_numbers)
-
         shapes = await self.game.config.guild(interaction.guild).shapes()
         shape = random.choice(shapes)
-        player_data[player_number] = {
+
+        player_data[str(player_number)] = {
             "user_id": interaction.user.id,
             "shape": shape,
             "passed": None,
             "player_number": player_number,
         }
+
         await self.game.config.guild(interaction.guild).players.set(player_data)
+
         await interaction.response.send_message(
-            f"You have joined the game as `Player {player_number}`.\nYou have been assigned the shape {shape}",
+            f"You have joined the game as `Player {player_number}`.\nYour shape is {shape}\nThis message will disappear, but your number and shape are recorded!",
             ephemeral=True,
         )
-        button.label = f"Enter The Game ({len(player_data)}/{456})"
+        button.label = f"Enter The Game ({len(player_data)}/456)"
         await interaction.message.edit(view=self)
