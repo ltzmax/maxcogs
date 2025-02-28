@@ -22,7 +22,6 @@ See all historical events that happened on this day.<br/>
 
 Default timezone is UTC if not set by user.<br/>
 Set your timezone with `[p]historyset timezone Continent/City` to align with your local midnight.<br/>
- - Usage: `[p]todayinhistory`
- - Aliases: `history`
+ - Usage: `[p]history`
  - Cooldown: `1 per 10.0 seconds`
  - Checks: `server_only`
