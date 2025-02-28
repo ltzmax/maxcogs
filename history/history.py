@@ -94,10 +94,10 @@ class History(commands.Cog):
             )
 
     @commands.guild_only()
-    @commands.command(aliases=["history"])
+    @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def todayinhistory(self, ctx):
+    async def history(self, ctx):
         """
         See all historical events that happened on this day.
 
