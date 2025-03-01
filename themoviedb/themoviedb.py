@@ -30,11 +30,7 @@ from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView
 
 from .everything_stuff import build_embed, get_media_data, person_embed, search_and_display
-
-# TODO:
-# - Add upcoming movies (https://developer.themoviedb.org/reference/movie-upcoming-list) (Subject to change)
-# - Add Recommnedations (https://developer.themoviedb.org/reference/movie-recommendations) (Will be added in future update)
-
+# from .upcoming import get_upcoming_movies, create_movie_pages
 
 class TheMovieDB(commands.Cog):
     """
@@ -43,7 +39,7 @@ class TheMovieDB(commands.Cog):
 
     __author__ = "MAX"
     __version__ = "1.5.0"
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/TheMovieDB.md"
+    __docs__ = "https://docs.maxapp.tv/tmdb.html"
 
     def __init__(self, bot):
         self.bot = bot

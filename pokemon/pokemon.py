@@ -59,7 +59,7 @@ class Pokemon(commands.Cog):
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
     __version__: Final[str] = "1.8.0"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Pokemon.md"
+    __docs__: Final[str] = "https://docs.maxapp.tv/pokemon.html"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot

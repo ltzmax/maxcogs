@@ -45,7 +45,7 @@ class NekosBest(commands.Cog):
 
     __version__: Final[str] = "2.4.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NekosBest.md"
+    __docs__: Final[str] = "https://docs.maxapp.tv/nekosbest.html"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

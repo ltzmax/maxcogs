@@ -93,7 +93,7 @@ class Plague(commands.Cog):
 
     __version__ = "1.0.8"
     __author__ = humanize_list(["phenom4n4n", "ltzmax"])
-    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/Plague.md"
+    __docs__ = "https://docs.maxapp.tv/plague.html"
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)

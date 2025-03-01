@@ -66,7 +66,7 @@ class NBA(commands.Cog):
 
     __version__: Final[str] = "3.3.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/NBA.md"
+    __docs__: Final[str] = "https://docs.maxapp.tv/nba.html"
 
     def __init__(self, bot):
         self.bot = bot
