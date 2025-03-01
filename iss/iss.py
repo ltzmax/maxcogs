@@ -6,6 +6,7 @@ from typing import Any, Final
 
 import aiohttp
 import discord
+import orjson
 from redbot.core import commands
 from redbot.core.utils.views import SetApiView
 
@@ -16,7 +17,7 @@ DEORBIT_INFO = "The ISS is set to end its mission with a controlled deorbit into
 class Iss(commands.Cog):
     """Track the International Space Station's location and details."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.0.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/iss.html"
 
@@ -48,7 +49,7 @@ class Iss(commands.Cog):
         try:
             async with self.session.get(url) as resp:
                 if resp.status == 200:
-                    return await resp.json()
+                    return orjson.loads(await resp.read())
                 log.error(f"Failed to fetch {url} - Status: {resp.status}")
                 return None
         except aiohttp.ClientConnectionError as e:
@@ -56,6 +57,9 @@ class Iss(commands.Cog):
             return None
         except asyncio.TimeoutError:
             log.error(f"Timeout fetching {url}")
+            return None
+        except orjson.JSONDecodeError as e:
+            log.error(f"Failed to decode JSON from {url}: {str(e)}")
             return None
 
     async def fetch_map_image(self, lat: float, lon: float) -> bytes:
