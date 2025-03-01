@@ -77,7 +77,7 @@ class Iss(commands.Cog):
         try:
             async with self.session.get(map_url) as resp:
                 if resp.status == 200:
-                    return await resp.read()
+                    return orjson.loads(await resp.read())
                 log.error(f"Failed to fetch map image - Status: {resp.status}")
                 return None
         except Exception as e:

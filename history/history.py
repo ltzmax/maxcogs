@@ -28,6 +28,7 @@ from typing import Any, Final
 
 import aiohttp
 import discord
+import orjson
 import pytz
 from redbot.core import Config, commands
 from redbot.core.utils.menus import SimpleMenu
@@ -38,7 +39,7 @@ log = logging.getLogger("red.maxcogs.history")
 class History(commands.Cog):
     """A cog to display historical events for the current day in your timezone."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.0.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/history.html"
 
@@ -81,7 +82,6 @@ class History(commands.Cog):
         **Arguments**:
         - `<timezone>`: The timezone you want to set.
         """
-        await ctx.typing()
         try:
             pytz.timezone(timezone)
             await self.config.user(ctx.author).timezone.set(timezone)
@@ -120,7 +120,7 @@ class History(commands.Cog):
                     return await ctx.send(
                         f"Failed to fetch history data! (Status: {response.status})"
                     )
-                data = await response.json()
+                data = orjson.loads(await response.read())
                 events = data.get("events", [])
 
                 if not events:
