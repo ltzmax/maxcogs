@@ -80,7 +80,10 @@ class Counting(commands.Cog):
         self.config.register_user(**default_user)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Format the help message with cog details."""
+        """
+        Format the help message with cog details.
+        Thanks Sinbad!
+        """
         base = super().format_help_for_context(ctx)
         return f"{base}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
@@ -397,7 +400,11 @@ class Counting(commands.Cog):
 
     @countingset.command(name="togglemessage")
     async def toggle_message(self, ctx: commands.Context, msg_type: str) -> None:
-        """Toggle visibility of specific messages."""
+        """
+        Toggle visibility of specific messages.
+
+        - `<msg_type>`: vaild msg_type is `edit` and `count`.
+        """
         config = self.config.guild(ctx.guild)
         msg_type = msg_type.lower()
 
