@@ -27,7 +27,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
-| AutoPublisher | Automatically push news channel messages. | 2.8.0 | ltzmax, AAA3A | ✅ |
+| AutoPublisher | Automatically push news channel messages. | 2.9.0 | ltzmax, AAA3A | ✅ |
 | Counting | Count from 1 to infinity! with some customizable settings. | 1.8.1 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | History | A cog to display historical events for the current day in your timezone. | 1.0.1 | ltzmax | ✅ |
