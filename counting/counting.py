@@ -32,8 +32,9 @@ import discord
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as cf
-from redbot.core.utils.chat_formatting import humanize_number
+from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import ConfirmView
+from tabulate import tabulate
 
 log = logging.getLogger("red.maxcogs.counting")
 
@@ -47,7 +48,7 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.8.0"
+    __version__: Final[str] = "1.8.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/counting.html"
 
@@ -248,11 +249,19 @@ class Counting(commands.Cog):
 
         last_count = datetime.fromisoformat(timestamp) if timestamp else None
         time_str = discord.utils.format_dt(last_count, "R") if last_count else "Never"
-        await ctx.send(
-            f"{user.display_name}’s Stats\n"
-            f"Count: {cf.humanize_number(count)}\n"
-            f"Last Counted: {time_str}"
+
+        table_data = [
+            ["User", user.display_name],
+            ["Your Count", cf.humanize_number(count)],
+        ]
+
+        table = tabulate(
+            table_data,
+            headers=["Stat", "Value"],
+            tablefmt="simple",
+            stralign="left",
         )
+        await ctx.send(f"Last counted: {time_str}\n{box(table, lang='prolog')}")
 
     @counting.command(name="resetme")
     async def reset_me(self, ctx: commands.Context) -> None:
