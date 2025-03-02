@@ -25,47 +25,54 @@ SOFTWARE.
 import asyncio
 import logging
 from datetime import datetime
-from typing import Any, Final, Literal, Optional
+from enum import Enum
+from typing import Any, Dict, Final, Optional
 
 import discord
-from discord.ext.commands.converter import EmojiConverter
-from discord.ext.commands.errors import EmojiNotFound
-from emoji import EMOJI_DATA
 from redbot.core import Config, commands
-from redbot.core.utils.chat_formatting import box, humanize_number
+from redbot.core.bot import Red
+from redbot.core.utils import chat_formatting as cf
+from redbot.core.utils.chat_formatting import humanize_number
 from redbot.core.utils.views import ConfirmView
-from tabulate import tabulate
 
 log = logging.getLogger("red.maxcogs.counting")
+
+
+class MessageType(Enum):
+    EDIT = "edit"
+    COUNT = "count"
+    SAMEUSER = "sameuser"
 
 
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.7.0"
+    __version__: Final[str] = "1.8.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/counting.html"
 
-    def __init__(self, bot):
+    def __init__(self, bot: Red):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=9008567, force_registration=True)
-        default_guild = {
+
+        default_guild: Dict[str, Any] = {
             "count": 0,
             "channel": None,
             "toggle": False,
             "delete_after": 5,
             "default_edit_message": "You can't edit your messages here.",
-            "default_next_number_message": "Next number should be {next_count}",
+            "default_next_number_message": "Next number should be {next_count}.",
+            "default_same_user_message": "You cannot count consecutively. Wait for someone else.",
             "toggle_edit_message": False,
             "toggle_next_number_message": False,
             "same_user_to_count": False,
-            "same_user_to_count_msg": "You cannot count consecutively. Please wait for someone else to count.",
             "last_user_id": None,
             "toggle_reactions": False,
             "default_reaction": "✅",
             "use_silent": False,
+            "min_account_age": 0,  # Days, optional alt account prevention
         }
-        default_user = {
+        default_user: Dict[str, Any] = {
             "count": 0,
             "last_count_timestamp": None,
         }
@@ -73,28 +80,31 @@ class Counting(commands.Cog):
         self.config.register_user(**default_user)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad!"""
-        pre_processed = super().format_help_for_context(ctx)
-        return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
+        """Format the help message with cog details."""
+        base = super().format_help_for_context(ctx)
+        return f"{base}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
-        """Nothing to delete."""
-        return
+    async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
+        """Handle data deletion requests; nothing to delete here."""
+        pass
 
     async def _send_message(
         self,
         channel: discord.TextChannel,
         content: str,
+        *,
         delete_after: Optional[int] = None,
         silent: bool = False,
     ) -> Optional[discord.Message]:
         """Send a message with error handling."""
         try:
             return await channel.send(content, delete_after=delete_after, silent=silent)
-        except discord.Forbidden as e:
-            log.warning(f"No permission to send in {channel.name} ({channel.id}): {e}")
+        except discord.Forbidden:
+            log.warning(
+                f"Missing send permissions in {channel.guild.name}#{channel.name} ({channel.id})"
+            )
         except discord.HTTPException as e:
-            log.warning(f"Error sending message in {channel.name} ({channel.id}): {e}")
+            log.warning(f"Failed to send message in {channel.id}: {e}")
         return None
 
     async def _delete_message(self, message: discord.Message) -> None:
@@ -102,37 +112,37 @@ class Counting(commands.Cog):
         try:
             await message.delete()
         except discord.HTTPException as e:
-            log.warning(
-                f"Error deleting message in {message.channel.name} ({message.channel.id}): {e}"
-            )
+            log.warning(f"Failed to delete message {message.id} in {message.channel.id}: {e}")
+
+    async def _add_reaction(self, message: discord.Message, reaction: str) -> None:
+        """Add a reaction with a slight delay."""
+        await asyncio.sleep(0.3)
+        try:
+            await message.add_reaction(reaction)
+        except discord.HTTPException as e:
+            log.warning(f"Failed to add reaction to {message.id} in {message.channel.id}: {e}")
 
     async def _handle_invalid_count(
         self,
         message: discord.Message,
         response: str,
-        delete_after: int,
-        use_silent: bool,
+        settings: Dict[str, Any],
         send_response: bool = True,
     ) -> None:
-        """Handle invalid counting attempts by deleting the message and optionally responding."""
+        """Handle invalid counts by deleting and optionally responding."""
         await self._delete_message(message)
         if send_response:
-            await self._send_message(message.channel, response, delete_after, use_silent)
-
-    async def _add_reaction(self, message: discord.Message, reaction: str) -> None:
-        """Add a reaction to a message with a slight delay."""
-        try:
-            await asyncio.sleep(0.3)
-            await message.add_reaction(reaction)
-        except discord.HTTPException as e:
-            log.warning(
-                f"No permission to add reactions in {message.channel.name} ({message.channel.id}): {e}"
+            await self._send_message(
+                message.channel,
+                response,
+                delete_after=settings["delete_after"],
+                silent=settings["use_silent"],
             )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        """Process messages to manage the counting game."""
-        if message.author.bot or message.guild is None:
+        """Handle counting logic when a message is sent."""
+        if message.author.bot or not message.guild:
             return
 
         guild_config = self.config.guild(message.guild)
@@ -141,43 +151,49 @@ class Counting(commands.Cog):
             return
 
         perms = message.channel.permissions_for(message.guild.me)
-        if not (perms.manage_messages and perms.send_messages):
-            log.warning(f"No permissions in {message.channel.name} ({message.channel.id})")
+        if not (perms.send_messages and perms.manage_messages):
+            log.warning(f"Missing permissions in {message.channel.id}")
             return
 
-        user_config = self.config.user(message.author)
-        expected_count = settings["count"] + 1
+        # Alt account check
+        if settings["min_account_age"]:
+            account_age = (discord.utils.utcnow() - message.author.created_at).days
+            if account_age < settings["min_account_age"]:
+                await self._handle_invalid_count(
+                    message,
+                    f"Account must be at least {settings['min_account_age']} days old to count.",
+                    settings,
+                    send_response=True,
+                )
+                return
 
+        expected_count = settings["count"] + 1
         if settings["same_user_to_count"] and settings["last_user_id"] == message.author.id:
             await self._handle_invalid_count(
-                message,
-                settings["same_user_to_count_msg"],
-                settings["delete_after"],
-                settings["use_silent"],
+                message, settings["default_same_user_message"], settings
             )
             return
 
         if message.content.isdigit() and int(message.content) == expected_count:
-            await guild_config.count.set(expected_count)
-            await guild_config.last_user_id.set(message.author.id)
-            await user_config.count.set(await user_config.count() + 1)
-            await user_config.last_count_timestamp.set(datetime.now().isoformat())
+            user_config = self.config.user(message.author)
+            await asyncio.gather(
+                guild_config.count.set(expected_count),
+                guild_config.last_user_id.set(message.author.id),
+                user_config.count.set(await user_config.count() + 1),
+                user_config.last_count_timestamp.set(datetime.utcnow().isoformat()),
+            )
             if settings["toggle_reactions"] and perms.add_reactions:
                 await self._add_reaction(message, settings["default_reaction"])
         else:
             response = settings["default_next_number_message"].format(next_count=expected_count)
             await self._handle_invalid_count(
-                message,
-                response,
-                settings["delete_after"],
-                settings["use_silent"],
-                settings["toggle_next_number_message"],
+                message, response, settings, settings["toggle_next_number_message"]
             )
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
-        """Prevent editing in the counting channel by deleting edited messages."""
-        if after.author.bot or after.guild is None or after.channel is None:
+        """Prevent editing in the counting channel."""
+        if after.author.bot or not after.guild:
             return
 
         guild_config = self.config.guild(after.guild)
@@ -186,8 +202,7 @@ class Counting(commands.Cog):
             return
 
         perms = after.channel.permissions_for(after.guild.me)
-        if not (perms.manage_messages and perms.send_messages):
-            log.warning(f"No permissions in {after.channel.name} ({after.channel.id})")
+        if not (perms.send_messages and perms.manage_messages):
             return
 
         await self._delete_message(after)
@@ -195,188 +210,161 @@ class Counting(commands.Cog):
             await self._send_message(
                 after.channel,
                 settings["default_edit_message"],
-                settings["delete_after"],
-                settings["use_silent"],
+                delete_after=settings["delete_after"],
+                silent=settings["use_silent"],
             )
 
-    @commands.guild_only()
     @commands.hybrid_group()
-    async def counting(self, ctx):
-        """Counting commands"""
+    @commands.guild_only()
+    async def counting(self, ctx: commands.Context) -> None:
+        """Commands for the counting game."""
 
-    @counting.command(name="countstats", aliases=["stats"])
+    @counting.command(name="current")
+    async def count_current(self, ctx: commands.Context) -> None:
+        """Show the current count."""
+        count = await self.config.guild(ctx.guild).count()
+        await ctx.send(f"The current count is {cf.humanize_number(count)}.")
+
+    @counting.command(name="stats")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def count_stats(self, ctx: commands.Context, user: Optional[discord.User] = None):
-        """Get your current counting statistics."""
+    async def count_stats(
+        self, ctx: commands.Context, user: Optional[discord.Member] = None
+    ) -> None:
+        """Get counting stats for a user."""
         user = user or ctx.author
-
         if user.bot:
-            return await ctx.send("Bots do not count.")
-
-        member = ctx.guild.get_member(user.id)
-        if not member:
-            return await ctx.send("User is not in this server.")
+            return await ctx.send("Bots don’t count!")
 
         user_config = self.config.user(user)
-        user_data = await user_config.all()
+        count, timestamp = await asyncio.gather(
+            user_config.count(), user_config.last_count_timestamp()
+        )
 
-        user_count = user_data.get("count", 0)
-        last_count_timestamp = user_data.get("last_count_timestamp", None)
+        if not count:
+            return await ctx.send(f"{user.display_name} hasn’t counted yet.")
 
-        if not user_count:
-            return await ctx.send(f"{user.display_name} has not counted yet.")
-
-        last_count_time = datetime.fromisoformat(last_count_timestamp)
-        time = discord.utils.format_dt(last_count_time, style="R")
-
+        last_count = datetime.fromisoformat(timestamp) if timestamp else None
+        time_str = discord.utils.format_dt(last_count, "R") if last_count else "Never"
         await ctx.send(
-            f"{user.display_name}'s Counting Stats\n"
-            f"Count: {humanize_number(user_count)}\n"
-            f"Last Counted: {time}",
-            reference=ctx.message.to_reference(fail_if_not_exists=False),
-            mention_author=False,
+            f"{user.display_name}’s Stats\n"
+            f"Count: {cf.humanize_number(count)}\n"
+            f"Last Counted: {time_str}"
         )
 
-    @counting.command(name="resetme", with_app_command=False)
-    async def reset_me(self, ctx: commands.Context):
-        """Reset your counting stats."""
+    @counting.command(name="resetme")
+    async def reset_me(self, ctx: commands.Context) -> None:
+        """Reset your own counting stats."""
         view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(
-            "Are you sure you want to reset your counting stats?", view=view
-        )
+        view.message = await ctx.send("Reset your counting stats?", view=view)
         await view.wait()
+
         if view.result:
-            user_config = self.config.user(ctx.author)
-            await user_config.count.set(0)
-            await user_config.last_count_timestamp.clear()
-            await ctx.send(
-                "Your counting stats have been reset.",
-                reference=ctx.message.to_reference(fail_if_not_exists=False),
-                mention_author=False,
-            )
+            await self.config.user(ctx.author).clear()
+            await ctx.send("Your stats have been reset.")
         else:
-            await ctx.send(
-                "Reset cancelled.",
-                reference=ctx.message.to_reference(fail_if_not_exists=False),
-                mention_author=False,
-            )
+            await ctx.send("Reset cancelled.")
 
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
-    async def countingset(self, ctx):
-        """Counting settings commands."""
+    async def countingset(self, ctx: commands.Context) -> None:
+        """Settings for the counting game."""
 
-    @countingset.command()
-    async def togglereact(self, ctx):
-        """Toggle the reactions for correct numbers."""
+    @countingset.command(name="channel")
+    async def set_channel(
+        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
+    ) -> None:
+        """Set or clear the counting channel."""
         config = self.config.guild(ctx.guild)
-        toggle = await config.toggle_reactions()
-        await config.toggle_reactions.set(not toggle)
-        await ctx.send(
-            f"Reactions for the counting is now {'enabled' if not toggle else 'disabled'}\n"
-            f"{'Please make sure the bot has the necessary permissions to add reactions in the counting channel.' if not toggle else ''}"
-        )
+        if not channel:
+            await config.channel.clear()
+            return await ctx.send("Counting channel cleared.")
 
-    @countingset.command()
-    async def setreaction(self, ctx, emoji_input: str):
-        """Set the reaction for correct numbers."""
-        if emoji_input:
-            try:
-                # Use EmojiConverter to convert the emoji argument
-                emoji_obj = await EmojiConverter().convert(ctx, emoji_input)
-                emoji_str = str(emoji_obj)
-            except EmojiNotFound:
-                if emoji_input in EMOJI_DATA:
-                    emoji_str = emoji_input
-                else:
-                    return await ctx.send(f"'{emoji_input}' is not a valid emoji.")
-        config = self.config.guild(ctx.guild)
-        await config.default_reaction.set(emoji_input)
-        await ctx.send(f"Reaction for correct numbers has been set to {emoji_input}")
-
-    @countingset.command()
-    async def togglesilent(self, ctx: commands.Context):
-        """
-        Toggle silent mode for counting messages.
-
-        Silent is discords new feature.
-        """
-        config = self.config.guild(ctx.guild)
-        toggle = await config.use_silent()
-        await config.use_silent.set(not toggle)
-        await ctx.send(
-            f"Silent messages for counting messages is now {'enabled' if not toggle else 'disabled'}"
-        )
-
-    @countingset.command(name="toggle")
-    async def toggle_counting(self, ctx: commands.Context):
-        """Toggle counting in the channel"""
-        guild_config = self.config.guild(ctx.guild)
-        is_enabled = await guild_config.toggle()
-        await guild_config.toggle.set(not is_enabled)
-
-        message = f"Counting is now {'enabled' if not is_enabled else 'disabled'}"
-        if not await guild_config.channel() and not is_enabled:
-            message += f"\nPlease set a counting channel using `{ctx.clean_prefix}countingset channel` to enable counting."
-        await ctx.send(message)
-
-    @countingset.command()
-    async def channel(self, ctx, channel: Optional[discord.TextChannel]):
-        """Set the counting channel"""
-        if channel is None:
-            await self.config.guild(ctx.guild).channel.clear()
-            return await ctx.send("Counting channel has been cleared")
-
-        if (
-            not channel.permissions_for(ctx.guild.me).send_messages
-            or not channel.permissions_for(ctx.guild.me).manage_messages
-        ):
+        perms = channel.permissions_for(ctx.guild.me)
+        if not (perms.send_messages and perms.manage_messages):
             return await ctx.send(
-                "I don't have permission to send messages or manage messages in {channel}".format(
-                    channel=channel.mention
-                )
+                f"I need send and manage messages permissions in {channel.mention}."
             )
 
-        message = f"Counting channel has been set to {channel.mention}"
-        if not await self.config.guild(ctx.guild).toggle():
-            message += f"\nPlease enable counting using `{ctx.clean_prefix}countingset toggle` to enable counting."
-        await self.config.guild(ctx.guild).channel.set(channel.id)
-        await ctx.send(message)
+        await config.channel.set(channel.id)
+        msg = f"Counting channel set to {channel.mention}."
+        if not await config.toggle():
+            msg += f"\nEnable counting with `{ctx.clean_prefix}countingset toggle`."
+        await ctx.send(msg)
 
-    @countingset.command()
-    async def deleteafter(self, ctx, seconds: commands.Range[int, 5, 300]):
-        """
-        Set the number of seconds to delete the incorrect message
-
-        Default is 5 seconds
-        """
+    @countingset.command(name="toggle")
+    async def toggle_counting(self, ctx: commands.Context) -> None:
+        """Toggle the counting game on or off."""
         config = self.config.guild(ctx.guild)
-        await config.delete_after.set(seconds)
-        await ctx.send(f"Messages will now be deleted after {seconds} seconds")
+        toggle = not await config.toggle()
+        await config.toggle.set(toggle)
 
-    @countingset.command()
-    async def reset(self, ctx):
-        """Reset the settings for the counting."""
-        view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(
-            "Are you sure you want to reset the counting settings?\nThis will reset the counting channel, count, and all settings.",
-            view=view,
+        msg = f"Counting is now {toggle and 'enabled' or 'disabled'}."
+        if toggle and not await config.channel():
+            msg += f"\nSet a channel with `{ctx.clean_prefix}countingset channel`."
+        await ctx.send(msg)
+
+    @countingset.command(name="deleteafter")
+    async def set_delete_after(
+        self, ctx: commands.Context, seconds: commands.Range[int, 5, 300]
+    ) -> None:
+        """Set the delete-after time for invalid messages."""
+        await self.config.guild(ctx.guild).delete_after.set(seconds)
+        await ctx.send(f"Invalid messages will be deleted after {seconds} seconds.")
+
+    @countingset.command(name="togglesilent")
+    async def toggle_silent(self, ctx: commands.Context) -> None:
+        """Toggle silent mode for bot messages."""
+        config = self.config.guild(ctx.guild)
+        silent = not await config.use_silent()
+        await config.use_silent.set(silent)
+        await ctx.send(f"Silent mode is now {silent and 'enabled' or 'disabled'}.")
+
+    @countingset.command(name="togglereact")
+    async def toggle_react(self, ctx: commands.Context) -> None:
+        """Toggle reactions for correct counts."""
+        config = self.config.guild(ctx.guild)
+        toggle = not await config.toggle_reactions()
+        await config.toggle_reactions.set(toggle)
+        msg = f"Reactions are now {toggle and 'enabled' or 'disabled'}."
+        if toggle:
+            msg += "\nEnsure I have reaction permissions in the counting channel."
+        await ctx.send(msg)
+
+    @countingset.command(name="setreaction")
+    async def set_reaction(self, ctx: commands.Context, emoji: str) -> None:
+        """Set the reaction emoji for correct counts."""
+        try:
+            await ctx.message.add_reaction(emoji)
+            await self.config.guild(ctx.guild).default_reaction.set(emoji)
+            await ctx.send(f"Reaction set to {emoji}.")
+        except discord.HTTPException:
+            await ctx.send(f"'{emoji}' isn’t a valid emoji.")
+
+    @countingset.command(name="togglesameuser")
+    async def toggle_same_user(self, ctx: commands.Context) -> None:
+        """Toggle if the same user can count consecutively."""
+        config = self.config.guild(ctx.guild)
+        toggle = not await config.same_user_to_count()
+        await config.same_user_to_count.set(toggle)
+        await ctx.send(
+            f"Consecutive counting by the same user is now {toggle and 'disallowed' or 'allowed'}."
         )
-        await view.wait()
-        if view.result:
-            await self.config.guild(ctx.guild).clear()
-            all_users = await self.config.all_users()
-            for user_id in all_users:
-                await self.config.user_from_id(user_id).clear()
-            await ctx.send("Counting settings have been reset.")
-        else:
-            await ctx.send("Reset cancelled")
+
+    @countingset.command(name="minage")
+    async def set_min_age(
+        self, ctx: commands.Context, days: commands.Range[int, 0, 365] = 0
+    ) -> None:
+        """Set a minimum account age (in days) to count (0 to disable)."""
+        await self.config.guild(ctx.guild).min_account_age.set(days)
+        await ctx.send(
+            f"Minimum account age set to {days} days{' (disabled)' if days == 0 else ''}."
+        )
 
     @countingset.command(name="setmessage")
-    async def set_message(self, ctx: commands.Context, message_type: str, *, message: str) -> None:
+    async def set_message(self, ctx: commands.Context, msg_type: str, *, message: str) -> None:
         """
-        Set the default message for a specific type.
+        Set custom messages for specific events.
 
         **Available message types:**
         - `edit`: Message shown when a user edits their message in the counting channel.
@@ -386,103 +374,96 @@ class Counting(commands.Cog):
         **Examples:**
         - `[p]countingset setmessage edit You can't edit your messages here.`
         - `[p]countingset setmessage count Next number should be {next_count}`
+        - `[p]countingset setmessage sameuser You cannot count until another user have counted`
 
         **Arguments:**
-        - `message_type`: The type of message to set (edit, count, or sameuser).
-        - `message`: The message content to set.
-        """
-        if not message.strip():
-            await ctx.send("The message cannot be empty.")
-            return
-
-        config = self.config.guild(ctx.guild)
-        message_types = {
-            "edit": "default_edit_message",
-            "count": "default_next_number_message",
-            "sameuser": "same_user_to_count_msg",
-        }
-
-        type_lower = message_type.lower()
-        if type_lower in message_types:
-            await config.set_raw(message_types[type_lower], value=message)
-            await ctx.send(f"Default message for '{type_lower}' has been set.")
-        else:
-            available_types = ", ".join(message_types.keys())
-            await ctx.send(f"Invalid message type. Available types: {available_types}")
-
-    @countingset.command()
-    async def togglemessage(self, ctx, setting: str):
-        """
-        Toggle to show a message for a specific setting.
-
-        Available settings: edit, count
-
-        `count` - Show the next number message when a user sends an incorrect number. Default is disabled
-        `edit` - Shows a message when a user edits their message in the counting channel. Default is disabled
+        - `<msg_type>`: The type of message to set (edit, count, or sameuser).
+        - `<message>`: The message content to set.
         """
         config = self.config.guild(ctx.guild)
-        if setting.lower() == "edit":
-            toggle = await config.toggle_edit_message()
-            await config.toggle_edit_message.set(not toggle)
+        msg_type = msg_type.lower()
+
+        try:
+            mtype = MessageType(msg_type)
+            key = {
+                MessageType.EDIT: "default_edit_message",
+                MessageType.COUNT: "default_next_number_message",
+                MessageType.SAMEUSER: "default_same_user_message",
+            }[mtype]
+            await config.set_raw(key, value=message)
+            await ctx.send(f"Message for '{msg_type}' updated.")
+        except ValueError:
+            await ctx.send(f"Invalid type. Use: {', '.join(mt.value for mt in MessageType)}.")
+
+    @countingset.command(name="togglemessage")
+    async def toggle_message(self, ctx: commands.Context, msg_type: str) -> None:
+        """Toggle visibility of specific messages."""
+        config = self.config.guild(ctx.guild)
+        msg_type = msg_type.lower()
+
+        if msg_type == "edit":
+            toggle = not await config.toggle_edit_message()
+            await config.toggle_edit_message.set(toggle)
+            await ctx.send(f"Edit message visibility is now {toggle and 'enabled' or 'disabled'}.")
+        elif msg_type == "count":
+            toggle = not await config.toggle_next_number_message()
+            await config.toggle_next_number_message.set(toggle)
             await ctx.send(
-                f"Message for when user edits in counting channel is now {'enabled' if not toggle else 'disabled'}"
-            )
-        elif setting.lower() == "count":
-            toggle = await config.toggle_next_number_message()
-            await config.toggle_next_number_message.set(not toggle)
-            await ctx.send(
-                f"Message for when user send incorrect number in counting channel is now {'enabled' if not toggle else 'disabled'}"
+                f"Next number message visibility is now {toggle and 'enabled' or 'disabled'}."
             )
         else:
-            await ctx.send("Invalid setting. Available settings: edit, count")
+            await ctx.send("Invalid type. Use: edit, count.")
 
-    @countingset.command()
-    async def togglesameuser(self, ctx):
-        """
-        Toggle whether the same user can count more than once consecutively.
+    @countingset.command(name="reset")
+    async def reset(self, ctx: commands.Context) -> None:
+        """Reset all counting settings and user data."""
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send("Reset all counting data?", view=view)
+        await view.wait()
 
-        Users cannot count consecutively if this is enabled meaning they have to wait for someone else to count.
-        """
-        config = self.config.guild(ctx.guild)
-        same_user_to_count = await config.same_user_to_count()
-        await config.same_user_to_count.set(not same_user_to_count)
-        await ctx.send(
-            f"Same user counting consecutively is now {'allowed' if not same_user_to_count else 'disallowed'}"
-        )
+        if view.result:
+            await asyncio.gather(
+                self.config.guild(ctx.guild).clear(), self.config.clear_all_users()
+            )
+            await ctx.send("All counting data reset.")
+        else:
+            await ctx.send("Reset cancelled.")
 
     @countingset.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
     async def show_settings(self, ctx: commands.Context) -> None:
-        """Show the current counting settings in an embed."""
-        guild_config = self.config.guild(ctx.guild)
-        settings = await guild_config.all()
-
-        channel_id = settings["channel"]
-        channel = ctx.guild.get_channel(channel_id) if channel_id else None
-
-        embed_fields = {
-            "Counting Channel": channel.mention if channel else "Not set",
-            "Counting Enabled": "Enabled" if settings["toggle"] else "Disabled",
-            "Delete After": f"{settings['delete_after']} seconds",
-            "Edit Message": "Enabled" if settings["toggle_edit_message"] else "Disabled",
-            "Next Number Message": (
-                "Enabled" if settings["toggle_next_number_message"] else "Disabled"
-            ),
-            "Same User Count": "Enabled" if settings["same_user_to_count"] else "Disabled",
-            "Reactions": "Enabled" if settings["toggle_reactions"] else "Disabled",
-            "Reaction Emoji": settings["default_reaction"],
-            "Silent Mode": "Enabled" if settings["use_silent"] else "Disabled",
-            "Edit Message Content": settings["default_edit_message"],
-            "Next Number Message Content": settings["default_next_number_message"],
-            "Same User Count Message": settings["same_user_to_count_msg"],
-        }
+        """Display current counting settings."""
+        settings = await self.config.guild(ctx.guild).all()
+        channel = ctx.guild.get_channel(settings["channel"]) if settings["channel"] else None
 
         embed = discord.Embed(title="Counting Settings", color=await ctx.embed_color())
-        for name, value in embed_fields.items():
-            inline = name not in [
-                "Edit Message Content",
-                "Next Number Message Content",
-                "Same User Count Message",
-            ]
-            embed.add_field(name=name, value=value, inline=inline)
+        embed.add_field(
+            name="Channel", value=channel.mention if channel else "Not set", inline=True
+        )
+        embed.add_field(name="Enabled", value=str(settings["toggle"]), inline=True)
+        embed.add_field(
+            name="Current Count", value=cf.humanize_number(settings["count"]), inline=True
+        )
+        embed.add_field(name="Delete After", value=f"{settings['delete_after']}s", inline=True)
+        embed.add_field(name="Silent Mode", value=str(settings["use_silent"]), inline=True)
+        embed.add_field(name="Reactions", value=str(settings["toggle_reactions"]), inline=True)
+        embed.add_field(name="Reaction Emoji", value=settings["default_reaction"], inline=True)
+        embed.add_field(
+            name="Same User Counts", value=str(settings["same_user_to_count"]), inline=True
+        )
+        embed.add_field(
+            name="Min Account Age", value=f"{settings['min_account_age']} days", inline=True
+        )
+        embed.add_field(
+            name="Messages",
+            value="\n".join(
+                f"**{k.capitalize()}**: {v}"
+                for k, v in [
+                    ("Edit", settings["default_edit_message"]),
+                    ("Count", settings["default_next_number_message"]),
+                    ("Same User", settings["default_same_user_message"]),
+                ]
+            ),
+            inline=False,
+        )
         await ctx.send(embed=embed)
