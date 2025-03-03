@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "NekosBest",
-    "install_msg": "Thanks for installing.\n<https://docs.maxapp.tv/nekosbest.html> for documentation.",
+    "install_msg": "Thanks for installing.\n<https://docs.maxapp.tv/docs/nekosbest.html> for documentation.",
     "description": "Random Nekos.best images + RolePlay Commands.",
     "short": "Random Nekos.best images + RolePlay Commands.",
     "hidden": false,

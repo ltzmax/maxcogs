@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Lockdown",
-    "install_msg": "Thanks for installing.\n<https://docs.maxapp.tv/lockdown.html> for documentation.",
+    "install_msg": "Thanks for installing.\n<https://docs.maxapp.tv/docs/lockdown.html> for documentation.",
     "description": "Let moderators lockdown a channel to prevent messages from being sent.",
     "short": "Let moderators lockdown a channel to prevent messages from being sent.",
     "hidden": false,

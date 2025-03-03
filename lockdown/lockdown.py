@@ -40,7 +40,7 @@ class Lockdown(commands.Cog):
 
     __version__: Final[str] = "1.4.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://docs.maxapp.tv/lockdown.html"
+    __docs__: Final[str] = "https://docs.maxapp.tv/docs/lockdown.html"
 
     def __init__(self, bot):
         self.bot = bot

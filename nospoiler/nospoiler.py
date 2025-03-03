@@ -42,7 +42,7 @@ class NoSpoiler(commands.Cog):
 
     __author__: Final[str] = "MAX"
     __version__: Final[str] = "1.8.0"
-    __docs__: Final[str] = "https://docs.maxapp.tv/nospoiler.html"
+    __docs__: Final[str] = "https://docs.maxapp.tv/docs/nospoiler.html"
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot

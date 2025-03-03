@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "NBA",
-    "install_msg": "Thanks for installing.\nBase commands for everyone is available under `[p]nba`.\n<https://docs.maxapp.tv/nba.html> for documentation.",
+    "install_msg": "Thanks for installing.\nBase commands for everyone is available under `[p]nba`.\n<https://docs.maxapp.tv/docs/nba.html> for documentation.",
     "description": "NBA Cog that provides NBA game updates, schedules, and news.",
     "short": "NBA Cog that provides NBA game updates, schedules, and news.",
     "hidden": false,

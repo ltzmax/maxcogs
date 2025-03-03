@@ -69,7 +69,7 @@ class RedUpdate(commands.Cog):
 
     __author__: Final[str] = "MAX, kuro"
     __version__: Final[str] = "1.8.0"
-    __docs__: Final[str] = "https://docs.maxapp.tv/redupdate.html"
+    __docs__: Final[str] = "https://docs.maxapp.tv/docs/redupdate.html"
 
     def __init__(self, bot):
         self.bot = bot
