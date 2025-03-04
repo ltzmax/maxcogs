@@ -47,6 +47,7 @@ from .converters import Generation, WhosThatPokemonView, get_data
 log = logging.getLogger("red.maxcogs.whosthatpokemon")
 
 API_URL: Final[str] = "https://pokeapi.co/api/v2"
+MAX_DESCRIPTION_LENGTH = 4000
 
 
 class Pokemon(commands.Cog):
@@ -58,7 +59,7 @@ class Pokemon(commands.Cog):
     """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.8.0"
+    __version__: Final[str] = "1.9.0"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/pokemon.html"
 
     def __init__(self, bot: Red):
@@ -116,250 +117,208 @@ class Pokemon(commands.Cog):
 
     # --------- POKEMON INFO -----------
 
-    def create_base_info_embed(self, data: Dict[str, Any]):
+    async def fetch_data(self, url: str) -> Optional[Dict[str, Any]]:
         """
-        Create a Discord embed containing base information about a Pokémon.
+        Fetch data from a URL asynchronously.
 
         Args:
-            data (Dict[str, Any]): A dictionary containing Pokémon data obtained from the PokéAPI.
+            url: The URL to fetch data from.
 
         Returns:
-            discord.Embed: An embed object populated with the Pokémon's information.
+            The JSON response or None if the request fails.
+        """
+        try:
+            async with self.session.get(url) as response:
+                if response.status != 200:
+                    return None
+                return await response.json()
+        except (aiohttp.ClientError, ValueError):
+            return None
+
+    def _format_list(self, items: List[str], separator: str = ", ") -> str:
+        """Format a list of items into a human-readable string."""
+        return separator.join(items) if items else "None"
+
+    def _get_official_artwork(self, sprites: Dict[str, Any]) -> Optional[str]:
+        """Get the official artwork URL from sprites, falling back to front_default."""
+        return sprites.get("other", {}).get("official-artwork", {}).get(
+            "front_default"
+        ) or sprites.get("front_default")
+
+    def _format_stats(self, stats: List[Dict[str, Any]]) -> str:
+        """Format base stats into a readable string with total."""
+        if not stats:
+            return "No stats available."
+        stat_lines = [f"{s['stat']['name'].capitalize()}: {s['base_stat']}" for s in stats]
+        total = sum(s["base_stat"] for s in stats)
+        return "\n".join(stat_lines) + f"\nTotal: {total}"
+
+    def _format_height_weight(self, height: int, weight: int) -> tuple[str, str]:
+        """Format height and weight in metric and imperial units."""
+        return (
+            f"{height/10:.1f}m ({height*3.28084/10:.2f}ft)",
+            f"{weight/10:.1f}kg ({weight*2.20462/10:.2f}lbs)",
+        )
+
+    def _format_abilities(self, abilities: List[Dict[str, Any]]) -> str:
+        """Format abilities, including hidden ones."""
+        if not abilities:
+            return "No abilities available."
+        ability_names = [a["ability"]["name"].capitalize() for a in abilities]
+        hidden = [
+            a["ability"]["name"].capitalize() for a in abilities if a.get("is_hidden", False)
+        ]
+        hidden_str = f" (Hidden: {self._format_list(hidden or ['None'])})"
+        return self._format_list(ability_names) + hidden_str
+
+    def _format_game_indices(self, game_indices: List[Dict[str, Any]]) -> str:
+        """Format game indices into a readable string."""
+        if not game_indices:
+            return "No game indices available."
+        return self._format_list(
+            [f"{g['game_index']} ({g['version']['name'].capitalize()})" for g in game_indices]
+        )
+
+    def _format_types(self, types: List[Dict[str, Any]]) -> str:
+        """Format Pokémon types into a readable string."""
+        return self._format_list([t["type"]["name"].capitalize() for t in types])
+
+    def _truncate_description(self, text: str) -> str:
+        """Truncate text if it exceeds the maximum description length."""
+        return (
+            text[:MAX_DESCRIPTION_LENGTH] + "..." if len(text) > MAX_DESCRIPTION_LENGTH else text
+        )
+
+    async def create_pokemon_embed(
+        self, pokemon_data: Dict[str, Any], section: str = "base"
+    ) -> discord.Embed:
+        """
+        Create a Discord embed for Pokémon data based on the specified section.
+
+        Args:
+            pokemon_data: The Pokémon data from PokéAPI.
+            section: The section to display (e.g., "base", "held_items", "moves", "locations").
+
+        Returns:
+            A Discord embed with the requested Pokémon information.
 
         Raises:
-            ValueError: If the data is null.
-
-        The embed includes the following details:
-        - Pokémon's name, base stats, total base stats, height, weight, base experience, types, abilities (including hidden abilities), and game indices.
-        - A thumbnail image and an official artwork image if available.
-        - A link to the Pokémon's official Pokédex entry and a footer with the Pokémon's ID.
+            ValueError: If the data is invalid or the section is unsupported.
         """
-        if not data:
-            raise ValueError("Data cannot be null")
+        if not pokemon_data or "name" not in pokemon_data:
+            raise ValueError("Invalid Pokémon data provided.")
 
-        name = data.get("name", "Unknown").capitalize()
-        sprites = data.get("sprites", {})
-        stats = data.get("stats", [])
-        types = data.get("types", [])
-        abilities = data.get("abilities", [])
-        game_indices = data.get("game_indices", [])
-
+        name = pokemon_data["name"].capitalize()
+        sprites = pokemon_data.get("sprites", {})
         embed = discord.Embed(
-            title=name,
-            description=f"Information about {name}",
+            title=f"{name} {section.capitalize()}",
+            description=f"Information about {name}'s {section}",
             color=discord.Color.blue(),
-            url=f"https://www.pokemon.com/us/pokedex/{data.get('name', 'unknown')}",
+            url=f"https://www.pokemon.com/us/pokedex/{pokemon_data['name']}",
         )
 
         thumbnail_url = sprites.get("front_default")
         if thumbnail_url:
             embed.set_thumbnail(url=thumbnail_url)
 
-        base_stats = [f"{s['stat']['name'].capitalize()}: {s['base_stat']}" for s in stats]
-        total_base_stats = sum([s["base_stat"] for s in stats])
-        embed.add_field(
-            name="Base Stats:",
-            value="\n".join(base_stats) + f"\nTotal: {total_base_stats}",
-            inline=False,
-        )
-
-        height = data.get("height", 0)
-        weight = data.get("weight", 0)
-        embed.add_field(
-            name="Height:",
-            value=f"{height/10:.1f}m ({height*3.28084/10:.2f}ft)",
-        )
-        embed.add_field(
-            name="Weight:",
-            value=f"{weight/10:.1f}kg ({weight*2.20462/10:.2f}lbs)",
-        )
-        embed.add_field(name=" ", value=" ", inline=False)
-
-        base_experience = data.get("base_experience", "Unknown")
-        embed.add_field(name="Base Experience:", value=base_experience)
-
-        type_list = [t["type"]["name"].capitalize() for t in types]
-        embed.add_field(name="Types:", value=humanize_list(type_list))
-        embed.add_field(name=" ", value=" ", inline=False)
-
-        ability_list = [a["ability"]["name"].capitalize() for a in abilities]
-        hidden_abilities = [
-            a["ability"]["name"].capitalize() for a in abilities if a.get("is_hidden", False)
-        ]
-        embed.add_field(
-            name="Abilities:",
-            value=humanize_list(ability_list)
-            + f" (Hidden: {humanize_list(hidden_abilities or ['None'])})",
-        )
-
-        if game_indices:
-            game_indices_list = [
-                f"{g['game_index']} ({g['version']['name'].capitalize()})" for g in game_indices
-            ]
-            embed.add_field(
-                name="Game Indices:",
-                value=humanize_list(game_indices_list),
-                inline=False,
-            )
-
-        image_url = sprites.get("other", {}).get("official-artwork", {}).get("front_default")
+        image_url = self._get_official_artwork(sprites)
         if image_url:
             embed.set_image(url=image_url)
 
-        embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data.get("id", "Unknown")))
-        return embed
+        if section == "base":
+            stats = pokemon_data.get("stats", [])
+            types = pokemon_data.get("types", [])
+            abilities = pokemon_data.get("abilities", [])
+            game_indices = pokemon_data.get("game_indices", [])
+            height = pokemon_data.get("height", 0)
+            weight = pokemon_data.get("weight", 0)
+            base_experience = pokemon_data.get("base_experience", "Unknown")
 
-    def create_held_items_embed(self, data):
-        """
-        Create a Discord embed for held items of a Pokémon.
+            embed.add_field(
+                name="Base Stats:",
+                value=self._format_stats(stats),
+                inline=False,
+            )
+            height_str, weight_str = self._format_height_weight(height, weight)
+            embed.add_field(name="Height:", value=height_str, inline=True)
+            embed.add_field(name="Weight:", value=weight_str, inline=True)
+            embed.add_field(name=" ", value=" ", inline=False)
+            embed.add_field(name="Base Experience:", value=base_experience, inline=True)
+            embed.add_field(name="Types:", value=self._format_types(types), inline=True)
+            embed.add_field(name=" ", value=" ", inline=False)
+            embed.add_field(
+                name="Abilities:",
+                value=self._format_abilities(abilities),
+                inline=False,
+            )
+            embed.add_field(
+                name="Game Indices:",
+                value=self._format_game_indices(game_indices),
+                inline=False,
+            )
 
-        Args:
-            data (Dict[str, Any]): The Pokémon data obtained from PokéAPI.
-
-        Returns:
-            discord.Embed: The held items embed.
-
-        Raises:
-            ValueError: If the data is invalid or no held items data is available.
-        """
-
-        if not data or "name" not in data or "held_items" not in data:
-            raise ValueError("Invalid data provided for creating held items embed.")
-
-        held_items = data.get("held_items", [])
-        if not held_items:
-            raise ValueError("No held items data available.")
-
-        items_held_info = humanize_list(
-            [
-                f"{h['item']['name'].capitalize()} ({h['version_details'][0]['rarity']})"
-                for h in held_items
-                if "item" in h and "version_details" in h and h["version_details"]
-            ]
-        )
-
-        embed = discord.Embed(
-            title=data["name"].capitalize() + " Held Items",
-            description=f"{items_held_info if len(items_held_info) < 4000 else 'Too many items to display.'}",
-            color=discord.Color.blue(),
-            url=f"https://www.pokemon.com/us/pokedex/{data['name']}",
-        )
-        embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data.get("id", "Unknown")))
-        return embed
-
-    def create_moves_embed(self, data):
-        """
-        Create a Discord embed for moves of a Pokémon.
-
-        Args:
-            data (Dict[str, Any]): The Pokémon data obtained from PokéAPI.
-
-        Returns:
-            discord.Embed: The moves embed.
-
-        Raises:
-            ValueError: If the data is invalid or no moves data is available.
-        """
-        if not data or "name" not in data or "moves" not in data:
-            raise ValueError("Invalid data provided for creating moves embed.")
-
-        moves = data.get("moves", [])
-        if not moves:
-            raise ValueError("No moves data available.")
-
-        try:
-            moves_info = humanize_list(
+        elif section == "held_items":
+            held_items = pokemon_data.get("held_items", [])
+            if not held_items:
+                raise ValueError("No held items data available.")
+            items_info = self._format_list(
                 [
-                    ", ".join(
-                        [
-                            f"{m['move']['name'].capitalize()} ({m['version_group_details'][0]['level_learned_at']})"
-                            for m in moves
-                            if m.get("move")
-                            and m["move"].get("name")
-                            and m.get("version_group_details")
-                        ]
-                    )
+                    f"{h['item']['name'].capitalize()} ({h['version_details'][0]['rarity']})"
+                    for h in held_items
+                    if "item" in h and "version_details" in h and h["version_details"]
                 ]
             )
-        except (IndexError, KeyError) as e:
-            raise ValueError("Error processing moves data.") from e
+            embed.description = self._truncate_description(items_info)
 
-        embed = discord.Embed(
-            title=data.get("name", "Unknown").capitalize() + " Moves",
-            description=f"{moves_info if len(moves_info) < 4000 else 'Too many moves to display.'}",
-            color=discord.Color.blue(),
-            url=f"https://www.pokemon.com/us/pokedex/{data.get('name', 'unknown')}",
-        )
-        embed.set_footer(text="Powered by PokéAPI | Pokemon ID: " + str(data.get("id", "Unknown")))
-        return embed
+        elif section == "moves":
+            moves = pokemon_data.get("moves", [])
+            if not moves:
+                raise ValueError("No moves data available.")
+            moves_info = self._format_list(
+                [
+                    f"{m['move']['name'].capitalize()} ({m['version_group_details'][0]['level_learned_at']})"
+                    for m in moves
+                    if m.get("move") and m["move"].get("name") and m.get("version_group_details")
+                ]
+            )
+            embed.description = self._truncate_description(moves_info)
 
-    async def fetch_location_data(self, url):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status != 200:
-                    return None
-                return await response.json()
-
-    async def create_locations_embed(
-        self, pokemon_data: Dict[str, Any], location_areas: List[Dict[str, Any]]
-    ) -> discord.Embed:
-        """
-        Format location information into a Discord embed.
-
-        Args:
-            pokemon_data (Dict[str, Any]): The Pokémon data from the API.
-            location_areas (List[Dict[str, Any]]): The location data from the API.
-
-        Returns:
-            discord.Embed: A formatted embed containing location information.
-        """
-        # Initialize an empty list to store formatted location information
-        locations = []
-
-        # Iterate through the location areas and format the information
-        for location in location_areas:
-            location_area = location.get("location_area", {})
-            location_name = location_area.get("name", "Unknown Location").replace("-", " ").title()
-
-            # Initialize an empty list to store version details
-            versions = []
-
-            # Iterate through the version details and format the information
-            for detail in location.get("version_details", []):
-                version_name = (
-                    detail.get("version", {})
-                    .get("name", "Unknown Version")
+        elif section == "locations":
+            location_url = f"{API_URL}/pokemon/{pokemon_data['name']}/encounters"
+            location_areas = await self.fetch_data(location_url)
+            if not location_areas:
+                raise ValueError("No location data available.")
+            locations = []
+            for location in location_areas:
+                location_name = (
+                    location.get("location_area", {})
+                    .get("name", "Unknown Location")
                     .replace("-", " ")
                     .title()
                 )
-                encounter_details = detail.get("encounter_details", [])
-                if encounter_details:
-                    chance = encounter_details[0].get("chance", "Unknown Chance")
+                versions = []
+                for detail in location.get("version_details", []):
+                    version_name = (
+                        detail.get("version", {})
+                        .get("name", "Unknown Version")
+                        .replace("-", " ")
+                        .title()
+                    )
+                    chance = detail.get("encounter_details", [{}])[0].get(
+                        "chance", "Unknown Chance"
+                    )
                     if chance is not None:
                         versions.append(f"{version_name}: {chance}%")
+                versions_str = "\n".join(versions) if versions else "No version details"
+                locations.append(f"**{location_name}**:\n{versions_str}")
+            locations_str = "\n".join(locations)
+            embed.description = self._truncate_description(locations_str)
 
-            # Join the version details into a single string
-            versions_str = "\n".join(versions)
+        else:
+            raise ValueError(f"Unsupported section: {section}")
 
-            # Add the formatted location information to the list
-            locations.append(f"**{location_name}**:\n{versions_str}")
-
-        # Join the locations into a single string
-        locations_str = "\n".join(locations)
-
-        # Ensure the description does not exceed the character limit
-        if len(locations_str) > 4000:
-            locations_str = locations_str[:4000] + "..."
-
-        # Create the embed
-        embed = discord.Embed(
-            title=pokemon_data["name"].capitalize() + " Locations",
-            description=locations_str,
-            color=discord.Color.blue(),
-            url=f"https://www.pokemon.com/us/pokedex/{pokemon_data['name']}",
-        )
         embed.set_footer(
-            text=f"Powered by PokéAPI | Pokemon ID: {pokemon_data.get('id', 'Unknown')}"
+            text=f"Powered by PokéAPI | Pokémon ID: {pokemon_data.get('id', 'Unknown')}"
         )
         return embed
 
@@ -486,31 +445,60 @@ class Pokemon(commands.Cog):
 
         pages = []
         for i, data in enumerate(output["data"], 1):
-            dt = datetime.utcnow()
-            release = datetime.strptime(data["set"]["releaseDate"], "%Y/%m/%d")
-            embed = discord.Embed(colour=await ctx.embed_colour())
-            embed.title = data["name"]
-            rarity = data.get("rarity")
-            if rarity == "Promo":
-                rarity = "Uncommon"
-            embed.description = "**Rarity:** " + str(rarity)
-            embed.add_field(name="Artist:", value=str(data.get("artist")))
-            embed.add_field(name="Belongs to Set:", value=str(data["set"]["name"]), inline=False)
-            embed.add_field(
-                name="Set Release Date:",
-                value=discord.utils.format_dt(release, style="D"),
-                inline=False,
+            embed = discord.Embed(colour=discord.Color.from_rgb(255, 215, 0))
+            embed.title = (
+                f"Stage {data.get('stage', 'Basic')} {data['name']} - HP{data.get('hp', 'N/A')}"
             )
+            description = data.get("flavorText", "No description available.")
+            embed.description = f"**Description:** {description}"
+
+            embed.add_field(name="Rarity:", value=data.get("rarity", "Common"), inline=True)
+            embed.add_field(name="Hp:", value=data.get("hp", "N/A"), inline=True)
+            embed.add_field(name="EvolveFrom:", value=data.get("evolvesFrom", "None"), inline=True)
             embed.add_field(
-                name="Weakness:",
-                value=str(data.get("weaknesses", [{}])[0].get("type")),
+                name="RegulationMark:", value=data.get("regulationMark", "N/A"), inline=True
             )
+
+            tcgdex_id = data.get("id", "N/A")
+            card_number = data.get("number", "N/A")
+            embed.add_field(name="TCGdex ID:", value=f"sush-138", inline=False)
+            embed.add_field(name="Card number:", value=card_number, inline=False)
+
+            retreat_cost = data.get("retreatCost", [])
+            retreat_symbols = "🌟" * len(retreat_cost) if retreat_cost else "None"
+            embed.add_field(name="Retreat Cost:", value=retreat_symbols, inline=False)
+
+            attacks = data.get("attacks", [])
+            if attacks:
+                for attack in attacks:
+                    name = attack.get("name", "N/A")
+                    cost = attack.get("cost", [])
+                    damage = attack.get("damage", "N/A")
+                    text = attack.get("text", "No effect.")
+                    attack_str = f"**{name}** - {' '.join(cost)} - {damage}\n{text}"
+                    embed.add_field(name=f"Attack:", value=attack_str, inline=False)
+            else:
+                embed.add_field(name="Attacks:", value="No attacks available.", inline=False)
+
+            weaknesses = data.get("weaknesses", [])
+            if weaknesses:
+                weakness_type = weaknesses[0].get("type", "N/A")
+                embed.add_field(name="Weakness:", value=weakness_type, inline=False)
+            resistances = data.get("resistances", [])
+            if resistances:
+                resistance_type = resistances[0].get("type", "N/A")
+                embed.add_field(name="Resistance:", value=resistance_type, inline=False)
+
+            embed.add_field(name="Set:", value=data["set"]["name"], inline=False)
+
             embed.set_thumbnail(url=str(data["set"]["images"]["logo"]))
             embed.set_image(url=str(data["images"]["large"]))
             embed.set_footer(
                 text=f"Page {i} of {len(output['data'])} • Powered by Pokémon TCG API!"
             )
+
             pages.append(embed)
+
         await SimpleMenu(
             pages,
             disable_after_timeout=True,
@@ -530,33 +518,33 @@ class Pokemon(commands.Cog):
         **Arguments:**
         - `<pokemon>` - The Pokémon to search for.
         """
-        async with aiohttp.ClientSession() as session:
-            url = f"https://pokeapi.co/api/v2/pokemon/{pokemon.lower()}"
-            async with session.get(url) as response:
-                if response.status != 200:
-                    return await ctx.send(f"Failed to fetch data from {url}.")
-                data = await response.json()
+        pokemon_url = f"{API_URL}/pokemon/{pokemon.lower()}"
+        pokemon_data = await self.fetch_data(pokemon_url)
+        if not pokemon_data:
+            await ctx.send("Could not fetch Pokémon data.")
+            return
 
-        if not data:
-            return await ctx.send("Failed to fetch data from the Pokémon API.")
-        if not data.get("name"):
-            return await ctx.send("Failed to fetch data from the Pokémon API.")
+        sections = ["base", "held_items", "moves", "locations"]
+        embeds = []
+        for section in sections:
+            try:
+                embed = await self.create_pokemon_embed(pokemon_data, section)
+                embeds.append(embed)
+            except ValueError as e:
+                if str(e) not in [
+                    "No held items data available.",
+                    "No moves data available.",
+                    "No location data available.",
+                ]:
+                    await ctx.send(f"Error for {section}: {e}")
+                    continue
 
-        pages = [self.create_base_info_embed(data)]
-        if data.get("held_items"):
-            pages.append(self.create_held_items_embed(data))
-        if data.get("moves"):
-            pages.append(self.create_moves_embed(data))
-        if data.get("location_area_encounters"):
-            location_areas = await self.fetch_location_data(data["location_area_encounters"])
-            if location_areas:
-                embed = await self.create_locations_embed(data, location_areas)
-                if embed:
-                    pages.append(embed)
-        if not pages:
-            return await ctx.send("No data found for the given Pokémon.")
+        if not embeds:
+            await ctx.send("No data found for the given Pokémon.")
+            return
+
         await SimpleMenu(
-            pages,
+            embeds,
             use_select_menu=True,
             disable_after_timeout=True,
             timeout=120,
