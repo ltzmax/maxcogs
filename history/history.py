@@ -34,12 +34,13 @@ from redbot.core import Config, commands
 from redbot.core.utils.menus import SimpleMenu
 
 log = logging.getLogger("red.maxcogs.history")
+DEFAULT_ERA_NOTATION = "BC"
 
 
 class History(commands.Cog):
     """A cog to display historical events for the current day in your timezone."""
 
-    __version__: Final[str] = "1.0.1"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/history.html"
 
@@ -61,6 +62,37 @@ class History(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
+
+    async def _format_year(self, year: Any) -> str:
+        """
+        Format a year (int or str) with the default era notation (BC or BCE).
+
+        Args:
+            year: The year as an integer, string, or "Unknown Year".
+
+        Returns:
+            The formatted year with the default era notation.
+        """
+        try:
+            if isinstance(year, int):
+                year_str = str(year)
+            elif isinstance(year, str):
+                year_str = year.strip().lower()
+            else:
+                raise ValueError("Year must be an integer or string")
+
+            if year_str == "unknown year":
+                return "Unknown Year"
+            if year_str.startswith(("circa", "c.")):
+                year_str = year_str.replace("circa", "").replace("c.", "").strip()
+
+            year_int = int(year_str)
+            if year_int < 0:
+                return f"{abs(year_int)} {DEFAULT_ERA_NOTATION}"
+            return str(year_int)
+        except (ValueError, TypeError) as e:
+            log.error(f"Error formatting year '{year}': {e}")
+            return "Unknown Year"
 
     @commands.group()
     @commands.guild_only()
@@ -93,7 +125,6 @@ class History(commands.Cog):
                 "Invalid timezone, please see <https://whatismyti.me/> for your timezone and use it in the format `Continent/City`."
             )
 
-    @commands.guild_only()
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -136,11 +167,7 @@ class History(commands.Cog):
                     for event in chunk:
                         year = event.get("year", "Unknown Year")
                         text = event.get("text", "No description available.")
-                        display_year = (
-                            f"{abs(int(year))} BC"
-                            if year != "Unknown Year" and int(year) < 0
-                            else f"{year} AD" if year != "Unknown Year" else "Unknown Year"
-                        )
+                        display_year = await self._format_year(year)
                         embed.add_field(name=f"{display_year}", value=f"{text}", inline=False)
                     embed.set_footer(
                         text=f"Source: Wikipedia | Timezone: {user_tz} | Page {i // items_per_page + 1} of {(len(events) - 1) // items_per_page + 1}"
