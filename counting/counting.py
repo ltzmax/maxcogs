@@ -43,12 +43,13 @@ class MessageType(Enum):
     EDIT = "edit"
     COUNT = "count"
     SAMEUSER = "sameuser"
+    RUIN_COUNT = "ruincount"
 
 
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "1.8.1"
+    __version__: Final[str] = "1.9.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/counting.html"
 
@@ -71,7 +72,10 @@ class Counting(commands.Cog):
             "toggle_reactions": False,
             "default_reaction": "✅",
             "use_silent": False,
-            "min_account_age": 0,  # Days, optional alt account prevention
+            "min_account_age": 0,
+            "allow_ruin": False,
+            "ruin_role_id": None,
+            "ruin_message": "{user} ruined the count at {count}! Starting back at 1.",
         }
         default_user: Dict[str, Any] = {
             "count": 0,
@@ -143,6 +147,33 @@ class Counting(commands.Cog):
                 silent=settings["use_silent"],
             )
 
+    async def _handle_count_ruin(
+        self,
+        message: discord.Message,
+        settings: dict,
+    ) -> None:
+        """Handle when someone ruins the count"""
+        guild_config = self.config.guild(message.guild)
+        await guild_config.count.set(0)
+        role_id = settings["ruin_role_id"]
+        if role_id and message.channel.permissions_for(message.guild.me).manage_roles:
+            try:
+                role = message.guild.get_role(role_id)
+                if role and role < message.guild.me.top_role:
+                    await message.author.add_roles(role)
+            except discord.HTTPException as e:
+                log.warning(f"Failed to assign ruin role: {e}")
+
+        response = settings["ruin_message"].format(
+            user=message.author.mention, count=settings["count"]
+        )
+        await self._send_message(
+            message.channel,
+            response,
+            delete_after=settings["delete_after"],
+            silent=settings["use_silent"],
+        )
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Handle counting logic when a message is sent."""
@@ -159,7 +190,6 @@ class Counting(commands.Cog):
             log.warning(f"Missing permissions in {message.channel.id}")
             return
 
-        # Alt account check
         if settings["min_account_age"]:
             account_age = (discord.utils.utcnow() - message.author.created_at).days
             if account_age < settings["min_account_age"]:
@@ -178,16 +208,31 @@ class Counting(commands.Cog):
             )
             return
 
-        if message.content.isdigit() and int(message.content) == expected_count:
-            user_config = self.config.user(message.author)
-            await asyncio.gather(
-                guild_config.count.set(expected_count),
-                guild_config.last_user_id.set(message.author.id),
-                user_config.count.set(await user_config.count() + 1),
-                user_config.last_count_timestamp.set(datetime.utcnow().isoformat()),
-            )
-            if settings["toggle_reactions"] and perms.add_reactions:
-                await self._add_reaction(message, settings["default_reaction"])
+        if message.content.isdigit():
+            message_count = int(message.content)
+            if message_count == expected_count:
+                user_config = self.config.user(message.author)
+                await asyncio.gather(
+                    guild_config.count.set(expected_count),
+                    guild_config.last_user_id.set(message.author.id),
+                    user_config.count.set(await user_config.count() + 1),
+                    user_config.last_count_timestamp.set(datetime.utcnow().isoformat()),
+                )
+                if settings["toggle_reactions"] and perms.add_reactions:
+                    await self._add_reaction(message, settings["default_reaction"])
+            elif settings["allow_ruin"]:
+                await self._delete_message(message)
+                await self._handle_count_ruin(message, settings)
+            else:
+                response = settings["default_next_number_message"].format(
+                    next_count=expected_count
+                )
+                await self._handle_invalid_count(
+                    message, response, settings, settings["toggle_next_number_message"]
+                )
+        elif settings["allow_ruin"]:
+            await self._delete_message(message)
+            await self._handle_count_ruin(message, settings)
         else:
             response = settings["default_next_number_message"].format(next_count=expected_count)
             await self._handle_invalid_count(
@@ -196,7 +241,7 @@ class Counting(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
-        """Prevent editing in the counting channel."""
+        """Handle edited messages in the counting channel."""
         if after.author.bot or not after.guild:
             return
 
@@ -210,7 +255,9 @@ class Counting(commands.Cog):
             return
 
         await self._delete_message(after)
-        if settings["toggle_edit_message"]:
+        if settings["allow_ruin"]:
+            await self._handle_count_ruin(after, settings)
+        elif settings["toggle_edit_message"]:
             await self._send_message(
                 after.channel,
                 settings["default_edit_message"],
@@ -252,7 +299,7 @@ class Counting(commands.Cog):
 
         table_data = [
             ["User", user.display_name],
-            ["Your Count", cf.humanize_number(count)],
+            ["Your Count Total", cf.humanize_number(count)],
         ]
 
         table = tabulate(
@@ -281,6 +328,32 @@ class Counting(commands.Cog):
     @commands.admin_or_permissions(manage_guild=True)
     async def countingset(self, ctx: commands.Context) -> None:
         """Settings for the counting game."""
+
+    @countingset.command(name="ruincount")
+    async def toggle_ruin(self, ctx: commands.Context):
+        """Toggle whether users can ruin the count"""
+        guild_config = self.config.guild(ctx.guild)
+        current = await guild_config.allow_ruin()
+        await guild_config.allow_ruin.set(not current)
+        await ctx.send(f"Count ruining is now {'enabled' if not current else 'disabled'}")
+
+    @countingset.command(name="ruinrole")
+    @commands.bot_has_permissions(manage_roles=True)
+    async def set_ruin_role(self, ctx: commands.Context, role: Optional[discord.Role] = None):
+        """Set or clear the role assigned when someone ruins the count"""
+        guild_config = self.config.guild(ctx.guild)
+        if role is None:
+            await guild_config.ruin_role_id.set(None)
+            await ctx.send("Ruin role cleared")
+        else:
+            bot_top_role = ctx.guild.me.top_role
+            if role >= bot_top_role:
+                return await ctx.send(
+                    f"Cannot set {role.name} as ruin role - it must be below my highest role ({bot_top_role.name})"
+                )
+
+            await guild_config.ruin_role_id.set(role.id)
+            await ctx.send(f"Ruin role set to {role.name}")
 
     @countingset.command(name="channel")
     async def set_channel(
@@ -382,11 +455,13 @@ class Counting(commands.Cog):
         - `edit`: Message shown when a user edits their message in the counting channel.
         - `count`: Message shown when a user sends an incorrect number.
         - `sameuser`: Message shown when a user tries to count consecutively.
+        - `ruincount`: Message shown when a user ruin the message count.
 
         **Examples:**
         - `[p]countingset setmessage edit You can't edit your messages here.`
         - `[p]countingset setmessage count Next number should be {next_count}`
         - `[p]countingset setmessage sameuser You cannot count until another user have counted`
+        - `[p]countingset setmessage ruincount {user} you ruinded the count, starting from {count}!`
 
         **Arguments:**
         - `<msg_type>`: The type of message to set (edit, count, or sameuser).
@@ -401,6 +476,7 @@ class Counting(commands.Cog):
                 MessageType.EDIT: "default_edit_message",
                 MessageType.COUNT: "default_next_number_message",
                 MessageType.SAMEUSER: "default_same_user_message",
+                MessageType.RUIN_COUNT: "ruin_message",
             }[mtype]
             await config.set_raw(key, value=message)
             await ctx.send(f"Message for '{msg_type}' updated.")
@@ -470,6 +546,8 @@ class Counting(commands.Cog):
         embed.add_field(
             name="Min Account Age", value=f"{settings['min_account_age']} days", inline=True
         )
+        embed.add_field(name="Ruin Role", value=f"{settings['ruin_role_id']}", inline=True)
+        embed.add_field(name="Ruin Count", value=f"{settings['allow_ruin']}", inline=True)
         embed.add_field(
             name="Messages",
             value="\n".join(
@@ -478,6 +556,7 @@ class Counting(commands.Cog):
                     ("Edit", settings["default_edit_message"]),
                     ("Count", settings["default_next_number_message"]),
                     ("Same User", settings["default_same_user_message"]),
+                    ("Ruin Count", settings["ruin_message"]),
                 ]
             ),
             inline=False,
