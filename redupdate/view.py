@@ -116,7 +116,7 @@ class RestartButton(discord.ui.View):
         self.ctx = ctx
         self.bot = bot
         self.clicked = False
-        self.message = None  # Initialize the message attribute
+        self.message = None
 
     async def on_timeout(self) -> None:
         for item in self.children:
