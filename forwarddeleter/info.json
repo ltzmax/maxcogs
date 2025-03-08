@@ -1,0 +1,26 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "ForwardDeleter",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any of the forwarded messages without setting up autoimmune.\n<https://docs.maxapp.tv/docs/forwarddeleter.html> for documentation.",
+    "description": "A cog that deletes forwarded messages and allows them in specified channels.",
+    "short": "A cog that deletes forwarded messages and allows them in specified channels.",
+    "hidden": false,
+    "min_bot_version": "3.5.17",
+    "tags": [
+        "forward"
+    ],
+    "permissions": [
+        "embed_links",
+        "manage_messages"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
