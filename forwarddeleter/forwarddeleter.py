@@ -217,8 +217,7 @@ class ForwardDeleter(commands.Cog):
     async def setwarnmessage(self, ctx: commands.Context, *, message: str):
         """Set a custom warning message for users"""
         if len(message) > 2000:
-            await ctx.send("Warning message must be 2000 characters or less!")
-            return
+            return await ctx.send("Warning message must be 2000 characters or less!")
         await self.config.guild(ctx.guild).warn_message.set(message)
         await ctx.send("Warning message updated.")
 
