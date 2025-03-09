@@ -119,7 +119,7 @@ class ForwardDeleter(commands.Cog):
         if (
             channel
             and not channel.permissions_for(ctx.guild.me).send_messages
-            or not channel.permissions_for(guild.me).embed_links
+            or not channel.permissions_for(ctx.guild.me).embed_links
         ):
             return await ctx.send(
                 f"I don’t have permission to send messages or embed links in {channel.mention}!"
