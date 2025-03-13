@@ -74,9 +74,9 @@ team_emojis = {
     "Cavaliers": "<:cleveland_cavaliers:1337076799103963198>",
     "Celtics": "<:boston_celtics:1337076672217743453>",
     "Clippers": "<:los_angeles_clippers:1337077028632924221>",
-    "Grizzlies": "<:memphis_grizzlies:1337077212364410982>",
+    "Grizzlies": "<:memphis_grizzlies:1347872827839348797>",
     "Hawks": "<:atlanta_hawks:1337076371045744723>",
-    "Hornets": "<:charlotte_hornets:1337076774516953119>",
+    "Hornets": "<:charlotte_hornets:1347873894660444172>",
     "Jazz": "<:utah_jazz:1337076534271279175>",
     "Kings": "<:sacramento_kings:1337076620640518174>",
     "Knicks": "<:new_york_knicks:1337077172656934964>",
@@ -84,7 +84,7 @@ team_emojis = {
     "Magic": "<:orlando_magic:1337077193729114214>",
     "Mavericks": "<:dallas_mavericks:1337076831672733796>",
     "Nets": "<:brooklyn_nets:1337076712424603668>",
-    "Nuggets": "<:denver_nuggets:1337077238717222923>",
+    "Nuggets": "<:denver_nuggets:1347873502065332224>",
     "Pacers": "<:indiana_pacers:1337076420467228756>",
     "Pelicans": "<:new_orleans_pelicans:1337077141136736297>",
     "Pistons": "<:detroit_pistons:1337076923469402192>",
@@ -99,6 +99,39 @@ team_emojis = {
     "Warriors": "<:golden_state_warriors:1337076978112528405>",
     "Wizards": "<:washington_wizards:1337076493716815903>",
 }
+
+
+def parse_game_time_to_seconds(duration):
+    """
+    Parse the duration string from the NBA API into total seconds for comparison.
+    """
+    if not duration or duration == "PT0M0S":  # Handle empty or zero-time strings
+        return 0
+
+    # Pattern for PT format
+    match_pt = re.match(r"PT(?:(\d+)M)?(?:(\d+)(?:\.(\d+))?S)?", duration)
+    # Pattern for MM:SS format (optional, if API might return this)
+    match_mmss = re.match(r"(\d+):(\d+)", duration)
+
+    if match_pt:
+        minutes = int(match_pt.group(1) or 0)
+        seconds = int(match_pt.group(2) or 0)
+        milliseconds = int(match_pt.group(3) or 0) if match_pt.group(3) else 0
+    elif match_mmss:
+        minutes = int(match_mmss.group(1))
+        seconds = int(match_mmss.group(2))
+        milliseconds = 0
+    else:
+        log.error(
+            f"Unexpected duration format: {duration} - defaulting to 0 seconds", exc_info=True
+        )
+        return 0
+
+    # Cap minutes at 12 for NBA quarters
+    minutes = min(minutes, 12)
+
+    total_seconds = minutes * 60 + seconds + (milliseconds / 1000 if milliseconds else 0)
+    return total_seconds
 
 
 def parse_duration(duration):
@@ -120,7 +153,7 @@ def parse_duration(duration):
         seconds = int(match_mmss.group(2))
         milliseconds = 0
     else:
-        log.info(f"Unexpected duration format: {duration} - defaulting to 0:00", exc_info=True)
+        log.error(f"Unexpected duration format: {duration} - defaulting to 0:00", exc_info=True)
         return "0:00"
 
     # Cap minutes at 12 for NBA quarters
@@ -198,9 +231,7 @@ def get_leaders_info(game):
 
 
 def get_games(schedule):
-    """
-    Get scheduled games from the NBA json.
-    """
+    """Get scheduled games from the NBA json."""
     games = []
     try:
         game_dates = schedule.get("leagueSchedule", {}).get("gameDates", [])

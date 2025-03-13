@@ -35,7 +35,7 @@ To install any cog you want:
 | HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.4.0 | ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
 | Iss | Track the International Space Station's location and details. | 1.0.1 | ltzmax | ✅ |
-| NBA | NBA Cog that provides NBA game updates, schedules, and news. | 3.3.0 | ltzmax | ✅ |
+| NBA | NBA Cog that provides NBA game updates, schedules, and news. | 3.4.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 2.4.0 | ltzmax | ✅ |
