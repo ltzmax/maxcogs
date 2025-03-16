@@ -133,6 +133,9 @@ class AutoPublisher(commands.Cog):
             or message.channel.id in settings["ignored_channels"]
             or await self.bot.cog_disabled_in_guild(self, message.guild)
             or not message.guild.me.guild_permissions.manage_messages
+            or not message.guild.me.guild_permissions.view_channel
+            or not message.guild.me.guild_permissions.read_message_history
+            or not message.guild.me.guild_permissions.send_messages
             or not message.channel.is_news()
             or "NEWS" not in message.guild.features
         ):
