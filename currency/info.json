@@ -1,0 +1,24 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "Currency",
+    "install_msg": "Thanks for installing. This cog relies on slash only after api key is set, you will need an api key to make use of the cog. Please see `[p]currencyset setup` to get started.",
+    "description": "A cog to convert currencies using ExchangeRate-API.",
+    "short": "A cog to convert currencies using ExchangeRate-API.",
+    "hidden": false,
+    "min_bot_version": "3.5.13",
+    "tags": [
+        "currency",
+        "convert currency"
+    ],
+    "permissions": [],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}

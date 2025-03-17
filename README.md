@@ -29,6 +29,7 @@ To install any cog you want:
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisher | Automatically push news channel messages. | 2.9.0 | ltzmax, AAA3A | ✅ |
 | Counting | Count from 1 to infinity! with some customizable settings. | 1.9.0 | ltzmax | ✅ |
+| Currency | A cog to convert currencies using ExchangeRate-API | 1.0.0 | ltzmax | ✅ |
 | ForwardDeleter | A cog that deletes forwarded messages and allows them in specified channels | 1.0.0 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | History | A cog to display historical events for the current day in your timezone. | 1.1.0 | ltzmax | ✅ |
