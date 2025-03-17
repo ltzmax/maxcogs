@@ -102,6 +102,7 @@ class Currency(commands.Cog):
     @app_commands.command(
         name="currencyconvert", description="Convert an amount from one currency to another."
     )
+    @app_commands.allowed_installs(guilds=True, users=True)
     @app_commands.describe(
         amount="The amount to convert (e.g., 100)",
         from_currency="The currency to convert from (e.g., USD)",
