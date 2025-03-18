@@ -440,3 +440,15 @@ class NekosBest(commands.Cog):
     async def nom(self, ctx: commands.Context, member: discord.Member) -> None:
         """nom nom a user far far away."""
         await self.embedgen(ctx, member, "nom")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def angry(self, ctx: commands.Context, member: discord.Member) -> None:
+        """angry at a user."""
+        await self.embedgen(ctx, member, "angry")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def run(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Run away from a user."""
+        await self.embedgen(ctx, member, "run")
