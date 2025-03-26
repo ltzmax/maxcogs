@@ -167,7 +167,7 @@ def create_movie_pages(movies):
     for i in range(0, len(movies), 5):
         embed = discord.Embed(
             title="Upcoming Movies (US)",
-            description="Unreleased movies with confirmed US theatrical release dates in 2025.",
+            description="Unreleased movies with confirmed US theatrical release dates in 2025.\nFor your country, please check [imdb calender](https://www.imdb.com/calendar/) or [TMDB](https://www.themoviedb.org/movie/upcoming).",
             color=0x7A0BC0,
         )
         for movie in movies[i : i + 5]:
