@@ -33,14 +33,15 @@ import pytz
 from redbot.core import Config, commands
 from redbot.core.utils.menus import SimpleMenu
 
+from .utils import fetch_events, format_year
+
 log = logging.getLogger("red.maxcogs.history")
-DEFAULT_ERA_NOTATION = "BC"
 
 
 class History(commands.Cog):
     """A cog to display historical events for the current day in your timezone."""
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/history.html"
 
@@ -62,37 +63,6 @@ class History(commands.Cog):
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
         """Nothing to delete."""
         return
-
-    async def _format_year(self, year: Any) -> str:
-        """
-        Format a year (int or str) with the default era notation (BC or BCE).
-
-        Args:
-            year: The year as an integer, string, or "Unknown Year".
-
-        Returns:
-            The formatted year with the default era notation.
-        """
-        try:
-            if isinstance(year, int):
-                year_str = str(year)
-            elif isinstance(year, str):
-                year_str = year.strip().lower()
-            else:
-                raise ValueError("Year must be an integer or string")
-
-            if year_str == "unknown year":
-                return "Unknown Year"
-            if year_str.startswith(("circa", "c.")):
-                year_str = year_str.replace("circa", "").replace("c.", "").strip()
-
-            year_int = int(year_str)
-            if year_int < 0:
-                return f"{abs(year_int)} {DEFAULT_ERA_NOTATION}"
-            return str(year_int)
-        except (ValueError, TypeError) as e:
-            log.error(f"Error formatting year '{year}': {e}")
-            return "Unknown Year"
 
     @commands.group()
     @commands.guild_only()
@@ -138,44 +108,41 @@ class History(commands.Cog):
         await ctx.typing()
 
         user_tz = await self.config.user(ctx.author).timezone()
-        tz = pytz.timezone(user_tz)
+        # incase they managed to set an invalid timezone in the config somehow (e.g., by editing the file)
+        try:
+            tz = pytz.timezone(user_tz)
+        except pytz.exceptions.UnknownTimeZoneError:
+            log.error(f"Invalid timezone '{user_tz}' for user {ctx.author.id}")
+            return await ctx.send(
+                "Invalid timezone set. Please use `Continent/City` format (e.g., `America/New_York`)."
+            )
+
         today = datetime.now(tz)
-        month = today.strftime("%m")
-        day = today.strftime("%d")
+        month, day = today.strftime("%m"), today.strftime("%d")
         display_date = today.strftime("%B %d")
 
-        url = f"https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/{month}/{day}"
         try:
-            async with self.session.get(url) as response:
-                if response.status != 200:
-                    return await ctx.send(
-                        f"Failed to fetch history data! (Status: {response.status})"
-                    )
-                data = orjson.loads(await response.read())
-                events = data.get("events", [])
+            events = await fetch_events(self.session, month, day)
+        except ValueError as e:
+            log.error(f"Failed to fetch events for {month}/{day}: {str(e)}")
 
-                if not events:
-                    return await ctx.send(f"No notable events found for {display_date}")
+        if not events:
+            return await ctx.send(f"No notable events found for {display_date}")
 
-                pages = []
-                items_per_page = 10
-                for i in range(0, len(events), items_per_page):
-                    chunk = events[i : i + items_per_page]
-                    embed = discord.Embed(
-                        title=f"On This Day: {display_date}", color=await ctx.embed_color()
-                    )
-                    for event in chunk:
-                        year = event.get("year", "Unknown Year")
-                        text = event.get("text", "No description available.")
-                        display_year = await self._format_year(year)
-                        embed.add_field(name=f"{display_year}", value=f"{text}", inline=False)
-                    embed.set_footer(
-                        text=f"Source: Wikipedia | Timezone: {user_tz} | Page {i // items_per_page + 1} of {(len(events) - 1) // items_per_page + 1}"
-                    )
-                    pages.append(embed)
-
-                await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
-
-        except aiohttp.ClientError as e:
-            log.error(f"Error fetching history data: {e}")
-            await ctx.send(f"Error connecting to history API, contact bot owner.")
+        pages = []
+        items_per_page = 10
+        for i in range(0, len(events), items_per_page):
+            chunk = events[i : i + items_per_page]
+            embed = discord.Embed(
+                title=f"On This Day: {display_date}", color=await ctx.embed_color()
+            )
+            for event in chunk:
+                year = event.get("year", "Unknown Year")
+                text = event.get("text", "No description available.")
+                display_year = await format_year(year)
+                embed.add_field(name=display_year, value=text, inline=False)
+            embed.set_footer(
+                text=f"Source: Wikipedia | Timezone: {user_tz} | Page {i // items_per_page + 1} of {(len(events) - 1) // items_per_page + 1}"
+            )
+            pages.append(embed)
+        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)

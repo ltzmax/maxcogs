@@ -32,7 +32,7 @@ To install any cog you want:
 | Currency | A cog to convert currencies using ExchangeRate-API | 1.0.0 | ltzmax | ✅ |
 | ForwardDeleter | A cog that deletes forwarded messages and allows them in specified channels | 1.0.0 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
-| History | A cog to display historical events for the current day in your timezone. | 1.1.0 | ltzmax | ✅ |
+| History | A cog to display historical events for the current day in your timezone. | 1.2.0 | ltzmax | ✅ |
 | HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.4.0 | ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
 | Iss | Track the International Space Station's location and details. | 1.0.1 | ltzmax | ✅ |
