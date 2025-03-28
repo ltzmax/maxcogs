@@ -37,7 +37,7 @@ WARN_MESSAGE = "You cannot forward messages outside of allowed channels."
 class ForwardDeleter(commands.Cog):
     """A cog that deletes forwarded messages and allows them in specified channels"""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/forwarddeleter.html"
 
@@ -223,49 +223,36 @@ class ForwardDeleter(commands.Cog):
 
     @forwarddeleter.command()
     async def settings(self, ctx: commands.Context):
-        """See current settings with pagination"""
-        guild_config = await self.config.guild(ctx.guild).all()
-        status = "Enabled" if guild_config["enabled"] else "Disabled"
-        allowed_channels = [ctx.guild.get_channel(cid) for cid in guild_config["allowed_channels"]]
-        log_channel = ctx.guild.get_channel(guild_config["log_channel"])
-        warn_status = "Enabled" if guild_config["warn_enabled"] else "Disabled"
-        warn_message = guild_config["warn_message"]
+        """Show Forward Deleter settings with pagination."""
+        config = await self.config.guild(ctx.guild).all()
+        embed = discord.Embed(title="Forward Deleter Settings", color=await ctx.embed_color())
+        embed.add_field(name="Status", value="Enabled" if config["enabled"] else "Disabled")
+        log_channel = ctx.guild.get_channel(config["log_channel"])
+        embed.add_field(
+            name="Log Channel", value=log_channel.mention if log_channel else "Not set"
+        )
+        embed.add_field(
+            name="Warn Users", value="Enabled" if config["warn_enabled"] else "Disabled"
+        )
+        embed.add_field(name="Warn Message", value=config["warn_message"])
 
+        channels = [
+            ch.mention for ch in map(ctx.guild.get_channel, config["allowed_channels"]) if ch
+        ]
         pages = []
-        if not allowed_channels:
-            embed = discord.Embed(title="Forward Deleter Settings", color=await ctx.embed_color())
-            embed.add_field(name="Status", value=status, inline=False)
-            embed.add_field(name="Warn Users", value=warn_status, inline=True)
-            embed.add_field(name="Warn Message", value=warn_message, inline=False)
-            embed.add_field(
-                name="Log Channel",
-                value=log_channel.mention if log_channel else "Not set",
-                inline=False,
-            )
-            embed.add_field(name="Allowed Channels", value="None", inline=False)
+        per_page = 20
+
+        if not channels:
+            embed.add_field(name="Allowed Channels", value="None")
             pages.append(embed)
         else:
-            channel_mentions = [ch.mention for ch in allowed_channels if ch]
-            per_page = 20
-            for i in range(0, len(channel_mentions), per_page):
-                embed = discord.Embed(
-                    title="Forward Deleter Settings", color=await ctx.embed_color()
+            for i in range(0, len(channels), per_page):
+                page = embed.copy()
+                page.add_field(
+                    name="Allowed Channels", value="\n".join(channels[i : i + per_page])
                 )
-                embed.add_field(name="Status", value=status, inline=False)
-                embed.add_field(
-                    name="Log Channel",
-                    value=log_channel.mention if log_channel else "Not set",
-                    inline=False,
+                page.set_footer(
+                    text=f"Page {i // per_page + 1} of {(len(channels) - 1) // per_page + 1}"
                 )
-                embed.add_field(name="Warn Users", value=warn_status, inline=True)
-                embed.add_field(name="Warn Message", value=warn_message, inline=False)
-                embed.add_field(
-                    name="Allowed Channels",
-                    value="\n".join(channel_mentions[i : i + per_page]),
-                    inline=False,
-                )
-                embed.set_footer(
-                    text=f"Page {i // per_page + 1} of {(len(channel_mentions) - 1) // per_page + 1}"
-                )
-                pages.append(embed)
+                pages.append(page)
         await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
