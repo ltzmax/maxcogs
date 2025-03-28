@@ -243,7 +243,7 @@ class ForwardDeleter(commands.Cog):
         per_page = 20
 
         if not channels:
-            embed.add_field(name="Allowed Channels", value="None")
+            embed.add_field(name="Allowed Channels", value="None", inline=False)
             pages.append(embed)
         else:
             for i in range(0, len(channels), per_page):
