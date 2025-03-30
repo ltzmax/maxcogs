@@ -33,7 +33,7 @@ To install any cog you want:
 | ForwardDeleter | A cog that deletes forwarded messages and allows them in specified channels | 1.1.0 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
 | History | A cog to display historical events for the current day in your timezone. | 1.2.0 | ltzmax | ✅ |
-| Holiday | Display public holidays for countries worldwide, with support for setting a default country and listing available countries | 1.0.0 | ltzmax | ✅ |
+| Holiday | Display holidays for countries worldwide, with support for setting a default country and listing available countries | 1.2.0 | ltzmax | ✅ |
 | HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.4.0 | ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
 | Iss | Track the International Space Station's location and details. | 1.0.1 | ltzmax | ✅ |

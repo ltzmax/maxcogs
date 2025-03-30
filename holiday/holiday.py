@@ -30,28 +30,45 @@ import aiohttp
 import discord
 import orjson
 import pycountry
+import pytz
 from redbot.core import Config, commands
-from redbot.core.utils.views import SimpleMenu
-
-from .country_codes import COUNTRY_TIMEZONES, VALID_COUNTRY_CODES
+from redbot.core.utils.menus import SimpleMenu
 
 log = logging.getLogger("red.maxcogs.holiday")
 
 
 class Holiday(commands.Cog):
-    """Display public holidays for countries worldwide, with support for setting a default country and listing available countries."""
+    """Display holidays for countries worldwide, with support for setting a default country and listing available countries."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/holiday.html"
 
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config = Config.get_conf(self, identifier=1234567890, force_registration=True)
+        self.config = Config.get_conf(self, identifier=11111111111111, force_registration=True)
         self.config.register_user(country_code=None)
-        self.valid_country_codes = VALID_COUNTRY_CODES
-        self.country_tz = COUNTRY_TIMEZONES
+        self.country_tz = {}
+        for country in pycountry.countries:
+            try:
+                tz_name = pytz.country_timezones.get(country.alpha_2, ["UTC"])[0]
+                self.country_tz[country.alpha_2] = pytz.timezone(tz_name)
+            except Exception:
+                self.country_tz[country.alpha_2] = pytz.timezone("UTC")
+        self.country_tz.update(
+            {
+                "AX": pytz.timezone("Europe/Mariehamn"),  # Åland Islands
+                "BL": pytz.timezone("America/St_Barthelemy"),  # Saint Barthélemy
+                "BQ": pytz.timezone("America/Kralendijk"),  # Bonaire, etc.
+                "CW": pytz.timezone("America/Curacao"),  # Curaçao
+                "GG": pytz.timezone("Europe/Guernsey"),  # Guernsey
+                "IM": pytz.timezone("Europe/Isle_of_Man"),  # Isle of Man
+                "JE": pytz.timezone("Europe/Jersey"),  # Jersey
+                "MF": pytz.timezone("America/Marigot"),  # Saint Martin
+                "SJ": pytz.timezone("Arctic/Longyearbyen"),  # Svalbard and Jan Mayen
+            }
+        )
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -67,66 +84,87 @@ class Holiday(commands.Cog):
 
     async def _fetch_holidays(self, url):
         async with self.session.get(url) as response:
+            if response.status == 204:
+                return []
             if response.status != 200:
                 raise ValueError(f"API returned status {response.status}")
-            return orjson.loads(await response.read())
+            data = orjson.loads(await response.read())
+            return data.get("response", {}).get("holidays", [])
+
+    @commands.group()
+    @commands.is_owner()
+    async def holidayset(self, ctx):
+        """Setup the cog"""
+
+    @holidayset.command()
+    async def setkey(self, ctx):
+        """Guide to set up the Calendarific API key for holiday lookups."""
+        message = (
+            "To use this cog, you need a Calendarific API key. Here’s how to get one:\n"
+            "1. Go to <https://calendarific.com/>.\n"
+            "2. Sign up for a free account (or log in if you already have an account).\n"
+            "3. Find your API key in your dashboard, it's below `API Token Information`.\n"
+            "4. Set it with this command:\n"
+            "   ```\n"
+            "   [p]set api calendarific api_key YOUR_API_KEY_HERE\n"
+            "   ```\n"
+            "5. Test it with `[p]holidays countries`.\n"
+            "Note: The free tier gives 500 requests/month. Check the site for paid options if needed."
+        )
+        await ctx.send(message)
 
     @commands.group(invoke_without_command=True, aliases=["holiday"])
     @commands.guild_only()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def holidays(self, ctx, country_code: str = None):
-        """Display official holidays for a country with durations."""
+        """Display holidays for a country in the current year with durations."""
+        api_tokens = await self.bot.get_shared_api_tokens("calendarific")
+        api_key = api_tokens.get("api_key")
+        if not api_key:
+            return await ctx.send("Calendarific API key not set! Ask the bot owner to set it.")
+
+        current_year = datetime.now().year
         if country_code is None:
             country_code = await self.config.user(ctx.author).country_code()
             if country_code is None:
                 return await ctx.send(
-                    f"Please set your country code with `{ctx.clean_prefix}holidays setcode <code>` or specify one here!\n",
-                    f"Check `{ctx.clean_prefix}holidays countries` if you're unsure about your country code.",
+                    f"Please set a country code with `{ctx.clean_prefix}holidays setcode <code>` or specify one here!"
                 )
 
-        if country_code.upper() not in self.valid_country_codes:
-            return await ctx.send(f"Sorry, that is not a valid country code!")
-
-        current_year = datetime.now().year
-        country_name = (
-            pycountry.countries.get(alpha_2=country_code.upper()).name
-            if pycountry.countries.get(alpha_2=country_code.upper())
-            else country_code.upper()
-        )
-        # i'm aware that some people may take this domain as a "bad word" but the verb nager means "to swim" in english.
-        # So please do not freak out, it does not mean what you think it means.
-        url = f"https://date.nager.at/api/v3/PublicHolidays/{current_year}/{country_code.upper()}"
+        country = pycountry.countries.get(alpha_2=country_code.upper())
+        country_name = country.name if country else country_code.upper()
+        url = f"https://calendarific.com/api/v2/holidays?api_key={api_key}&country={country_code.upper()}&year={current_year}"
         try:
             holidays = await self._fetch_holidays(url)
             if not holidays:
                 return await ctx.send(f"No holidays found for {country_name} in {current_year}.")
 
-            holidays_sorted = sorted(holidays, key=lambda h: h["date"])
+            holidays_sorted = sorted(holidays, key=lambda h: h["date"]["iso"])
             holiday_groups = [holidays_sorted[:1]]
 
             for holiday in holidays_sorted[1:]:
-                prev_date = datetime.strptime(holiday_groups[-1][-1]["date"], "%Y-%m-%d")
-                curr_date = datetime.strptime(holiday["date"], "%Y-%m-%d")
+                prev_date = datetime.fromisoformat(
+                    holiday_groups[-1][-1]["date"]["iso"].split("T")[0]
+                )
+                curr_date = datetime.fromisoformat(holiday["date"]["iso"].split("T")[0])
                 if curr_date == prev_date + timedelta(days=1):
                     holiday_groups[-1].append(holiday)
                 else:
                     holiday_groups.append([holiday])
 
             formatted_list = []
+            tz = self.country_tz.get(country_code.upper(), pytz.timezone("UTC"))
+
             for group in holiday_groups:
-                start_date_naive = datetime.strptime(group[0]["date"], "%Y-%m-%d")
-                start_date = self.country_tz[country_code.upper()].localize(
-                    start_date_naive, is_dst=None
-                )
+                start_date_naive = datetime.fromisoformat(group[0]["date"]["iso"].split("T")[0])
+                start_date = tz.localize(start_date_naive)
                 start_ts = int(start_date.timestamp())
                 name = group[0]["name"]
 
                 if len(group) > 1:
-                    end_date_naive = datetime.strptime(group[-1]["date"], "%Y-%m-%d")
-                    end_date = self.country_tz[country_code.upper()].localize(
-                        end_date_naive, is_dst=None
-                    )
+                    end_date_naive = datetime.fromisoformat(group[-1]["date"]["iso"].split("T")[0])
+                    end_date = tz.localize(end_date_naive)
                     end_ts = int(end_date.timestamp())
                     days = (end_date - start_date).days + 1
                     duration = f"<t:{start_ts}:D> to <t:{end_ts}:D> ({days} days)"
@@ -137,56 +175,56 @@ class Holiday(commands.Cog):
 
                 formatted_list.append(f"{duration} - {name}")
 
-            embed = discord.Embed(
-                title=f"Holidays in {country_name} ({current_year})",
-                color=await ctx.embed_color(),
-                description="\n".join(formatted_list),
-            )
-            await ctx.send(embed=embed)
-        except Exception:
-            await ctx.send(
-                f"Oops! Couldn’t get holidays for `{country_code.upper()}`. ",
-                f"Check if it's correct and try again!",
-            )
+            pages = []
+            for i in range(0, len(formatted_list), 25):
+                page_content = "\n".join(formatted_list[i:i + 25])
+                embed = discord.Embed(
+                    title=f"Holidays in {country_name} ({current_year}) - Page {i // 25 + 1}",
+                    description=page_content or "No holidays on this page.",
+                    color=await ctx.embed_color()
+                )
+                pages.append(embed)
+            
+            if not pages:
+                return await ctx.send(f"No holidays found for {country_name} in {current_year}.")
+            
+            await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+        except Exception as e:
+            await ctx.send(f"Oops! Couldn’t get holidays for `{country_name}`.")
+            log.error(f"{str(e)}")
 
     @holidays.command()
     @commands.guild_only()
-    @commands.cooldown(1, 10, commands.BucketType.user)
     async def setcode(self, ctx, country_code: str):
         """Set your default country code for holidays."""
         code = country_code.upper()
-        if code not in self.valid_country_codes:
-            return await ctx.send(
-                f"Sorry, that is not a valid country code. Use a two-letter code like US, GB, etc.\n",
-                f"Check `{ctx.clean_prefix}holidays countries` for official list.",
-            )
         await self.config.user(ctx.author).country_code.set(code)
         await ctx.send(f"Your default country code is now set to `{code}`!")
 
     @holidays.command()
     @commands.guild_only()
-    @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def countries(self, ctx):
         """List supported country codes for holidays."""
-        url = "https://date.nager.at/api/v3/AvailableCountries"
+        api_tokens = await self.bot.get_shared_api_tokens("calendarific")
+        api_key = api_tokens.get("api_key")
+        if not api_key:
+            return await ctx.send("Calendarific API key not set! Ask the bot owner to set it.")
+
+        url = f"https://calendarific.com/api/v2/countries?api_key={api_key}"
         try:
             async with self.session.get(url) as response:
                 if response.status != 200:
                     await ctx.send(f"API error: Got status {response.status} from {url}")
                     return
-                countries = orjson.loads(await response.read())
-            country_list = [f"{c['countryCode']} - {c['name']}" for c in countries]
+                data = orjson.loads(await response.read())
+                countries = data.get("response", {}).get("countries", [])
+
+            country_list = [f"{c['iso-3166']} - {c['country_name']}" for c in countries]
             pages = []
             for i in range(0, len(country_list), 20):
                 page = "\n".join(country_list[i : i + 20])
-                embed = discord.Embed(
-                    title=f"Supported country codes",
-                    color=await ctx.embed_color(),
-                    description=f"{page}",
-                )
-                embed.set_footer(text=f"Page {i // 20 + 1}")
-                pages.append(embed)
+                pages.append(f"Supported country codes (page {i // 20 + 1}):\n{page}")
             await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
         except aiohttp.ClientError as e:
             await ctx.send(f"Network error fetching country list")

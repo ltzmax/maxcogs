@@ -3,9 +3,9 @@
         "max"
     ],
     "name": "Holiday",
-    "install_msg": "Thanks for installing. Please note this only display official public holidays.\n<https://docs.maxapp.tv/docs/holiday.html> for documentations.",
-    "description": "Display public holidays for countries worldwide, with support for setting a default country and listing available countries.",
-    "short": "Display public holidays for countries worldwide, with support for setting a default country and listing available countries.",
+    "install_msg": "Thanks for installing. Note you need an api key to use the cog, see `[p]holidayset setkey` for information.\n<https://docs.maxapp.tv/docs/holiday.html> for documentations.",
+    "description": "Display holidays for countries worldwide, with support for setting a default country and listing available countries.",
+    "short": "Display holidays for countries worldwide, with support for setting a default country and listing available countries.",
     "hidden": false,
     "min_bot_version": "3.5.13",
     "tags": [
