@@ -31,13 +31,13 @@ from redbot.core.bot import Red
 from redbot.core.utils.views import SimpleMenu
 
 log = logging.getLogger("red.maxcogs.forwarddeleter")
-WARN_MESSAGE = "You cannot forward messages outside of allowed channels."
+WARN_MESSAGE = "You are not allowed to forward message(s)."
 
 
 class ForwardDeleter(commands.Cog):
     """A cog that deletes forwarded messages and allows them in specified channels"""
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/forwarddeleter.html"
 
@@ -47,6 +47,7 @@ class ForwardDeleter(commands.Cog):
         default_guild = {
             "enabled": False,
             "allowed_channels": [],
+            "allowed_roles": [],
             "log_channel": None,
             "warn_enabled": False,
             "warn_message": WARN_MESSAGE,
@@ -62,8 +63,51 @@ class ForwardDeleter(commands.Cog):
         """Nothing to delete."""
         return
 
+    async def _is_forwarded_message(self, message: discord.Message) -> bool:
+        """Check if a message is a forwarded message."""
+        return (
+            message.reference is not None
+            and hasattr(message.reference, "type")
+            and message.reference.type == discord.MessageReferenceType.forward
+        )
+
+    async def _has_whitelisted_role(self, member: discord.Member, allowed_roles: list) -> bool:
+        """Check if member has any whitelisted roles."""
+        return any(role.id in allowed_roles for role in member.roles)
+
+    async def _send_log(self, message: discord.Message, log_channel_id: int) -> None:
+        """Send deletion log to specified channel."""
+        log_channel = message.guild.get_channel(log_channel_id)
+        if not log_channel or not log_channel.permissions_for(message.guild.me).send_messages:
+            log.warning(
+                f"Cannot send to log channel {log_channel_id} in {message.guild.name}: Invalid or no permissions"
+            )
+            return
+
+        embed = discord.Embed(
+            title="Forwarded Message Deleted",
+            color=0xD21312,
+            timestamp=message.created_at,
+        )
+        embed.add_field(name="Author", value=message.author.mention, inline=True)
+        embed.add_field(name="Channel", value=message.channel.mention, inline=True)
+        embed.add_field(
+            name="Content",
+            value=message.content or "Content is Unknown.",
+            inline=False,
+        )
+        embed.set_footer(text=f"Message ID: {message.id}")
+        await log_channel.send(embed=embed)
+
+    async def _send_warning(self, message: discord.Message, warn_message: str) -> None:
+        """Send warning message to user."""
+        await message.channel.send(
+            f"{message.author.mention} {warn_message}",
+            delete_after=15
+        )
+
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         if message.author.bot or not message.guild:
             return
 
@@ -74,68 +118,66 @@ class ForwardDeleter(commands.Cog):
         bot_perms = message.channel.permissions_for(message.guild.me)
         if not bot_perms.manage_messages:
             log.warning(
-                f"I do not have manage_messages permission in {message.channel.mention} in {message.guild.name} ({message.guild.id})"
+                f"No manage_messages permission in {message.channel.mention} ({message.guild.id})"
             )
             return
 
         if message.channel.id in guild_config["allowed_channels"]:
             return
-
+        if await self._has_whitelisted_role(message.author, guild_config["allowed_roles"]):
+            return
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
         if await self.bot.is_automod_immune(message.author):
             return
 
-        if (
-            message.reference
-            and hasattr(message.reference, "type")
-            and message.reference.type == discord.MessageReferenceType.forward
-        ):
-            try:
-                await message.delete()
-                log_channel_id = guild_config["log_channel"]
-                if log_channel_id:
-                    log_channel = message.guild.get_channel(log_channel_id)
-                    if log_channel and log_channel.permissions_for(message.guild.me).send_messages:
-                        embed = discord.Embed(
-                            title="Forwarded Message Deleted",
-                            color=0xD21312,
-                            timestamp=message.created_at,
-                        )
-                        embed.add_field(name="Author", value=message.author.mention, inline=True)
-                        embed.add_field(name="Channel", value=message.channel.mention, inline=True)
-                        embed.add_field(
-                            name="Content",
-                            value=message.content or "Content is Unknown.",
-                            inline=False,
-                        )
-                        embed.set_footer(text=f"Message ID: {message.id}")
-                        await log_channel.send(embed=embed)
-                    else:
-                        log.warning(
-                            f"Cannot send to log channel {log_channel_id} in {message.guild.name}: Invalid or no permissions"
-                        )
+        if not await self._is_forwarded_message(message):
+            return
 
-                if guild_config["warn_enabled"] and bot_perms.send_messages:
-                    warn_message = guild_config["warn_message"]
-                    await message.channel.send(
-                        f"{message.author.mention} {warn_message}", delete_after=10
-                    )
+        try:
+            await message.delete()
+            
+            if guild_config["log_channel"]:
+                await self._send_log(message, guild_config["log_channel"])
 
-            except discord.Forbidden as e:
-                log.error(
-                    f"Failed to delete message {message.id} in {message.channel.mention}: {e}"
-                )
-            except discord.NotFound:
-                log.debug(f"Message {message.id} not found, likely already deleted.")
-            except Exception as e:
-                log.error(f"Unexpected error with message {message.id}: {e}")
+            if guild_config["warn_enabled"] and bot_perms.send_messages:
+                await self._send_warning(message, guild_config["warn_message"])
+
+        except discord.Forbidden as e:
+            log.error(f"Failed to delete message {message.id} in {message.channel.mention}: {e}")
+        except discord.NotFound:
+            log.error(f"Message {message.id} not found, likely already deleted")
+        except Exception as e:
+            log.error(f"Unexpected error with message {message.id}: {e}")
 
     @commands.group()
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
     async def forwarddeleter(self, ctx: commands.Context):
         """Manage forward deleter settings"""
+
+    @forwarddeleter.command()
+    async def addrole(self, ctx: commands.Context, role: discord.Role) -> None:
+        """Add a role to the forwarding whitelist"""
+        bot_top_role = ctx.guild.me.top_role
+        if role >= bot_top_role:
+            return await ctx.send("You can't set a role higher than mine")
+        async with self.config.guild(ctx.guild).allowed_roles() as roles:
+            if role.id not in roles:
+                roles.append(role.id)
+                await ctx.send(f"Added {role.name} to forwarding whitelist")
+            else:
+                await ctx.send(f"{role.name} is already whitelisted")
+
+    @forwarddeleter.command()
+    async def removerole(self, ctx: commands.Context, role: discord.Role) -> None:
+        """Remove a role from the forwarding whitelist"""
+        async with self.config.guild(ctx.guild).allowed_roles() as roles:
+            if role.id in roles:
+                roles.remove(role.id)
+                await ctx.send(f"Removed {role.name} from forwarding whitelist")
+            else:
+                await ctx.send(f"{role.name} is not in the whitelist")
 
     @forwarddeleter.command()
     async def setlog(self, ctx: commands.Context, channel: discord.TextChannel = None):
