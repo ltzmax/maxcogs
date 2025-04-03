@@ -36,7 +36,6 @@ To install any cog you want:
 | Holiday | Display holidays for countries worldwide, with support for setting a default country and listing available countries | 1.2.0 | ltzmax | ✅ |
 | HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.4.0 | ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
-| Iss | Track the International Space Station's location and details. | 1.0.1 | ltzmax | ✅ |
 | NBA | NBA Cog that provides NBA game updates, schedules, and news. | 3.4.0 | ltzmax | ✅ |
 | NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
