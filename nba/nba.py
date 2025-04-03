@@ -61,7 +61,7 @@ log = logging.getLogger("red.maxcogs.nba")
 
 class NBA(commands.Cog):
     """
-    NBA information cog for Red-DiscordBot.
+    NBA information cog.
     - Get the current NBA schedule for the next game.
     - Get the current NBA scoreboard.
     - Get the latest NBA news.
