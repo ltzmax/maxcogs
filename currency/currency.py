@@ -39,7 +39,7 @@ class Currency(commands.Cog):
 
     __version__: Final[str] = "1.0.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "No docs exist for this cog."
+    __docs__: Final[str] = "This does not require docs."
 
     def __init__(self, bot):
         self.bot = bot
