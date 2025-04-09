@@ -1,0 +1,21 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "EasterHunt",
+    "install_msg": "Thanks for installing. Use `[p]easterhunt hunt` to start hunting for eggs!",
+    "description": "Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements and more.",
+    "short": "Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements and more.",
+    "hidden": false,
+    "min_bot_version": "3.5.13",
+    "tags": ["easter", "hunting", "eggs", "leaderboard", "achievements", "work", "steal"],
+    "permissions": [],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
