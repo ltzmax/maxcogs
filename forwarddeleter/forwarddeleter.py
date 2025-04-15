@@ -363,7 +363,7 @@ class ForwardDeleter(commands.Cog):
         - You can only edit duration of timeouts, you cannot change ban to kick etc.
         """
         try:
-            seconds = parse_duration(duration)
+            seconds = self.parse_duration(duration)
             guild_config = await self.config.guild(ctx.guild).all()
             offenses = guild_config["offenses"]
             for offense in offenses:
