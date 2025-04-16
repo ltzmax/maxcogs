@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import asyncio
 import logging
 import random
 import re
@@ -56,7 +57,7 @@ class EasterHunt(commands.Cog):
     It includes various commands for interacting with the game, managing progress, and viewing leaderboards.
     """
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = (
         "https://github.com/ltzmax/maxcogs/tree/master/easterhunt/EasterHunt.md."
@@ -104,6 +105,7 @@ class EasterHunt(commands.Cog):
         }
         self.config.register_global(**default_global)
         self.config.register_user(**default_user)
+        self.active_tasks = {}
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """
@@ -116,8 +118,51 @@ class EasterHunt(commands.Cog):
         """Handle data deletion requests; nothing to delete here."""
         pass
 
-    async def cog_unload(self) -> None:
+    async def cog_load(self):
+        """Check and reset stale active_work states on cog load."""
+        for guild in self.bot.guilds:
+            for member in guild.members:
+                if not member.bot and await self.config.user(member).active_work():
+                    work_end = await self.config.user(member).last_work()
+                    current_time = time.time()
+                    if work_end <= current_time:
+                        # Job should have ended; reset state
+                        await self.config.user(member).active_work.set(False)
+                        await self.config.user(member).last_work.set(0)
+                        await self.config.user(member).last_work.set(current_time)
+                    else:
+                        # Job is still active; restart it
+                        remaining_time = work_end - current_time
+                        if remaining_time > 0:
+                            self.active_tasks[member.id] = self.bot.loop.create_task(
+                                self.resume_job(member, remaining_time)
+                            )
+
+    async def cog_unload(self):
+        """Clean up tasks and reset active_work on cog unload."""
         await self.session.close()
+        for user_id, task in self.active_tasks.items():
+            task.cancel()
+            member = self.bot.get_user(user_id)
+            if member:
+                await self.config.user(member).active_work.set(False)
+                await self.config.user(member).last_work.set(0)
+                await self.config.user(member).last_work.set(time.time())
+        self.active_tasks.clear()
+
+    async def resume_job(self, user, remaining_time):
+        """Resume a job that was interrupted by a restart/reload."""
+        try:
+            await asyncio.sleep(remaining_time)
+            # Job has ended; update state
+            current_time = time.time()
+            await self.config.user(user).last_work.set(current_time)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            await self.config.user(user).active_work.set(False)
+            await self.config.user(user).last_work.set(0)
+            del self.active_tasks[user.id]
 
     @commands.group()
     @commands.guild_only()
@@ -658,6 +703,7 @@ class EasterHunt(commands.Cog):
 
         await self.config.user(user).active_hunt.set(False)
         await self.config.user(user).active_work.set(False)
+        await self.config.user(user).last_work.set(0)
         await ctx.send(
             f"{user.mention}'s Easter hunt and work data has been reset by {ctx.author.mention}!"
         )
@@ -795,59 +841,95 @@ class EasterHunt(commands.Cog):
         return target, egg_type
 
     async def start_job(self, interaction, job_type, user):
-        work_ends = int((datetime.now() + timedelta(minutes=5)).timestamp())
-        await self.config.user(user).active_work.set(True)
-        await interaction.response.send_message(
-            f"{user.mention} starts working as a {job_type.replace('_', ' ').title()}! Shift begins... 🐰💼\nYou finish your shift <t:{work_ends}:R>"
-        )
-        await discord.utils.sleep_until(datetime.now() + timedelta(minutes=5))
-
-        current_time = time.time()
-        if job_type == "stealer":
-            if random.random() < 0.3:
-                target, stolen_egg_type = await self.find_target_player(user, interaction.guild)
-                if target and stolen_egg_type:
-                    await self.config.user(target).eggs[stolen_egg_type].set(
-                        await self.config.user(target).eggs[stolen_egg_type]() - 1
-                    )
-                    await self.config.user(user).eggs[stolen_egg_type].set(
-                        await self.config.user(user).eggs[stolen_egg_type]() + 1
-                    )
-                    await interaction.channel.send(
-                        f"{user.mention} sneaks back from stealing! You nabbed a {stolen_egg_type.title()} Egg from {target.name}!"
-                    )
-                    await interaction.channel.send(
-                        f"{target.name} lost a {stolen_egg_type.title()} Egg to {user.mention}!"
-                    )
-                else:
-                    await interaction.channel.send(
-                        f"{user.mention} couldn’t find anyone to steal from! Better luck next shift!"
-                    )
-            else:
-                if random.random() < 0.6:
-                    egg_type = random.choice(["common", "silver"])
-                    await self.config.user(user).eggs[egg_type].set(
-                        await self.config.user(user).eggs[egg_type]() + 1
-                    )
-                    await interaction.channel.send(
-                        f"{user.mention} sneaks back from stealing! You nabbed a {egg_type.title()} Egg from a distracted bunny!"
-                    )
-                else:
-                    await interaction.channel.send(
-                        f"{user.mention} got caught red-handed by an angry bunny! No eggs for you—better luck next shift!"
-                    )
-        elif job_type == "store_clerk":
-            shards = random.randint(5, 10)
-            await self.config.user(user).shards.set(await self.config.user(user).shards() + shards)
-            await interaction.channel.send(
-                f"{user.mention} finishes a shift at the Egg Emporium! Sold some eggs and earned {shards} Egg Shards—nice hustle!"
-            )
-        elif job_type == "egg_giver":
-            shards = random.randint(3, 7)
-            await self.config.user(user).shards.set(await self.config.user(user).shards() + shards)
-            await interaction.channel.send(
-                f"{user.mention} hops around giving out Common Eggs! The bunnies loved it—you earned {shards} Egg Shards for your kindness!"
+        try:
+            work_ends = time.time() + 300  # 5 minutes from now
+            await self.config.user(user).active_work.set(True)
+            await self.config.user(user).last_work.set(work_ends)
+            await interaction.response.send_message(
+                f"{user.mention} starts working as a {job_type.replace('_', ' ').title()}! Shift begins... 🐰💼\nYou finish your shift <t:{int(work_ends)}:R>"
             )
 
-        await self.config.user(user).last_work.set(current_time)
-        await self.config.user(user).active_work.set(False)
+            # Start the job as a tracked task
+            self.active_tasks[user.id] = self.bot.loop.create_task(
+                self.run_job(interaction, job_type, user, work_ends)
+            )
+        except Exception as e:
+            log.error(f"Error starting job for {user}: {e}")
+            await interaction.channel.send(
+                f"{user.mention}, something went wrong starting your shift! It has been cancelled."
+            )
+            await self.config.user(user).active_work.set(False)
+            await self.config.user(user).last_work.set(0)
+            if user.id in self.active_tasks:
+                del self.active_tasks[user.id]
+
+    async def run_job(self, interaction, job_type, user, work_ends):
+        try:
+            await asyncio.sleep(300)  # 5 minutes
+            current_time = time.time()
+
+            if job_type == "stealer":
+                if random.random() < 0.3:
+                    target, stolen_egg_type = await self.find_target_player(
+                        user, interaction.guild
+                    )
+                    if target and stolen_egg_type:
+                        await self.config.user(target).eggs[stolen_egg_type].set(
+                            await self.config.user(target).eggs[stolen_egg_type]() - 1
+                        )
+                        await self.config.user(user).eggs[stolen_egg_type].set(
+                            await self.config.user(user).eggs[stolen_egg_type]() + 1
+                        )
+                        await interaction.channel.send(
+                            f"{user.mention} sneaks back from stealing! You nabbed a {stolen_egg_type.title()} Egg from {target.name}!"
+                        )
+                        await interaction.channel.send(
+                            f"{target.name} lost a {stolen_egg_type.title()} Egg to {user.mention}!"
+                        )
+                    else:
+                        await interaction.channel.send(
+                            f"{user.mention} couldn’t find anyone to steal from! Better luck next shift!"
+                        )
+                else:
+                    if random.random() < 0.6:
+                        egg_type = random.choice(["common", "silver"])
+                        await self.config.user(user).eggs[egg_type].set(
+                            await self.config.user(user).eggs[egg_type]() + 1
+                        )
+                        await interaction.channel.send(
+                            f"{user.mention} sneaks back from stealing! You nabbed a {egg_type.title()} Egg from a distracted bunny!"
+                        )
+                    else:
+                        await interaction.channel.send(
+                            f"{user.mention} got caught red-handed by an angry bunny! No eggs for you—better luck next shift!"
+                        )
+            elif job_type == "store_clerk":
+                shards = random.randint(5, 10)
+                await self.config.user(user).shards.set(
+                    await self.config.user(user).shards() + shards
+                )
+                await interaction.channel.send(
+                    f"{user.mention} finishes a shift at the Egg Emporium! Sold some eggs and earned {shards} Egg Shards—nice hustle!"
+                )
+            elif job_type == "egg_giver":
+                shards = random.randint(3, 7)
+                await self.config.user(user).shards.set(
+                    await self.config.user(user).shards() + shards
+                )
+                await interaction.channel.send(
+                    f"{user.mention} hops around giving out Common Eggs! The bunnies loved it—you earned {shards} Egg Shards for your kindness!"
+                )
+
+            await self.config.user(user).last_work.set(current_time)
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            log.error(f"Error in run_job for {user}: {e}")
+            await interaction.channel.send(
+                f"{user.mention}, something went wrong during your shift! It has been cancelled."
+            )
+        finally:
+            await self.config.user(user).active_work.set(False)
+            await self.config.user(user).last_work.set(0)
+            if user.id in self.active_tasks:
+                del self.active_tasks[user.id]
