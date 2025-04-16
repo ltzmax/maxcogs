@@ -634,6 +634,34 @@ class EasterHunt(commands.Cog):
             f"{user.mention}'s Easter hunt data has been reset by {ctx.author.mention}!"
         )
 
+    @owner.command(name="resetshift")
+    @commands.bot_has_permissions(embed_links=True)
+    async def owner_resetshift(self, ctx, user: discord.Member):
+        """
+        Reset a specific user's shift time and active states.
+        """
+        view = ConfirmView(ctx.author, disable_buttons=True, timeout=30)
+        embed = discord.Embed(
+            title="Confirm User Reset",
+            description=f"Are you sure you want to reset {user.mention}'s shifts?",
+            color=discord.Color.red(),
+        )
+        msg = await ctx.send(
+            embed=embed, view=view, reference=ctx.message.to_reference(fail_if_not_exists=False)
+        )
+
+        await view.wait()
+        if view.result is None:
+            return await ctx.send("Reset cancelled due to timeout.")
+        if not view.result:
+            return await ctx.send("Reset cancelled.")
+
+        await self.config.user(user).active_hunt.set(False)
+        await self.config.user(user).active_work.set(False)
+        await ctx.send(
+            f"{user.mention}'s Easter hunt and work data has been reset by {ctx.author.mention}!"
+        )
+
     @owner.command(name="resetall")
     @commands.bot_has_permissions(embed_links=True)
     async def owner_resetall(self, ctx):
