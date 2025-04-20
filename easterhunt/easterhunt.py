@@ -57,7 +57,7 @@ class EasterHunt(commands.Cog):
     It includes various commands for interacting with the game, managing progress, and viewing leaderboards.
     """
 
-    __version__: Final[str] = "1.5.0"
+    __version__: Final[str] = "1.6.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = (
         "https://github.com/ltzmax/maxcogs/tree/master/easterhunt/EasterHunt.md."
@@ -874,12 +874,16 @@ class EasterHunt(commands.Cog):
                         user, interaction.guild
                     )
                     if target and stolen_egg_type:
-                        await self.config.user(target).eggs[stolen_egg_type].set(
-                            await self.config.user(target).eggs[stolen_egg_type]() - 1
-                        )
-                        await self.config.user(user).eggs[stolen_egg_type].set(
-                            await self.config.user(user).eggs[stolen_egg_type]() + 1
-                        )
+                        target_eggs = await self.config.user(target).eggs()
+                        user_eggs = await self.config.user(user).eggs()
+                        target_eggs[stolen_egg_type] = target_eggs.get(stolen_egg_type, 0) - 1
+                        user_eggs[stolen_egg_type] = user_eggs.get(stolen_egg_type, 0) + 1
+                        if target_eggs[stolen_egg_type] < 0:
+                            target_eggs[stolen_egg_type] = 0
+
+                        await self.config.user(target).eggs.set(target_eggs)
+                        await self.config.user(user).eggs.set(user_eggs)
+
                         await interaction.channel.send(
                             f"{user.mention} sneaks back from stealing! You nabbed a {stolen_egg_type.title()} Egg from {target.name}!"
                         )
@@ -893,9 +897,9 @@ class EasterHunt(commands.Cog):
                 else:
                     if random.random() < 0.6:
                         egg_type = random.choice(["common", "silver"])
-                        await self.config.user(user).eggs[egg_type].set(
-                            await self.config.user(user).eggs[egg_type]() + 1
-                        )
+                        user_eggs = await self.config.user(user).eggs()
+                        user_eggs[egg_type] = user_eggs.get(egg_type, 0) + 1
+                        await self.config.user(user).eggs.set(user_eggs)
                         await interaction.channel.send(
                             f"{user.mention} sneaks back from stealing! You nabbed a {egg_type.title()} Egg from a distracted bunny!"
                         )
