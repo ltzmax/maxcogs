@@ -23,20 +23,18 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Final, Optional
 
 import discord
+from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.chat_formatting import box, humanize_number
 from redbot.core.utils.views import ConfirmView
 from tabulate import tabulate
-
-log = logging.getLogger("red.maxcogs.counting")
 
 
 class MessageType(Enum):
@@ -83,6 +81,7 @@ class Counting(commands.Cog):
         }
         self.config.register_guild(**default_guild)
         self.config.register_user(**default_user)
+        self.logger = getLogger("red.maxcogs.counting")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """
@@ -108,11 +107,11 @@ class Counting(commands.Cog):
         try:
             return await channel.send(content, delete_after=delete_after, silent=silent)
         except discord.Forbidden:
-            log.warning(
+            self.logger.warning(
                 f"Missing send permissions in {channel.guild.name}#{channel.name} ({channel.id})"
             )
         except discord.HTTPException as e:
-            log.warning(f"Failed to send message in {channel.id}: {e}")
+            self.logger.warning(f"Failed to send message in {channel.id}: {e}", exc_info=True)
         return None
 
     async def _delete_message(self, message: discord.Message) -> None:
@@ -120,7 +119,10 @@ class Counting(commands.Cog):
         try:
             await message.delete()
         except discord.HTTPException as e:
-            log.warning(f"Failed to delete message {message.id} in {message.channel.id}: {e}")
+            self.logger.warning(
+                f"Failed to delete message {message.id} in {message.channel.id}: {e}",
+                exc_info=True,
+            )
 
     async def _add_reaction(self, message: discord.Message, reaction: str) -> None:
         """Add a reaction with a slight delay."""
@@ -128,7 +130,9 @@ class Counting(commands.Cog):
         try:
             await message.add_reaction(reaction)
         except discord.HTTPException as e:
-            log.warning(f"Failed to add reaction to {message.id} in {message.channel.id}: {e}")
+            self.logger.warning(
+                f"Failed to add reaction to {message.id} in {message.channel.id}: {e}"
+            )
 
     async def _handle_invalid_count(
         self,
@@ -162,7 +166,7 @@ class Counting(commands.Cog):
                 if role and role < message.guild.me.top_role:
                     await message.author.add_roles(role)
             except discord.HTTPException as e:
-                log.warning(f"Failed to assign ruin role: {e}")
+                self.logger.warning(f"Failed to assign ruin role: {e}", exc_info=True)
 
         response = settings["ruin_message"].format(
             user=message.author.mention, count=settings["count"]
@@ -187,7 +191,7 @@ class Counting(commands.Cog):
 
         perms = message.channel.permissions_for(message.guild.me)
         if not (perms.send_messages and perms.manage_messages):
-            log.warning(f"Missing permissions in {message.channel.id}")
+            self.logger.warning(f"Missing permissions in {message.channel.id}")
             return
 
         if settings["min_account_age"]:

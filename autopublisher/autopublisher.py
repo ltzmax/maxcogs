@@ -23,13 +23,13 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 from datetime import datetime, timedelta
 from typing import Any, Dict, Final, List, Literal, Optional, Union
 
 import discord
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
@@ -37,8 +37,6 @@ from redbot.core.utils.views import ConfirmView
 from tabulate import tabulate
 
 from .view import IgnoredNewsChannelsView
-
-log = logging.getLogger("red.maxcogs.autopublisher")
 
 
 class AutoPublisher(commands.Cog):
@@ -66,6 +64,7 @@ class AutoPublisher(commands.Cog):
         self.config.register_global(**default_global)
         self.scheduler = AsyncIOScheduler()
         self._schedule_resets()
+        self.logger = getLogger("red.maxcogs.autopublisher")
 
     def _schedule_resets(self) -> None:
         """Schedule periodic count resets."""
@@ -79,12 +78,12 @@ class AutoPublisher(commands.Cog):
             self.reset_count, "cron", month=1, day=1, hour=0, minute=0, args=["yearly"]
         )
         self.scheduler.start()
-        log.info("Scheduler started for weekly, monthly, and yearly resets.")
+        # self.logger.info("Scheduler started for weekly, monthly, and yearly resets.")
 
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
         self.scheduler.shutdown()
-        log.info("Scheduler shut down.")
+        self.logger.debug("Scheduler shut down.")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Format help with cog metadata."""
@@ -100,13 +99,13 @@ class AutoPublisher(commands.Cog):
         async with self.config.all() as data:
             if period == "weekly":
                 data["published_weekly_count"] = 0
-                log.info("Weekly count reset.")
+                self.logger.verbose("Weekly count reset.")
             elif period == "monthly" and datetime.now().day == 1:
                 data["published_monthly_count"] = 0
-                log.info("Monthly count reset.")
+                self.logger.verbose("Monthly count reset.")
             elif period == "yearly":
                 data["published_yearly_count"] = 0
-                log.info("Yearly count reset.")
+                self.logger.verbose("Yearly count reset.")
 
     async def increment_published_count(self) -> None:
         """Increment all published message counts."""
@@ -141,7 +140,9 @@ class AutoPublisher(commands.Cog):
         ):
             if "NEWS" not in message.guild.features and settings["toggle"]:
                 await guild_config.toggle.set(False)
-                log.warning(f"Disabled AutoPublisher in {message.guild.name} (no NEWS feature).")
+                self.logger.warning(
+                    f"Disabled AutoPublisher in {message.guild.name} (no NEWS feature)."
+                )
             return
 
         try:
@@ -149,7 +150,9 @@ class AutoPublisher(commands.Cog):
             await asyncio.wait_for(message.publish(), timeout=60)
             await self.increment_published_count()
         except (discord.HTTPException, discord.Forbidden, asyncio.TimeoutError) as e:
-            log.error(f"Failed to publish message in {message.channel.id}: {e}")
+            self.logger.error(
+                f"Failed to publish message in {message.channel.id}: {e}", exc_info=True
+            )
 
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
@@ -240,13 +243,11 @@ class AutoPublisher(commands.Cog):
                     emoji="<:icons_info:880113401207095346>",
                 )
             )
-            await ctx.send("This server lacks the News Channel feature.", view=view)
-            return
+            return await ctx.send("This server lacks the News Channel feature.", view=view)
 
         news_channels = [ch for ch in ctx.guild.text_channels if ch.is_news()]
         if not news_channels:
-            await ctx.send("No news channels available to ignore.")
-            return
+            return await ctx.send("No news channels available to ignore.")
 
         guild_config = self.config.guild(ctx.guild)
         ignored = set(await guild_config.ignored_channels())

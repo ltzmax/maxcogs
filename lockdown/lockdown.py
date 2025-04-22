@@ -22,15 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 from typing import Any, Final, Optional, Union
 
 import discord
+from red_commons.logging import getLogger
 from redbot.core import Config, app_commands, commands
 
 from .view import UnlockView
-
-log = logging.getLogger("red.maxcogs.lockdown")
 
 
 class Lockdown(commands.Cog):
@@ -50,6 +48,7 @@ class Lockdown(commands.Cog):
             "use_embed": False,
         }
         self.config.register_guild(**default_guild)
+        self.logger = getLogger("red.maxcogs.lockdown")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -77,7 +76,7 @@ class Lockdown(commands.Cog):
             not log_channel.permissions_for(guild.me).send_messages
             or not log_channel.permissions_for(guild.me).embed_links
         ):
-            log.warning(
+            self.logger.warning(
                 f"I don't have send_messages or embed_links permission in {log_channel.mention}."
             )
             return
@@ -188,9 +187,10 @@ class Lockdown(commands.Cog):
         try:
             overwrites.send_messages = send_messages
             await ctx.channel.set_permissions(ctx.guild.default_role, overwrite=overwrites)
-        except discord.Forbidden:
-            log.error(
-                f"I don't have the permissions to {'lock' if is_lock else 'unlock'} this channel."
+        except discord.Forbidden as e:
+            self.logger.error(
+                f"I don't have the permissions to {'lock' if is_lock else 'unlock'} this channel. {e}",
+                exc_info=True,
             )
 
         await self.log_channel(ctx, ctx.guild, event=log_event, reason=reason)

@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 from datetime import datetime, timedelta
 from typing import Any, Final
 
@@ -31,10 +30,9 @@ import discord
 import orjson
 import pycountry
 import pytz
+from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.utils.menus import SimpleMenu
-
-log = logging.getLogger("red.maxcogs.holiday")
 
 
 class Holiday(commands.Cog):
@@ -50,6 +48,7 @@ class Holiday(commands.Cog):
         self.config = Config.get_conf(self, identifier=11111111111111, force_registration=True)
         self.config.register_user(country_code=None)
         self.country_tz = {}
+        self.logger = getLogger("red.maxcogs.holiday")
         for country in pycountry.countries:
             try:
                 tz_name = pytz.country_timezones.get(country.alpha_2, ["UTC"])[0]
@@ -177,21 +176,21 @@ class Holiday(commands.Cog):
 
             pages = []
             for i in range(0, len(formatted_list), 25):
-                page_content = "\n".join(formatted_list[i:i + 25])
+                page_content = "\n".join(formatted_list[i : i + 25])
                 embed = discord.Embed(
                     title=f"Holidays in {country_name} ({current_year}) - Page {i // 25 + 1}",
                     description=page_content or "No holidays on this page.",
-                    color=await ctx.embed_color()
+                    color=await ctx.embed_color(),
                 )
                 pages.append(embed)
-            
+
             if not pages:
                 return await ctx.send(f"No holidays found for {country_name} in {current_year}.")
-            
+
             await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
         except Exception as e:
             await ctx.send(f"Oops! Couldn’t get holidays for `{country_name}`.")
-            log.error(f"{str(e)}")
+            self.logger.error(f"{str(e)}", exc_info=True)
 
     @holidays.command()
     @commands.guild_only()
@@ -215,8 +214,9 @@ class Holiday(commands.Cog):
         try:
             async with self.session.get(url) as response:
                 if response.status != 200:
-                    await ctx.send(f"API error: Got status {response.status} from {url}")
-                    return
+                    return await ctx.send(f"API error: Got status {response.status} from {url}")
+                if response.status == 204:
+                    return await ctx.send("No countries found in the API response.")
                 data = orjson.loads(await response.read())
                 countries = data.get("response", {}).get("countries", [])
 
@@ -228,7 +228,7 @@ class Holiday(commands.Cog):
             await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
         except aiohttp.ClientError as e:
             await ctx.send(f"Network error fetching country list")
-            log.error(f"{str(e)}")
+            self.logger.error(f"{str(e)}", exc_info=True)
         except Exception as e:
             await ctx.send(f"Unexpected error fetching country list")
-            log.error(f"{str(e)}")
+            self.logger.error(f"{str(e)}", exc_info=True)

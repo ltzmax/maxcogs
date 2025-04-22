@@ -22,16 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 from typing import Final
 
 import aiohttp
 import discord
 import orjson
+from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
 from redbot.core.utils.views import SetApiView
-
-log = logging.getLogger("red.maxcogs.currency")
 
 
 class Currency(commands.Cog):
@@ -44,6 +42,7 @@ class Currency(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
+        self.logger = getLogger("red.maxcogs.currency")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """
@@ -123,12 +122,13 @@ class Currency(commands.Cog):
             data = await self._fetch_conversion(api_key, amount, from_currency, to_currency)
             if data.get("result") != "success":
                 return await self._send_error(
-                    interaction, f"Error: {data.get('error-type', 'Unknown error occurred.')}"
+                    interaction, f"Error Please check the currency codes you provided."
                 )
+                self.logger.error(f"Error: {data.get('error-type', 'Unknown error occurred.')}")
 
             converted_amount = round(data["conversion_result"], 2)
             await interaction.response.send_message(
                 f"{amount} {from_currency.upper()} = {converted_amount} {to_currency.upper()}"
             )
         except Exception as e:
-            log.error(e)
+            self.logger.error(f"{e}", exc_info=True)
