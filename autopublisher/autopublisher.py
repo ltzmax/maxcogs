@@ -78,7 +78,6 @@ class AutoPublisher(commands.Cog):
             self.reset_count, "cron", month=1, day=1, hour=0, minute=0, args=["yearly"]
         )
         self.scheduler.start()
-        # self.logger.info("Scheduler started for weekly, monthly, and yearly resets.")
 
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
