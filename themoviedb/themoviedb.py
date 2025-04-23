@@ -39,7 +39,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "1.6.0"
+    __version__ = "1.7.0"
     __docs__ = "https://docs.maxapp.tv/docs/tmdb.html"
 
     def __init__(self, bot):

@@ -80,7 +80,8 @@ async def fetch_data(ctx, session, url: str) -> Optional[Dict[str, Any]]:
 
 async def search_media(ctx, session, query, media_type, page=1):
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
-    url = f"{BASE_MEDIA}/{media_type}?api_key={api_key}&query={query}&page={page}&include_adult={str(ctx.channel.nsfw).lower()}"
+    include_adult = str(getattr(ctx.channel, 'nsfw', False)).lower()
+    url = f"{BASE_MEDIA}/{media_type}?api_key={api_key}&query={query}&page={page}&include_adult={include_adult}"
     try:
         return await aio(session, url)
     except Exception as e:
