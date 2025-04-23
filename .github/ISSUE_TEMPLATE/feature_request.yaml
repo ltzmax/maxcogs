@@ -17,14 +17,19 @@ body:
       options:
         - autopublisher
         - counting
+        - currency
+        - easterhunt
+        - forwarddeleter
         - github
+        - honeycoms
         - lockdown
-        - nbaschedule
+        - nba
+        - nekosbest
         - nospoiler
         - plaguegame
-        - nekosbest
-        - redupdate
         - pokemon
+        - redupdate
+        - themoviedb
     validations:
       required: true
   - type: input
