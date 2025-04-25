@@ -118,6 +118,7 @@ class Holiday(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def holidays(self, ctx, country_code: str = None):
         """Display holidays for a country in the current year with durations."""
+        await ctx.typing()
         api_tokens = await self.bot.get_shared_api_tokens("calendarific")
         api_key = api_tokens.get("api_key")
         if not api_key:
