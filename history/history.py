@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 from datetime import datetime
 from typing import Any, Final
 
@@ -30,12 +29,13 @@ import aiohttp
 import discord
 import orjson
 import pytz
+from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.utils.menus import SimpleMenu
 
 from .utils import fetch_events, format_year
 
-log = logging.getLogger("red.maxcogs.history")
+WIKIPEDIA_LOGO = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
 
 
 class History(commands.Cog):
@@ -51,6 +51,7 @@ class History(commands.Cog):
         self.config = Config.get_conf(self, identifier=987654321, force_registration=True)
         default_user = {"timezone": "UTC"}
         self.config.register_user(**default_user)
+        self.logger = getLogger("red.maxcogs.history")
 
     def cog_unload(self):
         self.bot.loop.create_task(self.session.close())
@@ -94,6 +95,9 @@ class History(commands.Cog):
             await ctx.send(
                 "Invalid timezone, please see <https://whatismyti.me/> for your timezone and use it in the format `Continent/City`."
             )
+            self.logger.error(
+                f"Invalid timezone '{timezone}' provided by user {ctx.author.id}."
+            )
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
@@ -112,7 +116,7 @@ class History(commands.Cog):
         try:
             tz = pytz.timezone(user_tz)
         except pytz.exceptions.UnknownTimeZoneError:
-            log.error(f"Invalid timezone '{user_tz}' for user {ctx.author.id}")
+            self.logger.error(f"Invalid timezone '{user_tz}' for user {ctx.author.id}")
             return await ctx.send(
                 "Invalid timezone set. Please use `Continent/City` format (e.g., `America/New_York`)."
             )
@@ -124,7 +128,7 @@ class History(commands.Cog):
         try:
             events = await fetch_events(self.session, month, day)
         except ValueError as e:
-            log.error(f"Failed to fetch events for {month}/{day}: {str(e)}")
+            self.logger.error(f"Failed to fetch events for {month}/{day}: {str(e)}")
 
         if not events:
             return await ctx.send(f"No notable events found for {display_date}")
@@ -141,8 +145,11 @@ class History(commands.Cog):
                 text = event.get("text", "No description available.")
                 display_year = await format_year(year)
                 embed.add_field(name=display_year, value=text, inline=False)
+            current_page = i // items_per_page + 1
+            total_pages = (len(events) - 1) // items_per_page + 1
             embed.set_footer(
-                text=f"Source: Wikipedia | Timezone: {user_tz} | Page {i // items_per_page + 1} of {(len(events) - 1) // items_per_page + 1}"
+                text=f"Source: Wikipedia | Timezone: {user_tz} | Page {current_page} of {total_pages}",
+                icon_url=WIKIPEDIA_LOGO,
             )
             pages.append(embed)
         await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
