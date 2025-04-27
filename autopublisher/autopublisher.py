@@ -27,8 +27,10 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Final, List, Literal, Optional, Union
 
 import discord
+import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from discord import utils as discord_utils
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -42,9 +44,9 @@ from .view import IgnoredNewsChannelsView
 class AutoPublisher(commands.Cog):
     """Automatically publish messages in news channels."""
 
-    __version__: Final[str] = "2.9.0"
+    __version__: Final[str] = "2.10.0"
     __author__: Final[str] = "MAX, AAA3A"
-    __docs__: Final[str] = "https://docs.maxapp.tv/docs/autopublisher.html"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/autopublisher/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -59,23 +61,52 @@ class AutoPublisher(commands.Cog):
             "published_monthly_count": 0,
             "published_yearly_count": 0,
             "last_count_time": None,
+            "timezone": "UTC",
         }
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
         self.scheduler = AsyncIOScheduler()
-        self._schedule_resets()
         self.logger = getLogger("red.maxcogs.autopublisher")
+        self.bot.loop.create_task(self._initialize_scheduler())
+
+    async def _initialize_scheduler(self):
+        """Initialize the scheduler after cog is loaded."""
+        await self._schedule_resets()
+
+    async def _get_owner_timezone(self) -> pytz.timezone:
+        """Retrieve the owner's timezone from config, default to UTC."""
+        timezone_str = await self.config.get_raw("timezone", default="UTC")
+        try:
+            return pytz.timezone(timezone_str)
+        except pytz.exceptions.UnknownTimeZoneError:
+            return pytz.UTC
 
     def _schedule_resets(self) -> None:
-        """Schedule periodic count resets."""
+        """Schedule periodic count resets in the owner's timezone."""
+        owner_tz = self._get_owner_timezone()
         self.scheduler.add_job(
-            self.reset_count, "cron", day_of_week="sun", hour=0, minute=0, args=["weekly"]
+            self.reset_count,
+            "cron",
+            day_of_week="sun",
+            hour=0,
+            minute=0,
+            timezone=owner_tz,
+            args=["weekly"],
         )
         self.scheduler.add_job(
-            self.reset_count, CronTrigger(day=1, hour=0, minute=0), args=["monthly"]
+            self.reset_count,
+            CronTrigger(day=1, hour=0, minute=0, timezone=owner_tz),
+            args=["monthly"],
         )
         self.scheduler.add_job(
-            self.reset_count, "cron", month=1, day=1, hour=0, minute=0, args=["yearly"]
+            self.reset_count,
+            "cron",
+            month=1,
+            day=1,
+            hour=0,
+            minute=0,
+            timezone=owner_tz,
+            args=["yearly"],
         )
         self.scheduler.start()
 
@@ -83,21 +114,14 @@ class AutoPublisher(commands.Cog):
         """Clean up scheduler on cog unload."""
         self.scheduler.shutdown()
 
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Format help with cog metadata."""
-        base = super().format_help_for_context(ctx)
-        return f"{base}\n\nAuthor: {self.__author__}\nVersion: {self.__version__}\nDocs: {self.__docs__}"
-
-    async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
-        """No user data to delete."""
-        pass
-
     async def reset_count(self, period: Literal["weekly", "monthly", "yearly"]) -> None:
-        """Reset the specified count period."""
+        """Reset the specified count period, checking date in owner's timezone."""
+        owner_tz = self._get_owner_timezone()
+        now_in_owner_tz = datetime.now(owner_tz)
         async with self.config.all() as data:
             if period == "weekly":
                 data["published_weekly_count"] = 0
-            elif period == "monthly" and datetime.now().day == 1:
+            elif period == "monthly" and now_in_owner_tz.day == 1:
                 data["published_monthly_count"] = 0
             elif period == "yearly":
                 data["published_yearly_count"] = 0
@@ -113,6 +137,15 @@ class AutoPublisher(commands.Cog):
             ]:
                 data[key] = data.get(key, 0) + 1
             data["last_count_time"] = datetime.utcnow().isoformat()
+
+    def format_help_for_context(self, ctx: commands.Context) -> str:
+        """Format help with cog metadata."""
+        base = super().format_help_for_context(ctx)
+        return f"{base}\n\nAuthor: {self.__author__}\nVersion: {self.__version__}\nDocs: {self.__docs__}"
+
+    async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
+        """No user data to delete."""
+        pass
 
     @commands.Cog.listener()
     async def on_message_without_command(self, message: discord.Message) -> None:
@@ -156,16 +189,44 @@ class AutoPublisher(commands.Cog):
         """Manage AutoPublisher settings."""
 
     @commands.is_owner()
+    @autopublisher.command(name="settimezone")
+    async def set_timezone(self, ctx: commands.Context, timezone: str) -> None:
+        """
+        Set the bot's timezone for reset schedules.
+
+        Default timezone is UTC if not set by user or invalid.
+        Use the format `Continent/City`.
+        Find your timezone here: https://whatismyti.me/
+        """
+        try:
+            pytz.timezone(timezone)
+            await self.config.set_raw("timezone", value=timezone)
+            await ctx.send(
+                f"Timezone set to {timezone}. Please reload the cog to apply changes:\n"
+                "`[p]unload autopublisher` then `[p]load autopublisher`.\n"
+                "-# You will see correct timezone without reload but scheduler will not work until reload is done."
+            )
+        except pytz.exceptions.UnknownTimeZoneError:
+            await ctx.send(
+                "Invalid timezone. Please use a valid timezone like 'US/Pacific', 'Europe/London', or 'UTC'. "
+                "See <https://whatismyti.me> for your timezone."
+            )
+
+    @commands.is_owner()
     @autopublisher.command(name="stats")
     async def stats(self, ctx: commands.Context) -> None:
         """Show statistics for published messages."""
+        owner_tz = await self._get_owner_timezone()
         data = await self.config.all()
         last_count_time = data.get("last_count_time")
-        last_published = (
-            discord.utils.format_dt(datetime.fromisoformat(last_count_time), "R")
-            if last_count_time
-            else "Never"
-        )
+        last_published = "Never"
+        if last_count_time:
+            try:
+                last_count_dt = datetime.fromisoformat(last_count_time)
+                last_count_dt = last_count_dt.replace(tzinfo=pytz.UTC).astimezone(owner_tz)
+                last_published = discord_utils.format_dt(last_count_dt, "R")
+            except ValueError:
+                last_published = "Invalid timestamp"
 
         table_data = [
             ["Weekly", humanize_number(data["published_weekly_count"])],
@@ -175,30 +236,33 @@ class AutoPublisher(commands.Cog):
         ]
         table = tabulate(table_data, headers=["Period", "Count"], tablefmt="simple")
 
-        now = datetime.now()
+        now = datetime.now(owner_tz)
         days_until_sunday = (6 - now.weekday()) % 7
         if days_until_sunday == 0 and now.hour >= 0:
             days_until_sunday = 7
-        next_weekly = int(
-            (
-                now.replace(hour=0, minute=0, second=0, microsecond=0)
-                + timedelta(days=days_until_sunday)
-            ).timestamp()
+        next_weekly = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(
+            days=days_until_sunday
         )
+        next_weekly_ts = int(next_weekly.timestamp())
 
         next_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + timedelta(
             days=32
         )
         next_month = next_month.replace(day=1)
-        next_monthly = int(next_month.timestamp())
+        next_monthly_ts = int(next_month.timestamp())
+
         next_year = now.year + 1 if now.month > 1 or (now.month == 1 and now.day > 1) else now.year
-        next_yearly = int(datetime(next_year, 1, 1).timestamp())
+        next_yearly = now.replace(
+            year=next_year, month=1, day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        next_yearly_ts = int(next_yearly.timestamp())
 
         await ctx.send(
             f"{box(table, lang='prolog')}\n"
-            f"Next Weekly Reset: <t:{next_weekly}:R> (<t:{next_weekly}:f>)\n"
-            f"Next Monthly Reset: <t:{next_monthly}:R> (<t:{next_monthly}:f>)\n"
-            f"Next Yearly Reset: <t:{next_yearly}:R> (<t:{next_yearly}:f>)\n"
+            f"Timezone: `{owner_tz.zone}`\n"
+            f"Next Weekly Reset: <t:{next_weekly_ts}:R> (<t:{next_weekly_ts}:f>)\n"
+            f"Next Monthly Reset: <t:{next_monthly_ts}:R> (<t:{next_monthly_ts}:f>)\n"
+            f"Next Yearly Reset: <t:{next_yearly_ts}:R> (<t:{next_yearly_ts}:f>)\n"
             f"Last Published: {last_published}"
         )
 

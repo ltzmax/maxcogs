@@ -27,7 +27,7 @@ To install any cog you want:
 ## Cogs on this repo: <br>
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
-| AutoPublisher | Automatically push news channel messages. | 2.9.0 | ltzmax, AAA3A | ✅ |
+| AutoPublisher | Automatically push news channel messages. | 2.10.0 | ltzmax, AAA3A | ✅ |
 | Counting | Count from 1 to infinity! with some customizable settings. | 1.9.0 | ltzmax | ✅ |
 | Currency | A cog to convert currencies using ExchangeRate-API | 1.0.0 | ltzmax | ✅ |
 | ForwardDeleter | A cog that deletes forwarded messages and allows them in specified channels | 1.2.0 | ltzmax | ✅ |
