@@ -82,7 +82,6 @@ class AutoPublisher(commands.Cog):
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
         self.scheduler.shutdown()
-        self.logger.debug("Scheduler shut down.")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Format help with cog metadata."""
@@ -98,13 +97,10 @@ class AutoPublisher(commands.Cog):
         async with self.config.all() as data:
             if period == "weekly":
                 data["published_weekly_count"] = 0
-                self.logger.verbose("Weekly count reset.")
             elif period == "monthly" and datetime.now().day == 1:
                 data["published_monthly_count"] = 0
-                self.logger.verbose("Monthly count reset.")
             elif period == "yearly":
                 data["published_yearly_count"] = 0
-                self.logger.verbose("Yearly count reset.")
 
     async def increment_published_count(self) -> None:
         """Increment all published message counts."""
