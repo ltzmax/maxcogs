@@ -118,7 +118,8 @@ class History(commands.Cog):
         except pytz.exceptions.UnknownTimeZoneError:
             self.logger.error(f"Invalid timezone '{user_tz}' for user {ctx.author.id}")
             return await ctx.send(
-                "Invalid timezone set. Please use `Continent/City` format (e.g., `America/New_York`)."
+                f"Invalid timezone set. Please use `{ctx.clean_prefix}historyset timezone` with `Continent/City` " 
+                "format (e.g., `America/New_York`)."
             )
 
         today = datetime.now(tz)
