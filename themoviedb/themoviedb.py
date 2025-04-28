@@ -29,9 +29,7 @@ import discord
 from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
-from .everything_stuff import build_embed, get_media_data, person_embed, search_and_display
-from .upcoming import create_movie_pages, get_upcoming_movies
-
+from .tmdb_utils import search_and_display, person_embed
 
 class TheMovieDB(commands.Cog):
     """
@@ -39,7 +37,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "1.7.0"
+    __version__ = "1.8.0"
     __docs__ = "https://docs.maxapp.tv/docs/tmdb.html"
 
     def __init__(self, bot):
@@ -111,25 +109,6 @@ class TheMovieDB(commands.Cog):
         embed.set_footer(text="You can also set your API key by using the button.")
         await ctx.send(embed=embed, view=view)
 
-    @commands.hybrid_command(name="upcoming")
-    @commands.bot_has_permissions(embed_links=True)
-    async def upcoming_movies(self, ctx: commands.Context):
-        """
-        Show a list of upcoming movies.
-
-        It will display 20 pages (400 movies).
-        Please note all releases are US-based. For your own country, please check upcoming releases from [imdb calender](https://www.imdb.com/calendar/).
-        """
-        await ctx.typing()
-        movies = await get_upcoming_movies(ctx, self.session)
-        if not movies:
-            if movies is not None:
-                await ctx.send("No upcoming movies found for future US release dates!")
-            return
-        pages = create_movie_pages(movies)
-        if not pages:
-            return await ctx.send("No upcoming movies found!")
-        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
 
     @commands.hybrid_command(aliases=["movies"])
     @app_commands.describe(query="The movie you want to search for.")
@@ -152,7 +131,7 @@ class TheMovieDB(commands.Cog):
                 "The bot owner has not set up the API key for TheMovieDB. "
                 "Please ask them to set it up."
             )
-        await search_and_display(ctx, query, "movie", get_media_data, build_embed, self.config)
+        await search_and_display(ctx, query, "movie", self.config)
 
     @commands.hybrid_command(aliases=["tv"])
     @app_commands.describe(query="The series you want to search for.")
@@ -175,7 +154,7 @@ class TheMovieDB(commands.Cog):
                 "The bot owner has not set up the API key for TheMovieDB. "
                 "Please ask them to set it up."
             )
-        await search_and_display(ctx, query, "tv", get_media_data, build_embed, self.config)
+        await search_and_display(ctx, query, "tv", self.config)
 
     @commands.hybrid_command()
     @app_commands.describe(query="The person you want to search for.")
