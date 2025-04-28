@@ -71,19 +71,25 @@ class AutoPublisher(commands.Cog):
 
     async def _initialize_scheduler(self):
         """Initialize the scheduler after cog is loaded."""
-        await self._schedule_resets()
+        try:
+            await self._schedule_resets()
+        except Exception as e:
+            self.logger.error(f"Failed to initialize scheduler: {e}", exc_info=True)
 
     async def _get_owner_timezone(self) -> pytz.timezone:
         """Retrieve the owner's timezone from config, default to UTC."""
         timezone_str = await self.config.get_raw("timezone", default="UTC")
         try:
-            return pytz.timezone(timezone_str)
+            tz = pytz.timezone(timezone_str)
+            self.logger.debug(f"Retrieved timezone: {timezone_str}")
+            return tz
         except pytz.exceptions.UnknownTimeZoneError:
+            self.logger.warning(f"Invalid timezone in config: {timezone_str}, falling back to UTC")
             return pytz.UTC
 
-    def _schedule_resets(self) -> None:
+    async def _schedule_resets(self) -> None:
         """Schedule periodic count resets in the owner's timezone."""
-        owner_tz = self._get_owner_timezone()
+        owner_tz = await self._get_owner_timezone()
         self.scheduler.add_job(
             self.reset_count,
             "cron",
@@ -108,11 +114,15 @@ class AutoPublisher(commands.Cog):
             timezone=owner_tz,
             args=["yearly"],
         )
-        self.scheduler.start()
+        if not self.scheduler.running:
+            self.scheduler.start()
+            self.logger.debug("Scheduler started")
 
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
-        self.scheduler.shutdown()
+        if self.scheduler.running:
+            self.scheduler.shutdown()
+            self.logger.debug("Scheduler shut down")
 
     async def reset_count(self, period: Literal["weekly", "monthly", "yearly"]) -> None:
         """Reset the specified count period, checking date in owner's timezone."""
@@ -244,13 +254,11 @@ class AutoPublisher(commands.Cog):
             days=days_until_sunday
         )
         next_weekly_ts = int(next_weekly.timestamp())
-
         next_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + timedelta(
             days=32
         )
         next_month = next_month.replace(day=1)
         next_monthly_ts = int(next_month.timestamp())
-
         next_year = now.year + 1 if now.month > 1 or (now.month == 1 and now.day > 1) else now.year
         next_yearly = now.replace(
             year=next_year, month=1, day=1, hour=0, minute=0, second=0, microsecond=0
