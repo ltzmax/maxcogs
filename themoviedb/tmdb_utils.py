@@ -248,9 +248,6 @@ async def search_and_display(ctx, query: str, media_type: str, config):
             await ctx.send(embed=embed, view=view)
             return
 
-        # TODO:
-        # Use discord.py's Components V2 for better selects of movies / tv shows whenever it is available.
-        # For now, we will use the old way of doing it.
         response_in_box = await config.use_box()
         title = "What would you like to select?"
         header_text = f"{header(title, 'medium')}"
@@ -281,13 +278,12 @@ async def search_and_display(ctx, query: str, media_type: str, config):
             )
             if not msg.content.isdigit():
                 return await ctx.send("Invalid input. Exiting.")
-        except ValueError:
-            return await ctx.send("Invalid input. Exiting.")
 
             index = int(msg.content) - 1
             if index < 0 or index >= len(filtered_results):
                 return await ctx.send("Invalid selection. Exiting.")
-                
+        except ValueError:
+            return await ctx.send("Invalid input. Exiting.")
         except asyncio.TimeoutError:
             return await ctx.send("Selection timed out. Exiting.")
 
