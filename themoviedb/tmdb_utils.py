@@ -39,7 +39,7 @@ from redbot.core.utils.chat_formatting import (
 )
 from redbot.core.utils.views import SimpleMenu
 
-log = logging.getLogger("red.maxcogs.themoviedb.everything_stuff")
+log = logging.getLogger("red.maxcogs.themoviedb.tmdb_utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
 
