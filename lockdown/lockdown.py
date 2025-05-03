@@ -124,7 +124,11 @@ class Lockdown(commands.Cog):
         )
 
     async def manage_lock(
-        self, ctx: commands.Context, action: str, reason: Optional[str] = None, role: Optional[discord.Role] = None
+        self,
+        ctx: commands.Context,
+        action: str,
+        reason: Optional[str] = None,
+        role: Optional[discord.Role] = None,
     ) -> None:
         if not isinstance(ctx.channel, discord.abc.GuildChannel):
             return await ctx.send(
@@ -140,9 +144,7 @@ class Lockdown(commands.Cog):
         already_set_message = f"❌ This channel is already {'locked' if is_lock else 'unlocked'} for {target_role.mention.lstrip('@')}."
         send_messages = False if is_lock else None
 
-        overwrites = (
-            ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
-        )
+        overwrites = ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
 
         if overwrites.send_messages == send_messages:
             return await ctx.send(
@@ -184,14 +186,14 @@ class Lockdown(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
         reason="The reason why you're locking this channel (optional)",
-        role="The role to lock the channel for (defaults to @everyone)"
+        role="The role to lock the channel for (defaults to @everyone)",
     )
     async def lock(
         self,
         ctx: commands.Context,
         *,
         reason: Optional[str] = None,
-        role: Optional[discord.Role] = None
+        role: Optional[discord.Role] = None,
     ):
         """
         Lock a channel for a specific role or everyone.
@@ -218,7 +220,7 @@ class Lockdown(commands.Cog):
                 except ValueError as e:
                     self.logger.error(
                         f"Failed to convert role ID {role_id} to int. Reason: {e}", exc_info=True
-                    ) 
+                    )
         await self.manage_lock(ctx, "lock", reason=reason, role=role)
 
     @commands.guild_only()
@@ -227,14 +229,14 @@ class Lockdown(commands.Cog):
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
         reason="The reason why you're unlocking this channel",
-        role="The role to unlock the channel for (defaults to @everyone)"
+        role="The role to unlock the channel for (defaults to @everyone)",
     )
     async def unlock(
         self,
         ctx: commands.Context,
         *,
         reason: Optional[str] = None,
-        role: Optional[discord.Role] = None
+        role: Optional[discord.Role] = None,
     ):
         """
         Unlock a channel for a specific role or everyone.
@@ -259,9 +261,8 @@ class Lockdown(commands.Cog):
                 except ValueError as e:
                     self.logger.error(
                         f"Failed to convert role ID {role_id} to int. Reason: {e}", exc_info=True
-                    ) 
+                    )
         await self.manage_lock(ctx, "unlock", reason=reason, role=role)
-
 
     @commands.group()
     @commands.guild_only()

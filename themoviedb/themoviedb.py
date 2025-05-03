@@ -29,7 +29,8 @@ import discord
 from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
-from .tmdb_utils import search_and_display, person_embed
+from .tmdb_utils import person_embed, search_and_display
+
 
 class TheMovieDB(commands.Cog):
     """
@@ -108,7 +109,6 @@ class TheMovieDB(commands.Cog):
         )
         embed.set_footer(text="You can also set your API key by using the button.")
         await ctx.send(embed=embed, view=view)
-
 
     @commands.hybrid_command(aliases=["movies"])
     @app_commands.describe(query="The movie you want to search for.")
