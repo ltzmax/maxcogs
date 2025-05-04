@@ -26,10 +26,11 @@ from typing import Dict, Optional, Union
 
 import aiohttp
 import discord
-from redbot.core import Config, app_commands, commands
+from redbot.core import app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
-from .tmdb_utils import search_and_display, person_embed
+from .tmdb_utils import person_embed, search_and_display
+
 
 class TheMovieDB(commands.Cog):
     """
@@ -37,17 +38,12 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "1.8.0"
-    __docs__ = "https://docs.maxapp.tv/docs/tmdb.html"
+    __version__ = "2.0.0a"
+    __docs__ = "https://github.com/ltzmax/maxcogs/tree/master/themoviedb/README.md"
 
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.config: Config = Config.get_conf(self, identifier=1234567890, force_registration=True)
-        default_global: Dict[str, Union[bool, Optional[int]]] = {
-            "use_box": False,
-        }
-        self.config.register_global(**default_global)
 
     async def cog_unload(self) -> None:
         await self.session.close()
@@ -67,19 +63,6 @@ class TheMovieDB(commands.Cog):
         """
         Configure TheMovieDB cog settings.
         """
-
-    @tmdbset.command(name="usebox")
-    async def tmdbset_usebox(self, ctx: commands.Context, value: bool):
-        """
-        Set if you want to use the box in the choose of movie/tv show.
-
-        Disabled by default.
-
-        - `True` to use the box art in the embeds.
-        - `False` to not use the box art in the embeds.
-        """
-        await self.config.use_box.set(value)
-        await ctx.send(f"Use box art set to `{value}`.")
 
     @tmdbset.command(name="creds")
     @commands.bot_has_permissions(embed_links=True)
@@ -109,7 +92,6 @@ class TheMovieDB(commands.Cog):
         embed.set_footer(text="You can also set your API key by using the button.")
         await ctx.send(embed=embed, view=view)
 
-
     @commands.hybrid_command(aliases=["movies"])
     @app_commands.describe(query="The movie you want to search for.")
     @commands.bot_has_permissions(embed_links=True)
@@ -131,7 +113,7 @@ class TheMovieDB(commands.Cog):
                 "The bot owner has not set up the API key for TheMovieDB. "
                 "Please ask them to set it up."
             )
-        await search_and_display(ctx, query, "movie", self.config)
+        await search_and_display(ctx, query, "movie")
 
     @commands.hybrid_command(aliases=["tv"])
     @app_commands.describe(query="The series you want to search for.")
@@ -154,7 +136,7 @@ class TheMovieDB(commands.Cog):
                 "The bot owner has not set up the API key for TheMovieDB. "
                 "Please ask them to set it up."
             )
-        await search_and_display(ctx, query, "tv", self.config)
+        await search_and_display(ctx, query, "tv")
 
     @commands.hybrid_command()
     @app_commands.describe(query="The person you want to search for.")
