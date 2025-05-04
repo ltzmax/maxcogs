@@ -418,7 +418,6 @@ async def search_and_display(ctx, query: str, media_type: str):
     paginator.message = message
 
 
-
 async def person_embed(ctx, query: str):
     """Search and display person information from TMDB."""
     await ctx.typing()
