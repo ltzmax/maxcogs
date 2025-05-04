@@ -59,7 +59,7 @@ class Pokemon(commands.Cog):
     """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.9.0"
+    __version__: Final[str] = "1.10.0"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/pokemon.html"
 
     def __init__(self, bot: Red):
@@ -521,31 +521,85 @@ class Pokemon(commands.Cog):
         pokemon_url = f"{API_URL}/pokemon/{pokemon.lower()}"
         pokemon_data = await self.fetch_data(pokemon_url)
         if not pokemon_data:
-            await ctx.send("Could not fetch Pokémon data.")
-            return
+            return await ctx.send("Could not fetch Pokémon data.")
 
-        sections = ["base", "held_items", "moves", "locations"]
-        embeds = []
-        for section in sections:
-            try:
-                embed = await self.create_pokemon_embed(pokemon_data, section)
-                embeds.append(embed)
-            except ValueError as e:
-                if str(e) not in [
-                    "No held items data available.",
-                    "No moves data available.",
-                    "No location data available.",
-                ]:
-                    await ctx.send(f"Error for {section}: {e}")
-                    continue
+        # Was gonna move it to seperate file but i got so damn tired at 10AM in the morning.
+        # I'll move it later if i feel like it unless i decide to make something with components V2.
+        class PokemonView(discord.ui.View):
+            def __init__(self, ctx, pokemon_data, timeout=120):
+                super().__init__(timeout=timeout)
+                self.ctx = ctx
+                self.pokemon_data = pokemon_data
+                self.current_section = "base"
+                self.message = None
 
-        if not embeds:
-            await ctx.send("No data found for the given Pokémon.")
-            return
+            async def on_timeout(self):
+                for item in self.children:
+                    if isinstance(item, discord.ui.Button):
+                        item.disabled = True
+                if self.message:
+                    try:
+                        await self.message.edit(view=self)
+                    except discord.NotFound as e:
+                        log.error(f"Message not found: {e}", exc_info=True)
 
-        await SimpleMenu(
-            embeds,
-            use_select_menu=True,
-            disable_after_timeout=True,
-            timeout=120,
-        ).start(ctx)
+            async def interaction_check(self, interaction: discord.Interaction):
+                if interaction.user != self.ctx.author:
+                    await interaction.response.send_message(
+                        "You are not the owner of this interaction.", ephemeral=True
+                    )
+                    return False
+                return True
+
+            async def update_embed(self, interaction: discord.Interaction):
+                try:
+                    embed = await self.ctx.cog.create_pokemon_embed(
+                        self.pokemon_data, self.current_section
+                    )
+                    await interaction.response.edit_message(embed=embed, view=self)
+                except ValueError as e:
+                    await interaction.response.send_message(
+                        f"Error for {self.current_section}", ephemeral=True
+                    )
+                    log.error(f"Error for {self.current_section}: {e}", exc_info=True)
+
+            @discord.ui.button(label="Base", style=discord.ButtonStyle.primary, custom_id="base")
+            async def base_button(
+                self, interaction: discord.Interaction, button: discord.ui.Button
+            ):
+                self.current_section = "base"
+                await self.update_embed(interaction)
+
+            @discord.ui.button(
+                label="Held Items", style=discord.ButtonStyle.primary, custom_id="held_items"
+            )
+            async def held_items_button(
+                self, interaction: discord.Interaction, button: discord.ui.Button
+            ):
+                self.current_section = "held_items"
+                await self.update_embed(interaction)
+
+            @discord.ui.button(label="Moves", style=discord.ButtonStyle.primary, custom_id="moves")
+            async def moves_button(
+                self, interaction: discord.Interaction, button: discord.ui.Button
+            ):
+                self.current_section = "moves"
+                await self.update_embed(interaction)
+
+            @discord.ui.button(
+                label="Locations", style=discord.ButtonStyle.primary, custom_id="locations"
+            )
+            async def locations_button(
+                self, interaction: discord.Interaction, button: discord.ui.Button
+            ):
+                self.current_section = "locations"
+                await self.update_embed(interaction)
+
+        view = PokemonView(ctx, pokemon_data)
+        try:
+            embed = await self.create_pokemon_embed(pokemon_data, "base")
+            message = await ctx.send(embed=embed, view=view)
+            view.message = message
+        except ValueError as e:
+            await ctx.send(f"Error creating embed")
+            log.error(f"Error creating embed: {e}", exc_info=True)

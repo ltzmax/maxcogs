@@ -95,9 +95,7 @@ class History(commands.Cog):
             await ctx.send(
                 "Invalid timezone, please see <https://whatismyti.me/> for your timezone and use it in the format `Continent/City`."
             )
-            self.logger.error(
-                f"Invalid timezone '{timezone}' provided by user {ctx.author.id}."
-            )
+            self.logger.error(f"Invalid timezone '{timezone}' provided by user {ctx.author.id}.")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
@@ -118,7 +116,7 @@ class History(commands.Cog):
         except pytz.exceptions.UnknownTimeZoneError:
             self.logger.error(f"Invalid timezone '{user_tz}' for user {ctx.author.id}")
             return await ctx.send(
-                f"Invalid timezone set. Please use `{ctx.clean_prefix}historyset timezone` with `Continent/City` " 
+                f"Invalid timezone set. Please use `{ctx.clean_prefix}historyset timezone` with `Continent/City` "
                 "format (e.g., `America/New_York`)."
             )
 
