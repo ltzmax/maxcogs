@@ -295,6 +295,9 @@ class Counting(commands.Cog):
         if not isinstance(channel, (discord.TextChannel, discord.Thread, discord.ForumChannel)):
             return
 
+        if await self.bot.cog_disabled_in_guild(self, guild):
+            return
+
         settings = await self._get_guild_settings(guild)
         if not settings["toggle"] or channel.id != settings["channel"]:
             return
