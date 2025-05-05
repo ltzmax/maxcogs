@@ -568,6 +568,8 @@ class Counting(commands.Cog):
         - `<msg_type>`: The type of message to set (edit, count, or sameuser).
         - `<message>`: The message content to set.
         """
+        if len(message) > 2000:
+            return await ctx.send("Message is too long. Maximum length is 2000 characters.")
         msg_type = msg_type.lower()
         try:
             mtype = MessageType(msg_type)
