@@ -42,7 +42,7 @@ class NoSpoiler(commands.Cog):
     """Prevent spoilers in this server by deleting messages with spoiler tags or attachments."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.9.0"
+    __version__: Final[str] = "2.0.0"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/lockdown/README.md"
 
     def __init__(self, bot: Red) -> None:
@@ -211,23 +211,39 @@ class NoSpoiler(commands.Cog):
             await self.handle_spoiler_message(message, spoiler_attachments)
 
     @commands.Cog.listener()
-    async def on_message_edit(self, before: discord.Message, after: discord.Message) -> None:
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
         """Process edited messages to detect new spoilers."""
-        if before.content == after.content or after.author.bot or not after.guild:
+        if "content" not in payload.data:
             return
 
-        settings = await self._get_guild_settings(after.guild)
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
+            return
+
+        channel = guild.get_channel(payload.channel_id)
+        if not isinstance(channel, (discord.TextChannel, discord.Thread, discord.ForumChannel)):
+            return
+
+        settings = await self._get_guild_settings(guild)
         if not settings["enabled"]:
             return
 
-        if await self.bot.cog_disabled_in_guild(self, after.guild):
+        if await self.bot.cog_disabled_in_guild(self, guild):
             return
 
-        if await self.bot.is_automod_immune(after.author):
+        author_id = int(payload.data.get("author", {}).get("id", 0))
+        author = guild.get_member(author_id) or self.bot.get_user(author_id)
+        if not author or author.bot or await self.bot.is_automod_immune(author):
             return
 
-        if SPOILER_REGEX.search(after.content):
-            await self.handle_spoiler_message(after)
+        content = payload.data.get("content", "")
+        if SPOILER_REGEX.search(content):
+            message = discord.Message(
+                state=channel._state,
+                channel=channel,
+                data=payload.data,
+            )
+            await self.handle_spoiler_message(message)
 
     @commands.group()
     @commands.guild_only()
