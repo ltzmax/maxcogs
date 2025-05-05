@@ -91,7 +91,7 @@ class AutoPublisher(commands.Cog):
     async def _schedule_resets(self) -> None:
         """Schedule periodic count resets in the owner's timezone."""
         owner_tz = await self._get_owner_timezone()
-        self.scheduler.remove_all_jobs() # Clear existing jobs to avoid duplicates
+        self.scheduler.remove_all_jobs()  # Clear existing jobs to avoid duplicates
         self.scheduler.add_job(
             self.reset_count,
             "cron",
@@ -146,13 +146,17 @@ class AutoPublisher(commands.Cog):
                     data["published_monthly_count"] = 0
                     self.logger.info("Monthly count reset.")
                 else:
-                    self.logger.debug(f"Skipped monthly reset: not the 1st day (current day: {now_in_owner_tz.day}).")
+                    self.logger.debug(
+                        f"Skipped monthly reset: not the 1st day (current day: {now_in_owner_tz.day})."
+                    )
             elif period == "yearly":
                 if now_in_owner_tz.month == 1 and now_in_owner_tz.day == 1:
                     data["published_yearly_count"] = 0
                     self.logger.info("Yearly count reset.")
                 else:
-                    self.logger.debug(f"Skipped yearly reset: not Jan 1 (current date: {now_in_owner_tz.month}/{now_in_owner_tz.day}).")
+                    self.logger.debug(
+                        f"Skipped yearly reset: not Jan 1 (current date: {now_in_owner_tz.month}/{now_in_owner_tz.day})."
+                    )
 
     async def increment_published_count(self) -> None:
         """Increment all published message counts."""
