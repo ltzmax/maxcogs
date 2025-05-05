@@ -274,46 +274,73 @@ async def search_and_display(ctx, query: str, media_type: str):
     header_text = f"{header(title, 'medium')}"
 
     class MediaPaginator(discord.ui.LayoutView):
-        def __init__(self, ctx, filtered_results, media_type):
+        def __init__(self, ctx, filtered_results, media_type, items_per_page=12, session=None):
             super().__init__(timeout=120)
             self.ctx = ctx
-            self.filtered_results = filtered_results
+            self.filtered_results = self._sort_results(filtered_results, media_type)
             self.media_type = media_type
-            self.session = aiohttp.ClientSession()
+            self.session = session or aiohttp.ClientSession()
+            self.owns_session = session is None
             self.current_page = 0
-            self.items_per_page = 12
+            self.items_per_page = items_per_page
             self.message = None
             self._update_content()
 
-        def _update_content(self):
+        def _sort_results(self, results, media_type):
+            """Sort results by release date (descending, newest first)."""
+            date_key = "release_date" if media_type == "movie" else "first_air_date"
+            def get_date(item):
+                date_str = item.get(date_key, "0000-00-00")
+                try:
+                    return datetime.strptime(date_str[:10], "%Y-%m-%d").timestamp()
+                except (ValueError, TypeError):
+                    return float("-inf")
+            return sorted(results, key=get_date, reverse=True)
+
+        def _get_label(self, result, index):
+            """Generate display label for a media item."""
+            key_map = {
+                "movie": {"title": "title", "date": "release_date"},
+                "tv": {"title": "name", "date": "first_air_date"}
+            }
+            keys = key_map[self.media_type]
+            title = result.get(keys["title"], "Unknown")
+            date = result.get(keys["date"], "N/A")[:4]
+            popularity = result.get("popularity", 0)
+            return f"{index + 1}. {title} ({date}) ({popularity})"
+
+        def _build_page_content(self):
+            """Build content for the current page."""
             self.clear_items()
             start_idx = self.current_page * self.items_per_page
-            end_idx = min(
-                (self.current_page + 1) * self.items_per_page, len(self.filtered_results)
-            )
+            end_idx = min((self.current_page + 1) * self.items_per_page, len(self.filtered_results))
             page_results = self.filtered_results[start_idx:end_idx]
             self.add_item(discord.ui.TextDisplay(header_text))
 
             for i, result in enumerate(page_results):
-                label = (
-                    f"{start_idx + i + 1}. {result['title' if media_type == 'movie' else 'name']} "
-                    f"({result.get('release_date' if media_type == 'movie' else 'first_air_date', 'N/A')[:4]}) "
-                    f"({result.get('popularity', 0)})"
-                )
+                label = self._get_label(result, start_idx + i)
                 section = discord.ui.Section(
                     discord.ui.TextDisplay(label), accessory=MediaButton(start_idx + i)
                 )
                 self.add_item(section)
 
+        def _add_navigation_buttons(self):
+            """Add navigation buttons if needed."""
             if len(self.filtered_results) > self.items_per_page:
                 row = discord.ui.ActionRow()
                 if self.current_page > 0:
                     row.add_item(NavButton("prev"))
-                if end_idx < len(self.filtered_results):
+                if (self.current_page + 1) * self.items_per_page < len(self.filtered_results):
                     row.add_item(NavButton("next"))
                 self.add_item(row)
 
-        async def on_timeout(self):
+        def _update_content(self):
+            """Update the paginator's content."""
+            self._build_page_content()
+            self._add_navigation_buttons()
+
+        def _disable_all_buttons(self):
+            """Disable all buttons in the view."""
             for item in self.children:
                 if isinstance(item, discord.ui.Section) and hasattr(item, "accessory"):
                     if isinstance(item.accessory, discord.ui.Button):
@@ -322,22 +349,26 @@ async def search_and_display(ctx, query: str, media_type: str):
                     for child in item.children:
                         if isinstance(child, discord.ui.Button):
                             child.disabled = True
+
+        async def _cleanup(self):
+            """Clean up resources and update message."""
+            self._disable_all_buttons()
+            if self.owns_session and not self.session.closed:
+                await self.session.close()
             if self.message:
                 try:
                     await self.message.edit(content=None, view=self)
                 except discord.NotFound as e:
                     log.error(f"Message not found: {e}", exc_info=True)
-                    pass
-            await self.session.close()
 
-        async def stop(self):
-            await self.session.close()
+        async def on_timeout(self):
+            await self._cleanup()
             super().stop()
 
-        async def interaction_check(self, interaction: discord.Interaction[Red]):
+        async def interaction_check(self, interaction: discord.Interaction):
             if interaction.user != self.ctx.author:
                 await interaction.response.send_message(
-                    "You are not the owner of this interaction.", ephemeral=True
+                    f"Only {self.ctx.author.mention} can use this.", ephemeral=True
                 )
                 return False
             return True
@@ -347,7 +378,13 @@ async def search_and_display(ctx, query: str, media_type: str):
             super().__init__(label=label or "Select")
             self.index = index
 
-        async def callback(self, interaction: discord.Interaction[Red]) -> None:
+        async def _send_error(self, interaction, message, exc=None):
+            """Send an error message and log if an exception is provided."""
+            if exc:
+                log.error(f"Error fetching media details for ID {self.view.filtered_results[self.index]['id']}: {exc}", exc_info=True)
+            await interaction.response.send_message(message, ephemeral=True)
+
+        async def callback(self, interaction: discord.Interaction) -> None:
             try:
                 data = await get_media_data(
                     self.view.ctx,
@@ -356,14 +393,11 @@ async def search_and_display(ctx, query: str, media_type: str):
                     self.view.media_type,
                 )
                 if not data:
-                    return await interaction.response.send_message(
-                        "Failed to fetch media details.", ephemeral=True
-                    )
+                    return await self._send_error(interaction, "Failed to fetch media details.")
+            except aiohttp.ClientConnectionError as e:
+                return await self._send_error(interaction, "Network error, please try again.", e)
             except Exception as e:
-                log.error(f"Error fetching media details: {e}", exc_info=True)
-                return await interaction.response.send_message(
-                    "Error fetching media details", ephemeral=True
-                )
+                return await self._send_error(interaction, "Error fetching media details.", e)
 
             embed, view = await build_embed(
                 self.view.ctx,
@@ -374,17 +408,7 @@ async def search_and_display(ctx, query: str, media_type: str):
                 item_type=self.view.media_type,
             )
             await interaction.response.send_message(embed=embed, view=view)
-
-            for item in self.view.children:
-                if isinstance(item, discord.ui.Section) and hasattr(item, "accessory"):
-                    if isinstance(item.accessory, discord.ui.Button):
-                        item.accessory.disabled = True
-                elif isinstance(item, discord.ui.ActionRow):
-                    for child in item.children:
-                        if isinstance(child, discord.ui.Button):
-                            child.disabled = True
-            await self.view.message.edit(content=None, view=self.view)
-            await self.view.stop()
+            await self.view._cleanup()
 
     class NavButton(discord.ui.Button["MediaPaginator"]):
         def __init__(self, direction):
@@ -395,7 +419,13 @@ async def search_and_display(ctx, query: str, media_type: str):
                 custom_id=direction,
             )
 
-        async def callback(self, interaction: discord.Interaction[Red]) -> None:
+        async def _send_error(self, interaction, message, exc=None):
+            """Send an error message and log if an exception is provided."""
+            if exc:
+                log.error(f"Error navigating page {self.view.current_page} ({self.custom_id}): {exc}", exc_info=True)
+            await interaction.response.send_message(message, ephemeral=True)
+
+        async def callback(self, interaction: discord.Interaction) -> None:
             try:
                 start_idx = self.view.current_page * self.view.items_per_page
                 end_idx = start_idx + self.view.items_per_page
@@ -407,11 +437,8 @@ async def search_and_display(ctx, query: str, media_type: str):
                 self.view._update_content()
                 await interaction.response.defer()
                 await self.view.message.edit(content=None, view=self.view)
-            except Exception as e:
-                log.error(f"Error in NavButton callback: {str(e)}", exc_info=True)
-                await interaction.response.send_message(
-                    f"Error navigating, please try again later.", ephemeral=True
-                )
+            except Exception:
+                await self._send_error(interaction, "Error navigating, please try again.")
 
     paginator = MediaPaginator(ctx, filtered_results, media_type)
     message = await ctx.send(content="", view=paginator)
