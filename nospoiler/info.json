@@ -4,8 +4,8 @@
     ],
     "name": "NoSpoiler",
     "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any spoiler filter without setting up autoimmune.\n<https://github.com/ltzmax/maxcogs/tree/master/nospoiler/README.md> for documentation.",
-    "description": "Prevent spoilers in this server by deleting messages with spoiler tags or attachments.",
-    "short": "Prevent spoilers in this server by deleting messages with spoiler tags or attachments.",
+    "description": "Prevent spoilers in the server by deleting messages with spoiler tags or attachments.",
+    "short": "Prevent spoilers in the server by deleting messages with spoiler tags or attachments.",
     "hidden": false,
     "min_bot_version": "3.5.9",
     "tags": [
