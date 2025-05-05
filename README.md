@@ -28,7 +28,7 @@ To install any cog you want:
 | Cogs list | Description | Version | Author | Stable |
 |:---:|---|:---:|:---:|:---:|
 | AutoPublisher | Automatically push news channel messages. | 2.10.0 | ltzmax, AAA3A | ✅ |
-| Counting | Count from 1 to infinity! with some customizable settings. | 1.9.0 | ltzmax | ✅ |
+| Counting | Count from 1 to infinity! with some customizable settings. | 2.0.0 | ltzmax | ✅ |
 | Currency | A cog to convert currencies using ExchangeRate-API | 1.0.0 | ltzmax | ✅ |
 | ForwardDeleter | A cog that deletes forwarded messages and allows them in specified channels | 1.2.0 | ltzmax | ✅ |
 | GitHub | GitHub RSS Commit Feeds | 1.0.1 | Obi-Wan3, ltzmax | ✅ |
@@ -37,7 +37,7 @@ To install any cog you want:
 | HoneyCombs | Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game. | 1.4.0 | ltzmax | ✅ |
 | lockdown | Let moderators lockdown a channel to prevent messages from being sent. | 1.4.0 | ltzmax | ✅ |
 | NBA | NBA Cog that provides NBA game updates, schedules, and news. | 3.4.0 | ltzmax | ✅ |
-| NoSpoiler | Prevent using spoiler messages | 1.8.0 | ltzmax | ✅ |
+| NoSpoiler | Prevent using spoiler messages | 1.9.0 | ltzmax | ✅ |
 | PlagueGame | Infect users with the plague | 1.0.8 | phenom4n4n, ltzmax | ✅ |
 | NekosBest | Sends random images from nekos.best. | 2.4.0 | ltzmax | ✅ |
 | Pokemon | Play a game of Who's That Pokemon or Fetch Pokemon cards based on Pokemon Trading Card Game.| 1.9.0 | ltzmax, o-wo, flame442 | ✅ |
