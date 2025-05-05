@@ -289,19 +289,21 @@ async def search_and_display(ctx, query: str, media_type: str):
         def _sort_results(self, results, media_type):
             """Sort results by release date (descending, newest first)."""
             date_key = "release_date" if media_type == "movie" else "first_air_date"
+
             def get_date(item):
                 date_str = item.get(date_key, "0000-00-00")
                 try:
                     return datetime.strptime(date_str[:10], "%Y-%m-%d").timestamp()
                 except (ValueError, TypeError):
                     return float("-inf")
+
             return sorted(results, key=get_date, reverse=True)
 
         def _get_label(self, result, index):
             """Generate display label for a media item."""
             key_map = {
                 "movie": {"title": "title", "date": "release_date"},
-                "tv": {"title": "name", "date": "first_air_date"}
+                "tv": {"title": "name", "date": "first_air_date"},
             }
             keys = key_map[self.media_type]
             title = result.get(keys["title"], "Unknown")
@@ -313,7 +315,9 @@ async def search_and_display(ctx, query: str, media_type: str):
             """Build content for the current page."""
             self.clear_items()
             start_idx = self.current_page * self.items_per_page
-            end_idx = min((self.current_page + 1) * self.items_per_page, len(self.filtered_results))
+            end_idx = min(
+                (self.current_page + 1) * self.items_per_page, len(self.filtered_results)
+            )
             page_results = self.filtered_results[start_idx:end_idx]
             self.add_item(discord.ui.TextDisplay(header_text))
 
@@ -381,7 +385,10 @@ async def search_and_display(ctx, query: str, media_type: str):
         async def _send_error(self, interaction, message, exc=None):
             """Send an error message and log if an exception is provided."""
             if exc:
-                log.error(f"Error fetching media details for ID {self.view.filtered_results[self.index]['id']}: {exc}", exc_info=True)
+                log.error(
+                    f"Error fetching media details for ID {self.view.filtered_results[self.index]['id']}: {exc}",
+                    exc_info=True,
+                )
             await interaction.response.send_message(message, ephemeral=True)
 
         async def callback(self, interaction: discord.Interaction) -> None:
@@ -422,7 +429,10 @@ async def search_and_display(ctx, query: str, media_type: str):
         async def _send_error(self, interaction, message, exc=None):
             """Send an error message and log if an exception is provided."""
             if exc:
-                log.error(f"Error navigating page {self.view.current_page} ({self.custom_id}): {exc}", exc_info=True)
+                log.error(
+                    f"Error navigating page {self.view.current_page} ({self.custom_id}): {exc}",
+                    exc_info=True,
+                )
             await interaction.response.send_message(message, ephemeral=True)
 
         async def callback(self, interaction: discord.Interaction) -> None:
