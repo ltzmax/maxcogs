@@ -69,16 +69,17 @@ class AutoPublisher(commands.Cog):
         self.logger = getLogger("red.maxcogs.autopublisher")
         self.bot.loop.create_task(self._initialize_scheduler())
 
-    async def _initialize_scheduler(self):
+    async def _initialize_scheduler(self) -> None:
         """Initialize the scheduler after cog is loaded."""
         try:
             await self._schedule_resets()
+            self.logger.info("Scheduler initialized successfully.")
         except Exception as e:
             self.logger.error(f"Failed to initialize scheduler: {e}", exc_info=True)
 
     async def _get_owner_timezone(self) -> pytz.timezone:
         """Retrieve the owner's timezone from config, default to UTC."""
-        timezone_str = await self.config.get_raw("timezone", default="UTC")
+        timezone_str = await self.config.timezone()
         try:
             tz = pytz.timezone(timezone_str)
             self.logger.debug(f"Retrieved timezone: {timezone_str}")
@@ -90,6 +91,7 @@ class AutoPublisher(commands.Cog):
     async def _schedule_resets(self) -> None:
         """Schedule periodic count resets in the owner's timezone."""
         owner_tz = await self._get_owner_timezone()
+        self.scheduler.remove_all_jobs() # Clear existing jobs to avoid duplicates
         self.scheduler.add_job(
             self.reset_count,
             "cron",
@@ -98,11 +100,17 @@ class AutoPublisher(commands.Cog):
             minute=0,
             timezone=owner_tz,
             args=["weekly"],
+            id="weekly_reset",
         )
         self.scheduler.add_job(
             self.reset_count,
-            CronTrigger(day=1, hour=0, minute=0, timezone=owner_tz),
+            "cron",
+            day=1,
+            hour=0,
+            minute=0,
+            timezone=owner_tz,
             args=["monthly"],
+            id="monthly_reset",
         )
         self.scheduler.add_job(
             self.reset_count,
@@ -113,10 +121,11 @@ class AutoPublisher(commands.Cog):
             minute=0,
             timezone=owner_tz,
             args=["yearly"],
+            id="yearly_reset",
         )
         if not self.scheduler.running:
             self.scheduler.start()
-            self.logger.debug("Scheduler started")
+            self.logger.info("Scheduler started with jobs: weekly, monthly, yearly")
 
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
@@ -126,15 +135,24 @@ class AutoPublisher(commands.Cog):
 
     async def reset_count(self, period: Literal["weekly", "monthly", "yearly"]) -> None:
         """Reset the specified count period, checking date in owner's timezone."""
-        owner_tz = self._get_owner_timezone()
+        owner_tz = await self._get_owner_timezone()
         now_in_owner_tz = datetime.now(owner_tz)
         async with self.config.all() as data:
             if period == "weekly":
                 data["published_weekly_count"] = 0
-            elif period == "monthly" and now_in_owner_tz.day == 1:
-                data["published_monthly_count"] = 0
+                self.logger.info("Weekly count reset.")
+            elif period == "monthly":
+                if now_in_owner_tz.day == 1:
+                    data["published_monthly_count"] = 0
+                    self.logger.info("Monthly count reset.")
+                else:
+                    self.logger.debug(f"Skipped monthly reset: not the 1st day (current day: {now_in_owner_tz.day}).")
             elif period == "yearly":
-                data["published_yearly_count"] = 0
+                if now_in_owner_tz.month == 1 and now_in_owner_tz.day == 1:
+                    data["published_yearly_count"] = 0
+                    self.logger.info("Yearly count reset.")
+                else:
+                    self.logger.debug(f"Skipped yearly reset: not Jan 1 (current date: {now_in_owner_tz.month}/{now_in_owner_tz.day}).")
 
     async def increment_published_count(self) -> None:
         """Increment all published message counts."""
