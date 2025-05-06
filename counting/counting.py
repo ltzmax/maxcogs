@@ -653,6 +653,7 @@ class Counting(commands.Cog):
             ("Min Account Age", f"{settings['min_account_age']} days"),
             ("Allow Ruin", str(settings["allow_ruin"])),
             ("Ruin Role", role.mention if role else "Not set"),
+            ("Toggle Delete After", str(settings["toggle_delete_after"])),
             (
                 "Messages",
                 "\n".join(
