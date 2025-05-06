@@ -50,7 +50,7 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.0.0"
+    __version__: Final[str] = "2.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = (
         "https://github.com/ltzmax/MaxCogs/blob/master/maxcogs/counting/README.md"
@@ -67,6 +67,7 @@ class Counting(commands.Cog):
             "channel": None,
             "toggle": False,
             "delete_after": 10,
+            "toggle_delete_after": False,
             "default_edit_message": "You can't edit your messages here.",
             "default_next_number_message": "Next number should be {next_count}.",
             "default_same_user_message": "You cannot count consecutively. Wait for someone else.",
@@ -143,7 +144,10 @@ class Counting(commands.Cog):
     ) -> Optional[discord.Message]:
         """Send a message with error handling."""
         try:
-            return await channel.send(content, delete_after=delete_after, silent=silent)
+            send_kwargs = {"content": content, "silent": silent}
+            if delete_after is not None:
+                send_kwargs["delete_after"] = delete_after
+            return await channel.send(**send_kwargs)
         except discord.Forbidden:
             self.logger.warning(
                 f"Missing send permissions in {channel.guild.name}#{channel.name} ({channel.id})"
@@ -184,7 +188,7 @@ class Counting(commands.Cog):
             await self._send_message(
                 message.channel,
                 response,
-                delete_after=settings["delete_after"],
+                delete_after=settings["delete_after"] if settings.get("toggle_delete_after", True) else None,
                 silent=settings["use_silent"],
             )
 
@@ -206,7 +210,7 @@ class Counting(commands.Cog):
         await self._send_message(
             message.channel,
             response,
-            delete_after=settings["delete_after"],
+            delete_after=settings["delete_after"] if settings.get("toggle_delete_after", True) else None,
             silent=settings["use_silent"],
         )
 
@@ -322,7 +326,7 @@ class Counting(commands.Cog):
             return
 
         if settings["allow_ruin"]:
-            author = guild.get_member(author_id) or discord.Object(id=author_id)
+            author = message.guild.get_member(author_id) or discord.Object(id=author_id)
             await self._handle_count_ruin(
                 discord.Message(
                     state=channel._state,
@@ -335,7 +339,7 @@ class Counting(commands.Cog):
             await self._send_message(
                 channel,
                 settings["default_edit_message"],
-                delete_after=settings["delete_after"],
+                delete_after=settings["delete_after"] if settings.get("toggle_delete_after", True) else None,
                 silent=settings["use_silent"],
             )
 
@@ -396,6 +400,14 @@ class Counting(commands.Cog):
     @commands.admin_or_permissions(manage_guild=True)
     async def countingset(self, ctx: commands.Context) -> None:
         """Configure counting game settings."""
+
+
+    @countingset.command(name="toggledeleteafter")
+    async def set_toggle_delete_after(self, ctx: commands.Context) -> None:
+        """Toggle delete-after time for invalid messages."""
+        toggle = not (await self._get_guild_settings(ctx.guild))["toggle_delete_after"]
+        await self._update_guild_cache(ctx.guild, "toggle_delete_after", toggle)
+        await ctx.send(f"Delete-after time is now {toggle and 'enabled' or 'disabled'}.")
 
     @countingset.command(name="channel")
     async def set_channel(
