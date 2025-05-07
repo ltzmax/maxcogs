@@ -326,7 +326,7 @@ class Counting(commands.Cog):
             return
 
         if settings["allow_ruin"]:
-            author = message.guild.get_member(author_id) or discord.Object(id=author_id)
+            author = guild.get_member(author_id) or discord.Object(id=author_id)
             await self._handle_count_ruin(
                 discord.Message(
                     state=channel._state,
