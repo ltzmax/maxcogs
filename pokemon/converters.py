@@ -24,8 +24,9 @@ SOFTWARE.
 
 import asyncio
 import logging
+import random
 from random import randint
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import discord
 from redbot.core import commands
@@ -107,25 +108,94 @@ class WhosThatPokemonView(discord.ui.View):
             self.winner = interaction.user
             self.stop()
 
-            # Disable the button after a correct response
             button.disabled = True
             button.label = "Correct Pokémon Guessed"
             button.style = discord.ButtonStyle.success
             await self.message.edit(view=self)
-            # Send a message indicating who guessed the Pokémon
             await interaction.followup.send(
                 f"{interaction.user.mention} Guessed the Pokémon correctly!",
             )
         else:
-            # Send a message indicating that the guess was incorrect
             await interaction.followup.send(
                 f"{interaction.user.mention}, Wrong Pokémon name!",
             )
 
-    async def on_error(
-        self,
-        interaction: discord.Interaction,
-        error: Exception,
-        item: discord.ui.Item,
-    ) -> None:
-        await interaction.response.send_message(f"An error occured: {error}", ephemeral=True)
+
+class HintView(discord.ui.View):
+    """A view that provides a one-time hint for Who's That Pokémon game."""
+
+    def __init__(self, pokemon_data: dict, parent_view: "WhosThatPokemonView", pokemon_name: str):
+        super().__init__(timeout=None)
+        self.pokemon_data = pokemon_data
+        self.parent_view = parent_view
+        self.pokemon_name = pokemon_name.lower()
+        self.hint_used = False
+
+    async def interaction_check(self, interaction: discord.Interaction):
+        if not interaction.user.id == self.user.id:
+            await interaction.response.send_message(
+                "You are not allowed to use this interaction.", ephemeral=True
+            )
+            return False
+        return True
+
+    @discord.ui.button(label="Get Hint", style=discord.ButtonStyle.primary, emoji="💡")
+    async def hint_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Handle the hint button click."""
+        if self.hint_used:
+            return await interaction.response.send_message(
+                "The hint has already been used!", ephemeral=True
+            )
+
+        self.hint_used = True
+        button.disabled = True
+        species_data = self.pokemon_data.get("species_data", {})
+        pokemon_data = self.pokemon_data.get("pokemon_data", {})
+
+        hints = []
+
+        if types := pokemon_data.get("types", []):
+            type_names = [t["type"]["name"].capitalize() for t in types]
+            hints.append(f"Type: {', '.join(type_names)}")
+
+        if generation := species_data.get("generation", {}).get("name"):
+            gen_number = generation.replace("generation-", "").upper()
+            hints.append(f"Generation: {gen_number}")
+
+        characteristics = []
+        if height := pokemon_data.get("height"):
+            characteristics.append(f"Height: {height/10:.1f}m")
+        if weight := pokemon_data.get("weight"):
+            characteristics.append(f"Weight: {weight/10:.1f}kg")
+        if characteristics:
+            hints.append(random.choice(characteristics))
+
+        name_length = len(self.pokemon_name)
+        if name_length <= 5:
+            reveal_count = 2
+        elif name_length <= 8:
+            reveal_count = 3
+        else:
+            reveal_count = 4
+
+        reveal_count = min(reveal_count, name_length)
+        reveal_indices = random.sample(range(name_length), reveal_count)
+
+        masked_name = ""
+        for i in range(name_length):
+            if i in reveal_indices:
+                masked_name += self.pokemon_name[i]
+            else:
+                masked_name += "_"
+        hints.append(f"Name: {masked_name}")
+        hint_text = "\n".join(hints) if hints else "No hints available!"
+
+        embed = discord.Embed(
+            title="Pokémon Hint",
+            description=hint_text,
+            color=0x3F0071,
+        )
+        embed.set_footer(text="This hint can only be used once per game!")
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.message.edit(view=self.parent_view)

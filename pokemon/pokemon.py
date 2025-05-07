@@ -42,7 +42,7 @@ from redbot.core.data_manager import bundled_data_path
 from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
 from redbot.core.utils.views import SimpleMenu
 
-from .converters import Generation, WhosThatPokemonView, get_data
+from .converters import Generation, HintView, WhosThatPokemonView, get_data
 
 log = logging.getLogger("red.maxcogs.whosthatpokemon")
 
@@ -59,7 +59,7 @@ class Pokemon(commands.Cog):
     """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "1.10.0"
+    __version__: Final[str] = "2.1.0"
     __docs__: Final[str] = "https://docs.maxapp.tv/docs/pokemon.html"
 
     def __init__(self, bot: Red):
@@ -375,18 +375,26 @@ class Pokemon(commands.Cog):
         species_data = await get_data(self, f"{API_URL}/pokemon-species/{poke_id}")
         if species_data.get("http_code"):
             return await ctx.send("Failed to get species data from PokeAPI.")
-            log.error(f"Failed to get species data from PokeAPI. {species_data}")
+            self.log.error(f"Failed to get species data from PokeAPI. {species_data}")
+        pokemon_data = await get_data(self, f"{API_URL}/pokemon/{poke_id}")
+        if pokemon_data.get("http_code"):
+            self.log.error(f"Failed to get Pokémon data: {pokemon_data}")
+            return await ctx.send("Failed to fetch Pokémon data.")
         names_data = species_data.get("names", [{}])
         eligible_names = [x["name"].lower() for x in names_data]
         english_name = [x["name"] for x in names_data if x["language"]["name"] == "en"][0]
 
         revealed = await self.generate_image(f"{poke_id:>03}", hide=False)
-        revealed_img = File(revealed, "whosthatpokemon.png")
+        revealed_img = discord.File(revealed, "whosthatpokemon.png")
 
         view = WhosThatPokemonView(eligible_names)
+        hint_view = HintView(
+            {"species_data": species_data, "pokemon_data": pokemon_data}, view, english_name
+        )
+        view.add_item(hint_view.children[0])
         view.message = await ctx.send(
-            f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}.",
-            file=File(temp, "guessthatpokemon.png"),
+            f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}. Use the hint button for help (one use only)!",
+            file=discord.File(temp, "guessthatpokemon.png"),
             view=view,
         )
 
@@ -397,14 +405,12 @@ class Pokemon(commands.Cog):
         )
         embed.set_image(url="attachment://whosthatpokemon.png")
         embed.set_footer(text=f"Author: {ctx.author}", icon_url=ctx.author.avatar.url)
-        # because we want it to timeout and not tell the user that they got it right.
-        # This is probably not the best way to do it, but it works perfectly fine.
         timeout = await view.wait()
         if timeout:
             return await ctx.send(
                 f"{ctx.author.mention} You took too long to answer.\nThe Pokemon was... **{english_name}**."
             )
-            log.info(f"{ctx.author} ran out of time to guess the pokemon.")
+            self.log.info(f"{ctx.author} ran out of time to guess the pokemon.")
         await ctx.send(file=revealed_img, embed=embed)
 
     # --------- TCGCARD -----------
