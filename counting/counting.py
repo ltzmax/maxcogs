@@ -188,7 +188,9 @@ class Counting(commands.Cog):
             await self._send_message(
                 message.channel,
                 response,
-                delete_after=settings["delete_after"] if settings.get("toggle_delete_after", True) else None,
+                delete_after=(
+                    settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+                ),
                 silent=settings["use_silent"],
             )
 
@@ -210,7 +212,9 @@ class Counting(commands.Cog):
         await self._send_message(
             message.channel,
             response,
-            delete_after=settings["delete_after"] if settings.get("toggle_delete_after", True) else None,
+            delete_after=(
+                settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+            ),
             silent=settings["use_silent"],
         )
 
@@ -339,7 +343,9 @@ class Counting(commands.Cog):
             await self._send_message(
                 channel,
                 settings["default_edit_message"],
-                delete_after=settings["delete_after"] if settings.get("toggle_delete_after", True) else None,
+                delete_after=(
+                    settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+                ),
                 silent=settings["use_silent"],
             )
 
@@ -400,7 +406,6 @@ class Counting(commands.Cog):
     @commands.admin_or_permissions(manage_guild=True)
     async def countingset(self, ctx: commands.Context) -> None:
         """Configure counting game settings."""
-
 
     @countingset.command(name="toggledeleteafter")
     async def set_toggle_delete_after(self, ctx: commands.Context) -> None:
