@@ -410,7 +410,7 @@ class Pokemon(commands.Cog):
             return await ctx.send(
                 f"{ctx.author.mention} You took too long to answer.\nThe Pokemon was... **{english_name}**."
             )
-            self.log.info(f"{ctx.author} ran out of time to guess the pokemon.")
+            log.info(f"{ctx.author} ran out of time to guess the pokemon.")
         await ctx.send(file=revealed_img, embed=embed)
 
     # --------- TCGCARD -----------
