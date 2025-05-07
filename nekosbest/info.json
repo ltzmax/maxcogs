@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "NekosBest",
-    "install_msg": "Thanks for installing.",
+    "install_msg": "Thanks for installing.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "Random Nekos.best images + RolePlay Commands.",
     "short": "Random Nekos.best images + RolePlay Commands.",
     "hidden": false,

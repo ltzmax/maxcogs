@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "ForwardDeleter",
-    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any of the forwarded messages without setting up autoimmune.\n<https://docs.maxapp.tv/docs/forwarddeleter.html> for documentation.",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any of the forwarded messages without setting up autoimmune.\n<https://docs.maxapp.tv/docs/forwarddeleter.html> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "A cog that deletes forwarded messages and allows them in specified channels.",
     "short": "A cog that deletes forwarded messages and allows them in specified channels.",
     "hidden": false,

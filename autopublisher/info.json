@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "AutoPublisher",
-    "install_msg": "Thanks for installing.\n<https://github.com/ltzmax/maxcogs/tree/master/lockdown/README.md> for documentation.",
+    "install_msg": "Thanks for installing.\n<https://github.com/ltzmax/maxcogs/tree/master/lockdown/README.md> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "Automatically publish messages from a news channel.",
     "short": "Automatically publish messages from a news channel.",
     "hidden": false,
