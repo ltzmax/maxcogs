@@ -22,14 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Dict, Optional, Union
+import urllib.parse
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
 import discord
 from redbot.core import app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
-from .tmdb_utils import person_embed, search_and_display
+from .tmdb_utils import fetch_tmdb, person_embed, search_and_display
 
 
 class TheMovieDB(commands.Cog):
@@ -115,6 +117,48 @@ class TheMovieDB(commands.Cog):
             )
         await search_and_display(ctx, query, "movie")
 
+    @movie.autocomplete("query")
+    async def movie_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ) -> List[app_commands.Choice[str]]:
+        """Autocomplete suggestions for movie search, sorted by release date."""
+        if not current:
+            return []
+
+        token = await self.bot.get_shared_api_tokens("tmdb")
+        api_key = token.get("api_key")
+        if not api_key:
+            return []
+
+        include_adult = str(getattr(interaction.channel, "nsfw", False)).lower()
+        encoded_query = urllib.parse.quote(current)
+        url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={encoded_query}&page=1&include_adult={include_adult}"
+        async with aiohttp.ClientSession() as session:
+            data = await fetch_tmdb(url, session)
+
+        if not data or "results" not in data:
+            return []
+
+        def get_date(item: Dict[str, Any]) -> float:
+            date_str = item.get("release_date", "")
+            if not date_str or not isinstance(date_str, str) or len(date_str) < 4:
+                return float("-inf")
+            try:
+                year = int(date_str[:4])
+                return datetime(year=year, month=1, day=1).timestamp()
+            except (ValueError, TypeError):
+                return float("-inf")
+
+        sorted_results = sorted(data.get("results", []), key=get_date, reverse=True)
+
+        return [
+            app_commands.Choice(
+                name=f"{result.get('title', 'Unknown')} ({result.get('release_date', '')[:4] or 'N/A'})",
+                value=result.get("title", "Unknown"),
+            )
+            for result in sorted_results[:25]
+        ]
+
     @commands.hybrid_command(aliases=["tv"])
     @app_commands.describe(query="The series you want to search for.")
     @commands.bot_has_permissions(embed_links=True)
@@ -137,6 +181,48 @@ class TheMovieDB(commands.Cog):
                 "Please ask them to set it up."
             )
         await search_and_display(ctx, query, "tv")
+
+    @tvshow.autocomplete("query")
+    async def tvshow_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ) -> List[app_commands.Choice[str]]:
+        """Autocomplete suggestions for TV show search, sorted by first air date."""
+        if not current:
+            return []
+
+        token = await self.bot.get_shared_api_tokens("tmdb")
+        api_key = token.get("api_key")
+        if not api_key:
+            return []
+
+        include_adult = str(getattr(interaction.channel, "nsfw", False)).lower()
+        encoded_query = urllib.parse.quote(current)
+        url = f"https://api.themoviedb.org/3/search/tv?api_key={api_key}&query={encoded_query}&page=1&include_adult={include_adult}"
+        async with aiohttp.ClientSession() as session:
+            data = await fetch_tmdb(url, session)
+
+        if not data or "results" not in data:
+            return []
+
+        def get_date(item: Dict[str, Any]) -> float:
+            date_str = item.get("first_air_date", "")
+            if not date_str or not isinstance(date_str, str) or len(date_str) < 4:
+                return float("-inf")
+            try:
+                year = int(date_str[:4])
+                return datetime(year=year, month=1, day=1).timestamp()
+            except (ValueError, TypeError):
+                return float("-inf")
+
+        sorted_results = sorted(data.get("results", []), key=get_date, reverse=True)
+
+        return [
+            app_commands.Choice(
+                name=f"{result.get('name', 'Unknown')} ({result.get('first_air_date', '')[:4] or 'N/A'})",
+                value=result.get("name", "Unknown"),
+            )
+            for result in sorted_results[:25]
+        ]
 
     @commands.hybrid_command()
     @app_commands.describe(query="The person you want to search for.")
