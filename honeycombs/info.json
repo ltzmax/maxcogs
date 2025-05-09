@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "HoneyCombs",
-    "install_msg": "Thanks for installing.\nRun `[p]honeycombs` to start the game.\n<https://docs.maxapp.tv/docs/honeycombs.html> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "install_msg": "Thanks for installing.\nRun `[p]honeycombs` to start the game.\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.",
     "short": "Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.",
     "hidden": false,

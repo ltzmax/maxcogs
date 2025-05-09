@@ -52,9 +52,7 @@ class Counting(commands.Cog):
 
     __version__: Final[str] = "2.1.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = (
-        "https://github.com/ltzmax/MaxCogs/blob/master/maxcogs/counting/README.md"
-    )
+    __docs__: Final[str] = "https://docs.maxapp.tv/"
 
     def __init__(self, bot: Red):
         self.bot = bot
