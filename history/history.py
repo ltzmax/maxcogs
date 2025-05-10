@@ -43,7 +43,7 @@ class History(commands.Cog):
 
     __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://docs.maxapp.tv/docs/history.html"
+    __docs__: Final[str] = "https://docs.maxapp.tv/"
 
     def __init__(self, bot):
         self.bot = bot
@@ -110,15 +110,7 @@ class History(commands.Cog):
         await ctx.typing()
 
         user_tz = await self.config.user(ctx.author).timezone()
-        # incase they managed to set an invalid timezone in the config somehow (e.g., by editing the file)
-        try:
-            tz = pytz.timezone(user_tz)
-        except pytz.exceptions.UnknownTimeZoneError:
-            self.logger.error(f"Invalid timezone '{user_tz}' for user {ctx.author.id}")
-            return await ctx.send(
-                f"Invalid timezone set. Please use `{ctx.clean_prefix}historyset timezone` with `Continent/City` "
-                "format (e.g., `America/New_York`)."
-            )
+        tz = pytz.timezone(user_tz)
 
         today = datetime.now(tz)
         month, day = today.strftime("%m"), today.strftime("%d")
@@ -127,7 +119,7 @@ class History(commands.Cog):
         try:
             events = await fetch_events(self.session, month, day)
         except ValueError as e:
-            self.logger.error(f"Failed to fetch events for {month}/{day}: {str(e)}")
+            self.logger.error(f"Failed to fetch events for {month}/{day}: {str(e)}", exc_info=True)
 
         if not events:
             return await ctx.send(f"No notable events found for {display_date}")

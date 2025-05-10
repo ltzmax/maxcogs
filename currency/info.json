@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Currency",
-    "install_msg": "Thanks for installing. This cog relies on slash only after api key is set, you will need an api key to make use of the cog. Please see `[p]currencyset setup` to get started.",
+    "install_msg": "Thanks for installing. This cog relies on slash only after api key is set, you will need an api key to make use of the cog. Please see `[p]currencyset setup` to get started.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "A cog to convert currencies using ExchangeRate-API.",
     "short": "A cog to convert currencies using ExchangeRate-API.",
     "hidden": false,

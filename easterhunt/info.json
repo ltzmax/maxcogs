@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "EasterHunt",
-    "install_msg": "Thanks for installing. Use `[p]easterhunt hunt` to start hunting for eggs!\nThe rarity for eggs are explained here: <https://github.com/ltzmax/maxcogs/blob/master/easterhunt/README.md>.",
+    "install_msg": "Thanks for installing. Use `[p]easterhunt hunt` to start hunting for eggs!\nThe rarity for eggs are explained here: <https://github.com/ltzmax/maxcogs/blob/master/easterhunt/README.md>.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "Easter games where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements and more.",
     "short": "Easter games where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements and more.",
     "hidden": false,

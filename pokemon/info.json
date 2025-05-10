@@ -3,7 +3,7 @@
     "short": "Play a game of Who's That Pok\u00e9mon or Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game.",
     "description": "Play a game of Who's That Pok\u00e9mon or Fetch Pok\u00e9mon cards based on Pok\u00e9mon Trading Card Game.",
     "end_user_data_statement": "This cog does not persistently store data or metadata about users.",
-    "install_msg": "Thank you for installing.\n<https://docs.maxapp.tv/docs/pokemon.html> for documentation.",
+    "install_msg": "Thank you for installing.\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "author": [
         "<@306810730055729152>",
         "ltzmax (MAX#1000)",

@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Counting",
-    "install_msg": "Thanks for installing.\nCheck `[p]countingset` to get started. Set channel to begin counting!\n<https://github.com/ltzmax/MaxCogs/blob/master/maxcogs/counting/README.md> for documentation.",
+    "install_msg": "Thanks for installing.\nCheck `[p]countingset` to get started. Set channel to begin counting!\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "Count from 1 to infinity! with some customizable settings.",
     "short": "Count from 1 to infinity! with some customizable settings.",
     "hidden": false,

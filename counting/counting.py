@@ -50,11 +50,9 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.0.0"
+    __version__: Final[str] = "2.2.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = (
-        "https://github.com/ltzmax/MaxCogs/blob/master/maxcogs/counting/README.md"
-    )
+    __docs__: Final[str] = "https://docs.maxapp.tv/"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -67,6 +65,7 @@ class Counting(commands.Cog):
             "channel": None,
             "toggle": False,
             "delete_after": 10,
+            "toggle_delete_after": False,
             "default_edit_message": "You can't edit your messages here.",
             "default_next_number_message": "Next number should be {next_count}.",
             "default_same_user_message": "You cannot count consecutively. Wait for someone else.",
@@ -143,7 +142,10 @@ class Counting(commands.Cog):
     ) -> Optional[discord.Message]:
         """Send a message with error handling."""
         try:
-            return await channel.send(content, delete_after=delete_after, silent=silent)
+            send_kwargs = {"content": content, "silent": silent}
+            if delete_after is not None:
+                send_kwargs["delete_after"] = delete_after
+            return await channel.send(**send_kwargs)
         except discord.Forbidden:
             self.logger.warning(
                 f"Missing send permissions in {channel.guild.name}#{channel.name} ({channel.id})"
@@ -184,7 +186,9 @@ class Counting(commands.Cog):
             await self._send_message(
                 message.channel,
                 response,
-                delete_after=settings["delete_after"],
+                delete_after=(
+                    settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+                ),
                 silent=settings["use_silent"],
             )
 
@@ -206,7 +210,9 @@ class Counting(commands.Cog):
         await self._send_message(
             message.channel,
             response,
-            delete_after=settings["delete_after"],
+            delete_after=(
+                settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+            ),
             silent=settings["use_silent"],
         )
 
@@ -335,7 +341,9 @@ class Counting(commands.Cog):
             await self._send_message(
                 channel,
                 settings["default_edit_message"],
-                delete_after=settings["delete_after"],
+                delete_after=(
+                    settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+                ),
                 silent=settings["use_silent"],
             )
 
@@ -396,6 +404,13 @@ class Counting(commands.Cog):
     @commands.admin_or_permissions(manage_guild=True)
     async def countingset(self, ctx: commands.Context) -> None:
         """Configure counting game settings."""
+
+    @countingset.command(name="toggledeleteafter")
+    async def set_toggle_delete_after(self, ctx: commands.Context) -> None:
+        """Toggle delete-after time for invalid messages."""
+        toggle = not (await self._get_guild_settings(ctx.guild))["toggle_delete_after"]
+        await self._update_guild_cache(ctx.guild, "toggle_delete_after", toggle)
+        await ctx.send(f"Delete-after time is now {toggle and 'enabled' or 'disabled'}.")
 
     @countingset.command(name="channel")
     async def set_channel(
@@ -568,6 +583,8 @@ class Counting(commands.Cog):
         - `<msg_type>`: The type of message to set (edit, count, or sameuser).
         - `<message>`: The message content to set.
         """
+        if len(message) > 2000:
+            return await ctx.send("Message is too long. Maximum length is 2000 characters.")
         msg_type = msg_type.lower()
         try:
             mtype = MessageType(msg_type)
@@ -626,19 +643,23 @@ class Counting(commands.Cog):
             get(ctx.guild.roles, id=settings["ruin_role_id"]) if settings["ruin_role_id"] else None
         )
 
+        def bool_to_status(value: bool) -> str:
+            return "Enabled" if value else "Disabled"
+
         embed = discord.Embed(title="Counting Settings", color=await ctx.embed_color())
         fields = [
             ("Channel", channel.mention if channel else "Not set"),
-            ("Enabled", str(settings["toggle"])),
+            ("Toggle", bool_to_status(settings["toggle"])),
             ("Current Count", cf.humanize_number(settings["count"])),
             ("Delete After", f"{settings['delete_after']}s"),
-            ("Silent Mode", str(settings["use_silent"])),
-            ("Reactions", str(settings["toggle_reactions"])),
+            ("Silent Mode", bool_to_status(settings["use_silent"])),
+            ("Reactions", bool_to_status(settings["toggle_reactions"])),
             ("Reaction Emoji", settings["default_reaction"]),
-            ("Same User Counts", str(settings["same_user_to_count"])),
+            ("Same User Counts", bool_to_status(settings["same_user_to_count"])),
             ("Min Account Age", f"{settings['min_account_age']} days"),
-            ("Allow Ruin", str(settings["allow_ruin"])),
+            ("Allow Ruin", bool_to_status(settings["allow_ruin"])),
             ("Ruin Role", role.mention if role else "Not set"),
+            ("Toggle Delete After", bool_to_status(settings["toggle_delete_after"])),
             (
                 "Messages",
                 "\n".join(

@@ -59,9 +59,7 @@ class EasterHunt(commands.Cog):
 
     __version__: Final[str] = "1.6.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = (
-        "https://github.com/ltzmax/maxcogs/tree/master/easterhunt/EasterHunt.md."
-    )
+    __docs__: Final[str] = "https://docs.maxapp.tv/"
 
     def __init__(self, bot):
         self.bot = bot
