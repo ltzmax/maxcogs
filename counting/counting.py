@@ -50,7 +50,7 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.1.0"
+    __version__: Final[str] = "2.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/"
 
@@ -643,20 +643,23 @@ class Counting(commands.Cog):
             get(ctx.guild.roles, id=settings["ruin_role_id"]) if settings["ruin_role_id"] else None
         )
 
+        def bool_to_status(value: bool) -> str:
+            return "Enabled" if value else "Disabled"
+
         embed = discord.Embed(title="Counting Settings", color=await ctx.embed_color())
         fields = [
             ("Channel", channel.mention if channel else "Not set"),
-            ("Enabled", str(settings["toggle"])),
+            ("Toggle", bool_to_status(settings["toggle"])),
             ("Current Count", cf.humanize_number(settings["count"])),
             ("Delete After", f"{settings['delete_after']}s"),
-            ("Silent Mode", str(settings["use_silent"])),
-            ("Reactions", str(settings["toggle_reactions"])),
+            ("Silent Mode", bool_to_status(settings["use_silent"])),
+            ("Reactions", bool_to_status(settings["toggle_reactions"])),
             ("Reaction Emoji", settings["default_reaction"]),
-            ("Same User Counts", str(settings["same_user_to_count"])),
+            ("Same User Counts", bool_to_status(settings["same_user_to_count"])),
             ("Min Account Age", f"{settings['min_account_age']} days"),
-            ("Allow Ruin", str(settings["allow_ruin"])),
+            ("Allow Ruin", bool_to_status(settings["allow_ruin"])),
             ("Ruin Role", role.mention if role else "Not set"),
-            ("Toggle Delete After", str(settings["toggle_delete_after"])),
+            ("Toggle Delete After", bool_to_status(settings["toggle_delete_after"])),
             (
                 "Messages",
                 "\n".join(
