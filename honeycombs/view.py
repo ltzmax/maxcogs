@@ -30,78 +30,108 @@ from redbot.core import bank
 
 log = logging.getLogger("red.maxcogs.honeycombs.view")
 
+class JoinButton(discord.ui.Button):
+    def __init__(self, label: str):
+        super().__init__(
+            custom_id="join_honeycombs",
+            label=label,
+            style=discord.ButtonStyle.blurple
+        )
 
-class HoneycombView(discord.ui.View):
-    def __init__(self, game, guild):
-        super().__init__(timeout=120)
-        self.game = game
-        self.guild = guild
-        self.join_button.label = "Enter The Game (Loading...)"
-        self.player_count = 0
-
-    async def setup(self):
-        player_data = await self.game.config.guild(self.guild).players()
-        self.player_count = len(player_data)
-        self.join_button.label = f"Enter The Game ({self.player_count}/456)"
-
-    async def on_timeout(self):
-        for item in self.children:
-            item: discord.ui.Item
-            item.disabled = True
-        try:
-            await self.message.edit(view=self)
-        except discord.HTTPException as e:
-            log.error(e)
-
-    @discord.ui.button(
-        custom_id="join_honeycombs",
-        label="Enter The Game (0/456)",
-        style=discord.ButtonStyle.blurple,
-    )
-    async def join_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        credit_name = await bank.get_currency_name(interaction.guild)
-        winning_price = await self.game.config.winning_price()
-        losing_price = await self.game.config.losing_price()
+    async def callback(self, interaction: discord.Interaction):
+        view: HoneycombView = self.view
+        game_state = view.cog.get_game_state(view.guild)
+        guild_config = view.cog.get_guild_config(view.guild)
+        currency_name = await bank.get_currency_name(interaction.guild)
+        winning_price = view.cog.cache["global"]["winning_price"]
+        losing_price = view.cog.cache["global"]["losing_price"]
         user_balance = await bank.get_balance(interaction.user)
 
         if user_balance < winning_price + losing_price:
             return await interaction.response.send_message(
-                f"You do not have enough {credit_name} to enter the game.", ephemeral=True
+                f"You do not have enough {currency_name} to enter the game.", ephemeral=True
             )
 
-        player_data = await self.game.config.guild(interaction.guild).players()
-        player_ids = {player["user_id"] for player in player_data.values()}
-
+        player_ids = {data["user_id"] for data in game_state.players.values()}
         if interaction.user.id in player_ids:
-            for number, data in player_data.items():
+            for number, data in game_state.players.items():
                 if data["user_id"] == interaction.user.id:
                     return await interaction.response.send_message(
                         f"You are already in the game as `Player {number}` with shape {data['shape']}. You cannot leave.",
-                        ephemeral=True,
+                        ephemeral=True
                     )
 
-        if len(player_data) >= 456:
+        if len(game_state.players) >= 456:
             return await interaction.response.send_message(
                 "The game is already full. Please wait for the next game to start.", ephemeral=True
             )
 
-        available_numbers = [i for i in range(1, 457) if str(i) not in player_data]
+        available_numbers = [i for i in range(1, 457) if i not in game_state.players]
         player_number = random.choice(available_numbers)
-        shapes = await self.game.config.guild(interaction.guild).shapes()
+        shapes = guild_config["shapes"]
         shape = random.choice(shapes)
 
-        player_data[str(player_number)] = {
+        game_state.players[player_number] = {
             "user_id": interaction.user.id,
             "shape": shape,
             "passed": None,
-            "player_number": player_number,
+            "player_number": player_number
         }
 
-        await self.game.config.guild(interaction.guild).players.set(player_data)
+        view.player_count += 1
+        self.label = f"Enter The Game ({view.player_count}/456)"
+        try:
+            await interaction.response.send_message(
+                f"You have joined the game as `Player {player_number}`.\nYour shape is {shape}\nThis message will disappear, but your number and shape are recorded!",
+                ephemeral=True
+            )
+            await interaction.message.edit(view=view)
+        except discord.HTTPException as e:
+            log.error(f"Failed to edit message: {e}")
 
-        await interaction.response.send_message(
-            f"You have joined the game as `Player {player_number}`.\nYour shape is {shape}\nThis message will disappear, but your number and shape are recorded!",
-            ephemeral=True,
+class HoneycombView(discord.ui.LayoutView):
+    def __init__(self, cog, guild):
+        super().__init__(timeout=120)
+        self.cog = cog
+        self.guild = guild
+        self.player_count = 0
+
+        self.container = discord.ui.Container(accent_color=discord.Color.blurple())
+        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
+        self.container.add_item(
+            discord.ui.TextDisplay("Click the button below to join the Sugar Honeycombs Challenge!")
         )
-        button.label = f"Enter The Game ({len(player_data)}/456)"
-        await interaction.message.edit(view=self)
+        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
+        self.game_details = discord.ui.TextDisplay("")  # Placeholder for game details
+        self.container.add_item(self.game_details)
+        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
+        self.join_button = JoinButton(label="Enter The Game (0/456)")
+        self.container.add_item(discord.ui.ActionRow(self.join_button))
+        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
+        self.add_item(self.container)
+
+    async def setup(self, total_price, currency_name, minimum_players, end_time):
+        """Initialize the player count and game details."""
+        game_state = self.cog.get_game_state(self.guild)
+        self.player_count = len(game_state.players)
+        self.join_button.label = f"Enter The Game ({self.player_count}/456)"
+        self.game_details.content = (
+            f"Price to Enter: {total_price} {currency_name}\n"
+            f"Minimum Players: {minimum_players}\n"
+            f"Game starts <t:{end_time}:R>"
+        )
+
+    async def on_timeout(self):
+        """Disable the button on timeout and update the message."""
+        for child in self.walk_children():
+            if isinstance(child, discord.ui.Button):
+                child.disabled = True
+        try:
+            await self.message.edit(view=self)
+        except discord.HTTPException as e:
+            log.error(f"Failed to edit message on timeout: {e}")
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item):
+        """Handle interaction errors."""
+        log.error(f"Interaction error for custom_id={interaction.data.get('custom_id')}: {error}", exc_info=True)
+        await interaction.response.send_message("An error occurred. Please try again.", ephemeral=True)
