@@ -30,12 +30,11 @@ from redbot.core import bank
 
 log = logging.getLogger("red.maxcogs.honeycombs.view")
 
+
 class JoinButton(discord.ui.Button):
     def __init__(self, label: str):
         super().__init__(
-            custom_id="join_honeycombs",
-            label=label,
-            style=discord.ButtonStyle.blurple
+            custom_id="join_honeycombs", label=label, style=discord.ButtonStyle.blurple
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -58,7 +57,7 @@ class JoinButton(discord.ui.Button):
                 if data["user_id"] == interaction.user.id:
                     return await interaction.response.send_message(
                         f"You are already in the game as `Player {number}` with shape {data['shape']}. You cannot leave.",
-                        ephemeral=True
+                        ephemeral=True,
                     )
 
         if len(game_state.players) >= 456:
@@ -75,7 +74,7 @@ class JoinButton(discord.ui.Button):
             "user_id": interaction.user.id,
             "shape": shape,
             "passed": None,
-            "player_number": player_number
+            "player_number": player_number,
         }
 
         view.player_count += 1
@@ -83,11 +82,12 @@ class JoinButton(discord.ui.Button):
         try:
             await interaction.response.send_message(
                 f"You have joined the game as `Player {player_number}`.\nYour shape is {shape}\nThis message will disappear, but your number and shape are recorded!",
-                ephemeral=True
+                ephemeral=True,
             )
             await interaction.message.edit(view=view)
         except discord.HTTPException as e:
             log.error(f"Failed to edit message: {e}")
+
 
 class HoneycombView(discord.ui.LayoutView):
     def __init__(self, cog, guild):
@@ -99,7 +99,9 @@ class HoneycombView(discord.ui.LayoutView):
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
         self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
         self.container.add_item(
-            discord.ui.TextDisplay("Click the button below to join the Sugar Honeycombs Challenge!")
+            discord.ui.TextDisplay(
+                "Click the button below to join the Sugar Honeycombs Challenge!"
+            )
         )
         self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
         self.game_details = discord.ui.TextDisplay("")  # Placeholder for game details
@@ -131,7 +133,14 @@ class HoneycombView(discord.ui.LayoutView):
         except discord.HTTPException as e:
             log.error(f"Failed to edit message on timeout: {e}")
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item):
+    async def on_error(
+        self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item
+    ):
         """Handle interaction errors."""
-        log.error(f"Interaction error for custom_id={interaction.data.get('custom_id')}: {error}", exc_info=True)
-        await interaction.response.send_message("An error occurred. Please try again.", ephemeral=True)
+        log.error(
+            f"Interaction error for custom_id={interaction.data.get('custom_id')}: {error}",
+            exc_info=True,
+        )
+        await interaction.response.send_message(
+            "An error occurred. Please try again.", ephemeral=True
+        )

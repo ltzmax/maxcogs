@@ -98,7 +98,9 @@ class HoneyCombs(commands.Cog):
 
     def get_guild_config(self, guild: discord.Guild):
         if guild.id not in self.cache["guilds"]:
-            self.cache["guilds"][guild.id] = self.bot.loop.create_task(self.config.guild(guild).all()).result()
+            self.cache["guilds"][guild.id] = self.bot.loop.create_task(
+                self.config.guild(guild).all()
+            ).result()
         return self.cache["guilds"][guild.id]
 
     async def update_guild_config(self, guild: discord.Guild, key: str, value: Any):
@@ -164,20 +166,36 @@ class HoneyCombs(commands.Cog):
                 if random.random() < chance:
                     success, message = await safe_deposit(user, winning_price, currency_name)
                     if success:
-                        passed_players.append(f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})")
+                        passed_players.append(
+                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})"
+                        )
                     else:
                         error_messages.append(message)
-                        passed_players.append(f"Player {num}, Shape: {shape} - (User ID: {data['user_id']}) - Deposit Failed")
+                        passed_players.append(
+                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']}) - Deposit Failed"
+                        )
                 else:
                     success, message = await safe_withdraw(user, losing_price, currency_name)
                     if success:
-                        failed_players.append(f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})")
+                        failed_players.append(
+                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})"
+                        )
                     else:
                         error_messages.append(message)
-                        failed_players.append(f"Player {num}, Shape: {shape} - (User ID: {data['user_id']}) - Withdrawal Failed")
+                        failed_players.append(
+                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']}) - Withdrawal Failed"
+                        )
 
-        passed_content = "Passed Players:\n" + "\n".join(passed_players) if passed_players else "No players passed."
-        failed_content = "\n\nEliminated Players:\n" + "\n".join(failed_players) if failed_players else "\nNo players were eliminated."
+        passed_content = (
+            "Passed Players:\n" + "\n".join(passed_players)
+            if passed_players
+            else "No players passed."
+        )
+        failed_content = (
+            "\n\nEliminated Players:\n" + "\n".join(failed_players)
+            if failed_players
+            else "\nNo players were eliminated."
+        )
         error_content = "\n\nErrors:\n" + "\n".join(error_messages) if error_messages else ""
         full_content = passed_content + failed_content + error_content
 
@@ -187,10 +205,17 @@ class HoneyCombs(commands.Cog):
             description="Check the attached file for the full results.",
         )
         if winning_price == 0 and losing_price == 0:
-            embed.add_field(name="Game Entry:", value="This game was free to enter; no rewards were given, and no currency was lost.")
+            embed.add_field(
+                name="Game Entry:",
+                value="This game was free to enter; no rewards were given, and no currency was lost.",
+            )
         else:
-            embed.add_field(name="Winning Price:", value=f"{humanize_number(winning_price)} {currency_name}")
-            embed.add_field(name="Losing Price:", value=f"{humanize_number(losing_price)} {currency_name}")
+            embed.add_field(
+                name="Winning Price:", value=f"{humanize_number(winning_price)} {currency_name}"
+            )
+            embed.add_field(
+                name="Losing Price:", value=f"{humanize_number(losing_price)} {currency_name}"
+            )
         embed.set_footer(text="Thank you for playing!")
         file = discord.File(StringIO(full_content), filename="honeycombs_results.txt")
         await ctx.send(embed=embed, file=file)
@@ -215,10 +240,19 @@ class HoneyCombs(commands.Cog):
         game_state = self.get_game_state(ctx.guild)
         async with self.get_lock(ctx.guild):
             if game_state.active:
-                return await ctx.send("A game is already in progress in this server.", reference=ctx.message.to_reference(fail_if_not_exists=False))
+                return await ctx.send(
+                    "A game is already in progress in this server.",
+                    reference=ctx.message.to_reference(fail_if_not_exists=False),
+                )
 
-            if guild_config["mod_only_command"] and not ctx.author.guild_permissions.manage_messages:
-                return await ctx.send("This command is only available to moderators.", reference=ctx.message.to_reference(fail_if_not_exists=False))
+            if (
+                guild_config["mod_only_command"]
+                and not ctx.author.guild_permissions.manage_messages
+            ):
+                return await ctx.send(
+                    "This command is only available to moderators.",
+                    reference=ctx.message.to_reference(fail_if_not_exists=False),
+                )
 
             game_state.active = True
             game_state.start_time = datetime.now() + timedelta(minutes=2)
@@ -227,7 +261,11 @@ class HoneyCombs(commands.Cog):
 
             winning_price = self.cache["global"]["winning_price"]
             losing_price = self.cache["global"]["losing_price"]
-            total_price = humanize_number(winning_price + losing_price) if (winning_price + losing_price) != 0 else "Free"
+            total_price = (
+                humanize_number(winning_price + losing_price)
+                if (winning_price + losing_price) != 0
+                else "Free"
+            )
             currency_name = await bank.get_currency_name(ctx.guild)
             minimum_players = guild_config["minimum_players"]
 
@@ -243,7 +281,9 @@ class HoneyCombs(commands.Cog):
         await asyncio.sleep(120)
 
         if len(game_state.players) < minimum_players:
-            await ctx.channel.send(f"Not enough players entered the game ({len(game_state.players)}/{minimum_players}). Game has been canceled.")
+            await ctx.channel.send(
+                f"Not enough players entered the game ({len(game_state.players)}/{minimum_players}). Game has been canceled."
+            )
             game_state.active = False
             game_state.players.clear()
             return
