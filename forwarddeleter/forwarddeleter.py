@@ -154,7 +154,11 @@ class ForwardDeleter(commands.Cog):
             if not guild:
                 return
             log_channel = guild.get_channel(log_channel_id)
-            if not log_channel or not log_channel.permissions_for(guild.me).send_messages:
+            if (
+                not log_channel
+                or not log_channel.permissions_for(guild.me).send_messages
+                or not log_channel.permissions_for(guild.me).embed_links
+            ):
                 log.warning(
                     f"Cannot send to log channel {log_channel_id} in {guild.name}: Invalid or no permissions"
                 )
