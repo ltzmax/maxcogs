@@ -32,7 +32,7 @@ import pycountry
 import pytz
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
-from redbot.core.utils.menus import SetApiView, SimpleMenu
+from redbot.core.utils.views import SetApiView, SimpleMenu
 
 
 class Holiday(commands.Cog):
