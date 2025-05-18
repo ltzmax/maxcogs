@@ -51,7 +51,6 @@ class NoSpoiler(commands.Cog):
         self._cache: Dict[int, Dict[str, Any]] = {}
         default_guild: Dict[str, Union[bool, Optional[int], str]] = {
             "enabled": False,
-            "log_channel": None,
             "spoiler_warn": False,
             "spoiler_warn_message": DEFAULT_WARNING_MESSAGE,
             "timeout": 10,
@@ -89,54 +88,6 @@ class NoSpoiler(commands.Cog):
         if guild.id not in self._cache:
             self._cache[guild.id] = await self.config.guild(guild).all()
         self._cache[guild.id][key] = value
-
-    async def log_channel_embed(
-        self,
-        guild: discord.Guild,
-        message: discord.Message,
-        attachments: List[discord.Attachment] = None,
-    ) -> None:
-        """Send an embed to the log channel for deleted spoiler messages."""
-        settings = await self._get_guild_settings(guild)
-        log_channel_id = settings["log_channel"]
-        if not log_channel_id:
-            return
-
-        log_channel = get(guild.text_channels, id=log_channel_id)
-        if not log_channel:
-            log.warning(f"Log channel ID {log_channel_id} not found in guild {guild.name}.")
-            return
-
-        if not (
-            log_channel.permissions_for(guild.me).send_messages
-            and log_channel.permissions_for(guild.me).embed_links
-        ):
-            log.warning(
-                f"Lacking send_messages or embed_links permissions in {log_channel.mention}."
-            )
-            return
-
-        color = await self.bot.get_embed_color(log_channel)
-        embed = discord.Embed(
-            title="Spoiler Message Deleted",
-            description=(
-                f"Message sent by {message.author.mention} in {message.channel.mention} "
-                f"was deleted due to spoiler content."
-            ),
-            color=color,
-        )
-        if message.content:
-            embed.description += f"\n{box(message.content, lang='yaml')}"
-        embed.set_footer(text=f"Message ID: {message.id}")
-        if attachments:
-            embed.add_field(
-                name="Attachments",
-                value="\n".join(
-                    f"[{attachment.filename}]({attachment.url})" for attachment in attachments
-                ),
-                inline=False,
-            )
-        await log_channel.send(embed=embed)
 
     async def send_warning_message(self, message: discord.Message) -> None:
         """Send a warning message to the user, optionally as an embed."""
@@ -280,15 +231,6 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Warning message timeout set to {seconds} seconds.")
 
     @nospoiler.command()
-    async def logchannel(
-        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
-    ) -> None:
-        """Set or clear the log channel for deleted spoiler messages."""
-        channel_id = channel.id if channel else None
-        await self._update_cache(ctx.guild, "log_channel", channel_id)
-        await ctx.send(f"Log channel {'set to ' + channel.mention if channel else 'cleared'}.")
-
-    @nospoiler.command()
     async def togglewarnmsg(self, ctx: commands.Context, toggle: Optional[bool] = None) -> None:
         """Toggle the spoiler warning message on or off."""
         await self._update_cache(ctx.guild, "spoiler_warn", toggle)
@@ -305,8 +247,6 @@ class NoSpoiler(commands.Cog):
     async def settings(self, ctx: commands.Context) -> None:
         """Display current spoiler filter settings."""
         settings = await self._get_guild_settings(ctx.guild)
-        log_channel = get(ctx.guild.text_channels, id=settings["log_channel"])
-        log_channel_mention = log_channel.mention if log_channel else "Not Set"
         spoiler_warning_message = (
             box(settings["spoiler_warn_message"], lang="yaml")
             if len(settings["spoiler_warn_message"]) < 2000
@@ -315,7 +255,6 @@ class NoSpoiler(commands.Cog):
         await ctx.send(
             "## NoSpoiler Settings\n"
             f"- **Enabled**: {settings['enabled']}\n"
-            f"- **Log Channel**: {log_channel_mention}\n"
             f"- **Spoiler Warning**: {settings['spoiler_warn']}\n"
             f"- **Use Embed**: {settings['use_embed']}\n"
             f"- **Delete After**: {settings['timeout']} seconds\n"
