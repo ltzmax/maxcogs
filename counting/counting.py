@@ -259,8 +259,10 @@ class Counting(commands.Cog):
             message_count = int(message.content)
             if message_count == expected_count:
                 await asyncio.gather(
-                    self._update_guild_cache(message.guild, "count", expected_count),
-                    self._update_guild_cache(message.guild, "last_user_id", message.author.id),
+                    self._update_guild_cache(message.guild,
+                        "count", expected_count,
+                        "last_user_id", message.author.id,
+                    ),
                     self._update_user_cache(
                         message.author,
                         "count",
@@ -589,9 +591,11 @@ class Counting(commands.Cog):
         Example: `[p]countingset ruinrole @Role 5m` to set a role for 5 minutes.
         """
         if not role:
-            await self._update_guild_cache(ctx.guild, "ruin_role_id", None)
-            await self._update_guild_cache(ctx.guild, "ruin_role_duration", None)
-            await self._update_guild_cache(ctx.guild, "temp_roles", {})
+            await self._update_guild_cache(ctx.guild, 
+                "ruin_role_id", None,
+                "ruin_role_duration", None,
+                "temp_roles", {}
+            )
             return await ctx.send("Ruin role cleared.")
 
         if role >= ctx.guild.me.top_role:
@@ -626,8 +630,10 @@ class Counting(commands.Cog):
                     "Invalid duration. Please provide a number followed by 's', 'm', 'h', or 'd'."
                 )
 
-        await self._update_guild_cache(ctx.guild, "ruin_role_id", role.id)
-        await self._update_guild_cache(ctx.guild, "ruin_role_duration", duration_seconds)
+        await self._update_guild_cache(ctx.guild, 
+            "ruin_role_id", role.id,
+            "ruin_role_duration", duration_seconds,
+        )
         duration_str = f" for {duration}" if duration_seconds else ""
         await ctx.send(f"Ruin role set to {role.name}{duration_str}.")
 
