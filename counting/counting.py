@@ -199,14 +199,7 @@ class Counting(commands.Cog):
     async def _handle_count_ruin(self, message: discord.Message, settings: Dict[str, Any]) -> None:
         """Handle count ruin by resetting count and assigning role."""
         await self._update_guild_cache(message.guild, "count", 0)
-        role_id = settings["ruin_role_id"]
-        if role_id and message.channel.permissions_for(message.guild.me).manage_roles:
-            role = get(message.guild.roles, id=role_id)
-            if role and role < message.guild.me.top_role:
-                try:
-                    await message.author.add_roles(role)
-                except discord.HTTPException as e:
-                    self.logger.warning(f"Failed to assign ruin role: {e}", exc_info=True)
+        await self.assign_ruin_role(message.author, message.guild)
 
         response = settings["ruin_message"].format(
             user=message.author.mention, count=settings["count"]
@@ -219,6 +212,38 @@ class Counting(commands.Cog):
             ),
             silent=settings["use_silent"],
         )
+
+    async def assign_ruin_role(self, member: discord.Member, guild: discord.Guild):
+        """Assign the ruin role to a member, temporarily if a duration is set."""
+        ruin_role_id = await self._update_guild_cache(guild, "ruin_role_id")
+        duration = await self._update_guild_cache(guild, "ruin_role_duration")
+
+        if not ruin_role_id:
+            return
+
+        role = guild.get_role(ruin_role_id)
+        if not role or role >= guild.me.top_role:
+            self.logger.warning(
+                f"Cannot assign ruin role {role.name} to {member.display_name}, it must be below my highest role."
+            )
+            return
+
+        try:
+            if not guild.me.guild_permissions.manage_roles:
+                self.logger.warning(
+                    f"Missing manage_roles permission in {guild.name} ({guild.id}) to assign role {role.name} to {member.display_name}"
+                )
+                return
+            await member.add_roles(role, reason="Ruined the count")
+            if duration:
+                expiry = datetime.utcnow() + timedelta(seconds=duration)
+                async with self.config.guild(guild).temp_roles() as temp_roles:
+                    temp_roles[str(member.id)] = {"role_id": role.id, "expiry": expiry.timestamp()}
+        except discord.Forbidden as e:
+            self.logger.warning(
+                f"Failed to assign ruin role {role.name} to {member.display_name}: {e}",
+                exc_info=True,
+            )
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -259,10 +284,8 @@ class Counting(commands.Cog):
             message_count = int(message.content)
             if message_count == expected_count:
                 await asyncio.gather(
-                    self._update_guild_cache(message.guild,
-                        "count", expected_count,
-                        "last_user_id", message.author.id,
-                    ),
+                    self._update_guild_cache(message.guild, "count", expected_count),
+                    self._update_guild_cache(message.guild, "last_user_id", message.author.id),
                     self._update_user_cache(
                         message.author,
                         "count",
@@ -591,20 +614,15 @@ class Counting(commands.Cog):
         Example: `[p]countingset ruinrole @Role 5m` to set a role for 5 minutes.
         """
         if not role:
-            await self._update_guild_cache(ctx.guild, 
-                "ruin_role_id", None,
-                "ruin_role_duration", None,
-                "temp_roles", {}
-            )
+            await self._update_guild_cache(ctx.guild, "ruin_role_id", None)
+            await self._update_guild_cache(ctx.guild, "ruin_role_duration", None)
+            await self.config.guild(ctx.guild).temp_roles.clear()
             return await ctx.send("Ruin role cleared.")
 
         if role >= ctx.guild.me.top_role:
             return await ctx.send(
                 f"Cannot set {role.name}, it must be below my highest role ({ctx.guild.me.top_role.name})."
             )
-
-        if not ctx.guild.me.guild_permissions.manage_roles:
-            return await ctx.send("I need `manage_roles` permission to assign roles.")
 
         duration_seconds = None
         if duration:
@@ -630,36 +648,10 @@ class Counting(commands.Cog):
                     "Invalid duration. Please provide a number followed by 's', 'm', 'h', or 'd'."
                 )
 
-        await self._update_guild_cache(ctx.guild, 
-            "ruin_role_id", role.id,
-            "ruin_role_duration", duration_seconds,
-        )
+        await self._update_guild_cache(ctx.guild, "ruin_role_id", role.id)
+        await self._update_guild_cache(ctx.guild, "ruin_role_duration", duration_seconds)
         duration_str = f" for {duration}" if duration_seconds else ""
         await ctx.send(f"Ruin role set to {role.name}{duration_str}.")
-
-    async def assign_ruin_role(self, member: discord.Member, guild: discord.Guild):
-        """Assign the ruin role to a member, temporarily if a duration is set."""
-        ruin_role_id = await self._update_guild_cache(guild, "ruin_role_id")
-        duration = await self._update_guild_cache(guild, "ruin_role_duration")
-
-        if not ruin_role_id:
-            return
-
-        role = guild.get_role(ruin_role_id)
-        if not role or role >= guild.me.top_role:
-            return
-
-        try:
-            await member.add_roles(role, reason="Ruined the count")
-            if duration:
-                expiry = datetime.utcnow() + timedelta(seconds=duration)
-                async with self.config.guild(guild).temp_roles() as temp_roles:
-                    temp_roles[str(member.id)] = {"role_id": role.id, "expiry": expiry.timestamp()}
-        except discord.Forbidden as e:
-            self.logger.warning(
-                f"Failed to assign ruin role {role.name} to {member.display_name}: {e}",
-                exc_info=True,
-            )
 
     @countingset.command(name="message")
     async def set_message(self, ctx: commands.Context, msg_type: str, *, message: str) -> None:
