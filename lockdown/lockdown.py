@@ -75,9 +75,7 @@ class Lockdown(commands.Cog):
         """Get the current log channel."""
         all = await self.config.guild(ctx.guild).all()
         use_embed = all["use_embed"]
-        await ctx.send(
-            f"## Settings\nUse embeds: {use_embed}"
-        )
+        await ctx.send(f"## Settings\nUse embeds: {use_embed}")
 
     async def manage_lock(
         self,
