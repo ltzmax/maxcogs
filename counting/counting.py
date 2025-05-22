@@ -51,7 +51,7 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.3.1"
+    __version__: Final[str] = "2.4.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/"
 
@@ -83,6 +83,7 @@ class Counting(commands.Cog):
             "ruin_message": "{user} ruined the count at {count}! Starting back at 1.",
             "temp_roles": {},
             "ruin_role_duration": None,
+            "excluded_roles": [],
         }
         default_user: Dict[str, Any] = {
             "count": 0,
@@ -214,9 +215,10 @@ class Counting(commands.Cog):
         )
 
     async def assign_ruin_role(self, member: discord.Member, guild: discord.Guild):
-        """Assign the ruin role to a member, temporarily if a duration is set."""
+        """Assign the ruin role to a member, temporarily if a duration is set, unless they have an excluded role."""
         ruin_role_id = await self._update_guild_cache(guild, "ruin_role_id")
         duration = await self._update_guild_cache(guild, "ruin_role_duration")
+        excluded_role_ids = await self._update_guild_cache(guild, "excluded_roles")
 
         if not ruin_role_id:
             return
@@ -224,7 +226,13 @@ class Counting(commands.Cog):
         role = guild.get_role(ruin_role_id)
         if not role or role >= guild.me.top_role:
             self.logger.warning(
-                f"Cannot assign ruin role {role.name} to {member.display_name}, it must be below my highest role."
+                f"Cannot assign ruin role {role.name} to {member.display_name} in {guild.name} ({guild.id})"
+            )
+            return
+
+        if any(role.id in excluded_role_ids for role in member.roles):
+            self.logger.warning(
+                f"User {member.display_name} has excluded role(s) in {guild.name} ({guild.id}), not assigning ruin role."
             )
             return
 
@@ -239,10 +247,9 @@ class Counting(commands.Cog):
                 expiry = datetime.utcnow() + timedelta(seconds=duration)
                 async with self.config.guild(guild).temp_roles() as temp_roles:
                     temp_roles[str(member.id)] = {"role_id": role.id, "expiry": expiry.timestamp()}
-        except discord.Forbidden as e:
+        except discord.Forbidden:
             self.logger.warning(
-                f"Failed to assign ruin role {role.name} to {member.display_name}: {e}",
-                exc_info=True,
+                f"Missing permissions to assign role {role.name} to {member.display_name} in {guild.name} ({guild.id})"
             )
 
     @commands.Cog.listener()
@@ -466,6 +473,24 @@ class Counting(commands.Cog):
     async def countingset(self, ctx: commands.Context) -> None:
         """Configure counting game settings."""
 
+    @countingset.command(name="excluderoles", aliases=["excluderole"])
+    async def set_exclude_roles(self, ctx: commands.Context, *roles: discord.Role) -> None:
+        """
+        Set roles to exclude from receiving the ruin role.
+
+        Example: `[p]countingset excluderoles @Mod @Admin`
+        Pass no roles to clear the excluded roles list.
+        """
+        if not roles:
+            await self.config.guild(ctx.guild).excluded_roles.clear()
+            await self._update_guild_cache(ctx.guild, "excluded_roles", [])
+            return await ctx.send("Excluded roles cleared.")
+
+        role_ids = [role.id for role in roles]
+        await self._update_guild_cache(ctx.guild, "excluded_roles", role_ids)
+        role_mentions = ", ".join(role.name for role in roles)
+        await ctx.send(f"Excluded roles set to: {role_mentions}.")
+
     @countingset.command(name="toggledeleteafter")
     async def set_toggle_delete_after(self, ctx: commands.Context) -> None:
         """Toggle delete-after time for invalid messages."""
@@ -624,6 +649,11 @@ class Counting(commands.Cog):
                 f"Cannot set {role.name}, it must be below my highest role ({ctx.guild.me.top_role.name})."
             )
 
+        if role >= ctx.author.top_role:
+            return await ctx.send(
+                f"Cannot set {role.name}, it must be below your highest role ({ctx.author.top_role.name})."
+            )
+
         duration_seconds = None
         if duration:
             duration = duration.lower().strip()
@@ -750,6 +780,21 @@ class Counting(commands.Cog):
             ("Min Account Age", f"{settings['min_account_age']} days"),
             ("Allow Ruin", bool_to_status(settings["allow_ruin"])),
             ("Ruin Role", role.mention if role else "Not set"),
+            (
+                "Ruin Role Duration",
+                (
+                    f"{settings['ruin_role_duration']}s"
+                    if settings["ruin_role_duration"]
+                    else "Permanent"
+                ),
+            ),
+            (
+                "Excluded Roles",
+                ", ".join(
+                    role.name for role in ctx.guild.roles if role.id in settings["excluded_roles"]
+                )
+                or "None",
+            ),
             ("Toggle Delete After", bool_to_status(settings["toggle_delete_after"])),
             (
                 "Messages",
