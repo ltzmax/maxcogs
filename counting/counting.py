@@ -51,7 +51,7 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.3.0"
+    __version__: Final[str] = "2.3.1"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://docs.maxapp.tv/"
 
@@ -367,7 +367,7 @@ class Counting(commands.Cog):
                                     role, reason="Temporary ruin role expired"
                                 )
                             except discord.Forbidden as e:
-                                log.warning(
+                                self.logger.warning(
                                     f"Failed to remove role {role.name} from {member.display_name}: {e}",
                                     exc_info=True,
                                 )
@@ -589,9 +589,9 @@ class Counting(commands.Cog):
         Example: `[p]countingset ruinrole @Role 5m` to set a role for 5 minutes.
         """
         if not role:
-            await self.config.guild(ctx.guild).ruin_role_id.set(None)
-            await self.config.guild(ctx.guild).ruin_role_duration.set(None)
-            await self.config.guild(ctx.guild).temp_roles.clear()
+            await self._update_guild_cache(ctx.guild, "ruin_role_id", None)
+            await self._update_guild_cache(ctx.guild, "ruin_role_duration", None)
+            await self._update_guild_cache(ctx.guild, "temp_roles", {})
             return await ctx.send("Ruin role cleared.")
 
         if role >= ctx.guild.me.top_role:
@@ -626,15 +626,15 @@ class Counting(commands.Cog):
                     "Invalid duration. Please provide a number followed by 's', 'm', 'h', or 'd'."
                 )
 
-        await self.config.guild(ctx.guild).ruin_role_id.set(role.id)
-        await self.config.guild(ctx.guild).ruin_role_duration.set(duration_seconds)
+        await self._update_guild_cache(ctx.guild, "ruin_role_id", role.id)
+        await self._update_guild_cache(ctx.guild, "ruin_role_duration", duration_seconds)
         duration_str = f" for {duration}" if duration_seconds else ""
         await ctx.send(f"Ruin role set to {role.name}{duration_str}.")
 
     async def assign_ruin_role(self, member: discord.Member, guild: discord.Guild):
         """Assign the ruin role to a member, temporarily if a duration is set."""
-        ruin_role_id = await self.config.guild(guild).ruin_role_id()
-        duration = await self.config.guild(guild).ruin_role_duration()
+        ruin_role_id = await self._update_guild_cache(guild, "ruin_role_id")
+        duration = await self._update_guild_cache(guild, "ruin_role_duration")
 
         if not ruin_role_id:
             return
@@ -650,7 +650,7 @@ class Counting(commands.Cog):
                 async with self.config.guild(guild).temp_roles() as temp_roles:
                     temp_roles[str(member.id)] = {"role_id": role.id, "expiry": expiry.timestamp()}
         except discord.Forbidden as e:
-            log.warning(
+            self.logger.warning(
                 f"Failed to assign ruin role {role.name} to {member.display_name}: {e}",
                 exc_info=True,
             )
