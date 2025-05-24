@@ -1,0 +1,29 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "RestrictPosts",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any of the filter(s) without setting up autoimmune.\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "A cog to restrict posts to attachments and links in a specific channel(s).",
+    "short": "A cog to restrict posts to attachments and links in a specific channel(s).",
+    "hidden": false,
+    "min_bot_version": "3.5.9",
+    "tags": [
+        "moderation",
+        "attachments",
+        "links",
+        "restrict"
+    ],
+    "permissions": [
+        "embed_links",
+        "manage_messages"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}

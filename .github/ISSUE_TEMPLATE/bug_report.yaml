@@ -29,6 +29,7 @@ body:
         - plaguegame
         - pokemon
         - redupdate
+        - restrictposts
         - themoviedb
     validations:
       required: true

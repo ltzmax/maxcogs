@@ -57,6 +57,8 @@ To install any cog you want:
     - This is pokemon related stuff cog.
 - RedUpdate
     - Update your bot to latest dev/stable changes.
+- RestrictPosts
+    - A cog to restrict posts to attachments and links in a specific channel.
 - TheMovieDB
     - Search for informations of movies and TV shows from themoviedb.org.
 
