@@ -15,7 +15,7 @@
     "permissions": [
         "manage_messages"
     ],
-    "requirements": ["tabulate", "emoji"],
+    "requirements": ["tabulate", "emoji>=2.0.0"],
     "min_python_version": [
         3,
         9,
