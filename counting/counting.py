@@ -29,6 +29,7 @@ from enum import Enum
 from typing import Any, Dict, Final, Optional
 
 import discord
+import emoji
 from discord.ext import tasks
 from discord.utils import get
 from emoji import is_emoji
