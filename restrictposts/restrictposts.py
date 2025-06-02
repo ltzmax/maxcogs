@@ -59,7 +59,7 @@ class RestrictPosts(commands.Cog):
         self.config.register_guild(**default_guild)
         self._cache: Dict[int, Dict[str, Any]] = {}
         self.url_regex = re.compile(
-            r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+            r"http[s]?://(?:[a-zA-Z]|[0-9]|[\$_@.&+\-]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
         )
         self.bot.loop.create_task(self._initialize_cache())
 
