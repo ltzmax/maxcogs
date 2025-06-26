@@ -22,15 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import asyncio
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Final, Optional
 
 import discord
 import emoji
-from discord.ext import tasks
 from discord.utils import get
 from emoji import is_emoji
 from red_commons.logging import getLogger
@@ -41,6 +39,12 @@ from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 from tabulate import tabulate
 
+from .event_handlers import EventHandlers
+from .settings import SettingsManager
+from .utils import send_message
+
+logger = getLogger("red.maxcogs.counting")
+
 
 class MessageType(Enum):
     EDIT = "edit"
@@ -49,60 +53,10 @@ class MessageType(Enum):
     RUIN_COUNT = "ruincount"
 
 
-class SettingsManager:
-    """Manages guild and user settings with caching."""
-
-    def __init__(self, config: Config):
-        self.config = config
-        self._guild_cache: Dict[int, Dict[str, Any]] = {}
-        self._user_cache: Dict[int, Dict[str, Any]] = {}
-
-    async def initialize(self) -> None:
-        """Load guild and user settings into cache."""
-        self._guild_cache = await self.config.all_guilds()
-        self._user_cache = await self.config.all_users()
-
-    async def get_guild_settings(self, guild: discord.Guild) -> Dict[str, Any]:
-        """Retrieve guild settings from cache or Config."""
-        if guild.id not in self._guild_cache:
-            self._guild_cache[guild.id] = await self.config.guild(guild).all()
-        return self._guild_cache[guild.id]
-
-    async def get_user_settings(self, user: discord.Member) -> Dict[str, Any]:
-        """Retrieve user settings from cache or Config."""
-        if user.id not in self._user_cache:
-            self._user_cache[user.id] = await self.config.user(user).all()
-        return self._user_cache[user.id]
-
-    async def update_guild(self, guild: discord.Guild, key: str, value: Any) -> None:
-        """Update guild cache and Config."""
-        await self.config.guild(guild).set_raw(key, value=value)
-        if guild.id not in self._guild_cache:
-            self._guild_cache[guild.id] = await self.config.guild(guild).all()
-        self._guild_cache[guild.id][key] = value
-
-    async def update_user(self, user: discord.Member, key: str, value: Any) -> None:
-        """Update user cache and Config."""
-        await self.config.user(user).set_raw(key, value=value)
-        if user.id not in self._user_cache:
-            self._user_cache[user.id] = await self.config.user(user).all()
-        self._user_cache[user.id][key] = value
-
-    async def clear_guild(self, guild: discord.Guild) -> None:
-        """Clear guild settings and update cache."""
-        await self.config.guild(guild).clear()
-        self._guild_cache[guild.id] = await self.config.guild(guild).all()
-
-    async def clear_user(self, user: discord.Member) -> None:
-        """Clear user settings and update cache."""
-        await self.config.user(user).clear()
-        self._user_cache[user.id] = {"count": 0, "last_count_timestamp": None}
-
-
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.5.0"
+    __version__: Final[str] = "2.6.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -110,7 +64,6 @@ class Counting(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=9008567, force_registration=True)
         self.settings = SettingsManager(self.config)
-        self.logger = getLogger("red.maxcogs.counting")
         self._default_guild: Dict[str, Any] = {
             "count": 0,
             "channel": None,
@@ -134,6 +87,10 @@ class Counting(commands.Cog):
             "temp_roles": {},
             "ruin_role_duration": None,
             "excluded_roles": [],
+            "goal": None,
+            "goal_message": "{user} reached the goal of {goal}! Congratulations!",
+            "progress_interval": 10,
+            "toggle_progress": False,
         }
         self._default_user: Dict[str, Any] = {
             "count": 0,
@@ -142,7 +99,7 @@ class Counting(commands.Cog):
         self.config.register_guild(**self._default_guild)
         self.config.register_user(**self._default_user)
         self.bot.loop.create_task(self.settings.initialize())
-        self.remove_expired_roles.start()
+        self.event_handlers = EventHandlers(bot, self.settings)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -153,272 +110,16 @@ class Counting(commands.Cog):
         """No user data to delete."""
         pass
 
-    async def _send_message(
-        self,
-        channel: discord.TextChannel,
-        content: str,
-        *,
-        delete_after: Optional[int] = None,
-        silent: bool = False,
-    ) -> Optional[discord.Message]:
-        """Send a message with error handling."""
-        try:
-            send_kwargs = {"content": content, "silent": silent}
-            if delete_after is not None:
-                send_kwargs["delete_after"] = delete_after
-            return await channel.send(**send_kwargs)
-        except discord.Forbidden:
-            self.logger.warning(
-                f"Missing send permissions in {channel.guild.name}#{channel.name} ({channel.id})"
-            )
-        except discord.HTTPException as e:
-            self.logger.warning(f"Failed to send message in {channel.id}: {e}")
-        return None
-
-    async def _delete_message(self, message: discord.Message) -> None:
-        """Delete a message with error handling."""
-        try:
-            await message.delete()
-        except discord.HTTPException as e:
-            self.logger.warning(
-                f"Failed to delete message {message.id} in {message.channel.id}: {e}"
-            )
-
-    async def _add_reaction(self, message: discord.Message, reaction: str) -> None:
-        """Add a reaction with a delay."""
-        await asyncio.sleep(0.3)
-        try:
-            await message.add_reaction(reaction)
-        except discord.HTTPException as e:
-            self.logger.warning(
-                f"Failed to add reaction to {message.id} in {message.channel.id}: {e}"
-            )
-
-    async def _handle_invalid_count(
-        self,
-        message: discord.Message,
-        response: str,
-        settings: Dict[str, Any],
-        send_response: bool = True,
-    ) -> None:
-        """Handle invalid counts by deleting and optionally responding."""
-        await self._delete_message(message)
-        if send_response:
-            delete_after = (
-                settings["delete_after"] if settings.get("toggle_delete_after", True) else None
-            )
-            await self._send_message(
-                message.channel,
-                response,
-                delete_after=delete_after,
-                silent=settings["use_silent"],
-            )
-
-    async def _handle_count_ruin(self, message: discord.Message, settings: Dict[str, Any]) -> None:
-        """Handle count ruin by resetting count and assigning role."""
-        old_count = settings["count"]
-        await asyncio.gather(
-            self.settings.update_guild(message.guild, "count", 0),
-            self.settings.update_guild(message.guild, "last_user_id", None),
-        )
-        await self._assign_ruin_role(message.author, message.guild)
-        response = settings["ruin_message"].format(user=message.author.mention, count=old_count)
-        delete_after = (
-            settings["delete_after"] if settings.get("toggle_delete_after", True) else None
-        )
-        await self._send_message(
-            message.channel,
-            response,
-            delete_after=delete_after,
-            silent=settings["use_silent"],
-        )
-
-    async def _assign_ruin_role(self, member: discord.Member, guild: discord.Guild) -> None:
-        """Assign the ruin role to a member, temporarily if a duration is set."""
-        settings = await self.settings.get_guild_settings(guild)
-        ruin_role_id = settings["ruin_role_id"]
-        duration = settings["ruin_role_duration"]
-        excluded_role_ids = settings["excluded_roles"]
-
-        if not ruin_role_id:
-            return
-
-        role = guild.get_role(ruin_role_id)
-        if not role or role >= guild.me.top_role:
-            self.logger.warning(
-                f"Cannot assign ruin role {role.name} in {guild.name} ({guild.id})"
-            )
-            return
-
-        if any(role.id in excluded_role_ids for role in member.roles):
-            self.logger.warning(f"User {member.display_name} has excluded role(s) in {guild.name}")
-            return
-
-        try:
-            if not guild.me.guild_permissions.manage_roles:
-                self.logger.warning(
-                    f"Missing manage_roles permission in {guild.name} ({guild.id})"
-                )
-                return
-            await member.add_roles(role, reason="Ruined the count")
-            if duration:
-                expiry = datetime.utcnow() + timedelta(seconds=duration)
-                async with self.config.guild(guild).temp_roles() as temp_roles:
-                    temp_roles[str(member.id)] = {"role_id": role.id, "expiry": expiry.timestamp()}
-        except discord.Forbidden:
-            self.logger.warning(f"Missing permissions to assign role {role.name} in {guild.name}")
-
-    @tasks.loop(minutes=10)
-    async def remove_expired_roles(self):
-        """Remove expired temporary roles from users in all guilds."""
-        for guild in self.bot.guilds:
-            async with self.config.guild(guild).temp_roles() as temp_roles:
-                to_remove = []
-                for user_id, data in temp_roles.items():
-                    if datetime.utcnow().timestamp() >= data["expiry"]:
-                        member = guild.get_member(int(user_id))
-                        role = guild.get_role(data["role_id"])
-                        if member and role:
-                            try:
-                                await member.remove_roles(
-                                    role, reason="Temporary ruin role expired"
-                                )
-                            except discord.Forbidden as e:
-                                self.logger.warning(f"Failed to remove role {role.name}: {e}")
-                        to_remove.append(user_id)
-                for user_id in to_remove:
-                    del temp_roles[user_id]
-
-    @remove_expired_roles.before_loop
-    async def before_remove_expired_roles(self):
-        """Ensure the bot is ready before starting the task."""
-        await self.bot.wait_until_ready()
+    def cog_unload(self):
+        self.event_handlers.remove_expired_roles.cancel()
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        """Process messages for counting logic."""
-        if message.author.bot or not message.guild:
-            return
-
-        if await self.bot.cog_disabled_in_guild(self, message.guild):
-            return
-
-        settings = await self.settings.get_guild_settings(message.guild)
-        if not settings["toggle"] or message.channel.id != settings["channel"]:
-            return
-
-        perms = message.channel.permissions_for(message.guild.me)
-        if not (perms.send_messages and perms.manage_messages):
-            self.logger.warning(f"Missing permissions in {message.channel.id}")
-            return
-
-        if settings["min_account_age"]:
-            account_age = (discord.utils.utcnow() - message.author.created_at).days
-            if account_age < settings["min_account_age"]:
-                await self._handle_invalid_count(
-                    message,
-                    f"Account must be at least {settings['min_account_age']} days old to count.",
-                    settings,
-                )
-                return
-
-        expected_count = settings["count"] + 1
-        if settings["same_user_to_count"] and settings["last_user_id"] == message.author.id:
-            await self._handle_invalid_count(
-                message, settings["default_same_user_message"], settings
-            )
-            return
-
-        if message.content.isdigit():
-            message_count = int(message.content)
-            if message_count == expected_count:
-                await asyncio.gather(
-                    self.settings.update_guild(message.guild, "count", expected_count),
-                    self.settings.update_guild(message.guild, "last_user_id", message.author.id),
-                    self.settings.update_user(
-                        message.author,
-                        "count",
-                        (await self.settings.get_user_settings(message.author))["count"] + 1,
-                    ),
-                    self.settings.update_user(
-                        message.author, "last_count_timestamp", datetime.utcnow().isoformat()
-                    ),
-                )
-                if settings["toggle_reactions"] and perms.add_reactions:
-                    await self._add_reaction(message, settings["default_reaction"])
-            elif settings["allow_ruin"]:
-                await self._handle_count_ruin(message, settings)
-            else:
-                response = settings["default_next_number_message"].format(
-                    next_count=expected_count
-                )
-                await self._handle_invalid_count(
-                    message, response, settings, settings["toggle_next_number_message"]
-                )
-        elif settings["allow_ruin"]:
-            await self._handle_count_ruin(message, settings)
-        else:
-            response = settings["default_next_number_message"].format(next_count=expected_count)
-            await self._handle_invalid_count(
-                message, response, settings, settings["toggle_next_number_message"]
-            )
+        await self.event_handlers.on_message(message)
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
-        """Handle edited messages in the counting channel."""
-        if "content" not in payload.data:
-            return
-
-        guild = self.bot.get_guild(payload.guild_id)
-        if not guild:
-            return
-
-        channel = guild.get_channel(payload.channel_id)
-        if not isinstance(channel, (discord.TextChannel, discord.Thread, discord.ForumChannel)):
-            return
-
-        if await self.bot.cog_disabled_in_guild(self, guild):
-            return
-
-        settings = await self.settings.get_guild_settings(guild)
-        if not settings["toggle"] or channel.id != settings["channel"]:
-            return
-
-        perms = channel.permissions_for(guild.me)
-        if not (perms.send_messages and perms.manage_messages):
-            self.logger.warning(f"Missing permissions in {channel.id}")
-            return
-
-        author_id = int(payload.data.get("author", {}).get("id", 0))
-        if not author_id or self.bot.get_user(author_id) and self.bot.get_user(author_id).bot:
-            return
-
-        try:
-            await channel.delete_messages([discord.Object(id=payload.message_id)])
-        except (discord.HTTPException, discord.Forbidden) as e:
-            self.logger.warning(f"Failed to delete edited message {payload.message_id}: {e}")
-            return
-
-        if settings["allow_ruin"]:
-            author = guild.get_member(author_id) or discord.Object(id=author_id)
-            await self._handle_count_ruin(
-                discord.Message(state=channel._state, channel=channel, data=payload.data),
-                settings,
-            )
-        elif settings["toggle_edit_message"]:
-            response = settings["default_edit_message"].format(next_count=settings["count"] + 1)
-            delete_after = (
-                settings["delete_after"] if settings.get("toggle_delete_after", True) else None
-            )
-            await self._send_message(
-                channel,
-                response,
-                delete_after=delete_after,
-                silent=settings["use_silent"],
-            )
-
-    def cog_unload(self):
-        self.remove_expired_roles.cancel()
+        await self.event_handlers.on_raw_message_edit(payload)
 
     @commands.hybrid_group()
     @commands.guild_only()
@@ -458,7 +159,12 @@ class Counting(commands.Cog):
     @counting.command(name="resetme", with_app_command=False)
     @commands.cooldown(1, 360, commands.BucketType.user)
     async def resetme(self, ctx: commands.Context) -> None:
-        """Reset your own counting stats."""
+        """
+        Reset your own counting stats.
+
+        This will clear your count and last counted timestamp.
+        This action cannot be undone, so use it carefully with the confirmation prompt.
+        """
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
             "Are you sure you want to reset your counting stats?", view=view
@@ -468,6 +174,7 @@ class Counting(commands.Cog):
         if view.result:
             await self.settings.clear_user(ctx.author)
             await ctx.send("Your stats have been reset.")
+            logger.info(f"{ctx.author} has reset their counting stats.")
         else:
             await ctx.send("Reset cancelled.")
 
@@ -596,7 +303,7 @@ class Counting(commands.Cog):
                 "Ensure it’s accessible and I have `add_reactions` permission in this channel."
             )
             await ctx.send(error_msg)
-            self.logger.error(
+            logger.error(
                 f"Failed to set reaction '{unicode_emoji}' in guild {ctx.guild.id}: {e}",
                 exc_info=True,
             )
@@ -677,6 +384,9 @@ class Counting(commands.Cog):
                 return await ctx.send(
                     "Invalid duration. Use a number followed by 's', 'm', 'h', or 'd'."
                 )
+                logger.error(
+                    f"Invalid duration format '{duration}' provided by {ctx.author} in guild {ctx.guild.id}."
+                )
 
         await asyncio.gather(
             self.settings.update_guild(ctx.guild, "ruin_role_id", role.id),
@@ -721,6 +431,12 @@ class Counting(commands.Cog):
         """
         if len(message) > 2000:
             return await ctx.send("Message is too long. Maximum length is 2000 characters.")
+        if "goal" in msg_type.lower():
+            return await ctx.send(
+                "Use the `{prefix}countingset goalmessage` command to set the goal message instead of this command.".format(
+                    prefix=ctx.clean_prefix
+                )
+            )
         msg_type = msg_type.lower()
         try:
             mtype = MessageType(msg_type)
@@ -770,7 +486,7 @@ class Counting(commands.Cog):
     @commands.guildowner()
     @countingset.command(name="resetcount")
     async def set_reset_count(self, ctx: commands.Context) -> None:
-        """Reset all counting settings back to default."""
+        """Reset the count back to 0."""
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send("Are you sure you want to reset counting?", view=view)
         await view.wait()
@@ -779,6 +495,70 @@ class Counting(commands.Cog):
             await ctx.send("Counting has been reset to 0.")
         else:
             await ctx.send("Reset cancelled.")
+
+    @countingset.command(name="goal")
+    async def set_goal(
+        self,
+        ctx: commands.Context,
+        goal: commands.Range[int, 1, 1000000000000000] = None,
+    ) -> None:
+        """
+        Set or clear the counting goal.
+
+        Anything between 1 and 1,000,000,000,000,000 is allowed.
+        If no goal is provided, it will clear the current goal.
+        """
+        await self.settings.update_guild(ctx.guild, "goal", goal)
+        if goal:
+            await ctx.send(f"Counting goal set to {goal}.")
+        else:
+            await ctx.send("Counting goal cleared.")
+
+    @countingset.command(name="goalmessage")
+    async def set_goal_message(self, ctx: commands.Context, *, message: str) -> None:
+        """
+        Set the message sent when the goal is reached.
+
+        Use `{user}` for the user and `{goal}` for the goal.
+
+        **Example usage**:
+        - `[p]countingset goalmessage {user} reached the goal of {goal}! Congratulations!`
+            - This will send a message like "User reached the goal of 100! Congratulations!" when the goal is reached.
+
+        **Arguments**:
+        - `<message>`: The custom message to set for the goal. This can include placeholders `{user}` and `{goal}`.
+        """
+        if len(message) > 2000:
+            return await ctx.send("Message is too long. Maximum length is 2000 characters.")
+        await self.settings.update_guild(ctx.guild, "goal_message", message)
+        await ctx.send("Goal message updated.")
+
+    @countingset.command(name="progressinterval")
+    async def set_progress_interval(
+        self, ctx: commands.Context, interval: commands.Range[int, 1, 100]
+    ) -> None:
+        """
+        Set the interval for progress messages
+
+        Must be between 1 and 100 counts.
+
+        **Example usage**:
+        - `[p]countingset progressinterval 10`
+            - This will send a progress message every 10 counts.
+
+        **Arguments**:
+        - `<interval>`: The number of counts after which a progress message will be sent.
+        """
+        await self.settings.update_guild(ctx.guild, "progress_interval", interval)
+        await ctx.send(f"Progress messages will be sent every {interval} counts.")
+
+    @countingset.command(name="toggleprogress")
+    async def set_toggle_progress(self, ctx: commands.Context) -> None:
+        """Toggle progress messages for the counting goal."""
+        settings = await self.settings.get_guild_settings(ctx.guild)
+        toggle = not settings["toggle_progress"]
+        await self.settings.update_guild(ctx.guild, "toggle_progress", toggle)
+        await ctx.send(f"Progress messages are now {toggle and 'enabled' or 'disabled'}.")
 
     @countingset.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
@@ -798,6 +578,7 @@ class Counting(commands.Cog):
             ("Channel", channel.mention if channel else "Not set"),
             ("Toggle", bool_to_status(settings["toggle"])),
             ("Current Count", cf.humanize_number(settings["count"])),
+            ("Goal", settings["goal"] if settings["goal"] else "Not set"),
             ("Delete After", f"{settings['delete_after']}s"),
             ("Silent Mode", bool_to_status(settings["use_silent"])),
             ("Reactions", bool_to_status(settings["toggle_reactions"])),
@@ -825,6 +606,8 @@ class Counting(commands.Cog):
                 or "None",
             ),
             ("Toggle Delete After", bool_to_status(settings["toggle_delete_after"])),
+            ("Progress Interval", f"{settings['progress_interval']} counts"),
+            ("Progress Messages", bool_to_status(settings["toggle_progress"])),
             (
                 "Messages",
                 "\n".join(
@@ -834,6 +617,7 @@ class Counting(commands.Cog):
                         ("Count", settings["default_next_number_message"]),
                         ("Same User", settings["default_same_user_message"]),
                         ("Ruin", settings["ruin_message"]),
+                        ("Goal", settings["goal_message"]),
                     ]
                 ),
             ),
