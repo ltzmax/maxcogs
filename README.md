@@ -31,8 +31,6 @@ To install any cog you want:
     - Count from 1 to infinity!
 - Currency
     - A cog to convert currencies using ExchangeRate-API.
-- EasterHunt
-    - Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements.
 - ForwadDeleter
     - A cog that deletes forwarded messages and allows them in specified channels or by roles.
 - GitHub

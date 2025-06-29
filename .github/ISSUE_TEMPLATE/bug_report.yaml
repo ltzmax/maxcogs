@@ -18,7 +18,6 @@ body:
         - autopublisher
         - counting
         - currency
-        - easterhunt
         - forwarddeleter
         - github
         - honeycoms
