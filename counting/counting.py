@@ -389,7 +389,7 @@ class Counting(commands.Cog):
 
         Duration can be specified like '60s', '5m', '1h', '2d' (seconds, minutes, hours, days).
         Valid range: 60 seconds to 30 days. Omit duration for a permanent role.
-        Example: `[p]countingset ruinrole @Role 5m` to set a role for 5 minutes.
+        Example: `[p]countingset roles ruinrole @Role 5m` to set a role for 5 minutes.
         """
         if not role:
             await asyncio.gather(
@@ -503,7 +503,7 @@ class Counting(commands.Cog):
         Must be between 1 and 100 counts.
 
         **Example usage**:
-        - `[p]countingset progressinterval 10`
+        - `[p]countingset limits progressinterval 10`
             - This will send a progress message every 10 counts.
 
         **Arguments**:
@@ -556,7 +556,7 @@ class Counting(commands.Cog):
     async def countingset_misc(self, ctx: commands.Context) -> None:
         """Manage miscellaneous counting settings."""
 
-    @countingset_misc.command(name="emoji")
+    @countingset_misc.command(name="emoji", aliases=["setemoji"])
     async def set_emoji(self, ctx: commands.Context, emoji_input: str) -> None:
         """
         Set the reaction emoji for correct counts.
@@ -564,9 +564,9 @@ class Counting(commands.Cog):
         Emoji can be a Unicode emoji, a custom emoji, or an emoji shortcode.
 
         **Example usage**:
-        - `[p]countingset setemoji :thumbsup:`
-        - `[p]countingset setemoji 👍`
-        - `[p]countingset setemoji <a:custom_emoji_name:123456789012345678>`
+        - `[p]countingset misc emoji :thumbsup:`
+        - `[p]countingset misc emoji 👍`
+        - `[p]countingset misc emoji <a:custom_emoji_name:123456789012345678>`
 
         **Arguments**:
         - `<emoji_input>`: The emoji to set as the reaction. This can be a Unicode emoji, a custom emoji, or an emoji shortcode (e.g., `:thumbsup:`).
