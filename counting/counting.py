@@ -302,10 +302,10 @@ class Counting(commands.Cog):
         The message must not exceed 2000 characters.
 
         **Example usage**:
-        - `[p]countingset message count Next number is {next_count}.`
-        - `[p]countingset message edit You can't edit your messages here. Next number: {next_count}`
-        - `[p]countingset message sameuser You cannot count consecutively. Wait for someone else.`
-        - `[p]countingset message ruincount {user} ruined the count at {count}! Starting back at 1.`
+        - `[p]countingset messages message count Next number is {next_count}.`
+        - `[p]countingset messages message edit You can't edit your messages here. Next number: {next_count}`
+        - `[p]countingset messages message sameuser You cannot count consecutively. Wait for someone else.`
+        - `[p]countingset messages message ruincount {user} ruined the count at {count}! Starting back at 1.`
 
         - The placeholders `{next_count}` and `{user}` will be replaced with the appropriate values.
             - `{next_count}`: The next expected count number and only works for `count` and `edit`.
