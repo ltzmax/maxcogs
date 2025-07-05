@@ -343,7 +343,7 @@ class Counting(commands.Cog):
         Use `{user}` for the user and `{goal}` for the goal.
 
         **Example usage**:
-        - `[p]countingset goalmessage {user} reached the goal of {goal}! Congratulations!`
+        - `[p]countingset messages goal {user} reached the goal of {goal}! Congratulations!`
             - This will send a message like "User reached the goal of 100! Congratulations!" when the goal is reached.
 
         **Arguments**:
