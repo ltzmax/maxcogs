@@ -423,7 +423,7 @@ async def search_and_display(ctx, query: str, media_type: str):
                 label="Previous" if direction == "prev" else "Next",
                 emoji="◀️" if direction == "prev" else "▶️",
                 style=discord.ButtonStyle.secondary,
-                custom_id=f"nav_{direction}"
+                custom_id=f"nav_{direction}",
             )
             self.direction = direction
 
