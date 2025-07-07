@@ -379,7 +379,7 @@ async def search_and_display(ctx, query: str, media_type: str):
 
     class MediaButton(discord.ui.Button["MediaPaginator"]):
         def __init__(self, index, label=None):
-            super().__init__(label=label or "Select")
+            super().__init__(label=label or "Select", style=discord.ButtonStyle.primary)
             self.index = index
 
         async def _send_error(self, interaction, message, exc=None):
@@ -423,14 +423,15 @@ async def search_and_display(ctx, query: str, media_type: str):
                 label="Previous" if direction == "prev" else "Next",
                 emoji="◀️" if direction == "prev" else "▶️",
                 style=discord.ButtonStyle.secondary,
-                custom_id=direction,
+                custom_id=f"nav_{direction}"
             )
+            self.direction = direction
 
         async def _send_error(self, interaction, message, exc=None):
             """Send an error message and log if an exception is provided."""
             if exc:
                 log.error(
-                    f"Error navigating page {self.view.current_page} ({self.custom_id}): {exc}",
+                    f"Error navigating page {self.view.current_page} ({self.direction}): {exc}",
                     exc_info=True,
                 )
             await interaction.response.send_message(message, ephemeral=True)
@@ -439,16 +440,16 @@ async def search_and_display(ctx, query: str, media_type: str):
             try:
                 start_idx = self.view.current_page * self.view.items_per_page
                 end_idx = start_idx + self.view.items_per_page
-                if self.custom_id == "prev" and self.view.current_page > 0:
+                if self.direction == "prev" and self.view.current_page > 0:
                     self.view.current_page -= 1
-                elif self.custom_id == "next" and end_idx < len(self.view.filtered_results):
+                elif self.direction == "next" and end_idx < len(self.view.filtered_results):
                     self.view.current_page += 1
 
                 self.view._update_content()
                 await interaction.response.defer()
                 await self.view.message.edit(content=None, view=self.view)
-            except Exception:
-                await self._send_error(interaction, "Error navigating, please try again.")
+            except Exception as e:
+                await self._send_error(interaction, "Error navigating, please try again.", e)
 
     paginator = MediaPaginator(ctx, filtered_results, media_type)
     message = await ctx.send(content="", view=paginator)
