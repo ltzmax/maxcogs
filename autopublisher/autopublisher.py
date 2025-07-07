@@ -41,11 +41,13 @@ from tabulate import tabulate
 from .dashboard_integration import DashboardIntegration
 from .view import IgnoredNewsChannelsView
 
+logger = getLogger("red.maxcogs.autopublisher")
+
 
 class AutoPublisher(DashboardIntegration, commands.Cog):
     """Automatically publish messages in news channels."""
 
-    __version__: Final[str] = "3.1.0"
+    __version__: Final[str] = "3.2.0"
     __author__: Final[str] = "MAX, AAA3A"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -67,26 +69,25 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
         self.scheduler = AsyncIOScheduler()
-        self.logger = getLogger("red.maxcogs.autopublisher")
         self.bot.loop.create_task(self._initialize_scheduler())
 
     async def _initialize_scheduler(self) -> None:
         """Initialize the scheduler after cog is loaded."""
         try:
             await self._schedule_resets()
-            self.logger.info("Scheduler initialized successfully.")
+            logger.info("Scheduler initialized successfully.")
         except Exception as e:
-            self.logger.error(f"Failed to initialize scheduler: {e}", exc_info=True)
+            logger.error(f"Failed to initialize scheduler: {e}", exc_info=True)
 
     async def _get_owner_timezone(self) -> pytz.timezone:
         """Retrieve the owner's timezone from config, default to UTC."""
         timezone_str = await self.config.timezone()
         try:
             tz = pytz.timezone(timezone_str)
-            self.logger.debug(f"Retrieved timezone: {timezone_str}")
+            logger.debug(f"Retrieved timezone: {timezone_str}")
             return tz
         except pytz.exceptions.UnknownTimeZoneError:
-            self.logger.warning(f"Invalid timezone in config: {timezone_str}, falling back to UTC")
+            logger.warning(f"Invalid timezone in config: {timezone_str}, falling back to UTC")
             return pytz.UTC
 
     async def _schedule_resets(self) -> None:
@@ -126,13 +127,13 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         )
         if not self.scheduler.running:
             self.scheduler.start()
-            self.logger.info("Scheduler started with jobs: weekly, monthly, yearly")
+            logger.info("Scheduler started with jobs: weekly, monthly, yearly")
 
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
         if self.scheduler.running:
             self.scheduler.shutdown()
-            self.logger.debug("Scheduler shut down")
+            logger.debug("Scheduler shut down")
 
     async def reset_count(self, period: Literal["weekly", "monthly", "yearly"]) -> None:
         """Reset the specified count period, checking date in owner's timezone."""
@@ -141,21 +142,21 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         async with self.config.all() as data:
             if period == "weekly":
                 data["published_weekly_count"] = 0
-                self.logger.info("Weekly count reset.")
+                logger.info("Weekly count reset.")
             elif period == "monthly":
                 if now_in_owner_tz.day == 1:
                     data["published_monthly_count"] = 0
-                    self.logger.info("Monthly count reset.")
+                    logger.info("Monthly count reset.")
                 else:
-                    self.logger.debug(
+                    logger.debug(
                         f"Skipped monthly reset: not the 1st day (current day: {now_in_owner_tz.day})."
                     )
             elif period == "yearly":
                 if now_in_owner_tz.month == 1 and now_in_owner_tz.day == 1:
                     data["published_yearly_count"] = 0
-                    self.logger.info("Yearly count reset.")
+                    logger.info("Yearly count reset.")
                 else:
-                    self.logger.debug(
+                    logger.debug(
                         f"Skipped yearly reset: not Jan 1 (current date: {now_in_owner_tz.month}/{now_in_owner_tz.day})."
                     )
 
@@ -201,7 +202,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         ):
             if "NEWS" not in message.guild.features and settings["toggle"]:
                 await guild_config.toggle.set(False)
-                self.logger.warning(
+                logger.warning(
                     f"Disabled AutoPublisher in {message.guild.name} (no NEWS feature)."
                 )
             return
@@ -211,9 +212,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
             await asyncio.wait_for(message.publish(), timeout=60)
             await self.increment_published_count()
         except (discord.HTTPException, discord.Forbidden, asyncio.TimeoutError) as e:
-            self.logger.error(
-                f"Failed to publish message in {message.channel.id}: {e}", exc_info=True
-            )
+            logger.error(f"Failed to publish message in {message.channel.id}: {e}", exc_info=True)
 
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
@@ -236,14 +235,15 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
             await self.config.set_raw("timezone", value=timezone)
             await ctx.send(
                 f"Timezone set to {timezone}. Please reload the cog to apply changes:\n"
-                "`[p]unload autopublisher` then `[p]load autopublisher`.\n"
-                "-# You will see correct timezone without reload but scheduler will not work until reload is done."
+                "`{prefix}reload autopublisher`\n".format(prefix=ctx.clean_prefix),
+                "-# You will see correct timezone without reload but scheduler will not work until reload is done.",
             )
         except pytz.exceptions.UnknownTimeZoneError:
             await ctx.send(
                 "Invalid timezone. Please use a valid timezone like 'US/Pacific', 'Europe/London', or 'UTC'. "
                 "See <https://whatismyti.me> for your timezone."
             )
+            logger.error(f"Invalid timezone set attempt {timezone}", exc_info=True)
 
     @commands.is_owner()
     @autopublisher.command(name="stats")
