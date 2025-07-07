@@ -38,15 +38,16 @@ from redbot.core.utils.chat_formatting import box, humanize_list, humanize_numbe
 from redbot.core.utils.views import ConfirmView
 from tabulate import tabulate
 
+from .dashboard_integration import DashboardIntegration
 from .view import IgnoredNewsChannelsView
 
 
-class AutoPublisher(commands.Cog):
+class AutoPublisher(DashboardIntegration, commands.Cog):
     """Automatically publish messages in news channels."""
 
-    __version__: Final[str] = "2.10.0"
+    __version__: Final[str] = "3.1.0"
     __author__: Final[str] = "MAX, AAA3A"
-    __docs__: Final[str] = "https://docs.maxapp.tv/"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

@@ -32,7 +32,7 @@ import pycountry
 import pytz
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
-from redbot.core.utils.menus import SetApiView, SimpleMenu
+from redbot.core.utils.views import SetApiView, SimpleMenu
 
 
 class Holiday(commands.Cog):
@@ -40,7 +40,7 @@ class Holiday(commands.Cog):
 
     __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://docs.maxapp.tv/"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
         self.bot = bot

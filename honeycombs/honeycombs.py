@@ -56,7 +56,7 @@ class HoneyCombs(commands.Cog):
 
     __version__: Final[str] = "2.0.0a"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://docs.maxapp.tv/"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot: Red):
         self.bot = bot

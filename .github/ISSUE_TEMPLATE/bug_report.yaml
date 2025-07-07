@@ -18,7 +18,6 @@ body:
         - autopublisher
         - counting
         - currency
-        - easterhunt
         - forwarddeleter
         - github
         - honeycoms
@@ -29,6 +28,7 @@ body:
         - plaguegame
         - pokemon
         - redupdate
+        - restrictposts
         - themoviedb
     validations:
       required: true

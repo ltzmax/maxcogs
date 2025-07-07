@@ -38,13 +38,12 @@ class Lockdown(commands.Cog):
 
     __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://docs.maxapp.tv/"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567890)
         default_guild = {
-            "log_channel": None,
             "use_embed": False,
         }
         self.config.register_guild(**default_guild)
@@ -59,53 +58,11 @@ class Lockdown(commands.Cog):
         """Nothing to delete."""
         return
 
-    async def log_channel(
-        self,
-        ctx: commands.Context,
-        guild: discord.Guild,
-        event: str,
-        reason: Optional[str] = None,
-    ) -> None:
-        log_channel = await self.config.guild(guild).log_channel()
-        if not log_channel:
-            return
-        log_channel = guild.get_channel(log_channel)
-        if not log_channel:
-            return
-        if (
-            not log_channel.permissions_for(guild.me).send_messages
-            or not log_channel.permissions_for(guild.me).embed_links
-        ):
-            self.logger.warning(
-                f"I don't have send_messages or embed_links permission in {log_channel.mention}."
-            )
-            return
-        embed = discord.Embed(
-            title=event,
-            description=f"{'**Reason**: ' + reason if reason else ''}",
-            color=0xFF0000,
-        )
-        moderator_name = ctx.author.name
-        log_message = f"{event} by {moderator_name}"
-        embed.add_field(name="Log Message:", value=log_message)
-        embed.add_field(name="Channel:", value=ctx.channel.mention, inline=False)
-        embed.set_footer(text=f"Moderator's ID: {ctx.author.id}")
-        await log_channel.send(embed=embed)
-
     @commands.group()
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     async def lockdownset(self, ctx: commands.Context):
         """Lockdown settings commands."""
-
-    @lockdownset.command()
-    async def logchannel(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
-        """Set the channel for logging lockdowns."""
-        if channel is None:
-            await self.config.guild(ctx.guild).log_channel.clear()
-            return await ctx.send("Log channel cleared.")
-        await self.config.guild(ctx.guild).log_channel.set(channel.id)
-        await ctx.send(f"Log channel set to {channel.mention}.")
 
     @lockdownset.command()
     async def useembed(self, ctx: commands.Context, value: bool):
@@ -117,11 +74,8 @@ class Lockdown(commands.Cog):
     async def settings(self, ctx: commands.Context):
         """Get the current log channel."""
         all = await self.config.guild(ctx.guild).all()
-        log_channel = all["log_channel"]
         use_embed = all["use_embed"]
-        await ctx.send(
-            f"## Settings\nLog channel: {ctx.guild.get_channel(log_channel).mention if log_channel else 'None'}\nUse embeds: {use_embed}"
-        )
+        await ctx.send(f"## Settings\nUse embeds: {use_embed}")
 
     async def manage_lock(
         self,
@@ -178,7 +132,6 @@ class Lockdown(commands.Cog):
             return await ctx.send(
                 f"❌ I don't have permission to set permissions for {target_role.mention} in {ctx.channel.mention}."
             )
-        await self.log_channel(ctx, ctx.guild, event=log_event, reason=reason)
 
     @commands.guild_only()
     @commands.mod_or_can_manage_channel()
@@ -281,7 +234,6 @@ class Lockdown(commands.Cog):
             return await ctx.send("This channel is not a thread.")
         await ctx.send(f"Archived and closed {ctx.channel.mention}.")
         await ctx.channel.edit(locked=True, archived=True)
-        await self.log_channel(ctx, ctx.guild, event="Thread Closed", reason=reason)
 
     @thread.command()
     async def lockdown(self, ctx: commands.Context, *, reason: Optional[str] = None):
@@ -290,7 +242,6 @@ class Lockdown(commands.Cog):
             return await ctx.send("This channel is not a thread.")
         await ctx.send(f"Successfully locked {ctx.channel.mention}.")
         await ctx.channel.edit(locked=True)
-        await self.log_channel(ctx, ctx.guild, event="Thread Locked", reason=reason)
 
     @thread.command()
     async def open(self, ctx: commands.Context, *, reason: Optional[str] = None):
@@ -299,4 +250,3 @@ class Lockdown(commands.Cog):
             return await ctx.send("This channel is not a thread.")
         await ctx.send(f"Successfully opened {ctx.channel.mention}.")
         await ctx.channel.edit(locked=False, archived=False)
-        await self.log_channel(ctx, ctx.guild, event="Thread Opened", reason=reason)

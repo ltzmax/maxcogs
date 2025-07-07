@@ -6,7 +6,7 @@
     "disabled" : false,
     "end_user_data_statement" : "This cog stores provided server settings, as well as the GitHub commit feed links provided by users (to fetch new commit updates).",
     "hidden": false,
-    "install_msg": "Thank you for installing! Use `[p]help GitHub` for more info.\n<https://docs.maxapp.tv/> for documentation.",
+    "install_msg": "Thank you for installing! Use `[p]help GitHub` for more info.\n<https://cogs.maxapp.tv/> for documentation.",
     "min_bot_version" : "3.5.0",
     "min_python_version" : [3, 8, 1],
     "permissions": ["embed_links"],
