@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "History",
-    "install_msg": "Thanks for installing.\nUsers can set their own timezone to align with their local midnight via `[p]historyset timezone`.\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "install_msg": "Thanks for installing.\nUsers can set their own timezone to align with their local midnight via `[p]historyset timezone`.\n<https://cogs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "A cog to display historical events for the current day.",
     "short": "A cog to display historical events for the current day.",
     "hidden": false,
@@ -17,7 +17,7 @@
     "permissions": [
         "embed_links"
     ],
-    "requirements": ["pytz"],
+    "requirements": [],
     "min_python_version": [
         3,
         9,

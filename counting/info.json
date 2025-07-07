@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Counting",
-    "install_msg": "Thanks for installing.\nCheck `[p]countingset` to get started. Set channel to begin counting!\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "install_msg": "Thanks for installing.\nCheck `[p]countingset` to get started. Set channel to begin counting!\n<https://cogs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "Count from 1 to infinity! with some customizable settings.",
     "short": "Count from 1 to infinity! with some customizable settings.",
     "hidden": false,
@@ -15,7 +15,7 @@
     "permissions": [
         "manage_messages"
     ],
-    "requirements": ["tabulate", "emoji"],
+    "requirements": ["tabulate", "emoji>=2.0.0"],
     "min_python_version": [
         3,
         9,

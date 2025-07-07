@@ -32,15 +32,15 @@ import pycountry
 import pytz
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
-from redbot.core.utils.menus import SimpleMenu
+from redbot.core.utils.views import SetApiView, SimpleMenu
 
 
 class Holiday(commands.Cog):
     """Display holidays for countries worldwide, with support for setting a default country and listing available countries."""
 
-    __version__: Final[str] = "1.4.0"
+    __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://docs.maxapp.tv/"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
         self.bot = bot
@@ -339,4 +339,6 @@ class Holiday(commands.Cog):
             "5. Test it with `[p]holidays countries`.\n"
             "Note: The free tier gives 500 requests/month. Check the site for paid options if needed."
         )
-        await ctx.send(message)
+        default_keys = {"api_key": ""}
+        view = SetApiView("calendarific", default_keys)
+        await ctx.send(message, view=view)

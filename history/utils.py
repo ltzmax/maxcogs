@@ -23,21 +23,22 @@ SOFTWARE.
 """
 
 import logging
+from typing import Any
 
 import aiohttp
 import orjson
+from red_commons.logging import getLogger
 
-log = logging.getLogger("red.maxcogs.history.utils")
+log = getLogger("red.maxcogs.history.utils")
 DEFAULT_ERA_NOTATION = "BC"
 
 
-async def format_year(year: any) -> str:
+async def format_year(year: int | str | None) -> str:
     """
     Format a year value into a standardized string with era notation, preserving circa notation when present.
 
     Args:
-        year: The year as an integer, string, or "Unknown Year". Can include "circa" or "c." prefixes.
-
+        year: The year as an integer, string, or None. Can include "circa" or "c." prefixes.
     Returns:
         str: Formatted year (e.g., "2025", "c. 500 BC", "Unknown Year") or "Unknown Year" if invalid.
     """
@@ -46,12 +47,12 @@ async def format_year(year: any) -> str:
         return "Unknown Year"
 
     try:
-        is_circa = False
+        is_circa: bool = False
         if isinstance(year, int):
-            year_str = str(year)
+            year_str: str = str(year)
         else:
             year_str = str(year).strip().lower()
-            circa_prefixes = ("circa", "c.", "ca.", "approximately")
+            circa_prefixes: tuple[str, ...] = ("circa", "c.", "ca.", "approximately")
             is_circa = any(prefix in year_str for prefix in circa_prefixes)
             for prefix in circa_prefixes:
                 year_str = year_str.replace(prefix, "").strip()
@@ -59,9 +60,9 @@ async def format_year(year: any) -> str:
         if year_str == "unknown year":
             return "Unknown Year"
 
-        year_int = int(year_str)
+        year_int: int = int(year_str)
         if year_int < 0:
-            formatted_year = (
+            formatted_year: str = (
                 f"{abs(year_int)} {DEFAULT_ERA_NOTATION}"
                 if year_int != -1
                 else f"1 {DEFAULT_ERA_NOTATION}"

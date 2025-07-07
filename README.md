@@ -4,7 +4,7 @@
 You can find me in the [Cog Support server](https://discord.gg/GET4DVk) #forum_othercogs then go to #maxcogs channel or in [Red main server](https://discord.gg/red) in #testing for questions. Just ping MAX (username: ltzmax) (345628097929936898)
 
 ## Docs
-Documentations for each of my cogs can be found [by clicking here](https://docs.maxapp.tv/)
+Documentations for each of my cogs can be found [by clicking here](https://cogs.maxapp.tv/)
 
 ## Support
 You can support me at [github sponsor](https://github.com/sponsors/ltzmax) or [buy me a coffee](https://www.buymeacoffee.com/ltzmax).
@@ -31,8 +31,6 @@ To install any cog you want:
     - Count from 1 to infinity!
 - Currency
     - A cog to convert currencies using ExchangeRate-API.
-- EasterHunt
-    - Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements.
 - ForwadDeleter
     - A cog that deletes forwarded messages and allows them in specified channels or by roles.
 - GitHub
@@ -57,6 +55,8 @@ To install any cog you want:
     - This is pokemon related stuff cog.
 - RedUpdate
     - Update your bot to latest dev/stable changes.
+- RestrictPosts
+    - A cog to restrict posts to attachments and links in a specific channel.
 - TheMovieDB
     - Search for informations of movies and TV shows from themoviedb.org.
 

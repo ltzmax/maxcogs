@@ -42,7 +42,7 @@ class ForwardDeleter(commands.Cog):
 
     __version__: Final[str] = "1.3.1"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://docs.maxapp.tv/"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot: Red):
         self.bot = bot
@@ -51,7 +51,6 @@ class ForwardDeleter(commands.Cog):
             "enabled": False,
             "allowed_channels": [],
             "allowed_roles": [],
-            "log_channel": None,
             "warn_enabled": False,
             "warn_message": WARN_MESSAGE,
         }
@@ -68,7 +67,6 @@ class ForwardDeleter(commands.Cog):
     async def cog_load(self):
         """Initialize cache and start background logging task."""
         await self._initialize_cache()
-        self.bot.loop.create_task(self._log_background_task())
 
     async def _initialize_cache(self) -> None:
         """Initialize the config cache for all guilds."""
@@ -79,18 +77,10 @@ class ForwardDeleter(commands.Cog):
                     "enabled": config["enabled"],
                     "allowed_channels": set(config["allowed_channels"]),
                     "allowed_roles": set(config["allowed_roles"]),
-                    "log_channel": config["log_channel"],
                     "warn_enabled": config["warn_enabled"],
                     "warn_message": config["warn_message"],
                 }
         log.info("Guild config cache initialized.")
-
-    async def _log_background_task(self) -> None:
-        """Periodically process log queue and send batched logs."""
-        while self._running:
-            for guild_id in list(self._log_queue.keys()):
-                await self._send_log(guild_id)
-            await asyncio.sleep(10)
 
     async def _update_cache(self, guild: discord.Guild, key: str, value: Any) -> None:
         """Update the cache and config for a guild."""
@@ -138,60 +128,6 @@ class ForwardDeleter(commands.Cog):
             return False
         return True
 
-    async def _send_log(self, guild_id: int) -> None:
-        """Send batched deletion logs to the specified channel."""
-        async with self._log_lock:
-            if guild_id not in self._log_queue or not self._log_queue[guild_id]:
-                return
-            messages = self._log_queue[guild_id]
-            self._log_queue[guild_id] = []
-            config = self._config_cache.get(guild_id, {})
-            log_channel_id = config.get("log_channel")
-            if not log_channel_id:
-                return
-
-            guild = self.bot.get_guild(guild_id)
-            if not guild:
-                return
-            log_channel = guild.get_channel(log_channel_id)
-            if not log_channel or not log_channel.permissions_for(guild.me).send_messages:
-                log.warning(
-                    f"Cannot send to log channel {log_channel_id} in {guild.name}: Invalid or no permissions"
-                )
-                return
-
-            embed = discord.Embed(
-                title="Forwarded Messages Deleted",
-                color=0xD21312,
-                timestamp=discord.utils.utcnow(),
-            )
-            embed.add_field(
-                name="Deleted Messages",
-                value=f"{len(messages)} forwarded message(s) deleted.",
-                inline=False,
-            )
-            for i, message in enumerate(messages[:5], 1):
-                embed.add_field(
-                    name=f"Message {i}",
-                    value=(
-                        f"**Author**: {message.author.mention}\n"
-                        f"**Channel**: {message.channel.mention}\n"
-                        f"**Content**: {message.content or 'Content is Unknown.'}"
-                    ),
-                    inline=False,
-                )
-            if len(messages) > 5:
-                embed.add_field(
-                    name="Additional Deletions",
-                    value=f"{len(messages) - 5} more messages deleted.",
-                    inline=False,
-                )
-            embed.set_footer(text=f"Guild ID: {guild_id}")
-            try:
-                await log_channel.send(embed=embed)
-            except discord.Forbidden:
-                log.error(f"Failed to send log to {log_channel.mention}: No permissions")
-
     async def _send_warning(self, message: discord.Message, warn_message: str) -> None:
         """Send warning message to user, preferably via DM."""
         if message.channel.permissions_for(message.guild.me).send_messages:
@@ -226,9 +162,6 @@ class ForwardDeleter(commands.Cog):
 
         try:
             await message.delete()
-            if config.get("log_channel"):
-                async with self._log_lock:
-                    self._log_queue[message.guild.id].append(message)
             if config.get("warn_enabled"):
                 await self._send_warning(message, config["warn_message"])
         except discord.Forbidden as e:
@@ -270,18 +203,6 @@ class ForwardDeleter(commands.Cog):
                 await ctx.send(f"Removed {role.name} from forwarding whitelist")
             else:
                 await ctx.send(f"{role.name} is not in the whitelist")
-
-    @forwarddeleter.command()
-    async def setlog(self, ctx: commands.Context, channel: discord.TextChannel = None):
-        """Set or clear the channel for logging deleted forwarded messages."""
-        if channel:
-            perms = channel.permissions_for(ctx.guild.me)
-            if not perms.send_messages or not perms.embed_links:
-                return await ctx.send(
-                    f"I don’t have permission to send messages or embed links in {channel.mention}!"
-                )
-        await self._update_cache(ctx.guild, "log_channel", channel.id if channel else None)
-        await ctx.send(f"Log channel {'set to ' + channel.mention if channel else 'cleared'}.")
 
     @forwarddeleter.command()
     async def toggle(self, ctx: commands.Context):
@@ -369,10 +290,6 @@ class ForwardDeleter(commands.Cog):
         config = self._config_cache.get(ctx.guild.id, {})
         embed = discord.Embed(title="Forward Deleter Settings", color=await ctx.embed_color())
         embed.add_field(name="Status", value="Enabled" if config["enabled"] else "Disabled")
-        log_channel = ctx.guild.get_channel(config["log_channel"])
-        embed.add_field(
-            name="Log Channel", value=log_channel.mention if log_channel else "Not set"
-        )
         embed.add_field(
             name="Warn Users", value="Enabled" if config["warn_enabled"] else "Disabled"
         )

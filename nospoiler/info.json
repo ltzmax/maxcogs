@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "NoSpoiler",
-    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any spoiler filter without setting up autoimmune.\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "install_msg": "Thanks for installing.\nThis cog relies on red's autoimmune, to ignore role(s) or user(s) use `[p]autoimmune` from red. You are not immune from any spoiler filter without setting up autoimmune.\n<https://cogs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "Prevent spoilers in the server by deleting messages with spoiler tags or attachments.",
     "short": "Prevent spoilers in the server by deleting messages with spoiler tags or attachments.",
     "hidden": false,
