@@ -290,9 +290,7 @@ class Counting(commands.Cog):
         await ctx.send(f"Progress messages are now {toggle and 'enabled' or 'disabled'}.")
 
     @countingset_toggle.command(name="goaldelete")
-    async def set_toggle_progress_delete(
-        self, ctx: commands.Context
-    ) -> None:
+    async def set_toggle_progress_delete(self, ctx: commands.Context) -> None:
         """Toggle whether the goal message is deleted after being sent."""
         settings = await self.settings.get_guild_settings(ctx.guild)
         toggle = not settings["toggle_progress_delete"]
