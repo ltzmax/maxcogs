@@ -130,5 +130,5 @@ class Currency(commands.Cog):
             await interaction.response.send_message(
                 f"{amount} {from_currency.upper()} = {converted_amount} {to_currency.upper()}"
             )
-        except Exception as e:
+        except discord.HTTPException as e:
             self.logger.error(f"{e}", exc_info=True)
