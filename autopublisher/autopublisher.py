@@ -233,11 +233,12 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         try:
             pytz.timezone(timezone)
             await self.config.set_raw("timezone", value=timezone)
-            await ctx.send(
+            message = (
                 f"Timezone set to {timezone}. Please reload the cog to apply changes:\n"
-                "`{prefix}reload autopublisher`\n".format(prefix=ctx.clean_prefix),
-                "-# You will see correct timezone without reload but scheduler will not work until reload is done.",
+                f"`{ctx.clean_prefix}reload autopublisher`\n"
+                "-# You will see correct timezone without reload but scheduler will not work until reload is done."
             )
+            await ctx.send(message)
         except pytz.exceptions.UnknownTimeZoneError:
             await ctx.send(
                 "Invalid timezone. Please use a valid timezone like 'US/Pacific', 'Europe/London', or 'UTC'. "
