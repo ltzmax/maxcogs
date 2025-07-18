@@ -727,9 +727,9 @@ class Counting(commands.Cog):
             embed.add_field(name=name, value=value, inline=name not in {"Messages"})
         await ctx.send(embed=embed)
 
-    @countingset.commands(name="goalsettings")
+    @countingset.command(name="goalsettings")
     @commands.bot_has_permissions(embed_links=True)
-    async def goal_settings(self, ctx: commands.Context):
+    async def countingset_goalsettings(self, ctx: commands.Context):
         """
         See current counting goals.
         
