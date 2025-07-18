@@ -30,6 +30,7 @@ from typing import Any, Dict, Final, Optional
 
 import discord
 import emoji
+from discord import Embed
 from discord.utils import get
 from emoji import is_emoji
 from red_commons.logging import getLogger
@@ -37,7 +38,7 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.chat_formatting import box
-from redbot.core.utils.views import ConfirmView
+from redbot.core.utils.views import ConfirmView, SimpleMenu
 from tabulate import tabulate
 
 from .event_handlers import EventHandlers
@@ -57,7 +58,7 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.7.0"
+    __version__: Final[str] = "2.8.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -88,7 +89,7 @@ class Counting(commands.Cog):
             "temp_roles": {},
             "ruin_role_duration": None,
             "excluded_roles": [],
-            "goal": None,
+            "goal": [],
             "goal_message": "{user} reached the goal of {goal}! Congratulations!",
             "toggle_goal_delete": False,
             "progress_interval": 10,
@@ -343,7 +344,7 @@ class Counting(commands.Cog):
         except ValueError:
             await ctx.send(f"Invalid type. Use: {', '.join(mt.value for mt in MessageType)}.")
 
-    @countingset_messages.command(name="goal")
+    @countingset_messages.command(name="goalmessage")
     async def set_goal_message(self, ctx: commands.Context, *, message: str) -> None:
         """
         Set the message sent when the goal is reached.
@@ -369,7 +370,7 @@ class Counting(commands.Cog):
 
         Use `{remaining}` for counts left and `{goal}` for the goal.
 
-        **Example usage**:
+        **Example usage**:  
         - `[p]countingset messages progress {remaining} to go until {goal}! Keep counting!`
 
         **Arguments**:
@@ -487,19 +488,51 @@ class Counting(commands.Cog):
 
     @countingset_limits.command(name="goal")
     async def set_goal(
-        self, ctx: commands.Context, goal: commands.Range[int, 1, 1000000000000000] = None
+        self, ctx: commands.Context, goal: commands.Range[int, 1, 1000000000000000] = None, action: str = "add"
     ) -> None:
         """
-        Set or clear the counting goal.
+        Manage counting goals.
 
-        Anything between 1 and 1,000,000,000,000,000 is allowed.
-        If no goal is provided, it will clear the current goal.
+        **Note**: Goals must be unique and sorted in ascending order. If a goal already exists, it will not be added again.
+
+        **Example usage**:
+        - `[p]countingset limits goal 100 add`
+        - `[p]countingset limits goal 200 remove`
+        - `[p]countingset limits goal clear`
+        
+        **Arguments**:
+        - `<goal>`: The goal value to add or remove (must be between 1 and 1 quadrillion).
+        - `<action>`: The action to perform (add, remove, or clear). Default is 'add'.
+        - If `clear` is used, all goals will be removed.
         """
-        await self.settings.update_guild(ctx.guild, "goal", goal)
-        if goal:
-            await ctx.send(f"Counting goal set to {goal}.")
+        settings = await self.settings.get_guild_settings(ctx.guild)
+        current_goals = settings.get("goals", [])
+
+        if action.lower() == "clear":
+            await self.settings.update_guild(ctx.guild, "goals", [])
+            return await ctx.send("All counting goals cleared.")
+            
+
+        if goal is None:
+            return await ctx.send("Please provide a goal value.")
+
+        if action.lower() == "add":
+            if goal not in current_goals:
+                current_goals.append(goal)
+                current_goals.sort()
+                await self.settings.update_guild(ctx.guild, "goals", current_goals)
+                await ctx.send(f"Counting goal {goal} added. Current goals")
+            else:
+                await ctx.send(f"Goal {goal} is already set.")
+        elif action.lower() == "remove":
+            if goal in current_goals:
+                current_goals.remove(goal)
+                await self.settings.update_guild(ctx.guild, "goals", current_goals)
+                await ctx.send(f"Counting goal {goal} removed.")
+            else:
+                await ctx.send(f"Goal {goal} is not in the list.")
         else:
-            await ctx.send("Counting goal cleared.")
+            await ctx.send("Invalid action. Use 'add', 'remove', or 'clear'.")
 
     @countingset_limits.command(name="progressinterval")
     async def set_progress_interval(
@@ -637,7 +670,6 @@ class Counting(commands.Cog):
             ("Channel", channel.mention if channel else "Not set"),
             ("Toggle", bool_to_status(settings["toggle"])),
             ("Current Count", cf.humanize_number(settings["count"])),
-            ("Goal", settings["goal"] if settings["goal"] else "Not set"),
             ("Delete After", f"{settings['delete_after']}s"),
             ("Silent Mode", bool_to_status(settings["use_silent"])),
             ("Reactions", bool_to_status(settings["toggle_reactions"])),
@@ -694,3 +726,31 @@ class Counting(commands.Cog):
         for name, value in fields:
             embed.add_field(name=name, value=value, inline=name not in {"Messages"})
         await ctx.send(embed=embed)
+
+    @countingset.commands(name="goalsettings")
+    @commands.bot_has_permissions(embed_links=True)
+    async def goal_settings(self, ctx: commands.Context):
+        """
+        See current counting goals.
+        
+        This will show all counting goals set for the server.
+        """
+        settings = await self.settings.get_guild_settings(ctx.guild)
+        goals = settings.get("goals", [])
+        
+        if not goals:
+            return await ctx.send("No counting goals set.")
+
+        embeds = []
+        goals_per_page = 10
+        for i in range(0, len(goals), goals_per_page):
+            page_goals = goals[i:i + goals_per_page]
+            goal_list = "\n".join(str(goal) for goal in page_goals)
+            embed = Embed(
+                title="Current Counting Goals",
+                description=goal_list,
+                color=await ctx.embed_color(),
+            )
+            embed.set_footer(text=f"Page {i // goals_per_page + 1}/{len(goals) // goals_per_page + 1} | Total goals: {len(goals)}")
+            embeds.append(embed)
+        await SimpleMenu(pages=embeds, disable_after_timeout=True, timeout=120).start(ctx)
