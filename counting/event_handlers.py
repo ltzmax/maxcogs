@@ -226,7 +226,7 @@ class EventHandlers:
         await assign_ruin_role(message.author, message.guild, settings)
         response = settings["ruin_message"].format(user=message.author.mention, count=old_count)
         delete_after = (
-            settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+            settings["delete_after"] if settings.get("toggle_delete_after", False) else None
         )
         await send_message(
             message.channel,
@@ -270,7 +270,7 @@ class EventHandlers:
         elif settings["toggle_edit_message"]:
             response = settings["default_edit_message"].format(next_count=settings["count"] + 1)
             delete_after = (
-                settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+                settings["delete_after"] if settings.get("toggle_delete_after", False) else None
             )
             await send_message(
                 channel,
