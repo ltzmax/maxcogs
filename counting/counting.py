@@ -370,7 +370,7 @@ class Counting(commands.Cog):
 
         Use `{remaining}` for counts left and `{goal}` for the goal.
 
-        **Example usage**:  
+        **Example usage**:
         - `[p]countingset messages progress {remaining} to go until {goal}! Keep counting!`
 
         **Arguments**:
@@ -488,7 +488,10 @@ class Counting(commands.Cog):
 
     @countingset_limits.command(name="goal")
     async def set_goal(
-        self, ctx: commands.Context, goal: commands.Range[int, 1, 1000000000000000] = None, action: str = "add"
+        self,
+        ctx: commands.Context,
+        goal: commands.Range[int, 1, 1000000000000000] = None,
+        action: str = "add",
     ) -> None:
         """
         Manage counting goals.
@@ -499,7 +502,7 @@ class Counting(commands.Cog):
         - `[p]countingset limits goal 100 add`
         - `[p]countingset limits goal 200 remove`
         - `[p]countingset limits goal clear`
-        
+
         **Arguments**:
         - `<goal>`: The goal value to add or remove (must be between 1 and 1 quadrillion).
         - `<action>`: The action to perform (add, remove, or clear). Default is 'add'.
@@ -511,7 +514,6 @@ class Counting(commands.Cog):
         if action.lower() == "clear":
             await self.settings.update_guild(ctx.guild, "goals", [])
             return await ctx.send("All counting goals cleared.")
-            
 
         if goal is None:
             return await ctx.send("Please provide a goal value.")
@@ -732,25 +734,27 @@ class Counting(commands.Cog):
     async def countingset_goalsettings(self, ctx: commands.Context):
         """
         See current counting goals.
-        
+
         This will show all counting goals set for the server.
         """
         settings = await self.settings.get_guild_settings(ctx.guild)
         goals = settings.get("goals", [])
-        
+
         if not goals:
             return await ctx.send("No counting goals set.")
 
         embeds = []
         goals_per_page = 10
         for i in range(0, len(goals), goals_per_page):
-            page_goals = goals[i:i + goals_per_page]
+            page_goals = goals[i : i + goals_per_page]
             goal_list = "\n".join(str(goal) for goal in page_goals)
             embed = Embed(
                 title="Current Counting Goals",
                 description=goal_list,
                 color=await ctx.embed_color(),
             )
-            embed.set_footer(text=f"Page {i // goals_per_page + 1}/{len(goals) // goals_per_page + 1} | Total goals: {len(goals)}")
+            embed.set_footer(
+                text=f"Page {i // goals_per_page + 1}/{len(goals) // goals_per_page + 1} | Total goals: {len(goals)}"
+            )
             embeds.append(embed)
         await SimpleMenu(pages=embeds, disable_after_timeout=True, timeout=120).start(ctx)
