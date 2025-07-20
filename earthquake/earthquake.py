@@ -41,7 +41,7 @@ logger = getLogger("red.maxcogs.earthquake")
 class Earthquake(commands.Cog):
     """Real-time worldwide earthquake alerts from USGS."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
 
     def __init__(self, bot):
@@ -76,6 +76,10 @@ class Earthquake(commands.Cog):
         self.earthquake_check.cancel()
         self.bot.loop.create_task(self.session.close())
 
+    async def get_guild_settings(self) -> Dict[int, Dict]:
+        """Cache guild settings to reduce config calls."""
+        return {guild.id: await self.config.guild(guild).all() for guild in self.bot.guilds}
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -101,9 +105,10 @@ class Earthquake(commands.Cog):
                 if isinstance(eq, dict) and "properties" in eq and "geometry" in eq
             ]
 
-    async def get_guild_settings(self) -> Dict[int, Dict]:
-        """Cache guild settings to reduce config calls."""
-        return {guild.id: await self.config.guild(guild).all() for guild in self.bot.guilds}
+    def cog_unload(self):
+        self.earthquake_check.cancel()
+        if not self.session.closed:
+            self.bot.loop.create_task(self.session.close())
 
     @tasks.loop(seconds=60)
     async def earthquake_check(self):
