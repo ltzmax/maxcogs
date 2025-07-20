@@ -72,10 +72,6 @@ class Earthquake(commands.Cog):
         """No user data to delete."""
         pass
 
-    def cog_unload(self):
-        self.earthquake_check.cancel()
-        self.bot.loop.create_task(self.session.close())
-
     async def get_guild_settings(self) -> Dict[int, Dict]:
         """Cache guild settings to reduce config calls."""
         return {guild.id: await self.config.guild(guild).all() for guild in self.bot.guilds}
