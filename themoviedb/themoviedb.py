@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import urllib.parse
 import asyncio
 import datetime
+import urllib.parse
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, Optional, Union
 
@@ -35,7 +35,7 @@ from red_commons.logging import getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
-from .tmdb_utils import PREDEFINED_CHANNELS, person_embed, search_and_display, fetch_tmdb
+from .tmdb_utils import PREDEFINED_CHANNELS, fetch_tmdb, person_embed, search_and_display
 
 logger = getLogger("red.maxcogs.themoviedb")
 
