@@ -26,7 +26,7 @@ import asyncio
 import datetime
 import urllib.parse
 import xml.etree.ElementTree as ET
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
 import discord
