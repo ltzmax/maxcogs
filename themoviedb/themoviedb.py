@@ -58,12 +58,6 @@ class TheMovieDB(commands.Cog):
             "channels_status": {},
             "ping_role": None,
         }
-        default_guild = {
-            "notification_channel": None,
-            "channels_status": {},
-            "ping_role": None,
-        }
-        self.config.register_global(**default_global)
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
         self.check_for_new_trailers.start()
