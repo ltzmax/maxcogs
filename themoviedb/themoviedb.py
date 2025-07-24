@@ -23,10 +23,10 @@ SOFTWARE.
 """
 
 import asyncio
+import datetime
 import xml.etree.ElementTree as ET
 from typing import Dict, Optional, Union
 
-import datetime
 import aiohttp
 import discord
 from discord.ext import tasks
@@ -50,7 +50,9 @@ class TheMovieDB(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config: Config = Config.get_conf(self, identifier=1111238727729911, force_registration=True)
+        self.config: Config = Config.get_conf(
+            self, identifier=1111238727729911, force_registration=True
+        )
         default_guild = {
             "notification_channel": None,
             "channels_status": {},
@@ -125,6 +127,7 @@ class TheMovieDB(commands.Cog):
             return
 
         sem = asyncio.Semaphore(5)  # Limit concurrent fetches to avoid rate limiting.
+
         async def fetch_with_sem(key, details):
             async with sem:
                 return key, details, await self.fetch_feed(details["id"])
@@ -264,9 +267,7 @@ class TheMovieDB(commands.Cog):
         guild_data = await self.config.guild(ctx.guild).all()
         channels_status = guild_data.get("channels_status", {})
 
-        any_enabled = any(
-            status.get("enabled", False) for status in channels_status.values()
-        )
+        any_enabled = any(status.get("enabled", False) for status in channels_status.values())
 
         if channel:
             if not channel.permissions_for(ctx.me).send_messages:
