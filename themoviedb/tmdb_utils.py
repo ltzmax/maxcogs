@@ -31,13 +31,34 @@ from typing import Any, Dict, List, Optional
 import aiohttp
 import discord
 import orjson
-from redbot.core.bot import Red
+from red_commons.logging import getLogger
 from redbot.core.utils.chat_formatting import box, header, humanize_list, humanize_number
 from redbot.core.utils.views import SimpleMenu
 
-log = logging.getLogger("red.maxcogs.themoviedb.tmdb_utils")
+log = getLogger("red.maxcogs.themoviedb.tmdb_utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
+PREDEFINED_CHANNELS: Dict[str, Dict[str, str]] = {
+    "marvel": {"id": "UCvC4D8onUfXzvjTOM-dBfEA", "name": "Marvel Entertainment"},
+    "dc": {"id": "UCiifkYAs_bq1pt_zbNAzYGg", "name": "DC Official"},
+    "pixar": {"id": "UC_IRYSp4auq7hKLvziWVH6w", "name": "Pixar"},
+    "disney": {"id": "UC_5niPa-d35gg88HaS7RrIw", "name": "Disney"},
+    "disneyplus": {"id": "UCIrgJInjLS2BhlHOMDW7v0g", "name": "Disney+"},
+    "illumination": {"id": "UCq7OHvWO6Z3u-LztFdrcU-g", "name": "Illumination Entertainment"},
+    "warnerbros": {"id": "UCjmJDM5pRKbUlVIzDYYWb6g", "name": "Warner Bros. Pictures"},
+    "sony": {"id": "UCz97F7dMxBNOfGYu3rx8aCw", "name": "Sony Pictures Entertainment"},
+    "sonyanimation": {"id": "UCnLuLSV-Oi0ctqjxGgxFlmg", "name": "Sony Pictures Animation"},
+    "universal": {"id": "UCq0OueAsdxH6b8nyAspwViw", "name": "Universal Pictures"},
+    "paramount": {"id": "UCF9imwPMSGz4Vq1NiTWCC7g", "name": "Paramount Pictures"},
+    "20thcentury": {"id": "UC2-BeLxzUBSs0uSrmzWhJuQ", "name": "20th Century Studios"},
+    "lionsgate": {"id": "UCJ6nMHaJPZvsJ-HmUmj1SeA", "name": "Lionsgate Movies"},
+    "a24": {"id": "UCuPivVjnfNo4mb3Oog_frZg", "name": "A24"},
+    "hbomax": {"id": "UCx-KWLTKlB83hDI6UKECtJQ", "name": "HBO Max (formerly max)"},
+    "netflix": {"id": "UCWOA1ZGywLbqmigxE4Qlvuw", "name": "Netflix"},
+    "appletv": {"id": "UC1Myj674wRVXB9I4c6Hm5zA", "name": "Apple TV"},
+    "amazon": {"id": "UCQJWtTnAHhEG5w4uN0udnUQ", "name": "Amazon Prime Video"},
+    "mgm": {"id": "UCf5CjDJvsFvtVIhkfmKAwAA", "name": "Metro-Goldwyn-Mayer (MGM)"},
+}
 
 
 async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> Optional[Dict[str, Any]]:
@@ -48,7 +69,7 @@ async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> Optional[Dict[
                 log.error(f"TMDB request failed with status: {response.status}")
                 return None
             return orjson.loads(await response.read())
-    except Exception as e:
+    except discord.HTTPException as e:
         log.error(f"TMDB request error: {e}")
         return None
 

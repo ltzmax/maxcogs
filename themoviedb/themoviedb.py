@@ -22,16 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import urllib.parse
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+import asyncio
+import xml.etree.ElementTree as ET
+from typing import Dict, Optional, Union
 
+import datetime
 import aiohttp
 import discord
-from redbot.core import app_commands, commands
+from discord.ext import tasks
+from red_commons.logging import getLogger
+from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
-from .tmdb_utils import fetch_tmdb, person_embed, search_and_display
+from .tmdb_utils import PREDEFINED_CHANNELS, person_embed, search_and_display
+
+logger = getLogger("red.maxcogs.themoviedb")
 
 
 class TheMovieDB(commands.Cog):
@@ -45,10 +50,31 @@ class TheMovieDB(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config: Config = Config.get_conf(self, identifier=1111238727729911, force_registration=True)
+        default_guild = {
+            "notification_channel": None,
+            "channels_status": {},
+            "ping_role": None,
+        }
+        self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
+        self.check_for_new_trailers.start()
 
     async def cog_unload(self) -> None:
-        await self.session.close()
+        """Clean up on cog unload."""
+        self.check_for_new_trailers.cancel()
+        if hasattr(self, "session") and self.session:
+            if not self.session.closed:
+                try:
+                    await asyncio.wait_for(self.session.close(), timeout=5.0)
+                    logger.info(f"Session closed successfully: {self.session.closed}")
+                except asyncio.TimeoutError:
+                    logger.warning("Session close timed out—forcing shutdown.")
+                except discord.HTTPException as e:
+                    logger.error(f"Error closing session: {e}", exc_info=True)
+            else:
+                logger.info("Session already closed.")
+        logger.info("Cog unload complete.")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -59,13 +85,333 @@ class TheMovieDB(commands.Cog):
         """Nothing to delete."""
         return
 
+    async def fetch_feed(self, youtube_channel_id: str) -> Optional[str]:
+        url = f"https://www.youtube.com/feeds/videos.xml?channel_id={youtube_channel_id}"
+        try:
+            async with self.session.get(url, timeout=10) as response:
+                if response.status == 200:
+                    return await response.text()
+                else:
+                    logger.warning(
+                        f"Failed to fetch feed for channel {youtube_channel_id}: HTTP {response.status}"
+                    )
+                    return None
+        except aiohttp.ClientError as e:
+            logger.error(f"Error fetching feed for channel {youtube_channel_id}: {e}")
+            return None
+
+    async def check_trailers(self, guild: discord.Guild) -> None:
+        guild_data = await self.config.guild(guild).all()
+        notification_channel_id = guild_data.get("notification_channel")
+        if not notification_channel_id:
+            return
+
+        channel_to_post = guild.get_channel(notification_channel_id)
+        if not channel_to_post:
+            return
+
+        ping_role_id = guild_data.get("ping_role")
+        ping_role = guild.get_role(ping_role_id) if ping_role_id else None
+        ping_mention = f"{ping_role.mention} " if ping_role else ""
+        channels_status = guild_data.get("channels_status", {})
+
+        enabled_channels = [
+            (key, details)
+            for key, details in PREDEFINED_CHANNELS.items()
+            if channels_status.get(key, {}).get("enabled", False)
+        ]
+        if not enabled_channels:
+            return
+
+        sem = asyncio.Semaphore(5)  # Limit concurrent fetches to avoid rate limiting.
+        async def fetch_with_sem(key, details):
+            async with sem:
+                return key, details, await self.fetch_feed(details["id"])
+
+        fetch_tasks = [fetch_with_sem(key, details) for key, details in enabled_channels]
+        results = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+
+        updates = {}
+        for result in results:
+            if isinstance(result, Exception):
+                logger.error(f"Fetch error: {result}")
+                continue
+
+            key, details, feed_data = result
+            if not feed_data:
+                failure_count = channels_status.get(key, {}).get("failure_count", 0) + 1
+                updates[key] = {"enabled": failure_count < 3, "failure_count": failure_count}
+                if failure_count >= 3:
+                    try:
+                        await channel_to_post.send(
+                            f"Disabled notifications for **{details['name']}** due to repeated failures (HTTP 404).\n"
+                            "Please contact the bot owner to resolve this issue."
+                        )
+                    except (discord.Forbidden, discord.HTTPException) as e:
+                        logger.error(
+                            f"Failed to send disable message to {channel_to_post.name} in {guild.name}: {e}"
+                        )
+                continue
+
+            updates[key] = {"enabled": True, "failure_count": 0}
+
+            try:
+                root = ET.fromstring(feed_data)
+                entries = root.findall("{http://www.w3.org/2005/Atom}entry")
+                if not entries:
+                    logger.debug(f"No entries in feed for {details['name']}")
+                    continue
+
+                latest_video = entries[0]
+                video_id_elem = latest_video.find(
+                    "{http://www.youtube.com/xml/schemas/2015}videoId"
+                )
+                if video_id_elem is None:
+                    logger.warning(f"No video ID in latest entry for {details['name']}")
+                    continue
+
+                video_id = video_id_elem.text
+                last_video_id = channels_status.get(key, {}).get("last_video_id")
+
+                published_elem = latest_video.find("{http://www.w3.org/2005/Atom}published")
+                if published_elem is None:
+                    logger.warning(f"No published date in latest entry for {details['name']}")
+                    continue
+
+                published_str = published_elem.text.replace("Z", "+00:00")
+                published_dt = datetime.datetime.fromisoformat(published_str)
+                published_ts = published_dt.timestamp()
+                last_published_ts = channels_status.get(key, {}).get("last_published_ts", 0)
+
+                if last_published_ts == 0:
+                    updates[key]["last_published_ts"] = published_ts
+                    updates[key]["last_video_id"] = video_id
+                    continue
+
+                if published_ts <= last_published_ts or video_id == last_video_id:
+                    logger.debug(f"No new video for {details['name']}")
+                    continue
+
+                updates[key]["last_published_ts"] = published_ts
+                updates[key]["last_video_id"] = video_id
+                video_url_elem = latest_video.find("{http://www.w3.org/2005/Atom}link")
+                if video_url_elem is None:
+                    logger.warning(f"No link in latest entry for {details['name']}")
+                    continue
+
+                video_url = video_url_elem.attrib["href"]
+                author_name = (
+                    root.findtext(
+                        "{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name"
+                    )
+                    or details["name"]
+                )
+                message = (
+                    f"{ping_mention}**{author_name}** has uploaded a new video!\n{video_url}"
+                ).strip()
+                try:
+                    await channel_to_post.send(message)
+                except (discord.Forbidden, discord.HTTPException) as e:
+                    logger.error(
+                        f"Failed to send notification to {channel_to_post.name} in {guild.name}: {e}"
+                    )
+            except ET.ParseError as e:
+                logger.error(f"Failed to parse RSS feed for {details['name']}: {e}")
+                continue
+            except discord.HTTPException as e:
+                logger.error(f"Unexpected error processing feed for {details['name']}: {e}")
+                continue
+
+        if updates:
+            try:
+                async with self.config.guild(guild).channels_status() as statuses:
+                    for key, data in updates.items():
+                        if key not in statuses:
+                            statuses[key] = {"enabled": True, "failure_count": 0}
+                        statuses[key].update(data)
+            except discord.HTTPException as e:
+                logger.error(f"Failed to update channels_status for guild {guild.id}: {e}")
+
+    @tasks.loop(minutes=5)
+    async def check_for_new_trailers(self) -> None:
+        all_guilds = await self.config.all_guilds()
+        for guild_id in all_guilds:
+            guild = self.bot.get_guild(guild_id)
+            if not guild:
+                continue
+            try:
+                await self.check_trailers(guild)
+            except discord.HTTPException as e:
+                logger.error(f"Error checking video for guild {guild.id}: {e}", exc_info=True)
+
+    @check_for_new_trailers.before_loop
+    async def before_check_for_new_trailers(self) -> None:
+        await self.bot.wait_until_ready()
+
     @commands.group()
-    @commands.is_owner()
+    @commands.admin_or_permissions(manage_guild=True)
     async def tmdbset(self, ctx: commands.Context):
         """
         Configure TheMovieDB cog settings.
         """
 
+    @tmdbset.command(name="channel")
+    async def set_channel(
+        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
+    ) -> None:
+        """Set or unset the channel for video notifications."""
+        guild_data = await self.config.guild(ctx.guild).all()
+        channels_status = guild_data.get("channels_status", {})
+
+        any_enabled = any(
+            status.get("enabled", False) for status in channels_status.values()
+        )
+
+        if channel:
+            if not channel.permissions_for(ctx.me).send_messages:
+                return await ctx.send(
+                    f"I don't have permission to send messages in {channel.mention}. Please choose another channel or fix permissions."
+                )
+
+            await self.config.guild(ctx.guild).notification_channel.set(channel.id)
+            msg = f"Video notifications will now be sent to {channel.mention}."
+            if not any_enabled:
+                msg += (
+                    f"\nPlease enable at least one studio with `{ctx.clean_prefix}tmdbset toggle <studio_name>`.\n"
+                    f"Use `{ctx.clean_prefix}tmdbset list` to see available studios."
+                )
+            await ctx.send(msg)
+        else:
+            await self.config.guild(ctx.guild).notification_channel.set(None)
+            msg = "video notifications have been disabled."
+            if any_enabled:
+                msg += "\n(Any enabled studios will remain configured but won't notify until a channel is set again.)"
+            await ctx.send(msg)
+
+    @tmdbset.command(name="toggle")
+    async def toggle_channel(self, ctx: commands.Context, *channel_names: str) -> None:
+        """
+        Toggle notifications for one or more studios, or all studios.
+
+        Use `[p]tmdbset list` to see available studios. Pass 'all' to toggle all studios,
+        or specify multiple studio names to toggle them at once.
+
+        **NOTE**:
+        Videos may contain more than just a trailer from a movie or tv show, such as behind the scenes content or interviews. This is intended to keep you updated on new content from your favorite studios and channels. Do note that youtube shorts are not ignored, so you may receive notifications for them as well.
+
+        **Examples**:
+        - `[p]tmdbset toggle marvel`
+        - `[p]tmdbset toggle netflix sony amazon`
+        - `[p]tmdbset toggle all`
+
+        **Arguments**:
+        - `<channel_names>`: One or more studio names to toggle, or 'all' to toggle all studios.
+        """
+        if not channel_names:
+            return await ctx.send(
+                f"Please provide at least one studio name or `all`. Use `{ctx.clean_prefix}tmdbset list` to see options."
+            )
+
+        if "all" in [name.lower() for name in channel_names]:
+            if len(channel_names) > 1:
+                return await ctx.send(
+                    f"Cannot combine 'all' with specific studio names. Use `{ctx.clean_prefix}tmdbset toggle all` or list specific studios."
+                )
+
+            channel_keys = list(PREDEFINED_CHANNELS.keys())
+        else:
+            channel_keys = [name.lower() for name in channel_names]
+
+        valid_toggles = []
+        invalid_names = []
+        async with self.config.guild(ctx.guild).channels_status() as statuses:
+            for key in channel_keys:
+                if key not in PREDEFINED_CHANNELS:
+                    invalid_names.append(key)
+                    continue
+                if key not in statuses:
+                    statuses[key] = {"enabled": True, "failure_count": 0}
+                else:
+                    statuses[key]["enabled"] = not statuses[key].get("enabled", False)
+                    statuses[key]["failure_count"] = 0
+                status = "enabled" if statuses[key]["enabled"] else "disabled"
+                valid_toggles.append(f"{PREDEFINED_CHANNELS[key]['name']} (`{key}`): **{status}**")
+
+        response = ""
+        if valid_toggles:
+            response += (
+                "Toggled notifications:\n"
+                + "\n".join(f"- {toggle}" for toggle in valid_toggles)
+                + "\n"
+            )
+        if invalid_names:
+            response += (
+                "\nInvalid studio names: "
+                + ", ".join(f"`{name}`" for name in invalid_names)
+                + f". Use `{ctx.clean_prefix}tmdbset list` to see options."
+            )
+
+        if response:
+            await ctx.send(response.strip())
+        else:
+            await ctx.send(
+                f"No valid studios toggled. Use `{ctx.clean_prefix}tmdbset list` to see options."
+            )
+
+    @tmdbset.command(name="list")
+    async def list_channels(self, ctx: commands.Context) -> None:
+        """List all available studios and their notification status."""
+        guild_data = await self.config.guild(ctx.guild).all()
+        notification_channel_id = guild_data.get("notification_channel")
+        ping_role_id = guild_data.get("ping_role")
+
+        if notification_channel_id:
+            channel = ctx.guild.get_channel(notification_channel_id)
+            msg = f"Notification Channel: {channel.mention if channel else 'Not Set'}\n"
+        else:
+            msg = "Notification Channel: Not Set\n"
+
+        if ping_role_id:
+            role = ctx.guild.get_role(ping_role_id)
+            msg += f"Ping Role: {role.mention if role else 'Not Set'}\n"
+        else:
+            msg += "Ping Role: Not Set\n"
+
+        msg += "\nAvailable Studios:\n"
+        channels_status = guild_data.get("channels_status", {})
+        for key, details in PREDEFINED_CHANNELS.items():
+            status = (
+                "Enabled" if channels_status.get(key, {}).get("enabled", False) else "Disabled"
+            )
+            msg += f"- {details['name']} (`{key}`): **{status}**\n"
+
+        pages = []
+        current_page = ""
+        for line in msg.splitlines(keepends=True):
+            if len(current_page) + len(line) > 1900:
+                pages.append(current_page)
+                current_page = line
+            else:
+                current_page += line
+        if current_page:
+            pages.append(current_page)
+        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+
+    @tmdbset.command(name="role")
+    async def set_role(self, ctx: commands.Context, role: Optional[discord.Role] = None) -> None:
+        """Set or unset a role to ping for new video notifications."""
+        if role:
+            if role >= ctx.guild.me.top_role:
+                return await ctx.send("That role is higher than my highest role.")
+            if role.is_default() or role.is_everyone() or role.name == "@here":
+                return await ctx.send("Cannot set `@everyone` or `@here` as ping roles.")
+            await self.config.guild(ctx.guild).ping_role.set(role.id)
+            await ctx.send(f"New video notifications will now ping {role.mention}.")
+        else:
+            await self.config.guild(ctx.guild).ping_role.set(None)
+            await ctx.send("Ping role for video notifications has been disabled ")
+
+    @commands.is_owner()
     @tmdbset.command(name="creds")
     @commands.bot_has_permissions(embed_links=True)
     async def tmdbset_creds(self, ctx: commands.Context):
