@@ -31,14 +31,14 @@ To install any cog you want:
     - Count from 1 to infinity!
 - Currency
     - A cog to convert currencies using ExchangeRate-API.
+- Earthquake
+    - Worldwide earthquake updates.
 - ForwadDeleter
     - A cog that deletes forwarded messages and allows them in specified channels or by roles.
 - GitHub
     - GitHub RSS Commit Feeds
 - History
     - A cog to display historical events for the current day in your timezone.
-- Holiday
-    - Display holidays for countries worldwide, with support for setting a default country and listing available countries.
 - HonyComps
     - Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.
 - Lockdown
