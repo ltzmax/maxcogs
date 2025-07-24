@@ -25,7 +25,7 @@ SOFTWARE.
 import asyncio
 import datetime
 import xml.etree.ElementTree as ET
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import aiohttp
 import discord
