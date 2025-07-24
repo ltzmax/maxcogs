@@ -56,6 +56,7 @@ class TheMovieDB(commands.Cog):
             "channels_status": {},
             "ping_role": None,
         }
+        self.config.register_global(**default_global)
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
         self.check_for_new_trailers.start()
@@ -290,6 +291,130 @@ class TheMovieDB(commands.Cog):
 
     @tmdbset.command(name="toggle")
     async def toggle_channel(self, ctx: commands.Context, *channel_names: str) -> None:
+        """
+        Toggle notifications for one or more studios, or all studios.
+
+        Use `[p]tmdbset list` to see available studios. Pass 'all' to toggle all studios,
+        or specify multiple studio names to toggle them at once.
+
+        **NOTE**:
+        Videos may contain more than just a trailer from a movie or tv show, such as behind the scenes content or interviews. This is intended to keep you updated on new content from your favorite studios and channels. Do note that youtube shorts are not ignored, so you may receive notifications for them as well.
+
+        **Examples**:
+        - `[p]tmdbset toggle marvel`
+        - `[p]tmdbset toggle netflix sony amazon`
+        - `[p]tmdbset toggle all`
+
+        **Arguments**:
+        - `<channel_names>`: One or more studio names to toggle, or 'all' to toggle all studios.
+        """
+        if not channel_names:
+            return await ctx.send(
+                f"Please provide at least one studio name or `all`. Use `{ctx.clean_prefix}tmdbset list` to see options."
+            )
+
+        if "all" in [name.lower() for name in channel_names]:
+            if len(channel_names) > 1:
+                return await ctx.send(
+                    f"Cannot combine 'all' with specific studio names. Use `{ctx.clean_prefix}tmdbset toggle all` or list specific studios."
+                )
+
+            channel_keys = list(PREDEFINED_CHANNELS.keys())
+        else:
+            channel_keys = [name.lower() for name in channel_names]
+
+        valid_toggles = []
+        invalid_names = []
+        async with self.config.guild(ctx.guild).channels_status() as statuses:
+            for key in channel_keys:
+                if key not in PREDEFINED_CHANNELS:
+                    invalid_names.append(key)
+                    continue
+                if key not in statuses:
+                    statuses[key] = {"enabled": True, "failure_count": 0}
+                else:
+                    statuses[key]["enabled"] = not statuses[key].get("enabled", False)
+                    statuses[key]["failure_count"] = 0
+                status = "enabled" if statuses[key]["enabled"] else "disabled"
+                valid_toggles.append(f"{PREDEFINED_CHANNELS[key]['name']} (`{key}`): **{status}**")
+
+        response = ""
+        if valid_toggles:
+            response += (
+                "Toggled notifications:\n"
+                + "\n".join(f"- {toggle}" for toggle in valid_toggles)
+                + "\n"
+            )
+        if invalid_names:
+            response += (
+                "\nInvalid studio names: "
+                + ", ".join(f"`{name}`" for name in invalid_names)
+                + f". Use `{ctx.clean_prefix}tmdbset list` to see options."
+            )
+
+        if response:
+            await ctx.send(response.strip())
+        else:
+            await ctx.send(
+                f"No valid studios toggled. Use `{ctx.clean_prefix}tmdbset list` to see options."
+            )
+
+    @tmdbset.command(name="list")
+    async def list_channels(self, ctx: commands.Context) -> None:
+        """List all available studios and their notification status."""
+        guild_data = await self.config.guild(ctx.guild).all()
+        notification_channel_id = guild_data.get("notification_channel")
+        ping_role_id = guild_data.get("ping_role")
+
+        if notification_channel_id:
+            channel = ctx.guild.get_channel(notification_channel_id)
+            msg = f"Notification Channel: {channel.mention if channel else 'Not Set'}\n"
+        else:
+            msg = "Notification Channel: Not Set\n"
+
+        if ping_role_id:
+            role = ctx.guild.get_role(ping_role_id)
+            msg += f"Ping Role: {role.mention if role else 'Not Set'}\n"
+        else:
+            msg += "Ping Role: Not Set\n"
+
+        msg += "\nAvailable Studios:\n"
+        channels_status = guild_data.get("channels_status", {})
+        for key, details in PREDEFINED_CHANNELS.items():
+            status = (
+                "Enabled" if channels_status.get(key, {}).get("enabled", False) else "Disabled"
+            )
+            msg += f"- {details['name']} (`{key}`): **{status}**\n"
+
+        pages = []
+        current_page = ""
+        for line in msg.splitlines(keepends=True):
+            if len(current_page) + len(line) > 1900:
+                pages.append(current_page)
+                current_page = line
+            else:
+                current_page += line
+        if current_page:
+            pages.append(current_page)
+        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+
+    @tmdbset.command(name="role")
+    async def set_role(self, ctx: commands.Context, role: Optional[discord.Role] = None) -> None:
+        """Set or unset a role to ping for new video notifications."""
+        if role:
+            if role >= ctx.guild.me.top_role:
+                return await ctx.send("That role is higher than my highest role.")
+            if role.is_default() or role.is_everyone() or role.name == "@here":
+                return await ctx.send("Cannot set `@everyone` or `@here` as ping roles.")
+            await self.config.guild(ctx.guild).ping_role.set(role.id)
+            await ctx.send(f"New video notifications will now ping {role.mention}.")
+        else:
+            await self.config.guild(ctx.guild).ping_role.set(None)
+            await ctx.send("Ping role for video notifications has been disabled ")
+
+    @commands.is_owner()
+    @tmdbset.command(name="usebox")
+    async def tmdbset_usebox(self, ctx: commands.Context, value: bool):
         """
         Toggle notifications for one or more studios, or all studios.
 
