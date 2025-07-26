@@ -40,7 +40,7 @@ WARN_MESSAGE = "You are not allowed to forward message(s)."
 class ForwardDeleter(commands.Cog):
     """A cog that deletes forwarded messages and allows them in specified channels or by roles."""
 
-    __version__: Final[str] = "1.3.1"
+    __version__: Final[str] = "1.3.2"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -164,12 +164,11 @@ class ForwardDeleter(commands.Cog):
             await message.delete()
             if config.get("warn_enabled"):
                 await self._send_warning(message, config["warn_message"])
-        except discord.Forbidden as e:
-            log.error(f"Failed to delete message {message.id} in {message.channel.mention}: {e}")
-        except discord.NotFound:
-            log.error(f"Message {message.id} not found, likely already deleted")
-        except Exception as e:
-            log.error(f"Unexpected error with message {message.id}: {e}")
+        except (discord.Forbidden, discord.HTTPException, discord.NotFound) as e:
+            log.error(
+                f"Failed to delete forwarded message {message.id} in {message.channel.mention} ({message.guild.id}): {e}",
+                exc_info=True
+            )
 
     @commands.group()
     @commands.guild_only()
