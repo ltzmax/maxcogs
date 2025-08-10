@@ -126,8 +126,7 @@ class TheMovieDB(commands.Cog):
         if not enabled_channels:
             return
 
-        sem = asyncio.Semaphore(5)  # Limit concurrent fetches to avoid rate limiting.
-
+        sem = asyncio.Semaphore(5)
         async def fetch_with_sem(key, details):
             async with sem:
                 return key, details, await self.fetch_feed(details["id"])
@@ -155,8 +154,7 @@ class TheMovieDB(commands.Cog):
                         logger.error(
                             f"Failed to send disable message to {channel_to_post.name} in {guild.name}: {e}"
                         )
-                continue
-
+                    continue
             updates[key] = {"enabled": True, "failure_count": 0}
 
             try:
@@ -196,14 +194,19 @@ class TheMovieDB(commands.Cog):
                     logger.debug(f"No new video for {details['name']}")
                     continue
 
-                updates[key]["last_published_ts"] = published_ts
-                updates[key]["last_video_id"] = video_id
                 video_url_elem = latest_video.find("{http://www.w3.org/2005/Atom}link")
                 if video_url_elem is None:
                     logger.warning(f"No link in latest entry for {details['name']}")
                     continue
 
                 video_url = video_url_elem.attrib["href"]
+                # Skip YouTube Shorts
+                if "/shorts/" in video_url:
+                    logger.info(f"Skipping YouTube Short for {details['name']}: {video_url}")
+                    continue
+
+                updates[key]["last_published_ts"] = published_ts
+                updates[key]["last_video_id"] = video_id
                 author_name = (
                     root.findtext(
                         "{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name"
@@ -299,7 +302,7 @@ class TheMovieDB(commands.Cog):
         or specify multiple studio names to toggle them at once.
 
         **NOTE**:
-        Videos may contain more than just a trailer from a movie or tv show, such as behind the scenes content or interviews. This is intended to keep you updated on new content from your favorite studios and channels. Do note that youtube shorts are not ignored, so you may receive notifications for them as well.
+        Videos may contain more than just a trailer from a movie or tv show, such as behind the scenes content or interviews. This is intended to keep you updated on new content from your favorite studios and channels.
 
         **Examples**:
         - `[p]tmdbset toggle marvel`
@@ -359,59 +362,6 @@ class TheMovieDB(commands.Cog):
             await ctx.send(
                 f"No valid studios toggled. Use `{ctx.clean_prefix}tmdbset list` to see options."
             )
-
-    @tmdbset.command(name="list")
-    async def list_channels(self, ctx: commands.Context) -> None:
-        """List all available studios and their notification status."""
-        guild_data = await self.config.guild(ctx.guild).all()
-        notification_channel_id = guild_data.get("notification_channel")
-        ping_role_id = guild_data.get("ping_role")
-
-        if notification_channel_id:
-            channel = ctx.guild.get_channel(notification_channel_id)
-            msg = f"Notification Channel: {channel.mention if channel else 'Not Set'}\n"
-        else:
-            msg = "Notification Channel: Not Set\n"
-
-        if ping_role_id:
-            role = ctx.guild.get_role(ping_role_id)
-            msg += f"Ping Role: {role.mention if role else 'Not Set'}\n"
-        else:
-            msg += "Ping Role: Not Set\n"
-
-        msg += "\nAvailable Studios:\n"
-        channels_status = guild_data.get("channels_status", {})
-        for key, details in PREDEFINED_CHANNELS.items():
-            status = (
-                "Enabled" if channels_status.get(key, {}).get("enabled", False) else "Disabled"
-            )
-            msg += f"- {details['name']} (`{key}`): **{status}**\n"
-
-        pages = []
-        current_page = ""
-        for line in msg.splitlines(keepends=True):
-            if len(current_page) + len(line) > 1900:
-                pages.append(current_page)
-                current_page = line
-            else:
-                current_page += line
-        if current_page:
-            pages.append(current_page)
-        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
-
-    @tmdbset.command(name="role")
-    async def set_role(self, ctx: commands.Context, role: Optional[discord.Role] = None) -> None:
-        """Set or unset a role to ping for new video notifications."""
-        if role:
-            if role >= ctx.guild.me.top_role:
-                return await ctx.send("That role is higher than my highest role.")
-            if role.is_default() or role.is_everyone() or role.name == "@here":
-                return await ctx.send("Cannot set `@everyone` or `@here` as ping roles.")
-            await self.config.guild(ctx.guild).ping_role.set(role.id)
-            await ctx.send(f"New video notifications will now ping {role.mention}.")
-        else:
-            await self.config.guild(ctx.guild).ping_role.set(None)
-            await ctx.send("Ping role for video notifications has been disabled ")
 
     @tmdbset.command(name="list")
     async def list_channels(self, ctx: commands.Context) -> None:
