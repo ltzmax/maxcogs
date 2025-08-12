@@ -98,7 +98,9 @@ class Earthquake(commands.Cog):
         url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
         async with self.session.get(url, timeout=10) as response:
             if response.status != 200:
-                logger.error(f"USGS API returned {response.status}: {await response.text()}", exc_info=True)
+                logger.error(
+                    f"USGS API returned {response.status}: {await response.text()}", exc_info=True
+                )
                 return []
             data = await response.json(loads=orjson.loads)
             if not isinstance(data, dict) or "features" not in data:

@@ -167,7 +167,7 @@ class ForwardDeleter(commands.Cog):
         except (discord.Forbidden, discord.HTTPException, discord.NotFound) as e:
             log.error(
                 f"Failed to delete forwarded message {message.id} in {message.channel.mention} ({message.guild.id}): {e}",
-                exc_info=True
+                exc_info=True,
             )
 
     @commands.group()
