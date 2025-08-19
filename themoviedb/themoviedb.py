@@ -127,6 +127,7 @@ class TheMovieDB(commands.Cog):
             return
 
         sem = asyncio.Semaphore(5)
+
         async def fetch_with_sem(key, details):
             async with sem:
                 return key, details, await self.fetch_feed(details["id"])
