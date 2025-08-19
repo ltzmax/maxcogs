@@ -303,7 +303,7 @@ class TheMovieDB(commands.Cog):
         or specify multiple studio names to toggle them at once.
 
         **NOTE**:
-        Videos may contain more than just a trailer from a movie or tv show, such as behind the scenes content or interviews. This is intended to keep you updated on new content from your favorite studios and channels.
+        Videos may include more than just trailers from movies or TV shows, they can also feature behind-the-scenes content or interviews. This is intended to keep you updated on new content from your favorite studios and channels.
 
         **Examples**:
         - `[p]tmdbset toggle marvel`
