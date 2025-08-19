@@ -58,7 +58,7 @@ PREDEFINED_CHANNELS: Dict[str, Dict[str, str]] = {
     "appletv": {"id": "UC1Myj674wRVXB9I4c6Hm5zA", "name": "Apple TV"},
     "amazon": {"id": "UCQJWtTnAHhEG5w4uN0udnUQ", "name": "Amazon Prime Video"},
     "mgm": {"id": "UCf5CjDJvsFvtVIhkfmKAwAA", "name": "Metro-Goldwyn-Mayer (MGM)"},
-    "crunchyroll": {"id": "UC6pGDc4bFGD1_36IKv3FnYg", "name": "Crunchyroll"},
+    "crunchyroll": {"id": "UC6pGDc4bFGD1_36IKv3FnYg", "name": "Crunchyroll (Anime, Manga, and More)"},
 }
 
 
