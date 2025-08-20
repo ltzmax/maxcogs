@@ -100,7 +100,7 @@ class HoneycombView(discord.ui.LayoutView):
         self.container.add_item(discord.ui.Separator())
         self.container.add_item(
             discord.ui.TextDisplay(
-                "Click the button below to join the Sugar Honeycombs Challenge!"
+                "Sugar Honeycombs Challenge!"
             )
         )
         self.container.add_item(discord.ui.Separator())
