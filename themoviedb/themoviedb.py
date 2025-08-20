@@ -203,7 +203,6 @@ class TheMovieDB(commands.Cog):
                 video_url = video_url_elem.attrib["href"]
                 # Skip YouTube Shorts
                 if "/shorts/" in video_url:
-                    logger.info(f"Skipping YouTube Short for {details['name']}: {video_url}")
                     continue
 
                 updates[key]["last_published_ts"] = published_ts
