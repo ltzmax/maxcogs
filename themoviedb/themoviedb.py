@@ -246,10 +246,17 @@ class TheMovieDB(commands.Cog):
             guild = self.bot.get_guild(guild_id)
             if not guild:
                 continue
-            try:
-                await self.check_trailers(guild)
-            except discord.HTTPException as e:
-                logger.error(f"Error checking video for guild {guild.id}: {e}", exc_info=True)
+            channel = guild.get_channel(all_guilds[guild_id].get("notification_channel"))
+            if (
+                not channel.permissions_for(guild.me).send_messages
+                or not channel.permissions_for(guild.me).embed_links
+            ):
+                logger.warning(
+                    f"Bot does not have permission to send messages or embed links in the notification channel {notification_channel_id} for guild {guild.name}."
+                )
+                continue
+
+            await self.check_trailers(guild)
 
     @check_for_new_trailers.before_loop
     async def before_check_for_new_trailers(self) -> None:
