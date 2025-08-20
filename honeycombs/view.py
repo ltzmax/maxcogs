@@ -97,19 +97,19 @@ class HoneycombView(discord.ui.LayoutView):
         self.player_count = 0
 
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
-        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
+        self.container.add_item(discord.ui.Separator())
         self.container.add_item(
             discord.ui.TextDisplay(
                 "Click the button below to join the Sugar Honeycombs Challenge!"
             )
         )
-        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
-        self.game_details = discord.ui.TextDisplay("")  # Placeholder for game details
+        self.container.add_item(discord.ui.Separator()) 
+        self.game_details = discord.ui.TextDisplay("")
         self.container.add_item(self.game_details)
-        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
+        self.container.add_item(discord.ui.Separator())
         self.join_button = JoinButton(label="Enter The Game (0/456)")
         self.container.add_item(discord.ui.ActionRow(self.join_button))
-        self.container.add_item(discord.ui.Separator(spacing=discord.SeparatorSize.small))
+        self.container.add_item(discord.ui.Separator())
         self.add_item(self.container)
 
     async def setup(self, total_price, currency_name, minimum_players, end_time):
