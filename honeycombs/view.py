@@ -98,11 +98,7 @@ class HoneycombView(discord.ui.LayoutView):
 
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
         self.container.add_item(discord.ui.Separator())
-        self.container.add_item(
-            discord.ui.TextDisplay(
-                "Sugar Honeycombs Challenge!"
-            )
-        )
+        self.container.add_item(discord.ui.TextDisplay("Sugar Honeycombs Challenge!"))
         self.container.add_item(discord.ui.Separator())
         self.game_details = discord.ui.TextDisplay("")
         self.container.add_item(self.game_details)
