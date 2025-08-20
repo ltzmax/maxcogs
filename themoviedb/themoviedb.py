@@ -252,7 +252,7 @@ class TheMovieDB(commands.Cog):
                 or not channel.permissions_for(guild.me).embed_links
             ):
                 logger.warning(
-                    f"Bot does not have permission to send messages or embed links in the notification channel {notification_channel_id} for guild {guild.name}."
+                    f"Bot does not have permission to send messages or embed links in the notification channel {channel.name} in guild {guild.name} (ID: {guild.id}"
                 )
                 continue
 
