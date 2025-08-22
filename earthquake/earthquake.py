@@ -85,11 +85,22 @@ class Earthquake(commands.Cog):
         ),
     )
     async def fetch_earthquakes(self, min_magnitude: float = 1.0) -> List[Dict]:
-        """Fetch recent earthquakes from USGS API with optional magnitude filter."""
-        url = f"https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/{min_magnitude}_hour.geojson"
+        # Validate min_magnitude
+        try:
+            min_magnitude = float(min_magnitude)
+            if not 1.0 <= min_magnitude <= 10.0:
+                logger.error(f"min_magnitude must be between 1.0 and 10.0, got {min_magnitude}")
+                return []
+        except (ValueError, TypeError):
+            logger.error(f"Invalid min_magnitude value: {min_magnitude}")
+            return []
+
+        url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
         async with self.session.get(url, timeout=10) as response:
             if response.status != 200:
-                logger.error(f"USGS API returned {response.status}")
+                logger.error(
+                    f"USGS API returned {response.status}: {await response.text()}", exc_info=True
+                )
                 return []
             data = await response.json(loads=orjson.loads)
             if not isinstance(data, dict) or "features" not in data:
@@ -98,7 +109,11 @@ class Earthquake(commands.Cog):
             return [
                 eq
                 for eq in data["features"]
-                if isinstance(eq, dict) and "properties" in eq and "geometry" in eq
+                if isinstance(eq, dict)
+                and "properties" in eq
+                and "geometry" in eq
+                and isinstance(eq["properties"].get("mag"), (int, float))
+                and eq["properties"]["mag"] >= min_magnitude
             ]
 
     def cog_unload(self):

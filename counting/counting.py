@@ -58,7 +58,7 @@ class MessageType(Enum):
 class Counting(commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "2.8.0"
+    __version__: Final[str] = "2.9.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -97,6 +97,7 @@ class Counting(commands.Cog):
             "toggle_progress_delete": False,
             "toggle_progress": False,
             "reset_roles": [],
+            "leaderboard": {},
         }
         self._default_user: Dict[str, Any] = {
             "count": 0,
@@ -178,6 +179,60 @@ class Counting(commands.Cog):
             await ctx.send("Your stats have been reset.")
         else:
             await ctx.send("Reset cancelled.")
+
+    @counting.command(name="leaderboard", aliases=["lb"])
+    @commands.cooldown(1, 10, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leaderboard(self, ctx: commands.Context) -> None:
+        """
+        Show the counting leaderboard for the server.
+
+        Displays the top 15 users with the highest counts.
+        Please note that the leaderboard only includes users who have counted at least once. if you have counted before this command was added, you will not be on the leaderboard until you count again.
+        """
+        settings = await self.settings.get_guild_settings(ctx.guild)
+        leaderboard = settings.get("leaderboard", {})
+
+        if not leaderboard:
+            return await ctx.send("No counts recorded yet.")
+
+        sorted_leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
+        pages = []
+        page_size = 15
+        for i in range(0, len(sorted_leaderboard), page_size):
+            page_leaderboard = sorted_leaderboard[i : i + page_size]
+            table = tabulate(
+                [
+                    [
+                        str(pos),
+                        await self._get_display_name(ctx, user_id),
+                        cf.humanize_number(count),
+                    ]
+                    for pos, (user_id, count) in enumerate(page_leaderboard, start=i + 1)
+                ],
+                headers=["Position", "User", "Count"],
+                tablefmt="simple",
+                stralign="left",
+            )
+            embed = discord.Embed(
+                title="Counting Leaderboard",
+                description=box(table, lang="prolog"),
+                color=await ctx.embed_color(),
+            )
+            pages.append(embed)
+
+        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+
+    async def _get_display_name(self, ctx: commands.Context, user_id: int) -> str:
+        """Helper method to get a user's display name, handling cases where get_member fails."""
+        member = ctx.guild.get_member(user_id)
+        if member:
+            return member.display_name
+        try:
+            user = await self.bot.fetch_user(user_id)
+            return user.display_name if user else f"Unknown User ({user_id})"
+        except discord.errors.NotFound:
+            return f"Unknown User ({user_id})"
 
     @commands.group()
     @commands.guild_only()

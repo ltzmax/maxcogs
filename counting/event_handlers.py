@@ -116,16 +116,20 @@ class EventHandlers:
                     settings,
                 )
                 return
-        expected_count = settings["count"] + 1
         if settings["same_user_to_count"] and settings["last_user_id"] == message.author.id:
             await handle_invalid_count(message, settings["default_same_user_message"], settings)
             return
+        expected_count = settings["count"] + 1
         if message.content.isdigit():
             message_count = int(message.content)
             if message_count == expected_count:
+                leaderboard = settings.get("leaderboard", {})
+                logger.debug(f"Adding count for user ID: {message.author.id}")
+                leaderboard[message.author.id] = leaderboard.get(message.author.id, 0) + 1
                 await asyncio.gather(
                     self.settings.update_guild(message.guild, "count", expected_count),
                     self.settings.update_guild(message.guild, "last_user_id", message.author.id),
+                    self.settings.update_guild(message.guild, "leaderboard", leaderboard),
                     self.settings.update_user(
                         message.author,
                         "count",
@@ -165,17 +169,11 @@ class EventHandlers:
                             f"Invalid legacy goal in guild {message.guild.id}: {legacy_goal}"
                         )
                     await self.settings.update_guild(message.guild, "goal", None)
-
                 if cleaned_goals:
                     cleaned_goals.sort()
                 await self.settings.update_guild(message.guild, "goals", cleaned_goals)
-                logger.debug(
-                    f"Guild {message.guild.id}: cleaned goals={cleaned_goals}, legacy_goal={legacy_goal}"
-                )
-
                 if cleaned_goals and expected_count in cleaned_goals:
                     await self._handle_goal_reached(message, settings, expected_count)
-
                 if settings.get("toggle_progress") and cleaned_goals:
                     next_goal = next((g for g in cleaned_goals if g > expected_count), None)
                     if next_goal and expected_count % settings["progress_interval"] == 0:
