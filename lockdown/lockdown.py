@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Final, Optional, Union
+import re
+from typing import Any, Final, Optional, Tuple, Union
 
 import discord
 from red_commons.logging import getLogger
@@ -30,13 +31,15 @@ from redbot.core import Config, app_commands, commands
 
 from .view import UnlockView
 
+logger = getLogger("red.maxcogs.lockdown")
+
 
 class Lockdown(commands.Cog):
     """
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.5.0"
+    __version__: Final[str] = "1.6.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -47,7 +50,6 @@ class Lockdown(commands.Cog):
             "use_embed": False,
         }
         self.config.register_guild(**default_guild)
-        self.logger = getLogger("red.maxcogs.lockdown")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -97,7 +99,6 @@ class Lockdown(commands.Cog):
         log_event = f"Channel {'Locked' if is_lock else 'Unlocked'} for {target_role.name}"
         already_set_message = f"❌ This channel is already {'locked' if is_lock else 'unlocked'} for {target_role.mention.lstrip('@')}."
         send_messages = False if is_lock else None
-
         overwrites = ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
 
         if overwrites.send_messages == send_messages:
@@ -132,6 +133,29 @@ class Lockdown(commands.Cog):
             return await ctx.send(
                 f"❌ I don't have permission to set permissions for {target_role.mention} in {ctx.channel.mention}."
             )
+            logger.warning(
+                f"Failed to set permissions for {target_role.name} in {ctx.guild.name} ({ctx.guild.id}): {e}",
+                exc_info=True,
+            )
+
+    async def _parse_reason_and_role(
+        self,
+        reason: Optional[str],
+        role: Optional[discord.Role],
+        guild: discord.Guild,
+    ) -> Tuple[Optional[str], Optional[discord.Role]]:
+        if reason and role is None:
+            mentions = re.findall(r"<@&(\d+)>", reason)
+            if mentions:
+                last_mention_id = int(mentions[-1])
+                role = guild.get_role(last_mention_id)
+                if role:
+                    reason = re.sub(r"\s*<@&\d+>\s*$", "", reason).strip()
+                    if not reason:
+                        reason = None
+                else:
+                    logger.warning(f"Role ID {last_mention_id} not found in guild {guild.id}")
+        return reason, role
 
     @commands.guild_only()
     @commands.mod_or_can_manage_channel()
@@ -161,19 +185,7 @@ class Lockdown(commands.Cog):
         - `[p]lock Reason: spam in this channel` - Locks for @everyone with reason.
         - `[p]lock Reason: spam in this channel @Member` - Locks for @Member with reason.
         """
-        # If reason is provided, check if the last part is a role mention
-        if reason and role is None:
-            parts = reason.strip().split()
-            if parts and parts[-1].startswith("<@&") and parts[-1].endswith(">"):
-                role_id = parts[-1][3:-1]
-                try:
-                    role = ctx.guild.get_role(int(role_id))
-                    if role:
-                        reason = " ".join(parts[:-1]).strip() or None
-                except ValueError as e:
-                    self.logger.error(
-                        f"Failed to convert role ID {role_id} to int. Reason: {e}", exc_info=True
-                    )
+        reason, role = await self._parse_reason_and_role(reason, role, ctx.guild)
         await self.manage_lock(ctx, "lock", reason=reason, role=role)
 
     @commands.guild_only()
@@ -202,19 +214,7 @@ class Lockdown(commands.Cog):
         - `[p]unlock Reason: spam in this channel` - Unlocks for @everyone with reason.
         - `[p]unlock Reason: spam in this channel @Member` - Unlocks for @Member with reason.
         """
-        # If reason is provided, check if the last part is a role mention
-        if reason and role is None:
-            parts = reason.strip().split()
-            if parts and parts[-1].startswith("<@&") and parts[-1].endswith(">"):
-                role_id = parts[-1][3:-1]
-                try:
-                    role = ctx.guild.get_role(int(role_id))
-                    if role:
-                        reason = " ".join(parts[:-1]).strip() or None
-                except ValueError as e:
-                    self.logger.error(
-                        f"Failed to convert role ID {role_id} to int. Reason: {e}", exc_info=True
-                    )
+        reason, role = await self._parse_reason_and_role(reason, role, ctx.guild)
         await self.manage_lock(ctx, "unlock", reason=reason, role=role)
 
     @commands.group()

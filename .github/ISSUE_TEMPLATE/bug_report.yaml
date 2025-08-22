@@ -18,8 +18,10 @@ body:
         - autopublisher
         - counting
         - currency
+        - Earthquake
         - forwarddeleter
         - github
+        - history
         - honeycoms
         - lockdown
         - nba

@@ -1,0 +1,28 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "Earthquake",
+    "install_msg": "Thanks for installing.\n# ⚠️WARNING⚠️\nThis cog provides informational alerts only and may have 15–30 minute delays. Always prioritize local authorities for real-time safety information.\nDefault minimum magnitude is 4.5, alerts will report earthquakes above this threshold. You can change this by using `[p]earthquakeset magnitude`.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "Posts live worldwide earthquake updates from USGS to a designated channel.",
+    "short": "Posts live worldwide earthquake updates from USGS to a designated channel.",
+    "hidden": false,
+    "min_bot_version": "3.5.13",
+    "tags": [
+        "Earthquake",
+        "USGS",
+        "Seismic",
+        "Alert"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "requirements": ["tenacity"],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
