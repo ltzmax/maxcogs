@@ -32,7 +32,6 @@ from redbot.core import commands
 log = logging.getLogger("red.maxcogs.autopublisher.view")
 
 
-
 class IgnoredNewsChannelsView(discord.ui.LayoutView):
     def __init__(self, cog: commands.Cog) -> None:
         super().__init__(timeout=180)
@@ -60,7 +59,9 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
         self.container.add_item(discord.ui.Separator())
         self.confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.success)
         self.confirm_button.callback = self.save_callback
-        self.unignore_button = discord.ui.Button(label="Unignore", style=discord.ButtonStyle.danger)
+        self.unignore_button = discord.ui.Button(
+            label="Unignore", style=discord.ButtonStyle.danger
+        )
         self.unignore_button.callback = self.unignore_callback
         self.container.add_item(discord.ui.ActionRow(self.confirm_button, self.unignore_button))
         self.add_item(self.container)
