@@ -7,7 +7,7 @@
     "description": "Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.",
     "short": "Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.",
     "hidden": false,
-    "min_bot_version": "3.5.14",
+    "min_bot_version": "3.5.21",
     "tags": [
         "squid game",
         "honeycombs",
