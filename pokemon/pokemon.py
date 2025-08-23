@@ -59,7 +59,7 @@ class Pokemon(commands.Cog):
     """
 
     __author__: Final[List[str]] = ["@306810730055729152", "max", "flame442"]
-    __version__: Final[str] = "2.1.0"
+    __version__: Final[str] = "2.2.0"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot: Red):
@@ -117,7 +117,7 @@ class Pokemon(commands.Cog):
 
     # --------- POKEMON INFO -----------
 
-    async def fetch_data(self, url: str) -> Optional[Dict[str, Any]]:
+    async def fetch_data(self, url: str) -> dict | None:
         """
         Fetch data from a URL asynchronously.
 
@@ -135,17 +135,17 @@ class Pokemon(commands.Cog):
         except (aiohttp.ClientError, ValueError):
             return None
 
-    def _format_list(self, items: List[str], separator: str = ", ") -> str:
+    def _format_list(self, items: list[str], separator: str = ", ") -> str:
         """Format a list of items into a human-readable string."""
         return separator.join(items) if items else "None"
 
-    def _get_official_artwork(self, sprites: Dict[str, Any]) -> Optional[str]:
+    def _get_official_artwork(self, sprites: dict) -> str | None:
         """Get the official artwork URL from sprites, falling back to front_default."""
         return sprites.get("other", {}).get("official-artwork", {}).get(
             "front_default"
         ) or sprites.get("front_default")
 
-    def _format_stats(self, stats: List[Dict[str, Any]]) -> str:
+    def _format_stats(self, stats: list[dict]) -> str:
         """Format base stats into a readable string with total."""
         if not stats:
             return "No stats available."
@@ -160,7 +160,7 @@ class Pokemon(commands.Cog):
             f"{weight/10:.1f}kg ({weight*2.20462/10:.2f}lbs)",
         )
 
-    def _format_abilities(self, abilities: List[Dict[str, Any]]) -> str:
+    def _format_abilities(self, abilities: list[dict]) -> str:
         """Format abilities, including hidden ones."""
         if not abilities:
             return "No abilities available."
@@ -171,7 +171,7 @@ class Pokemon(commands.Cog):
         hidden_str = f" (Hidden: {self._format_list(hidden or ['None'])})"
         return self._format_list(ability_names) + hidden_str
 
-    def _format_game_indices(self, game_indices: List[Dict[str, Any]]) -> str:
+    def _format_game_indices(self, game_indices: list[dict]) -> str:
         """Format game indices into a readable string."""
         if not game_indices:
             return "No game indices available."
@@ -179,7 +179,7 @@ class Pokemon(commands.Cog):
             [f"{g['game_index']} ({g['version']['name'].capitalize()})" for g in game_indices]
         )
 
-    def _format_types(self, types: List[Dict[str, Any]]) -> str:
+    def _format_types(self, types: list[dict]) -> str:
         """Format Pokémon types into a readable string."""
         return self._format_list([t["type"]["name"].capitalize() for t in types])
 
@@ -190,7 +190,7 @@ class Pokemon(commands.Cog):
         )
 
     async def create_pokemon_embed(
-        self, pokemon_data: Dict[str, Any], section: str = "base"
+        self, pokemon_data: dict, section: str = "base"
     ) -> discord.Embed:
         """
         Create a Discord embed for Pokémon data based on the specified section.
@@ -213,7 +213,7 @@ class Pokemon(commands.Cog):
         embed = discord.Embed(
             title=f"{name} {section.capitalize()}",
             description=f"Information about {name}'s {section}",
-            color=discord.Color.blue(),
+            color=0xFF0000,
             url=f"https://www.pokemon.com/us/pokedex/{pokemon_data['name']}",
         )
 
@@ -242,10 +242,10 @@ class Pokemon(commands.Cog):
             height_str, weight_str = self._format_height_weight(height, weight)
             embed.add_field(name="Height:", value=height_str, inline=True)
             embed.add_field(name="Weight:", value=weight_str, inline=True)
-            embed.add_field(name=" ", value=" ", inline=False)
+            embed.add_field(name=" ", value=" ", inline=False)  # Spacer
             embed.add_field(name="Base Experience:", value=base_experience, inline=True)
             embed.add_field(name="Types:", value=self._format_types(types), inline=True)
-            embed.add_field(name=" ", value=" ", inline=False)
+            embed.add_field(name=" ", value=" ", inline=False)  # Spacer
             embed.add_field(
                 name="Abilities:",
                 value=self._format_abilities(abilities),
@@ -260,59 +260,59 @@ class Pokemon(commands.Cog):
         elif section == "held_items":
             held_items = pokemon_data.get("held_items", [])
             if not held_items:
-                raise ValueError("No held items data available.")
-            items_info = self._format_list(
-                [
-                    f"{h['item']['name'].capitalize()} ({h['version_details'][0]['rarity']})"
-                    for h in held_items
-                    if "item" in h and "version_details" in h and h["version_details"]
-                ]
-            )
-            embed.description = self._truncate_description(items_info)
+                embed.description = "No held items data available."
+            else:
+                items_info = self._format_list(
+                    [
+                        f"{h['item']['name'].capitalize()} ({h['version_details'][0]['rarity'] if h['version_details'] else 'Unknown'})"
+                        for h in held_items
+                        if "item" in h
+                    ]
+                )
+                embed.description = self._truncate_description(items_info)
 
         elif section == "moves":
             moves = pokemon_data.get("moves", [])
             if not moves:
-                raise ValueError("No moves data available.")
-            moves_info = self._format_list(
-                [
-                    f"{m['move']['name'].capitalize()} ({m['version_group_details'][0]['level_learned_at']})"
-                    for m in moves
-                    if m.get("move") and m["move"].get("name") and m.get("version_group_details")
-                ]
-            )
-            embed.description = self._truncate_description(moves_info)
+                embed.description = "No moves data available."
+            else:
+                moves_info = self._format_list(
+                    [
+                        f"{m['move']['name'].capitalize()} ({m['version_group_details'][0]['level_learned_at'] if m['version_group_details'] else 'Unknown'})"
+                        for m in moves
+                        if m.get("move") and m["move"].get("name")
+                    ]
+                )
+                embed.description = self._truncate_description(moves_info)
 
         elif section == "locations":
-            location_url = f"{API_URL}/pokemon/{pokemon_data['name']}/encounters"
+            location_url = f"{API_URL}/pokemon/{pokemon_data['id']}/encounters"
             location_areas = await self.fetch_data(location_url)
             if not location_areas:
-                raise ValueError("No location data available.")
-            locations = []
-            for location in location_areas:
-                location_name = (
-                    location.get("location_area", {})
-                    .get("name", "Unknown Location")
-                    .replace("-", " ")
-                    .title()
-                )
-                versions = []
-                for detail in location.get("version_details", []):
-                    version_name = (
-                        detail.get("version", {})
-                        .get("name", "Unknown Version")
+                embed.description = "No location data available."
+            else:
+                locations = []
+                for location in location_areas:
+                    location_name = (
+                        location.get("location_area", {})
+                        .get("name", "Unknown Location")
                         .replace("-", " ")
                         .title()
                     )
-                    chance = detail.get("encounter_details", [{}])[0].get(
-                        "chance", "Unknown Chance"
-                    )
-                    if chance is not None:
+                    versions = []
+                    for detail in location.get("version_details", []):
+                        version_name = (
+                            detail.get("version", {})
+                            .get("name", "Unknown Version")
+                            .replace("-", " ")
+                            .title()
+                        )
+                        chance = detail.get("encounter_details", [{}])[0].get("chance", "Unknown")
                         versions.append(f"{version_name}: {chance}%")
-                versions_str = "\n".join(versions) if versions else "No version details"
-                locations.append(f"**{location_name}**:\n{versions_str}")
-            locations_str = "\n".join(locations)
-            embed.description = self._truncate_description(locations_str)
+                    versions_str = "\n".join(versions) if versions else "No version details"
+                    locations.append(f"**{location_name}**:\n{versions_str}")
+                locations_str = "\n\n".join(locations)
+                embed.description = self._truncate_description(locations_str)
 
         else:
             raise ValueError(f"Unsupported section: {section}")
@@ -529,8 +529,26 @@ class Pokemon(commands.Cog):
         if not pokemon_data:
             return await ctx.send("Could not fetch Pokémon data.")
 
-        # Was gonna move it to seperate file but i got so damn tired at 10AM in the morning.
-        # I'll move it later if i feel like it unless i decide to make something with components V2.
+        class PokemonSelect(discord.ui.Select):
+            def __init__(self, parent_view):
+                options = [
+                    discord.SelectOption(label="Base", value="base"),
+                    discord.SelectOption(label="Held Items", value="held_items"),
+                    discord.SelectOption(label="Moves", value="moves"),
+                    discord.SelectOption(label="Locations", value="locations"),
+                ]
+                super().__init__(
+                    placeholder="Choose a section...",
+                    min_values=1,
+                    max_values=1,
+                    options=options,
+                )
+                self.parent_view = parent_view
+
+            async def callback(self, interaction: discord.Interaction):
+                self.parent_view.current_section = self.values[0]
+                await self.parent_view.update_embed(interaction)
+
         class PokemonView(discord.ui.View):
             def __init__(self, ctx, pokemon_data, timeout=120):
                 super().__init__(timeout=timeout)
@@ -539,17 +557,9 @@ class Pokemon(commands.Cog):
                 self.current_section = "base"
                 self.message = None
 
-            async def on_timeout(self):
-                for item in self.children:
-                    if isinstance(item, discord.ui.Button):
-                        item.disabled = True
-                if self.message:
-                    try:
-                        await self.message.edit(view=self)
-                    except discord.NotFound as e:
-                        log.error(f"Message not found: {e}", exc_info=True)
+                self.add_item(PokemonSelect(self))
 
-            async def interaction_check(self, interaction: discord.Interaction):
+            async def interaction_check(self, interaction: discord.Interaction) -> bool:
                 if interaction.user != self.ctx.author:
                     await interaction.response.send_message(
                         "You are not the owner of this interaction.", ephemeral=True
@@ -557,7 +567,16 @@ class Pokemon(commands.Cog):
                     return False
                 return True
 
-            async def update_embed(self, interaction: discord.Interaction):
+            async def on_timeout(self) -> None:
+                for item in self.children:
+                    item.disabled = True
+                if self.message:
+                    try:
+                        await self.message.edit(view=self)
+                    except discord.NotFound:
+                        pass
+
+            async def update_embed(self, interaction: discord.Interaction) -> None:
                 try:
                     embed = await self.ctx.cog.create_pokemon_embed(
                         self.pokemon_data, self.current_section
@@ -565,47 +584,27 @@ class Pokemon(commands.Cog):
                     await interaction.response.edit_message(embed=embed, view=self)
                 except ValueError as e:
                     await interaction.response.send_message(
-                        f"Error for {self.current_section}", ephemeral=True
+                        f"Error loading {self.current_section} section.", ephemeral=True
                     )
-                    log.error(f"Error for {self.current_section}: {e}", exc_info=True)
+                    log.error(f"Error loading {self.current_section} section: {e}")
 
-            @discord.ui.button(label="Base", style=discord.ButtonStyle.primary, custom_id="base")
-            async def base_button(
+            @discord.ui.button(label="Close", style=discord.ButtonStyle.danger, row=1)
+            async def close_button(
                 self, interaction: discord.Interaction, button: discord.ui.Button
             ):
-                self.current_section = "base"
-                await self.update_embed(interaction)
-
-            @discord.ui.button(
-                label="Held Items", style=discord.ButtonStyle.primary, custom_id="held_items"
-            )
-            async def held_items_button(
-                self, interaction: discord.Interaction, button: discord.ui.Button
-            ):
-                self.current_section = "held_items"
-                await self.update_embed(interaction)
-
-            @discord.ui.button(label="Moves", style=discord.ButtonStyle.primary, custom_id="moves")
-            async def moves_button(
-                self, interaction: discord.Interaction, button: discord.ui.Button
-            ):
-                self.current_section = "moves"
-                await self.update_embed(interaction)
-
-            @discord.ui.button(
-                label="Locations", style=discord.ButtonStyle.primary, custom_id="locations"
-            )
-            async def locations_button(
-                self, interaction: discord.Interaction, button: discord.ui.Button
-            ):
-                self.current_section = "locations"
-                await self.update_embed(interaction)
+                await interaction.response.defer()
+                for item in self.children:
+                    item.disabled = True
+                if self.message:
+                    try:
+                        await self.message.edit(view=self)
+                    except discord.NotFound:
+                        pass
+                self.stop()
 
         view = PokemonView(ctx, pokemon_data)
         try:
             embed = await self.create_pokemon_embed(pokemon_data, "base")
-            message = await ctx.send(embed=embed, view=view)
-            view.message = message
+            view.message = await ctx.send(embed=embed, view=view)
         except ValueError as e:
-            await ctx.send(f"Error creating embed")
-            log.error(f"Error creating embed: {e}", exc_info=True)
+            log.error(f"Error creating initial embed: {e}", exc_info=True)
