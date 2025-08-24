@@ -273,16 +273,17 @@ async def search_and_display(ctx, query: str, media_type: str):
 
         filtered_results = []
         for data in page_results:
+            if isinstance(data, Exception):
+                log.warning(f"Page fetch failed: {data}")
+                continue
             if not isinstance(data, dict) or "results" not in data:
                 continue
             filtered_results.extend(filter_media_results(data["results"], query, media_type))
 
-    if not filtered_results:
-        return await ctx.send(f"No results found for `{query}`.")
+        if not filtered_results:
+            return await ctx.send(f"No results found for `{query}`.")
 
-    if len(filtered_results) == 1:
-        session = aiohttp.ClientSession()
-        try:
+        if len(filtered_results) == 1:
             data = await get_media_data(ctx, session, filtered_results[0]["id"], media_type)
             if not data:
                 return await ctx.send("Failed to fetch media details.")
@@ -291,21 +292,18 @@ async def search_and_display(ctx, query: str, media_type: str):
                 ctx, data, filtered_results[0]["id"], 0, filtered_results, item_type=media_type
             )
             await ctx.send(embed=embed, view=view)
-        finally:
-            await session.close()
-        return
+            return
 
     title = "What would you like to select?\n-# Click on the button to views the media details."
     header_text = f"{header(title, 'medium')}"
 
     class MediaPaginator(discord.ui.LayoutView):
-        def __init__(self, ctx, filtered_results, media_type, items_per_page=12, session=None):
+        def __init__(self, ctx, filtered_results, media_type, items_per_page=12):
             super().__init__(timeout=120)
             self.ctx = ctx
             self.filtered_results = self._sort_results(filtered_results, media_type)
             self.media_type = media_type
-            self.session = session or aiohttp.ClientSession()
-            self.owns_session = session is None
+            self.session = aiohttp.ClientSession()
             self.current_page = 0
             self.items_per_page = items_per_page
             self.message = None
@@ -333,7 +331,7 @@ async def search_and_display(ctx, query: str, media_type: str):
             keys = key_map[self.media_type]
             title = result.get(keys["title"], "Unknown")
             date = result.get(keys["date"], "N/A")[:4]
-            popularity = result.get("popularity", 0)
+            popularity = round(result.get("popularity", 0), 1)
             return f"{index + 1}. {title} ({date}) ({popularity})"
 
         def _build_page_content(self):
@@ -382,7 +380,7 @@ async def search_and_display(ctx, query: str, media_type: str):
         async def _cleanup(self):
             """Clean up resources and update message."""
             self._disable_all_buttons()
-            if self.owns_session and not self.session.closed:
+            if not self.session.closed:
                 await self.session.close()
             if self.message:
                 try:
@@ -473,7 +471,7 @@ async def search_and_display(ctx, query: str, media_type: str):
                 self.view._update_content()
                 await interaction.response.defer()
                 await self.view.message.edit(content=None, view=self.view)
-            except Exception as e:
+            except discord.HTTPException as e:
                 await self._send_error(interaction, "Error navigating, please try again.", e)
 
     paginator = MediaPaginator(ctx, filtered_results, media_type)
