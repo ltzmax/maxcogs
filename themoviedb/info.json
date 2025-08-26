@@ -3,11 +3,11 @@
         "max"
     ],
     "name": "TheMovieDB",
-    "install_msg": "Thanks for installing.\nYou will need to set your API key before using this cog. See `[p]tmdbset creds`.\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)\n## PLEASE NOTE:\nThis cog is in alpha phase and using Components V2 and is not fully tested or and stable enough for production use. This also require the Components V2 PR from discord.py for this cog to work.",
+    "install_msg": "Thanks for installing.\nYou will need to set your API key before using this cog. See `[p]tmdbset creds`.\n<https://docs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>).",
     "description": "Search for informations of movies and TV shows from themoviedb.org.",
     "short": "Search for informations of movies and TV shows from themoviedb.org.",
     "hidden": false,
-    "min_bot_version": "3.5.14",
+    "min_bot_version": "3.5.21",
     "tags": [
         "movies",
         "movie",

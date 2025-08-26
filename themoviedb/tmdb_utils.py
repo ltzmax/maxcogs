@@ -31,12 +31,38 @@ from typing import Any, Dict, List, Optional
 import aiohttp
 import discord
 import orjson
+from red_commons.logging import getLogger
 from redbot.core.utils.chat_formatting import box, header, humanize_list, humanize_number
 from redbot.core.utils.views import SimpleMenu
 
-log = logging.getLogger("red.maxcogs.themoviedb.tmdb_utils")
+log = getLogger("red.maxcogs.themoviedb.tmdb_utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
+PREDEFINED_CHANNELS: Dict[str, Dict[str, str]] = {
+    "marvel": {"id": "UCvC4D8onUfXzvjTOM-dBfEA", "name": "Marvel Entertainment"},
+    "dc": {"id": "UCiifkYAs_bq1pt_zbNAzYGg", "name": "DC Official"},
+    "pixar": {"id": "UC_IRYSp4auq7hKLvziWVH6w", "name": "Pixar"},
+    "disney": {"id": "UC_5niPa-d35gg88HaS7RrIw", "name": "Disney"},
+    "disneyplus": {"id": "UCIrgJInjLS2BhlHOMDW7v0g", "name": "Disney+"},
+    "illumination": {"id": "UCq7OHvWO6Z3u-LztFdrcU-g", "name": "Illumination Entertainment"},
+    "warnerbros": {"id": "UCjmJDM5pRKbUlVIzDYYWb6g", "name": "Warner Bros. Pictures"},
+    "sony": {"id": "UCz97F7dMxBNOfGYu3rx8aCw", "name": "Sony Pictures Entertainment"},
+    "sonyanimation": {"id": "UCnLuLSV-Oi0ctqjxGgxFlmg", "name": "Sony Pictures Animation"},
+    "universal": {"id": "UCq0OueAsdxH6b8nyAspwViw", "name": "Universal Pictures"},
+    "paramount": {"id": "UCF9imwPMSGz4Vq1NiTWCC7g", "name": "Paramount Pictures"},
+    "20thcentury": {"id": "UC2-BeLxzUBSs0uSrmzWhJuQ", "name": "20th Century Studios"},
+    "lionsgate": {"id": "UCJ6nMHaJPZvsJ-HmUmj1SeA", "name": "Lionsgate Movies"},
+    "a24": {"id": "UCuPivVjnfNo4mb3Oog_frZg", "name": "A24"},
+    "hbomax": {"id": "UCx-KWLTKlB83hDI6UKECtJQ", "name": "HBO Max (formerly max)"},
+    "netflix": {"id": "UCWOA1ZGywLbqmigxE4Qlvuw", "name": "Netflix"},
+    "appletv": {"id": "UC1Myj674wRVXB9I4c6Hm5zA", "name": "Apple TV"},
+    "amazon": {"id": "UCQJWtTnAHhEG5w4uN0udnUQ", "name": "Amazon Prime Video"},
+    "mgm": {"id": "UCf5CjDJvsFvtVIhkfmKAwAA", "name": "Metro-Goldwyn-Mayer (MGM)"},
+    "crunchyroll": {
+        "id": "UC6pGDc4bFGD1_36IKv3FnYg",
+        "name": "Crunchyroll (Anime, Manga, and More)",
+    },
+}
 
 
 async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> Optional[Dict[str, Any]]:
@@ -47,7 +73,7 @@ async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> Optional[Dict[
                 log.error(f"TMDB request failed with status: {response.status}")
                 return None
             return orjson.loads(await response.read())
-    except Exception as e:
+    except discord.HTTPException as e:
         log.error(f"TMDB request error: {e}")
         return None
 
@@ -68,8 +94,8 @@ def filter_media_results(
     results: List[Dict[str, Any]], query: str, media_type: str
 ) -> List[Dict[str, Any]]:
     """Filter TMDB search results based on query and criteria."""
-    # If you remove this, do not ever ask me to help you with this cog.
-    # Google is your friend if you do not understand why this is banned.
+    # Banned for reasons of being offensive or not suitable for us norwegians to watch or discuss.
+    # Might add as default config in the future for removal if wanted to or update with more banned titles.
     banned_titles = {
         "22 july",
         "22 july 2011",
@@ -230,8 +256,8 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
     return embed, view
 
 
-async def search_and_display(ctx, query: str, media_type: str, config):
-    """Search TMDB and display results with a selection menu."""
+async def search_and_display(ctx, query: str, media_type: str):
+    """Search TMDB and display results with a paginated layout and selection buttons."""
     await ctx.typing()
     async with aiohttp.ClientSession() as session:
         initial_data = await search_media(ctx, session, query, media_type)
@@ -247,12 +273,15 @@ async def search_and_display(ctx, query: str, media_type: str, config):
 
         filtered_results = []
         for data in page_results:
+            if isinstance(data, Exception):
+                log.warning(f"Page fetch failed: {data}")
+                continue
             if not isinstance(data, dict) or "results" not in data:
                 continue
             filtered_results.extend(filter_media_results(data["results"], query, media_type))
 
         if not filtered_results:
-            return await ctx.send(f"No results found for {query}")
+            return await ctx.send(f"No results found for `{query}`.")
 
         if len(filtered_results) == 1:
             data = await get_media_data(ctx, session, filtered_results[0]["id"], media_type)
@@ -265,53 +294,189 @@ async def search_and_display(ctx, query: str, media_type: str, config):
             await ctx.send(embed=embed, view=view)
             return
 
-        response_in_box = await config.use_box()
-        title = "What would you like to select?"
-        header_text = f"{header(title, 'medium')}"
-        pages = [
-            f"{header_text}\n"
-            + "\n".join(
-                f"{i+j+1}. {r['title' if media_type == 'movie' else 'name']} "
-                f"({r.get('release_date' if media_type == 'movie' else 'first_air_date', 'N/A')[:4]}) "
-                f"({r.get('popularity', 0)})"
-                for j, r in enumerate(filtered_results[i : i + 15])
+    title = "What would you like to select?\n-# Click on the button to views the media details."
+    header_text = f"{header(title, 'medium')}"
+
+    class MediaPaginator(discord.ui.LayoutView):
+        def __init__(self, ctx, filtered_results, media_type, items_per_page=12):
+            super().__init__(timeout=120)
+            self.ctx = ctx
+            self.filtered_results = self._sort_results(filtered_results, media_type)
+            self.media_type = media_type
+            self.session = aiohttp.ClientSession()
+            self.current_page = 0
+            self.items_per_page = items_per_page
+            self.message = None
+            self._update_content()
+
+        def _sort_results(self, results, media_type):
+            """Sort results by release date (descending, newest first)."""
+            date_key = "release_date" if media_type == "movie" else "first_air_date"
+
+            def get_date(item):
+                date_str = item.get(date_key, "0000-00-00")
+                try:
+                    return datetime.strptime(date_str[:10], "%Y-%m-%d").timestamp()
+                except (ValueError, TypeError):
+                    return float("-inf")
+
+            return sorted(results, key=get_date, reverse=True)
+
+        def _get_label(self, result, index):
+            """Generate display label for a media item."""
+            key_map = {
+                "movie": {"title": "title", "date": "release_date"},
+                "tv": {"title": "name", "date": "first_air_date"},
+            }
+            keys = key_map[self.media_type]
+            title = result.get(keys["title"], "Unknown")
+            date = result.get(keys["date"], "N/A")[:4]
+            popularity = round(result.get("popularity", 0), 1)
+            return f"{index + 1}. {title} ({date}) ({popularity})"
+
+        def _build_page_content(self):
+            """Build content for the current page."""
+            self.clear_items()
+            start_idx = self.current_page * self.items_per_page
+            end_idx = min(
+                (self.current_page + 1) * self.items_per_page, len(self.filtered_results)
             )
-            for i in range(0, len(filtered_results), 15)
-        ]
+            page_results = self.filtered_results[start_idx:end_idx]
+            self.add_item(discord.ui.TextDisplay(header_text))
 
-        try:
-            pages = [box(page, lang="prolog") if response_in_box else page for page in pages]
-        except ImportError:
-            log.warning("box formatting not available, using plain text")
-            pass
+            for i, result in enumerate(page_results):
+                label = self._get_label(result, start_idx + i)
+                section = discord.ui.Section(
+                    discord.ui.TextDisplay(label), accessory=MediaButton(start_idx + i)
+                )
+                self.add_item(section)
 
-        menu = SimpleMenu(pages, use_select_menu=True, disable_after_timeout=True, timeout=120)
-        await menu.start(ctx)
+        def _add_navigation_buttons(self):
+            """Add navigation buttons if needed."""
+            if len(self.filtered_results) > self.items_per_page:
+                row = discord.ui.ActionRow()
+                if self.current_page > 0:
+                    row.add_item(NavButton("prev"))
+                if (self.current_page + 1) * self.items_per_page < len(self.filtered_results):
+                    row.add_item(NavButton("next"))
+                self.add_item(row)
 
-        try:
-            msg = await ctx.bot.wait_for(
-                "message",
-                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
-                timeout=60,
+        def _update_content(self):
+            """Update the paginator's content."""
+            self._build_page_content()
+            self._add_navigation_buttons()
+
+        def _disable_all_buttons(self):
+            """Disable all buttons in the view."""
+            for item in self.children:
+                if isinstance(item, discord.ui.Section) and hasattr(item, "accessory"):
+                    if isinstance(item.accessory, discord.ui.Button):
+                        item.accessory.disabled = True
+                elif isinstance(item, discord.ui.ActionRow):
+                    for child in item.children:
+                        if isinstance(child, discord.ui.Button):
+                            child.disabled = True
+
+        async def _cleanup(self):
+            """Clean up resources and update message."""
+            self._disable_all_buttons()
+            if not self.session.closed:
+                await self.session.close()
+            if self.message:
+                try:
+                    await self.message.edit(content=None, view=self)
+                except discord.NotFound as e:
+                    log.error(f"Message not found: {e}", exc_info=True)
+
+        async def on_timeout(self):
+            await self._cleanup()
+            super().stop()
+
+        async def interaction_check(self, interaction: discord.Interaction):
+            if interaction.user != self.ctx.author:
+                await interaction.response.send_message(
+                    f"Only {self.ctx.author.mention} can use this.", ephemeral=True
+                )
+                return False
+            return True
+
+    class MediaButton(discord.ui.Button["MediaPaginator"]):
+        def __init__(self, index, label=None):
+            super().__init__(label=label or "Select", style=discord.ButtonStyle.primary)
+            self.index = index
+
+        async def _send_error(self, interaction, message, exc=None):
+            """Send an error message and log if an exception is provided."""
+            if exc:
+                log.error(
+                    f"Error fetching media details for ID {self.view.filtered_results[self.index]['id']}: {exc}",
+                    exc_info=True,
+                )
+            await interaction.response.send_message(message, ephemeral=True)
+
+        async def callback(self, interaction: discord.Interaction) -> None:
+            try:
+                data = await get_media_data(
+                    self.view.ctx,
+                    self.view.session,
+                    self.view.filtered_results[self.index]["id"],
+                    self.view.media_type,
+                )
+                if not data:
+                    return await self._send_error(interaction, "Failed to fetch media details.")
+            except aiohttp.ClientConnectionError as e:
+                return await self._send_error(interaction, "Network error, please try again.", e)
+            except Exception as e:
+                return await self._send_error(interaction, "Error fetching media details.", e)
+
+            embed, view = await build_embed(
+                self.view.ctx,
+                data,
+                self.view.filtered_results[self.index]["id"],
+                self.index,
+                self.view.filtered_results,
+                item_type=self.view.media_type,
             )
-            if not msg.content.isdigit():
-                return await ctx.send("Invalid input. Exiting.")
+            await interaction.response.send_message(embed=embed, view=view)
+            await self.view._cleanup()
 
-            index = int(msg.content) - 1
-            if index < 0 or index >= len(filtered_results):
-                return await ctx.send("Invalid selection. Exiting.")
-        except ValueError:
-            return await ctx.send("Invalid input. Exiting.")
-        except asyncio.TimeoutError:
-            return await ctx.send("Selection timed out. Exiting.")
+    class NavButton(discord.ui.Button["MediaPaginator"]):
+        def __init__(self, direction):
+            super().__init__(
+                label="Previous" if direction == "prev" else "Next",
+                emoji="◀️" if direction == "prev" else "▶️",
+                style=discord.ButtonStyle.secondary,
+                custom_id=f"nav_{direction}",
+            )
+            self.direction = direction
 
-        data = await get_media_data(ctx, session, filtered_results[index]["id"], media_type)
-        if not data:
-            return await ctx.send("Failed to fetch media details.")
-        embed, view = await build_embed(
-            ctx, data, filtered_results[index]["id"], index, filtered_results, item_type=media_type
-        )
-        await ctx.send(embed=embed, view=view)
+        async def _send_error(self, interaction, message, exc=None):
+            """Send an error message and log if an exception is provided."""
+            if exc:
+                log.error(
+                    f"Error navigating page {self.view.current_page} ({self.direction}): {exc}",
+                    exc_info=True,
+                )
+            await interaction.response.send_message(message, ephemeral=True)
+
+        async def callback(self, interaction: discord.Interaction) -> None:
+            try:
+                start_idx = self.view.current_page * self.view.items_per_page
+                end_idx = start_idx + self.view.items_per_page
+                if self.direction == "prev" and self.view.current_page > 0:
+                    self.view.current_page -= 1
+                elif self.direction == "next" and end_idx < len(self.view.filtered_results):
+                    self.view.current_page += 1
+
+                self.view._update_content()
+                await interaction.response.defer()
+                await self.view.message.edit(content=None, view=self.view)
+            except discord.HTTPException as e:
+                await self._send_error(interaction, "Error navigating, please try again.", e)
+
+    paginator = MediaPaginator(ctx, filtered_results, media_type)
+    message = await ctx.send(content="", view=paginator)
+    paginator.message = message
 
 
 async def person_embed(ctx, query: str):
