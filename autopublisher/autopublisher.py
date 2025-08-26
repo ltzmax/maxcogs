@@ -357,9 +357,8 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
             )
         else:
             view = IgnoredNewsChannelsView(self)
-            view.ctx = ctx
-            msg = "Select news channels to ignore/unignore.\nUse `[p]autopub ignorechannel #channel(s)` to manage manually."
-            view.message = await ctx.send(msg.replace("[p]", ctx.clean_prefix), view=view)
+            await view.start(ctx)
+            view.message = await ctx.send(view=view)
 
     @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(aliases=["view"])
