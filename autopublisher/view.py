@@ -32,9 +32,7 @@ from redbot.core import commands
 log = logging.getLogger("red.maxcogs.autopublisher.view")
 
 
-# Credit: AAA3A for the original code and idea of this view.py file.
-# https://discord.com/channels/133049272517001216/133251234164375552/1280854205497737216
-class IgnoredNewsChannelsView(discord.ui.View):
+class IgnoredNewsChannelsView(discord.ui.LayoutView):
     def __init__(self, cog: commands.Cog) -> None:
         super().__init__(timeout=180)
         self.cog: commands.Cog = cog
@@ -42,14 +40,45 @@ class IgnoredNewsChannelsView(discord.ui.View):
         self.message: discord.Message = None
         self.ignored_channels: typing.List[discord.ForumChannel] = []
 
+        self.container = discord.ui.Container(accent_color=discord.Color.blurple())
+        self.container.add_item(
+            discord.ui.TextDisplay(
+                "Select news channels to ignore/unignore.\n"
+                "Use the Confirm button to save changes.\n"
+                "Alternatively, use the command with #channel(s) to manage manually."
+            )
+        )
+        self.container.add_item(discord.ui.Separator())
+        self.select = discord.ui.ChannelSelect(
+            channel_types=[discord.ChannelType.news],
+            placeholder="Select the news channels to ignore.",
+            min_values=0,
+        )
+        self.select.callback = self.select_callback
+        self.container.add_item(discord.ui.ActionRow(self.select))
+        self.container.add_item(discord.ui.Separator())
+        self.confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.success)
+        self.confirm_button.callback = self.save_callback
+        self.unignore_button = discord.ui.Button(
+            label="Unignore", style=discord.ButtonStyle.danger
+        )
+        self.unignore_button.callback = self.unignore_callback
+        self.container.add_item(discord.ui.ActionRow(self.confirm_button, self.unignore_button))
+        self.add_item(self.container)
+
     async def start(self, ctx: commands.Context) -> None:
         self.ctx: commands.Context = ctx
-        self.ignored_channels: typing.List[discord.ForumChannel] = [
+        ignored_ids = await self.cog.config.guild(self.ctx.guild).ignored_channels()
+        self.ignored_channels = [
             channel
-            for channel_id in await self.cog.config.guild(self.ctx.guild).ignored_channels()
+            for channel_id in ignored_ids
             if (channel := self.ctx.guild.get_channel(channel_id))
         ]
-        self.select.default_values = self.ignored_channels
+        default_values = [
+            discord.SelectDefaultValue(type="channel", id=channel.id)
+            for channel in self.ignored_channels
+        ]
+        self.select.default_values = default_values
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id not in [self.ctx.author.id] + list(self.ctx.bot.owner_ids):
@@ -60,49 +89,29 @@ class IgnoredNewsChannelsView(discord.ui.View):
         return True
 
     async def on_timeout(self) -> None:
-        for item in self.children:
-            item: discord.ui.Item
-            item.disabled = True
+        self.select.disabled = True
+        self.confirm_button.disabled = True
+        self.unignore_button.disabled = True
         try:
             await self.message.edit(view=self)
         except discord.HTTPException as e:
             log.error(e)
 
-    @discord.ui.select(
-        cls=discord.ui.ChannelSelect,
-        channel_types=[discord.ChannelType.news],
-        min_values=0,
-        placeholder="Select the news channels to ignore.",
-    )
-    async def select(
-        self, interaction: discord.Interaction, select: discord.ui.ChannelSelect
-    ) -> None:
+    async def select_callback(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
-        selected_channels = select.values
-        current_ignored_channels = await self.cog.config.guild(self.ctx.guild).ignored_channels()
-
-        for channel in selected_channels:
-            if channel.id in current_ignored_channels:
-                current_ignored_channels.remove(channel.id)
-            else:
-                current_ignored_channels.append(channel.id)
-        self.ignored_channels = [
-            self.ctx.guild.get_channel(channel_id) for channel_id in current_ignored_channels
-        ]
-
+        self.ignored_channels = self.select.values
         await interaction.followup.send(
-            f"Click on the button to Confirm the selected news channels.",
+            "Click Confirm to save the selected news channels.",
             ephemeral=True,
         )
 
-    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.success)
-    async def save(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def save_callback(self, interaction: discord.Interaction) -> None:
         new_ignored_channels = [channel.id for channel in self.ignored_channels]
+        current_ignored = await self.cog.config.guild(self.ctx.guild).ignored_channels()
 
-        # Check if the channel is already ignored
-        if new_ignored_channels == await self.cog.config.guild(self.ctx.guild).ignored_channels():
+        if sorted(new_ignored_channels) == sorted(current_ignored):
             return await interaction.response.send_message(
-                "No changes were made because the selected news channel is already ignored.",
+                "No changes were made.",
                 ephemeral=True,
             )
 
@@ -111,11 +120,11 @@ class IgnoredNewsChannelsView(discord.ui.View):
             ":white_check_mark: Ignored news channels saved!", ephemeral=True
         )
 
-    @discord.ui.button(label="Unignore", style=discord.ButtonStyle.danger)
-    async def unignore(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        if self.ignored_channels not in self.cog.config.guild(self.ctx.guild).ignored_channels():
+    async def unignore_callback(self, interaction: discord.Interaction) -> None:
+        current_ignored = await self.cog.config.guild(self.ctx.guild).ignored_channels()
+        if not current_ignored:
             return await interaction.response.send_message(
-                "No changes were made because the selected news channel is not ignored.",
+                "No news channels are currently ignored.",
                 ephemeral=True,
             )
 
@@ -123,3 +132,5 @@ class IgnoredNewsChannelsView(discord.ui.View):
         await interaction.response.send_message(
             ":white_check_mark: Ignored news channels removed!", ephemeral=True
         )
+        self.ignored_channels = []
+        self.select.default_values = []
