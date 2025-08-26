@@ -110,13 +110,35 @@ class URLModal(discord.ui.View):
         log.error(f"An error occured: {error}")
 
 
-class RestartButton(discord.ui.View):
-    def __init__(self, ctx, bot, *, timeout=60):
+class RestartButton(discord.ui.LayoutView):
+    def __init__(self, ctx, bot, color, *, timeout=60):
         super().__init__(timeout=timeout)
         self.ctx = ctx
         self.bot = bot
         self.clicked = False
         self.message = None
+
+        self.container = discord.ui.Container(accent_color=color)
+        self.container.add_item(
+            discord.ui.TextDisplay(
+                f"Successfully updated {self.bot.user.name}.\nRestart required to apply changes!"
+            )
+        )
+        self.restart_btn = discord.ui.Button(label="Restart", style=discord.ButtonStyle.red)
+        self.restart_btn.callback = self.restart_callback
+        self.container.add_item(discord.ui.ActionRow(self.restart_btn))
+        self.add_item(self.container)
+
+    async def restart_callback(self, interaction: discord.Interaction):
+        self.clicked = True
+        self.restart_btn.disabled = True
+        await interaction.response.send_message("Restarting...", ephemeral=True)
+        await interaction.message.edit(view=self)
+        try:
+            await self.bot.shutdown(restart=True)
+        except discord.HTTPException as e:
+            await interaction.channel.send(f"Error restarting bot: {str(e)}")
+            log.error(e)
 
     async def on_timeout(self) -> None:
         for item in self.children:
@@ -138,15 +160,3 @@ class RestartButton(discord.ui.View):
             await interaction.response.send_message(("Button already clicked."), ephemeral=True)
             return False
         return True
-
-    @discord.ui.button(label="Restart", style=discord.ButtonStyle.gray)
-    async def restart_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.clicked = True
-        button.disabled = True
-        await interaction.response.send_message("Restarting...", ephemeral=True)
-        await interaction.message.edit(view=self)
-        try:
-            await self.bot.shutdown(restart=True)
-        except Exception as e:
-            await interaction.channel.send(f"Error restarting bot: {str(e)}")
-            log.error(e)
