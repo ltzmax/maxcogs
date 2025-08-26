@@ -92,7 +92,7 @@ class Currency(commands.Cog):
             "3. **Get Your Key**: After signing up, you’ll receive an API key (e.g., 'yourapikey123').\n"
             "4. **Set the Key**: As the bot owner, use this command in Discord: `[p]set api exchangerate api_key yourapikey123`\n"
             "   - Replace `yourapikey123` with the key you got.\n\n"
-            "That’s it! Once set, please use `[p]slash enablecog currency` then `[p]slash sync`.\nNow you can use the `/currencyconvert` command will work (up to 1,500 requests/month on the free tier)."
+            f"That’s it! Once set, please use `{ctx.clean_prefix}slash enablecog currency` then `{ctx.clean_prefix}slash sync`.\nNow you can use the `/currencyconvert` command will work (up to 1,500 requests/month on the free tier)."
         )
         default_keys = {"api_key": ""}
         view = SetApiView("exchangerate", default_keys)
