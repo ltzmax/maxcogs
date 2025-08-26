@@ -54,7 +54,7 @@ class GameState:
 class HoneyCombs(commands.Cog):
     """Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game."""
 
-    __version__: Final[str] = "2.0.0a"
+    __version__: Final[str] = "2.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -96,11 +96,9 @@ class HoneyCombs(commands.Cog):
         for guild in self.bot.guilds:
             self.cache["guilds"][guild.id] = await self.config.guild(guild).all()
 
-    def get_guild_config(self, guild: discord.Guild):
+    async def get_guild_config(self, guild: discord.Guild):
         if guild.id not in self.cache["guilds"]:
-            self.cache["guilds"][guild.id] = self.bot.loop.create_task(
-                self.config.guild(guild).all()
-            ).result()
+            self.cache["guilds"][guild.id] = await self.config.guild(guild).all()
         return self.cache["guilds"][guild.id]
 
     async def update_guild_config(self, guild: discord.Guild, key: str, value: Any):
@@ -129,7 +127,7 @@ class HoneyCombs(commands.Cog):
 
     async def run_game(self, ctx: commands.Context):
         game_state = self.get_game_state(ctx.guild)
-        guild_config = self.get_guild_config(ctx.guild)
+        guild_config = await self.get_guild_config(ctx.guild)
 
         if not game_state.players:
             await ctx.send("No players joined the game.")
@@ -236,7 +234,7 @@ class HoneyCombs(commands.Cog):
         You need at least 2 players to start the game.
         The maximum number of players is 456.
         """
-        guild_config = self.get_guild_config(ctx.guild)
+        guild_config = await self.get_guild_config(ctx.guild)
         game_state = self.get_game_state(ctx.guild)
         async with self.get_lock(ctx.guild):
             if game_state.active:
@@ -275,7 +273,7 @@ class HoneyCombs(commands.Cog):
             await self.wait_for_players(ctx, view)
 
     async def wait_for_players(self, ctx: commands.Context, view: HoneycombView):
-        guild_config = self.get_guild_config(ctx.guild)
+        guild_config = await self.get_guild_config(ctx.guild)
         game_state = self.get_game_state(ctx.guild)
         minimum_players = guild_config["minimum_players"]
         await asyncio.sleep(120)
@@ -325,7 +323,6 @@ class HoneyCombs(commands.Cog):
         Allow administrators to reset the game settings for the server in case of any issues or to start fresh again.
         """
         game_state = self.get_game_state(ctx.guild)
-        guild_config = self.get_guild_config(ctx.guild)
         if not game_state.players and not game_state.active:
             return await ctx.send("Game settings are already reset.")
 
@@ -404,7 +401,8 @@ class HoneyCombs(commands.Cog):
         If set to False, anyone can start the game.
         """
         if state is None:
-            state = not self.get_guild_config(ctx.guild)["mod_only_command"]
+            guild_config = await self.get_guild_config(ctx.guild)
+            state = not guild_config["mod_only_command"]
         await self.update_guild_config(ctx.guild, "mod_only_command", state)
         await ctx.send(f"Mod only command has been set to {state}.")
 
@@ -473,7 +471,7 @@ class HoneyCombs(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def settings(self, ctx: commands.Context):
         """View the current game settings."""
-        guild_config = self.get_guild_config(ctx.guild)
+        guild_config = await self.get_guild_config(ctx.guild)
         global_config = self.cache["global"]
         currency_name = await bank.get_currency_name(ctx.guild)
 

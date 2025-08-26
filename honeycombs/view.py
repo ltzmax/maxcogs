@@ -40,7 +40,7 @@ class JoinButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: HoneycombView = self.view
         game_state = view.cog.get_game_state(view.guild)
-        guild_config = view.cog.get_guild_config(view.guild)
+        guild_config = await view.cog.get_guild_config(view.guild)
         currency_name = await bank.get_currency_name(interaction.guild)
         winning_price = view.cog.cache["global"]["winning_price"]
         losing_price = view.cog.cache["global"]["losing_price"]
