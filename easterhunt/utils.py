@@ -23,12 +23,12 @@ SOFTWARE.
 """
 
 import random
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 import discord
 
 
-async def check_hunt_cooldown(db, user_id: int, current_time: float) -> Tuple[bool, Optional[str]]:
+async def check_hunt_cooldown(db, user_id: int, current_time: float) -> tuple[bool, str | None]:
     """Check if the user can hunt again, returning (can_hunt, message)."""
     last_hunt = await db.get_user_field(user_id, "last_hunt")
     cooldown_remaining = 300 - (current_time - last_hunt)
@@ -168,7 +168,7 @@ async def process_hunt_outcome(
 
 async def find_target_player(
     db, user_id: int, guild
-) -> Tuple[Optional[discord.Member], Optional[str]]:
+) -> tuple[discord.Member | None, str | None]:
     """Find a random player with eggs to steal from, excluding the user."""
     potential_targets = []
     async with db.conn.cursor() as cursor:

@@ -18,7 +18,7 @@
     "requirements": ["aiosqlite"],
     "min_python_version": [
         3,
-        9,
+        10,
         0
     ],
     "end_user_data_statement": "This cog does not store any End User Data although it does store Discord IDs to track user progress and economy data. This data can be deleted with the `[p]easterhunt resetme` command.",
