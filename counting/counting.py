@@ -22,24 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from enum import Enum
 from typing import Any, Dict, Final, Optional
 
 import discord
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 
-from .event_handlers import EventHandlers
-from .settings import SettingsManager
 from .commands.admin import AdminCommands
 from .commands.user import UserCommands
-
-
-class MessageType(Enum):
-    EDIT = "edit"
-    COUNT = "count"
-    SAMEUSER = "sameuser"
-    RUIN_COUNT = "ruincount"
+from .event_handlers import EventHandlers
+from .settings import SettingsManager
 
 
 class Counting(UserCommands, AdminCommands, commands.Cog):

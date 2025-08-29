@@ -24,6 +24,7 @@ SOFTWARE.
 
 import asyncio
 import re
+from enum import Enum
 from typing import Optional
 
 import discord
@@ -35,6 +36,13 @@ from redbot.core import commands
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 logger = getLogger("red.maxcogs.counting")
+
+
+class MessageType(Enum):
+    EDIT = "edit"
+    COUNT = "count"
+    SAMEUSER = "sameuser"
+    RUIN_COUNT = "ruincount"
 
 
 class AdminCommands(commands.Cog):
