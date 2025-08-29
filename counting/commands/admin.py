@@ -616,7 +616,7 @@ class AdminCommands(commands.Cog):
         for i in range(0, len(goals), goals_per_page):
             page_goals = goals[i : i + goals_per_page]
             goal_list = "\n".join(str(goal) for goal in page_goals)
-            embed = Embed(
+            embed = discord.Embed(
                 title="Current Counting Goals",
                 description=goal_list,
                 color=await ctx.embed_color(),
