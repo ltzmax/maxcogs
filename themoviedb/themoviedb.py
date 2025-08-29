@@ -46,7 +46,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "2.1.0"
+    __version__ = "2.2.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/tree/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -112,6 +112,7 @@ class TheMovieDB(commands.Cog):
         try:
             webhooks = await channel.webhooks()
         except (discord.Forbidden, discord.HTTPException):
+            logger.error(f"Failed to fetch webhooks in {channel.name} ({channel.guild.name})")
             return None
 
         for wh in webhooks:
@@ -125,7 +126,7 @@ class TheMovieDB(commands.Cog):
             if e.code == 30007:  # Maximum number of webhooks reached
                 await self.config.guild(channel.guild).use_webhook.set(False)
                 logger.warning(
-                    f"Maximum number of webhooks reached in {channel.name} for guild {channel.guild.name}. Disabling webhook use."
+                    f"Maximum number of webhooks reached in {channel.name} ({channel.guild.name}). Disabling webhook use."
                 )
             else:
                 logger.error(
@@ -155,7 +156,7 @@ class TheMovieDB(commands.Cog):
             )
             return
 
-        use_webhook = await self.config.guild(guild).use_webhook()
+        use_webhook = guild_data.get("use_webhook", False)
         webhook = None
         if use_webhook and perms.manage_webhooks:
             webhook = await self.get_or_create_webhook(channel_to_post)
@@ -205,6 +206,7 @@ class TheMovieDB(commands.Cog):
                                 avatar_url=(
                                     str(self.bot.user.avatar) if self.bot.user.avatar else None
                                 ),
+                                allowed_mentions=discord.AllowedMentions(roles=True),
                             )
                         else:
                             await channel_to_post.send(disable_message)
@@ -280,9 +282,13 @@ class TheMovieDB(commands.Cog):
                             content=message,
                             username=self.bot.user.name,
                             avatar_url=str(self.bot.user.avatar) if self.bot.user.avatar else None,
+                            allowed_mentions=discord.AllowedMentions(roles=True),
                         )
                     else:
-                        await channel_to_post.send(message)
+                        await channel_to_post.send(
+                            content=message,
+                            allowed_mentions=discord.AllowedMentions(roles=True),
+                        )
                 except (discord.Forbidden, discord.HTTPException) as e:
                     logger.error(
                         f"Failed to send notification to {channel_to_post.name} in {guild.name}: {e}"
@@ -318,6 +324,17 @@ class TheMovieDB(commands.Cog):
             channel = guild.get_channel(notification_channel_id)
             if not channel:
                 continue
+            perms = channel.permissions_for(guild.me)
+            if not perms.send_messages:
+                logger.warning(
+                    f"Bot does not have send_messages permission in {channel.name} in guild {guild.name} (ID: {guild.id})"
+                )
+                continue
+            if guild_data.get("use_webhook", False) and not perms.manage_webhooks:
+                logger.warning(
+                    f"Bot does not have manage_webhooks permission in {channel.name} in guild {guild.name} (ID: {guild.id})"
+                )
+                await self.config.guild(guild).use_webhook.set(False)
 
             await self.check_trailers(guild)
 
