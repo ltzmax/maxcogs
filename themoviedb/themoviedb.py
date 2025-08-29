@@ -46,7 +46,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "2.0.0"
+    __version__ = "2.1.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/tree/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -58,6 +58,7 @@ class TheMovieDB(commands.Cog):
             "notification_channel": None,
             "channels_status": {},
             "ping_role": None,
+            "use_webhook": True,
         }
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
@@ -103,6 +104,40 @@ class TheMovieDB(commands.Cog):
             logger.error(f"Error fetching feed for channel {youtube_channel_id}: {e}")
             return None
 
+    async def get_or_create_webhook(
+        self, channel: discord.TextChannel
+    ) -> Optional[discord.Webhook]:
+        """Get or create a webhook for trailer notifications in the channel."""
+        our_name = "Trailer Notifications"
+        try:
+            webhooks = await channel.webhooks()
+        except (discord.Forbidden, discord.HTTPException):
+            return None
+
+        for wh in webhooks:
+            if wh.name == our_name and wh.user == self.bot.user:
+                return wh
+
+        try:
+            wh = await channel.create_webhook(name=our_name)
+            return wh
+        except discord.HTTPException as e:
+            if e.code == 30007:  # Maximum number of webhooks reached
+                await self.config.guild(channel.guild).use_webhook.set(False)
+                logger.warning(
+                    f"Maximum number of webhooks reached in {channel.name} for guild {channel.guild.name}. Disabling webhook use."
+                )
+            else:
+                logger.error(
+                    f"Failed to create webhook in {channel.name} ({channel.guild.name}): {e}"
+                )
+            return None
+        except discord.Forbidden as e:
+            logger.error(
+                f"Permission denied to create webhook in {channel.name} ({channel.guild.name}): {e}"
+            )
+            return None
+
     async def check_trailers(self, guild: discord.Guild) -> None:
         guild_data = await self.config.guild(guild).all()
         notification_channel_id = guild_data.get("notification_channel")
@@ -112,6 +147,18 @@ class TheMovieDB(commands.Cog):
         channel_to_post = guild.get_channel(notification_channel_id)
         if not channel_to_post:
             return
+
+        perms = channel_to_post.permissions_for(guild.me)
+        if not perms.send_messages:
+            logger.warning(
+                f"Bot does not have send_messages permission in {channel_to_post.name} in guild {guild.name}"
+            )
+            return
+
+        use_webhook = await self.config.guild(guild).use_webhook()
+        webhook = None
+        if use_webhook and perms.manage_webhooks:
+            webhook = await self.get_or_create_webhook(channel_to_post)
 
         ping_role_id = guild_data.get("ping_role")
         ping_role = guild.get_role(ping_role_id) if ping_role_id else None
@@ -146,17 +193,28 @@ class TheMovieDB(commands.Cog):
                 failure_count = channels_status.get(key, {}).get("failure_count", 0) + 1
                 updates[key] = {"enabled": failure_count < 3, "failure_count": failure_count}
                 if failure_count >= 3:
+                    disable_message = (
+                        f"Disabled notifications for **{details['name']}** due to repeated failures (HTTP 404).\n"
+                        "Please contact the bot owner to resolve this issue."
+                    )
                     try:
-                        await channel_to_post.send(
-                            f"Disabled notifications for **{details['name']}** due to repeated failures (HTTP 404).\n"
-                            "Please contact the bot owner to resolve this issue."
-                        )
+                        if webhook:
+                            await webhook.send(
+                                content=disable_message,
+                                username=self.bot.user.name,
+                                avatar_url=(
+                                    str(self.bot.user.avatar) if self.bot.user.avatar else None
+                                ),
+                            )
+                        else:
+                            await channel_to_post.send(disable_message)
                     except (discord.Forbidden, discord.HTTPException) as e:
                         logger.error(
                             f"Failed to send disable message to {channel_to_post.name} in {guild.name}: {e}"
                         )
                     continue
-            updates[key] = {"enabled": True, "failure_count": 0}
+            else:
+                updates[key] = {"enabled": True, "failure_count": 0}
 
             try:
                 root = ET.fromstring(feed_data)
@@ -217,7 +275,14 @@ class TheMovieDB(commands.Cog):
                     f"{ping_mention}**{author_name}** has uploaded a new video!\n{video_url}"
                 ).strip()
                 try:
-                    await channel_to_post.send(message)
+                    if webhook:
+                        await webhook.send(
+                            content=message,
+                            username=self.bot.user.name,
+                            avatar_url=str(self.bot.user.avatar) if self.bot.user.avatar else None,
+                        )
+                    else:
+                        await channel_to_post.send(message)
                 except (discord.Forbidden, discord.HTTPException) as e:
                     logger.error(
                         f"Failed to send notification to {channel_to_post.name} in {guild.name}: {e}"
@@ -246,14 +311,12 @@ class TheMovieDB(commands.Cog):
             guild = self.bot.get_guild(guild_id)
             if not guild:
                 continue
-            channel = guild.get_channel(all_guilds[guild_id].get("notification_channel"))
-            if (
-                not channel.permissions_for(guild.me).send_messages
-                or not channel.permissions_for(guild.me).embed_links
-            ):
-                logger.warning(
-                    f"Bot does not have permission to send messages or embed links in the notification channel {channel.name} in guild {guild.name} (ID: {guild.id}"
-                )
+            guild_data = all_guilds[guild_id]
+            notification_channel_id = guild_data.get("notification_channel")
+            if not notification_channel_id:
+                continue
+            channel = guild.get_channel(notification_channel_id)
+            if not channel:
                 continue
 
             await self.check_trailers(guild)
@@ -268,6 +331,15 @@ class TheMovieDB(commands.Cog):
         """
         Configure TheMovieDB cog settings.
         """
+
+    @tmdbset.command(name="webhook")
+    async def set_webhook(self, ctx: commands.Context, use_webhook: bool) -> None:
+        """
+        Enable or disable the use of webhooks for trailer notifications.
+        """
+        webhook_status = "enabled" if use_webhook else "disabled"
+        await self.config.guild(ctx.guild).use_webhook.set(use_webhook)
+        await ctx.send(f"Webhook usage for trailer notifications has been {webhook_status}.")
 
     @tmdbset.command(name="channel")
     async def set_channel(
@@ -370,12 +442,13 @@ class TheMovieDB(commands.Cog):
                 f"No valid studios toggled. Use `{ctx.clean_prefix}tmdbset list` to see options."
             )
 
-    @tmdbset.command(name="list")
+    @tmdbset.command(name="list", aliases=["settings"])
     async def list_channels(self, ctx: commands.Context) -> None:
         """List all available studios and their notification status."""
         guild_data = await self.config.guild(ctx.guild).all()
         notification_channel_id = guild_data.get("notification_channel")
         ping_role_id = guild_data.get("ping_role")
+        webhook_status = guild_data.get("use_webhook")
 
         if notification_channel_id:
             channel = ctx.guild.get_channel(notification_channel_id)
@@ -388,6 +461,8 @@ class TheMovieDB(commands.Cog):
             msg += f"Ping Role: {role.mention if role else 'Not Set'}\n"
         else:
             msg += "Ping Role: Not Set\n"
+
+        msg += f"Use Webhook: {'Enabled' if webhook_status else 'Disabled'}\n"
 
         msg += "\nAvailable Studios:\n"
         channels_status = guild_data.get("channels_status", {})
