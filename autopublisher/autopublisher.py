@@ -189,14 +189,15 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
 
         guild_config = self.config.guild(message.guild)
         settings = await guild_config.all()
+        perms = message.channel.permissions_for(message.guild.me)
         if (
             not settings["toggle"]
             or message.channel.id in settings["ignored_channels"]
             or await self.bot.cog_disabled_in_guild(self, message.guild)
-            or not message.guild.me.guild_permissions.manage_messages
-            or not message.guild.me.guild_permissions.view_channel
-            or not message.guild.me.guild_permissions.read_message_history
-            or not message.guild.me.guild_permissions.send_messages
+            or not perms.manage_messages
+            or not perms.view_channel
+            or not perms.read_message_history
+            or not perms.send_messages
             or not message.channel.is_news()
             or "NEWS" not in message.guild.features
         ):
@@ -205,6 +206,9 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
                 logger.warning(
                     f"Disabled AutoPublisher in {message.guild.name} (no NEWS feature)."
                 )
+            return
+
+        if message.flags.crossposted:
             return
 
         try:
