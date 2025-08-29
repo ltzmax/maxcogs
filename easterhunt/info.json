@@ -1,0 +1,26 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "EasterHunt",
+    "install_msg": "Thanks for installing!\nThe rarity for eggs are explained here: <https://easterhunt.maxapp.tv>.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "Easter games where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements and more.",
+    "short": "Easter games where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements and more.",
+    "hidden": false,
+    "min_bot_version": "3.5.21",
+    "tags": [
+        "easter", 
+        "hunting", 
+        "easter eggs", 
+        "economy"
+    ],
+    "permissions": [],
+    "requirements": ["aiosqlite"],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data although it does store Discord IDs to track user progress and economy data. This data can be deleted with the `[p]easterhunt resetme` command.",
+    "type": "COG"
+}

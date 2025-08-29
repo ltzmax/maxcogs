@@ -18,7 +18,8 @@ body:
         - autopublisher
         - counting
         - currency
-        - Earthquake
+        - earthquake
+        - easterhunt
         - forwarddeleter
         - github
         - history

@@ -33,6 +33,8 @@ To install any cog you want:
     - A cog to convert currencies using ExchangeRate-API.
 - Earthquake
     - Worldwide earthquake updates.
+- EasterHunt
+    - Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements.
 - ForwadDeleter
     - A cog that deletes forwarded messages and allows them in specified channels or by roles.
 - GitHub
