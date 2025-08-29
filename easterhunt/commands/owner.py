@@ -35,7 +35,7 @@ class OwnerCommands(commands.Cog):
         """Owner commands for Easter Hunt."""
 
     @ownerset.command(name="dbsize", hidden=True)
-    async def ownerset_check_db_size(self, ctx):
+    async def ownerset_check_db_size(self, ctx: commands.Context):
         """Check the size of the EasterHunt database."""
         if not self.db.db_path.exists():
             return await ctx.send("Database file not found.")
