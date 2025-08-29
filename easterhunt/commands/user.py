@@ -378,7 +378,9 @@ class UserCommands(commands.Cog):
 
     @easterhunt.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def give(self, ctx, member: discord.Member, egg_type: str, amount: int = 1):
+    async def give(
+        self, ctx: commands.Context, member: discord.Member, egg_type: str, amount: int = 1
+    ):
         """
         Give some of your eggs to another user!
 
