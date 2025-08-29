@@ -378,9 +378,7 @@ class UserCommands(commands.Cog):
 
     @easterhunt.command()
     @commands.bot_has_permissions(embed_links=True)
-    async def give(
-        self, ctx: commands.Context, member: discord.Member, egg_type: str, amount: int = 1
-    ):
+    async def give(self, ctx, member: discord.Member, egg_type: str, amount: int = 1):
         """
         Give some of your eggs to another user!
 
@@ -399,13 +397,11 @@ class UserCommands(commands.Cog):
             return await ctx.send(
                 "You can't give eggs to yourself! 🥚",
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
-                mention_author=False,
             )
         if member.bot:
             return await ctx.send(
                 "You can't give eggs to a bot! 🤖",
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
-                mention_author=False,
             )
 
         last_give = await self.db.get_user_field(giver.id, "last_give")
@@ -443,16 +439,16 @@ class UserCommands(commands.Cog):
             )
 
         await self.db.set_egg_count(giver.id, egg_type, giver_count - amount)
-        receiver_count = await self.db.get_egg_count(user.id, egg_type)
-        await self.db.set_egg_count(user.id, egg_type, receiver_count + amount)
+        receiver_count = await self.db.get_egg_count(member.id, egg_type)
+        await self.db.set_egg_count(member.id, egg_type, receiver_count + amount)
 
         await self.db.set_user_field(giver.id, "last_give", current_time)
         embed = discord.Embed(
             title="Egg Gift 🎁",
             color=await ctx.embed_colour(),
             description=(
-                f"{giver.mention} has given {amount} {egg_type.capitalize()} Egg(s) to {user.mention}! 🥚\n"
-                f"{user.mention} now has {receiver_count + amount} {egg_type.capitalize()} Egg(s)."
+                f"{giver.mention} has given {amount} {egg_type.capitalize()} Egg(s) to {member.mention}! 🥚\n"
+                f"{member.mention} now has {receiver_count + amount} {egg_type.capitalize()} Egg(s)."
             ),
         )
         await ctx.send(
