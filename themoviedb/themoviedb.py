@@ -324,17 +324,13 @@ class TheMovieDB(commands.Cog):
             channel = guild.get_channel(notification_channel_id)
             if not channel:
                 continue
+
             perms = channel.permissions_for(guild.me)
-            if not perms.send_messages:
+            if not perms.send_messages or not perms.manage_webhooks:
                 logger.warning(
-                    f"Bot does not have send_messages permission in {channel.name} in guild {guild.name} (ID: {guild.id})"
+                    f"Bot does not have send_messages or manage_webhooks permission in {channel.name} in guild {guild.name} (ID: {guild.id})"
                 )
                 continue
-            if guild_data.get("use_webhook", False) and not perms.manage_webhooks:
-                logger.warning(
-                    f"Bot does not have manage_webhooks permission in {channel.name} in guild {guild.name} (ID: {guild.id})"
-                )
-                await self.config.guild(guild).use_webhook.set(False)
 
             await self.check_trailers(guild)
 
