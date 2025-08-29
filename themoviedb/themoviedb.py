@@ -337,6 +337,9 @@ class TheMovieDB(commands.Cog):
         """
         Enable or disable the use of webhooks for trailer notifications.
         """
+        if not ctx.guild.me.guild_permissions.manage_webhooks:
+            return await ctx.send("I need the `Manage Webhooks` permission to use webhooks.")
+
         webhook_status = "enabled" if use_webhook else "disabled"
         await self.config.guild(ctx.guild).use_webhook.set(use_webhook)
         await ctx.send(f"Webhook usage for trailer notifications has been {webhook_status}.")
