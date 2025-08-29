@@ -24,7 +24,7 @@ SOFTWARE.
 
 import asyncio
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any
 
 import discord
 from red_commons.logging import getLogger
@@ -36,9 +36,9 @@ async def send_message(
     channel: discord.TextChannel,
     content: str,
     *,
-    delete_after: Optional[int] = None,
+    delete_after: int | None = None,
     silent: bool = False,
-) -> Optional[discord.Message]:
+) -> discord.Message | None:
     """Send a message with error handling."""
     try:
         send_kwargs = {"content": content, "silent": silent}
@@ -74,7 +74,7 @@ async def add_reaction(message: discord.Message, reaction: str) -> None:
 async def handle_invalid_count(
     message: discord.Message,
     response: str,
-    settings: Dict[str, Any],
+    settings: dict[str, any],
     send_response: bool = True,
 ) -> None:
     """Handle invalid counts by deleting and optionally responding."""
@@ -92,7 +92,7 @@ async def handle_invalid_count(
 
 
 async def assign_ruin_role(
-    member: discord.Member, guild: discord.Guild, settings: Dict[str, Any]
+    member: discord.Member, guild: discord.Guild, settings: dict[str, any]
 ) -> None:
     """Assign the ruin role to a member, temporarily if a duration is set."""
     ruin_role_id = settings["ruin_role_id"]
@@ -117,7 +117,7 @@ async def assign_ruin_role(
             return
         await member.add_roles(role, reason="Ruined the count")
         if duration:
-            expiry = datetime.utcnow() + timedelta(seconds=duration)
+            expiry = datetime.now(timezone.utc) + timedelta(seconds=duration)
             async with member.guild.config.guild(guild).temp_roles() as temp_roles:
                 temp_roles[str(member.id)] = {
                     "role_id": role.id,
@@ -132,7 +132,7 @@ async def remove_expired_roles(bot: discord.Client, guild: discord.Guild) -> Non
     async with bot.config.guild(guild).temp_roles() as temp_roles:
         to_remove = []
         for user_id, data in temp_roles.items():
-            if datetime.utcnow().timestamp() >= data["expiry"]:
+            if datetime.now(timezone.utc).timestamp() >= data["expiry"]:
                 member = guild.get_member(int(user_id))
                 role = guild.get_role(data["role_id"])
                 if member and role:

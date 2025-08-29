@@ -24,7 +24,7 @@ SOFTWARE.
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 import discord
 from discord.ext import tasks
@@ -59,7 +59,7 @@ class EventHandlers:
         await self.bot.wait_until_ready()
 
     async def _handle_goal_reached(
-        self, message: discord.Message, settings: Dict[str, Any], reached_goal: int
+        self, message: discord.Message, settings: dict[str, Any], reached_goal: int
     ) -> None:
         try:
             response = settings["goal_message"].format(
@@ -108,7 +108,7 @@ class EventHandlers:
             logger.warning(f"Missing permissions in {message.channel.id}")
             return
         if settings["min_account_age"]:
-            account_age = (discord.utils.utcnow() - message.author.created_at).days
+            account_age = (datetime.now(timezone.utc) - message.author.created_at).days
             if account_age < settings["min_account_age"]:
                 await handle_invalid_count(
                     message,
@@ -138,7 +138,7 @@ class EventHandlers:
                     self.settings.update_user(
                         message.author,
                         "last_count_timestamp",
-                        datetime.utcnow().isoformat(),
+                        datetime.now(timezone.utc).isoformat(),
                     ),
                 )
                 if settings["toggle_reactions"] and perms.add_reactions:
@@ -215,7 +215,7 @@ class EventHandlers:
                 message, response, settings, settings["toggle_next_number_message"]
             )
 
-    async def _handle_count_ruin(self, message: discord.Message, settings: Dict[str, Any]) -> None:
+    async def _handle_count_ruin(self, message: discord.Message, settings: dict[str, Any]) -> None:
         old_count = settings["count"]
         await asyncio.gather(
             self.settings.update_guild(message.guild, "count", 0),
