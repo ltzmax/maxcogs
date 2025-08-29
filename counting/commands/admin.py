@@ -33,6 +33,7 @@ from discord.utils import get
 from emoji import is_emoji
 from red_commons.logging import getLogger
 from redbot.core import commands
+from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 logger = getLogger("red.maxcogs.counting")
