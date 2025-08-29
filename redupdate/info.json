@@ -8,7 +8,7 @@
     "description": "Update your bot to latest dev version of red.",
     "short": "Update your bot to latest dev version of red.",
     "hidden": false,
-    "min_bot_version": "3.5.21",
+    "min_bot_version": "3.5.3",
     "tags": [
         "botupdate",
         "redupdate"

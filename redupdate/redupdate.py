@@ -39,7 +39,7 @@ class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "2.0.0"
+    __version__: Final[str] = "1.9.0"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
@@ -57,9 +57,13 @@ class RedUpdate(commands.Cog):
         return
 
     async def _send_update_success(self, ctx: commands.Context):
-        color = await ctx.embed_color()
-        view = RestartButton(ctx, self.bot, color)
-        message = await ctx.send(view=view)
+        embed = discord.Embed(
+            description=f"Successfully updated {self.bot.user.name}.",
+            color=await ctx.embed_color(),
+        )
+        embed.set_footer(text="Restart required to apply changes!")
+        view = RestartButton(ctx, self.bot)
+        message = await ctx.send(embed=embed, view=view)
         view.message = message
 
     async def _send_update_failure(self, ctx: commands.Context):
