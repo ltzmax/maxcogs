@@ -194,17 +194,20 @@ class Earthquake(commands.Cog):
             if wh.name == our_name and wh.user == self.bot.user:
                 return wh
 
-        if len(webhooks) >= 10:
-            logger.warning(
-                f"Webhook limit reached in channel {channel.name} ({channel.guild.name})"
-            )
-            return None
-
         try:
             wh = await channel.create_webhook(name=our_name)
             return wh
-        except (discord.Forbidden, discord.HTTPException) as e:
-            logger.error(f"Failed to create webhook in {channel.name} ({channel.guild.name}): {e}")
+        except discord.HTTPException as e:
+            if e.code == 30007:  # Maximum number of webhooks reached
+                await self.config.guild(channel.guild).use_webhook.set(False)
+                logger.warning(
+                    f"Maximum number of webhooks reached in {channel.name} for guild {channel.guild.name}. Disabling webhook use."
+                )
+            else:
+                logger.error(f"Failed to create webhook in {channel.name} ({channel.guild.name}): {e}")
+            return None
+        except discord.Forbidden as e:
+            logger.error(f"Permission denied to create webhook in {channel.name} ({channel.guild.name}): {e}")
             return None
 
     async def post_earthquake(
