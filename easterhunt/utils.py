@@ -166,9 +166,7 @@ async def process_hunt_outcome(
     return embed
 
 
-async def find_target_player(
-    db, user_id: int, guild
-) -> tuple[discord.Member | None, str | None]:
+async def find_target_player(db, user_id: int, guild) -> tuple[discord.Member | None, str | None]:
     """Find a random player with eggs to steal from, excluding the user."""
     potential_targets = []
     async with db.conn.cursor() as cursor:

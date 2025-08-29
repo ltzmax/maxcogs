@@ -204,10 +204,14 @@ class Earthquake(commands.Cog):
                     f"Maximum number of webhooks reached in {channel.name} for guild {channel.guild.name}. Disabling webhook use."
                 )
             else:
-                logger.error(f"Failed to create webhook in {channel.name} ({channel.guild.name}): {e}")
+                logger.error(
+                    f"Failed to create webhook in {channel.name} ({channel.guild.name}): {e}"
+                )
             return None
         except discord.Forbidden as e:
-            logger.error(f"Permission denied to create webhook in {channel.name} ({channel.guild.name}): {e}")
+            logger.error(
+                f"Permission denied to create webhook in {channel.name} ({channel.guild.name}): {e}"
+            )
             return None
 
     async def post_earthquake(
