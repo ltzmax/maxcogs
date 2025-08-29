@@ -15,7 +15,8 @@
         "Alert"
     ],
     "permissions": [
-        "embed_links"
+        "embed_links",
+        "manage_webhooks"
     ],
     "requirements": ["tenacity"],
     "min_python_version": [

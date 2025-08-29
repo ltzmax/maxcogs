@@ -41,7 +41,7 @@ logger = getLogger("red.maxcogs.earthquake")
 class Earthquake(commands.Cog):
     """Real-time worldwide earthquake alerts from USGS."""
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
 
     def __init__(self, bot):
@@ -51,6 +51,7 @@ class Earthquake(commands.Cog):
         )
         default_settings = {
             "channel": None,
+            "use_webhook": False,
             "ping_role": None,
             "min_magnitude": 4.5,
             "safety_message": "*Monitor local news and follow instructions from emergency officials.*",
@@ -179,6 +180,33 @@ class Earthquake(commands.Cog):
         except (discord.Forbidden, discord.HTTPException) as e:
             logger.error(f"Error in earthquake_check: {e}", exc_info=True)
 
+    async def get_or_create_webhook(
+        self, channel: discord.TextChannel
+    ) -> Optional[discord.Webhook]:
+        """Get or create a webhook for earthquake alerts in the channel."""
+        our_name = "Earthquake Alert Webhook"
+        try:
+            webhooks = await channel.webhooks()
+        except (discord.Forbidden, discord.HTTPException):
+            return None
+
+        for wh in webhooks:
+            if wh.name == our_name and wh.user == self.bot.user:
+                return wh
+
+        if len(webhooks) >= 10:
+            logger.warning(
+                f"Webhook limit reached in channel {channel.name} ({channel.guild.name})"
+            )
+            return None
+
+        try:
+            wh = await channel.create_webhook(name=our_name)
+            return wh
+        except (discord.Forbidden, discord.HTTPException) as e:
+            logger.error(f"Failed to create webhook in {channel.name} ({channel.guild.name}): {e}")
+            return None
+
     async def post_earthquake(
         self, guild: discord.Guild, channel: discord.TextChannel, earthquake: dict
     ):
@@ -203,15 +231,7 @@ class Earthquake(commands.Cog):
         felt_reports = properties.get("felt")
         alert_level = properties.get("alert")
 
-        if (
-            not channel.permissions_for(guild.me).send_messages
-            or not channel.permissions_for(guild.me).embed_links
-        ):
-            logger.warning(
-                f"Missing permissions in {channel.name} ({guild.name}) for earthquake alerts"
-            )
-            return
-
+        use_webhook = await self.config.guild(guild).use_webhook()
         embed = discord.Embed(
             title=f"Magnitude {magnitude:.1f} Earthquake",
             description=f"**Location:** {place}\n**Time:** {time}",
@@ -245,12 +265,41 @@ class Earthquake(commands.Cog):
             else ""
         )
 
-        try:
-            await channel.send(
-                content=content, embed=embed, allowed_mentions=discord.AllowedMentions(roles=True)
-            )
-        except (discord.Forbidden, discord.HTTPException) as e:
-            logger.error(f"Failed to send earthquake alert in {guild.name}: {e}")
+        sent = False
+        if use_webhook:
+            if channel.permissions_for(guild.me).manage_webhooks:
+                wh = await self.get_or_create_webhook(channel)
+                if wh:
+                    try:
+                        await wh.send(
+                            content=content,
+                            embed=embed,
+                            username=self.bot.user.name,
+                            avatar_url=str(self.bot.user.avatar) if self.bot.user.avatar else None,
+                            allowed_mentions=discord.AllowedMentions(roles=True),
+                        )
+                        sent = True
+                    except (discord.Forbidden, discord.HTTPException) as e:
+                        logger.error(f"Failed to send via webhook in {guild.name}: {e}")
+
+        if not sent:
+            if (
+                not channel.permissions_for(guild.me).send_messages
+                or not channel.permissions_for(guild.me).embed_links
+            ):
+                logger.warning(
+                    f"Missing permissions in {channel.name} ({guild.name}) for earthquake alerts"
+                )
+                return
+
+            try:
+                await channel.send(
+                    content=content,
+                    embed=embed,
+                    allowed_mentions=discord.AllowedMentions(roles=True),
+                )
+            except (discord.Forbidden, discord.HTTPException) as e:
+                logger.error(f"Failed to send earthquake alert in {guild.name}: {e}")
 
     @staticmethod
     def get_magnitude_color(magnitude: float) -> discord.Color:
@@ -277,6 +326,26 @@ class Earthquake(commands.Cog):
         ⚠️**WARNING**⚠️
         This cog provides informational alerts only and may have 15–30 minute delays. Always prioritize local authorities for real-time safety information.
         """
+
+    @earthquakeset.command(name="webhook")
+    @commands.bot_has_permissions(manage_webhooks=True)
+    async def set_webhook(self, ctx: commands.Context, use_webhook: bool):
+        """
+        Enable or disable the use of webhooks for earthquake alerts.
+
+        **Example:**
+        - `[p]earthquakeset webhook true` to enable webhooks.
+        - `[p]earthquakeset webhook false` to disable webhooks (default).
+
+        **Arguments:**
+        - `[use_webhook]`: `true` to enable webhooks, `false` to disable.
+        """
+        if not ctx.guild.me.guild_permissions.manage_webhooks:
+            return await ctx.send("I need the `manage_webhooks` permission to use webhooks.")
+
+        await self.config.guild(ctx.guild).use_webhook.set(use_webhook)
+        status = "enabled" if use_webhook else "disabled"
+        await ctx.send(f"Webhook usage for earthquake alerts has been {status}.")
 
     @earthquakeset.command(name="channel")
     async def set_channel(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
@@ -355,6 +424,7 @@ class Earthquake(commands.Cog):
         safety_message = await self.config.guild(ctx.guild).safety_message()
         channel = ctx.guild.get_channel(channel_id) if channel_id else None
         ping_role = ctx.guild.get_role(ping_role_id) if ping_role_id else None
+        use_webhook = await self.config.guild(ctx.guild).use_webhook()
 
         embed = discord.Embed(title="Earthquake Alert Settings", color=await ctx.embed_color())
         embed.add_field(
@@ -364,5 +434,8 @@ class Earthquake(commands.Cog):
             name="Ping Role", value=ping_role.mention if ping_role else "None", inline=False
         )
         embed.add_field(name="Minimum Magnitude", value=f"{min_magnitude:.1f}", inline=False)
+        embed.add_field(
+            name="Use Webhook", value="Enabled" if use_webhook else "Disabled", inline=False
+        )
         embed.add_field(name="Safety Message", value=safety_message, inline=False)
         await ctx.send(embed=embed)
