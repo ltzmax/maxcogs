@@ -27,7 +27,7 @@ from typing import Any, Final, Optional, Tuple, Union
 
 import discord
 from red_commons.logging import getLogger
-from redbot.core import Config, app_commands, commands
+from redbot.core import app_commands, commands
 
 from .view import UnlockView
 
@@ -39,17 +39,13 @@ class Lockdown(commands.Cog):
     Let moderators lockdown a channel to prevent messages from being sent.
     """
 
-    __version__: Final[str] = "1.6.0"
+    __version__: Final[str] = "1.7.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=1234567890)
-        default_guild = {
-            "use_embed": False,
-        }
-        self.config.register_guild(**default_guild)
+        self.lock_views: dict[int, discord.ui.View] = {}
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -60,25 +56,6 @@ class Lockdown(commands.Cog):
         """Nothing to delete."""
         return
 
-    @commands.group()
-    @commands.guild_only()
-    @commands.has_permissions(manage_channels=True)
-    async def lockdownset(self, ctx: commands.Context):
-        """Lockdown settings commands."""
-
-    @lockdownset.command()
-    async def useembed(self, ctx: commands.Context, value: bool):
-        """Set whether to use embeds or not."""
-        await self.config.guild(ctx.guild).use_embed.set(value)
-        await ctx.send(f"Use embeds set to {value}.")
-
-    @lockdownset.command()
-    async def settings(self, ctx: commands.Context):
-        """Get the current log channel."""
-        all = await self.config.guild(ctx.guild).all()
-        use_embed = all["use_embed"]
-        await ctx.send(f"## Settings\nUse embeds: {use_embed}")
-
     async def manage_lock(
         self,
         ctx: commands.Context,
@@ -86,27 +63,41 @@ class Lockdown(commands.Cog):
         reason: Optional[str] = None,
         role: Optional[discord.Role] = None,
     ) -> None:
-        if not isinstance(ctx.channel, discord.abc.GuildChannel):
-            return await ctx.send(
-                f"❌ You can't {action} a thread channel(s) with this command.\nUse `{ctx.clean_prefix}thread {action}` instead."
-            )
-
-        target_role = role or ctx.guild.default_role
+        is_thread = isinstance(ctx.channel, discord.Thread)
         is_lock = action == "lock"
-        title = f"Channel {'Locked' if is_lock else 'Unlocked'} for {target_role.name}"
-        description = f"{'🔒' if is_lock else '🔓'} {'Locked' if is_lock else 'Unlocked'} channel {ctx.channel.mention} for {target_role.name}."
-        color = 0xFF0000 if is_lock else 0x00FF00
-        log_event = f"Channel {'Locked' if is_lock else 'Unlocked'} for {target_role.name}"
-        already_set_message = f"❌ This channel is already {'locked' if is_lock else 'unlocked'} for {target_role.mention.lstrip('@')}."
-        send_messages = False if is_lock else None
-        overwrites = ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
+        target_role = role or ctx.guild.default_role
+        role_display = target_role.name
 
-        if overwrites.send_messages == send_messages:
-            return await ctx.send(
-                already_set_message,
-                reference=ctx.message.to_reference(fail_if_not_exists=False),
-                mention_author=False,
-            )
+        if is_thread:
+            if target_role != ctx.guild.default_role:
+                return await ctx.send(
+                    "❌ Threads can only be locked/unlocked for @everyone, not specific roles."
+                )
+            current_locked = ctx.channel.locked
+            if current_locked == is_lock:
+                return await ctx.send(
+                    f"❌ This thread is already {'locked' if is_lock else 'unlocked'}.",
+                    reference=ctx.message.to_reference(fail_if_not_exists=False),
+                    mention_author=False,
+                )
+            send_messages = None  # Not used for threads, but for embed logic
+        else:
+            if not isinstance(ctx.channel, discord.abc.GuildChannel):
+                return await ctx.send(
+                    "❌ This command can only be used in guild channels or threads."
+                )
+            overwrites = ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
+            send_messages = False if is_lock else None
+            if overwrites.send_messages == send_messages:
+                return await ctx.send(
+                    f"❌ This channel is already {'locked' if is_lock else 'unlocked'} for {role_display}.",
+                    reference=ctx.message.to_reference(fail_if_not_exists=False),
+                    mention_author=False,
+                )
+
+        title = f"{'Thread' if is_thread else 'Channel'} {'Locked' if is_lock else 'Unlocked'} for {role_display}"
+        description = f"{'🔒' if is_lock else '🔓'} {'Locked' if is_lock else 'Unlocked'} {'thread' if is_thread else 'channel'} {ctx.channel.mention} for {role_display}."
+        color = 0xFF0000 if is_lock else 0x00FF00
 
         embed = discord.Embed(
             title=title,
@@ -116,27 +107,46 @@ class Lockdown(commands.Cog):
         if reason:
             embed.add_field(
                 name="Reason:",
-                value=f"{reason if len(reason) < 2024 else 'Reason is too long.'}",
+                value=f"{reason if len(reason) < 1024 else 'Reason is too long.'}",
             )
         embed.set_footer(text=f"{action.capitalize()}ed by {ctx.author}")
 
-        if is_lock and target_role == ctx.guild.default_role:
-            view = UnlockView(ctx)
-            view.message = await ctx.send(embed=embed, view=view)
+        view = None
+        if target_role == ctx.guild.default_role:
+            if ctx.channel.id in self.lock_views:
+                old_view = self.lock_views.pop(ctx.channel.id)
+                for item in old_view.children:
+                    item.disabled = True
+                try:
+                    await old_view.message.edit(view=old_view)
+                except discord.HTTPException as e:
+                    logger.warning(f"Failed to disable old view: {e}")
+            if is_lock:
+                view = UnlockView(ctx, is_thread=is_thread)
+                view.message = await ctx.send(embed=embed, view=view)
+                self.lock_views[ctx.channel.id] = view
+            else:
+                await ctx.send(embed=embed)
+                if ctx.channel.id in self.lock_views:
+                    del self.lock_views[ctx.channel.id]
         else:
             await ctx.send(embed=embed)
 
         try:
-            overwrites.send_messages = send_messages
-            await ctx.channel.set_permissions(target_role, overwrite=overwrites)
+            if is_thread:
+                await ctx.channel.edit(locked=is_lock, archived=False)
+            else:
+                overwrites.send_messages = send_messages
+                await ctx.channel.set_permissions(target_role, overwrite=overwrites)
         except discord.Forbidden as e:
-            return await ctx.send(
-                f"❌ I don't have permission to set permissions for {target_role.mention} in {ctx.channel.mention}."
+            await ctx.send(
+                f"❌ I don't have permission to {'manage' if is_thread else 'set permissions for'} @{role_display} in {ctx.channel.mention}."
             )
             logger.warning(
-                f"Failed to set permissions for {target_role.name} in {ctx.guild.name} ({ctx.guild.id}): {e}",
+                f"Failed to {'edit thread' if is_thread else f'set permissions for {target_role.name}'} in {ctx.guild.name} ({ctx.guild.id}): {e}",
                 exc_info=True,
             )
+            return
 
     async def _parse_reason_and_role(
         self,
@@ -162,8 +172,8 @@ class Lockdown(commands.Cog):
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
-        reason="The reason why you're locking this channel (optional)",
-        role="The role to lock the channel for (defaults to @everyone)",
+        reason="The reason why you're locking this channel/thread (optional)",
+        role="The role to lock the channel for (defaults to @everyone; ignored for threads)",
     )
     async def lock(
         self,
@@ -173,17 +183,18 @@ class Lockdown(commands.Cog):
         role: Optional[discord.Role] = None,
     ):
         """
-        Lock a channel for a specific role or everyone.
+        Lock a channel or thread for a specific role or everyone.
 
-        If no role is specified, the channel is locked for @everyone.
-        Please note the button will only work for the @everyone role and not for any other role you specify to lock the channel.
+        If no role is specified, it locks for @everyone.
+        For threads, roles are ignored and it locks for everyone.
+        Please note the button will only work for @everyone and not for any other role you specify to lock the channel.
         If you want to unlock a channel with the role you locked it for, you have to use the `[p]unlock` command.
 
         **Examples**:
         - `[p]lock` - Locks for @everyone with no reason.
-        - `[p]lock @Member` - Locks for @Member with no reason.
+        - `[p]lock @Member` - Locks for @Member with no reason (channels only).
         - `[p]lock Reason: spam in this channel` - Locks for @everyone with reason.
-        - `[p]lock Reason: spam in this channel @Member` - Locks for @Member with reason.
+        - `[p]lock Reason: spam in this channel @Member` - Locks for @Member with reason (channels only).
         """
         reason, role = await self._parse_reason_and_role(reason, role, ctx.guild)
         await self.manage_lock(ctx, "lock", reason=reason, role=role)
@@ -193,8 +204,8 @@ class Lockdown(commands.Cog):
     @commands.mod_or_can_manage_channel()
     @commands.bot_has_permissions(embed_links=True, manage_channels=True)
     @app_commands.describe(
-        reason="The reason why you're unlocking this channel",
-        role="The role to unlock the channel for (defaults to @everyone)",
+        reason="The reason why you're unlocking this channel/thread",
+        role="The role to unlock the channel for (defaults to @everyone; ignored for threads)",
     )
     async def unlock(
         self,
@@ -204,15 +215,16 @@ class Lockdown(commands.Cog):
         role: Optional[discord.Role] = None,
     ):
         """
-        Unlock a channel for a specific role or everyone.
+        Unlock a channel or thread for a specific role or everyone.
 
-        If no role is specified, the channel is unlocked for @everyone.
+        If no role is specified, it unlocks for @everyone.
+        For threads, roles are ignored and it unlocks for everyone.
 
         **Examples**:
         - `[p]unlock` - Unlocks for @everyone with no reason.
-        - `[p]unlock @Member` - Unlocks for @Member with no reason.
+        - `[p]unlock @Member` - Unlocks for @Member with no reason (channels only).
         - `[p]unlock Reason: spam in this channel` - Unlocks for @everyone with reason.
-        - `[p]unlock Reason: spam in this channel @Member` - Unlocks for @Member with reason.
+        - `[p]unlock Reason: spam in this channel @Member` - Unlocks for @Member with reason (channels only).
         """
         reason, role = await self._parse_reason_and_role(reason, role, ctx.guild)
         await self.manage_lock(ctx, "unlock", reason=reason, role=role)
@@ -226,27 +238,8 @@ class Lockdown(commands.Cog):
 
     @thread.command()
     async def close(self, ctx: commands.Context, *, reason: Optional[str] = None):
-        """Close and archive a thread post.
-
-        If you want to only lock a thread post, you'll have to use `[p]lock` command.
-        """
+        """Close and archive a thread post."""
         if not isinstance(ctx.channel, discord.Thread):
-            return await ctx.send("This channel is not a thread.")
+            return await ctx.send("❌ This channel is not a thread.")
         await ctx.send(f"Archived and closed {ctx.channel.mention}.")
         await ctx.channel.edit(locked=True, archived=True)
-
-    @thread.command()
-    async def lockdown(self, ctx: commands.Context, *, reason: Optional[str] = None):
-        """Lock a thread post."""
-        if not isinstance(ctx.channel, discord.Thread):
-            return await ctx.send("This channel is not a thread.")
-        await ctx.send(f"Successfully locked {ctx.channel.mention}.")
-        await ctx.channel.edit(locked=True)
-
-    @thread.command()
-    async def open(self, ctx: commands.Context, *, reason: Optional[str] = None):
-        """Open a thread post."""
-        if not isinstance(ctx.channel, discord.Thread):
-            return await ctx.send("This channel is not a thread.")
-        await ctx.send(f"Successfully opened {ctx.channel.mention}.")
-        await ctx.channel.edit(locked=False, archived=False)
