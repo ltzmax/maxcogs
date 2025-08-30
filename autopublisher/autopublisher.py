@@ -253,7 +253,11 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
     @commands.is_owner()
     @autopublisher.command(name="stats")
     async def stats(self, ctx: commands.Context) -> None:
-        """Show statistics for published messages."""
+        """
+        Show statistics for published messages.
+ 
+        This shows global stats across all servers.
+        """
         owner_tz = await self._get_owner_timezone()
         data = await self.config.all()
         last_count_time = data.get("last_count_time")
