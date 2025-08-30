@@ -164,7 +164,7 @@ class NBA(commands.Cog):
                             (game_id, home_team, away_team, home_score, away_score, game_clock, period)
                             VALUES (?, ?, ?, ?, ?, ?, ?)
                         """,
-                            (game_id, home_team_name, away_team_name, 0, 0, "", 0),
+                            (game_id, home_team_name, away_team_name, home_score, away_score, game_clock, period),
                         )
                         conn.commit()
                     self.finalized_games.add(game_id)
@@ -182,7 +182,6 @@ class NBA(commands.Cog):
             previous_away_score = result[1] if result else 0
             previous_game_clock = result[2] if result else ""
             previous_period = result[3] if result else 0
-            previous_period = previous_period or 0
 
             new_time = parse_game_time_to_seconds(game_clock)
             old_time = parse_game_time_to_seconds(previous_game_clock)
