@@ -30,7 +30,7 @@ import discord
 from discord.utils import get
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_number
+from redbot.core.utils.chat_formatting import box, header, humanize_number
 
 SPOILER_REGEX: Pattern[str] = re.compile(r"(?s)\|\|(.+?)\|\|")
 DEFAULT_WARNING_MESSAGE: Final[str] = "Usage of spoiler is not allowed in this server."
@@ -252,8 +252,10 @@ class NoSpoiler(commands.Cog):
             if len(settings["spoiler_warn_message"]) < 2000
             else "Message too long to display."
         )
+        title = "NoSpoiler Settings"
+        header_text = f"{header(title, 'medium')}"
         await ctx.send(
-            "## NoSpoiler Settings\n"
+            f"{header_text}\n"
             f"- **Enabled**: {settings['enabled']}\n"
             f"- **Spoiler Warning**: {settings['spoiler_warn']}\n"
             f"- **Use Embed**: {settings['use_embed']}\n"
