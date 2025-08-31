@@ -26,7 +26,7 @@ import asyncio
 import logging
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 import discord
@@ -38,7 +38,7 @@ from redbot.core.utils.views import SimpleMenu
 log = getLogger("red.maxcogs.themoviedb.tmdb_utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
-PREDEFINED_CHANNELS: Dict[str, Dict[str, str]] = {
+PREDEFINED_CHANNELS = {
     "marvel": {"id": "UCvC4D8onUfXzvjTOM-dBfEA", "name": "Marvel Entertainment"},
     "dc": {"id": "UCiifkYAs_bq1pt_zbNAzYGg", "name": "DC Official"},
     "pixar": {"id": "UC_IRYSp4auq7hKLvziWVH6w", "name": "Pixar"},
@@ -65,7 +65,7 @@ PREDEFINED_CHANNELS: Dict[str, Dict[str, str]] = {
 }
 
 
-async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> Optional[Dict[str, Any]]:
+async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> dict[str, Any] | None:
     """Fetch data from TMDB API."""
     try:
         async with session.get(url) as response:
@@ -78,7 +78,7 @@ async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> Optional[Dict[
         return None
 
 
-async def validate_results(ctx, data: Optional[Dict[str, Any]], query: str) -> bool:
+async def validate_results(ctx, data: dict[str, Any] | None, query: str) -> bool:
     """Validate TMDB response and send appropriate messages."""
     if not data:
         log.error("TMDB returned null response")
@@ -91,8 +91,8 @@ async def validate_results(ctx, data: Optional[Dict[str, Any]], query: str) -> b
 
 
 def filter_media_results(
-    results: List[Dict[str, Any]], query: str, media_type: str
-) -> List[Dict[str, Any]]:
+    results: list[dict[str, Any]], query: str, media_type: str
+) -> list[dict[str, Any]]:
     """Filter TMDB search results based on query and criteria."""
     # Banned for reasons of being offensive or not suitable for us norwegians to watch or discuss.
     # Might add as default config in the future for removal if wanted to or update with more banned titles.
@@ -116,7 +116,7 @@ def filter_media_results(
 
 async def search_media(
     ctx, session: aiohttp.ClientSession, query: str, media_type: str, page: int = 1
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     """Search for media on TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     if not api_key:
@@ -130,7 +130,7 @@ async def search_media(
 
 async def get_media_data(
     ctx, session: aiohttp.ClientSession, media_id: int, media_type: str
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     """Fetch specific media data from TMDB."""
     api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     if not api_key:
@@ -192,25 +192,23 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
     }
 
     if item_type == "movie":
-        fields.update(
-            {
-                "Original Title": data.get("original_title"),
-                "Release Date": (
-                    f"<t:{int(datetime.strptime(data.get('release_date', ''), '%Y-%m-%d').timestamp())}:D>"
-                    if data.get("release_date")
-                    else None
-                ),
-                "Runtime": f"{data.get('runtime', 0)} minutes",
-                "Belongs to Collection": (
-                    data.get("belongs_to_collection", {}).get("name")
-                    if data.get("belongs_to_collection")
-                    else None
-                ),
-                "Revenue": f"${humanize_number(data.get('revenue', 0))}",
-                "Budget": f"${humanize_number(data.get('budget', 0))}",
-                "Adult": "Yes" if data.get("adult") else "No",
-            }
-        )
+        fields |= {
+            "Original Title": data.get("original_title"),
+            "Release Date": (
+                f"<t:{int(datetime.strptime(data.get('release_date', ''), '%Y-%m-%d').timestamp())}:D>"
+                if data.get("release_date")
+                else None
+            ),
+            "Runtime": f"{data.get('runtime', 0)} minutes",
+            "Belongs to Collection": (
+                data.get("belongs_to_collection", {}).get("name")
+                if data.get("belongs_to_collection")
+                else None
+            ),
+            "Revenue": f"${humanize_number(data.get('revenue', 0))}",
+            "Budget": f"${humanize_number(data.get('budget', 0))}",
+            "Adult": "Yes" if data.get("adult") else "No",
+        }
 
     fields = {k: v for k, v in fields.items() if v}
     embed = discord.Embed(

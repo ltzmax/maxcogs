@@ -26,7 +26,7 @@ import asyncio
 import datetime
 import urllib.parse
 import xml.etree.ElementTree as ET
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import aiohttp
 import discord
@@ -46,7 +46,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "2.2.0"
+    __version__ = "2.3.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/tree/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -89,7 +89,7 @@ class TheMovieDB(commands.Cog):
         """Nothing to delete."""
         return
 
-    async def fetch_feed(self, youtube_channel_id: str) -> Optional[str]:
+    async def fetch_feed(self, youtube_channel_id: str) -> str | None:
         url = f"https://www.youtube.com/feeds/videos.xml?channel_id={youtube_channel_id}"
         try:
             async with self.session.get(url, timeout=10) as response:
@@ -104,9 +104,7 @@ class TheMovieDB(commands.Cog):
             logger.error(f"Error fetching feed for channel {youtube_channel_id}: {e}")
             return None
 
-    async def get_or_create_webhook(
-        self, channel: discord.TextChannel
-    ) -> Optional[discord.Webhook]:
+    async def get_or_create_webhook(self, channel: discord.TextChannel) -> discord.Webhook | None:
         """Get or create a webhook for trailer notifications in the channel."""
         our_name = "Trailer Notifications"
         try:
@@ -247,8 +245,7 @@ class TheMovieDB(commands.Cog):
                 last_published_ts = channels_status.get(key, {}).get("last_published_ts", 0)
 
                 if last_published_ts == 0:
-                    updates[key]["last_published_ts"] = published_ts
-                    updates[key]["last_video_id"] = video_id
+                    updates[key] = {"last_published_ts": published_ts, "last_video_id": video_id}
                     continue
 
                 if published_ts <= last_published_ts or video_id == last_video_id:
@@ -265,8 +262,7 @@ class TheMovieDB(commands.Cog):
                 if "/shorts/" in video_url:
                     continue
 
-                updates[key]["last_published_ts"] = published_ts
-                updates[key]["last_video_id"] = video_id
+                updates[key] = {"last_published_ts": published_ts, "last_video_id": video_id}
                 author_name = (
                     root.findtext(
                         "{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name"
@@ -306,7 +302,7 @@ class TheMovieDB(commands.Cog):
                     for key, data in updates.items():
                         if key not in statuses:
                             statuses[key] = {"enabled": True, "failure_count": 0}
-                        statuses[key].update(data)
+                        statuses[key] |= data
             except discord.HTTPException as e:
                 logger.error(f"Failed to update channels_status for guild {guild.id}: {e}")
 
@@ -359,7 +355,7 @@ class TheMovieDB(commands.Cog):
 
     @tmdbset.command(name="channel")
     async def set_channel(
-        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
+        self, ctx: commands.Context, channel: discord.TextChannel | None = None
     ) -> None:
         """Set or unset the channel for video notifications."""
         guild_data = await self.config.guild(ctx.guild).all()
@@ -501,7 +497,7 @@ class TheMovieDB(commands.Cog):
         await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
 
     @tmdbset.command(name="role")
-    async def set_role(self, ctx: commands.Context, role: Optional[discord.Role] = None) -> None:
+    async def set_role(self, ctx: commands.Context, role: discord.Role | None = None) -> None:
         """Set or unset a role to ping for new video notifications."""
         if role:
             if role >= ctx.guild.me.top_role:
@@ -569,7 +565,7 @@ class TheMovieDB(commands.Cog):
     @movie.autocomplete("query")
     async def movie_autocomplete(
         self, interaction: discord.Interaction, current: str
-    ) -> List[app_commands.Choice[str]]:
+    ) -> list[app_commands.Choice[str]]:
         """Autocomplete suggestions for movie search, sorted by release date."""
         if not current:
             return []
@@ -588,7 +584,7 @@ class TheMovieDB(commands.Cog):
         if not data or "results" not in data:
             return []
 
-        def get_date(item: Dict[str, Any]) -> float:
+        def get_date(item: dict[str, Any]) -> float:
             date_str = item.get("release_date", "")
             if not date_str or not isinstance(date_str, str) or len(date_str) < 4:
                 return float("-inf")
@@ -634,7 +630,7 @@ class TheMovieDB(commands.Cog):
     @tvshow.autocomplete("query")
     async def tvshow_autocomplete(
         self, interaction: discord.Interaction, current: str
-    ) -> List[app_commands.Choice[str]]:
+    ) -> list[app_commands.Choice[str]]:
         """Autocomplete suggestions for TV show search, sorted by first air date."""
         if not current:
             return []
@@ -653,7 +649,7 @@ class TheMovieDB(commands.Cog):
         if not data or "results" not in data:
             return []
 
-        def get_date(item: Dict[str, Any]) -> float:
+        def get_date(item: dict[str, Any]) -> float:
             date_str = item.get("first_air_date", "")
             if not date_str or not isinstance(date_str, str) or len(date_str) < 4:
                 return float("-inf")
