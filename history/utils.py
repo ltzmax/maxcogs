@@ -33,7 +33,7 @@ log = getLogger("red.maxcogs.history.utils")
 DEFAULT_ERA_NOTATION = "BC"
 
 
-async def format_year(year: int | str | None) -> str:
+def format_year(year: int | str | None) -> str:
     """
     Format a year value into a standardized string with era notation, preserving circa notation when present.
 
@@ -82,16 +82,18 @@ async def format_year(year: int | str | None) -> str:
         return "Unknown Year"
 
 
-async def fetch_events(session: aiohttp.ClientSession, month: str, day: str) -> list:
-    """Fetch historical events from Wikipedia API."""
-    url = f"https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/{month}/{day}"
+async def fetch_events(
+    session: aiohttp.ClientSession, month: str, day: str
+) -> list[dict[str, Any]]:
+    """Fetch historical events from Wikimedia API."""
+    url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/{month}/{day}"
     async with session.get(url) as response:
         if response.status != 200:
-            log.warning(f"API request failed with status {response.status}")
+            log.warning(f"API request failed with status {response.status} for {month}/{day}")
             raise ValueError(f"Failed to fetch history data! (Status: {response.status})")
         try:
             data = orjson.loads(await response.read())
             return data.get("events", [])
         except orjson.JSONDecodeError as e:
-            log.error(f"Failed to decode API response: {e}")
-            raise ValueError("Error processing history data from Wikipedia.")
+            log.error(f"Failed to decode API response for {month}/{day}: {e}")
+            raise ValueError("Error processing history data from Wikimedia.")

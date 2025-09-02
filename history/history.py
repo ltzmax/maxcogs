@@ -23,14 +23,14 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from typing import Any, Final
+from typing import Any, Final, Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import aiohttp
 import discord
-import orjson
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
+from redbot.core.bot import Red
 from redbot.core.utils.menus import SimpleMenu
 
 from .utils import fetch_events, format_year
@@ -40,21 +40,22 @@ WIKIPEDIA_LOGO = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wiki
 
 
 class History(commands.Cog):
-    """A cog to display historical events for the current day in your timezone."""
+    """A cog to display historical events for a given day in your timezone."""
 
-    __version__: Final[str] = "1.4.0"
+    __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
-    def __init__(self, bot):
+    def __init__(self, bot: Red) -> None:
         self.bot = bot
-        self.session = aiohttp.ClientSession()
         self.config = Config.get_conf(self, identifier=987654321, force_registration=True)
         default_user = {"timezone": "UTC"}
         self.config.register_user(**default_user)
+        headers = {"User-Agent": "Red-HistoryCog/2.0"}
+        self.session = aiohttp.ClientSession(headers=headers)
 
-    def cog_unload(self):
-        self.bot.loop.create_task(self.session.close())
+    async def cog_unload(self) -> None:
+        await self.session.close()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -62,12 +63,11 @@ class History(commands.Cog):
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def red_delete_data_for_user(self, **kwargs: Any) -> None:
-        """Nothing to delete."""
+        """No user data to delete."""
         return
 
     @commands.group()
-    @commands.guild_only()
-    async def historyset(self, ctx: commands.Context):
+    async def historyset(self, ctx: commands.Context) -> None:
         """Settings for history events."""
 
     @historyset.command()
@@ -77,53 +77,80 @@ class History(commands.Cog):
 
         Use the format `Continent/City`.
         Find your timezone here: https://whatismyti.me/
-        Default timezone is UTC if not set by user or invalid.
+        Default timezone is UTC if not set or invalid.
 
         **Example**:
         - `[p]historyset timezone America/New_York`
-            - You must use uppercase for both the continent and city, e.g., `America/New_York`.
 
         **Arguments**:
-        - `<timezone>`: The timezone you want to set.
+        - `<timezone>`: The timezone to set.
         """
         try:
             ZoneInfo(timezone)
             await self.config.user(ctx.author).timezone.set(timezone)
             await ctx.send(
-                f"Timezone set to {timezone}! Events will now align with your local midnight."
+                f"Timezone set to {timezone}. Events will align with your local midnight."
             )
         except ZoneInfoNotFoundError:
             await ctx.send(
-                "Invalid timezone, please see <https://whatismyti.me/> for your timezone and use it in the format `Continent/City`."
+                "Invalid timezone. Please use <https://whatismyti.me/> for your timezone in the format `Continent/City`."
             )
             log.error(f"Invalid timezone '{timezone}' provided by user {ctx.author.id}.")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def history(self, ctx: commands.Context) -> None:
+    async def history(
+        self, ctx: commands.Context, month: Optional[int] = None, day: Optional[int] = None
+    ) -> None:
         """
-        See all historical events that happened on this day.
+        View historical events that happened on this day or a specified date.
 
-        Default timezone is UTC if not set by user.
-        Set your timezone with `[p]historyset timezone Continent/City` to align with your local midnight.
+        Uses your set timezone for today's date (default: UTC). Set it with `[p]historyset timezone Continent/City`.
+        Optionally provide month (1-12) and day (1-31) for a custom date.
+
+        **Examples**:
+        - `[p]history` - Events for today.
+        - `[p]history 12 25` - Events for December 25.
         """
         await ctx.typing()
         user_tz: str = await self.config.user(ctx.author).timezone()
+        try:
+            tz = ZoneInfo(user_tz)
+        except ZoneInfoNotFoundError:
+            tz = ZoneInfo("UTC")
+            log.warning(
+                f"Invalid timezone '{user_tz}' for user {ctx.author.id}, falling back to UTC."
+            )
 
-        today = datetime.now(ZoneInfo(user_tz))
-        month: str = today.strftime("%m")
-        day: str = today.strftime("%d")
-        display_date: str = today.strftime("%B %d")
+        if month is None or day is None:
+            today = datetime.now(tz)
+            month = today.month
+            day = today.day
+            display_date: str = today.strftime("%B %d")
+        else:
+            if not (1 <= month <= 12 and 1 <= day <= 31):
+                return await ctx.send("Invalid date. Month must be 1-12, day 1-31.")
+            try:
+                display_date = datetime(2000, month, day).strftime(
+                    "%B %d"
+                )  # Leap year safe for display
+            except ValueError:
+                return await ctx.send("Invalid day for the given month.")
+
+        month_str: str = f"{month:02d}"
+        day_str: str = f"{day:02d}"
 
         try:
-            events: list[dict[str, Any]] = await fetch_events(self.session, month, day)
+            events: list[dict[str, Any]] = await fetch_events(self.session, month_str, day_str)
         except ValueError as e:
-            log.error(f"Failed to fetch events for {month}/{day}: {str(e)}", exc_info=True)
-            return await ctx.send(f"Failed to fetch events for {display_date}")
+            log.error(f"Failed to fetch events for {month_str}/{day_str}: {str(e)}", exc_info=True)
+            return await ctx.send(
+                f"Failed to fetch events for {display_date}. Please try again later."
+            )
 
         if not events:
-            return await ctx.send(f"No notable events found for {display_date}")
+            return await ctx.send(f"No notable events found for {display_date}.")
 
         pages: list[discord.Embed] = []
         items_per_page: int = 10
@@ -135,12 +162,12 @@ class History(commands.Cog):
             for event in chunk:
                 year: str | int = event.get("year", "Unknown Year")
                 text: str = event.get("text", "No description available.")
-                display_year: str = await format_year(year)
+                display_year: str = format_year(year)
                 embed.add_field(name=display_year, value=text, inline=False)
             current_page: int = i // items_per_page + 1
             total_pages: int = (len(events) - 1) // items_per_page + 1
             embed.set_footer(
-                text=f"Source: Wikipedia | Timezone: {user_tz} | Page {current_page} of {total_pages}",
+                text=f"Source: Wikipedia | Timezone: {user_tz} | Page {current_page}/{total_pages}",
                 icon_url=WIKIPEDIA_LOGO,
             )
             pages.append(embed)
