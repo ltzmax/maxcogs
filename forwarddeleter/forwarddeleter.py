@@ -88,7 +88,7 @@ class ForwardDeleter(commands.Cog):
                 guild_cache[key] = set(value)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks simbad"""
+        """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
