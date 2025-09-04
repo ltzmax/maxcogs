@@ -91,7 +91,7 @@ async def schedule_resets(cog: commands.Cog) -> None:
     )
     if not cog.scheduler.running:
         try:
-            cag.scheduler.start()
+            cog.scheduler.start()
             logger.info("Scheduler started with jobs: weekly, monthly, yearly")
         except Exception as e:
             logger.error(f"Failed to start scheduler: {e}", exc_info=True)
@@ -100,18 +100,17 @@ async def schedule_resets(cog: commands.Cog) -> None:
 async def reset_count(config: Config, period: str) -> None:
     """Reset the specified count period."""
     async with config.all() as data:
-        match period:
-            case "weekly":
-                data["published_weekly_count"] = 0
-                logger.info("Weekly count reset.")
-            case "monthly":
-                data["published_monthly_count"] = 0
-                logger.info("Monthly count reset.")
-            case "yearly":
-                data["published_yearly_count"] = 0
-                logger.info("Yearly count reset.")
-            case _:
-                logger.warning(f"Unknown reset period: {period}")
+        if period == "weekly":
+            data["published_weekly_count"] = 0
+            logger.info("Weekly count reset.")
+        elif period == "monthly":
+            data["published_monthly_count"] = 0
+            logger.info("Monthly count reset.")
+        elif period == "yearly":
+            data["published_yearly_count"] = 0
+            logger.info("Yearly count reset.")
+        else:
+            logger.warning(f"Unknown reset period: {period}")
 
 
 async def increment_published_count(config: Config) -> None:
