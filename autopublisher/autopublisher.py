@@ -23,23 +23,26 @@ SOFTWARE.
 """
 
 import asyncio
-from datetime import datetime, timedelta
-from typing import Any, Dict, Final, List, Literal, Optional, Union
+from typing import Final
 
 import discord
 import pytz
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-from discord import utils as discord_utils
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import box, humanize_list, humanize_number
+from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.views import ConfirmView
-from tabulate import tabulate
 
 from .dashboard_integration import DashboardIntegration
-from .view import IgnoredNewsChannelsView
+from .utils import (
+    get_next_reset_times,
+    get_owner_timezone,
+    increment_published_count,
+    initialize_scheduler,
+    reset_count,
+    schedule_resets,
+)
+from .view import IgnoredNewsChannelsView, StatsView
 
 logger = getLogger("red.maxcogs.autopublisher")
 
@@ -47,9 +50,9 @@ logger = getLogger("red.maxcogs.autopublisher")
 class AutoPublisher(DashboardIntegration, commands.Cog):
     """Automatically publish messages in news channels."""
 
-    __version__: Final[str] = "3.2.0"
+    __version__: Final[str] = "3.4.0"
     __author__: Final[str] = "MAX, AAA3A"
-    __docs__: Final[str] = "https://cogs.maxapp.tv/"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/autopublisher/README.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -68,109 +71,20 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         }
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
-        self.scheduler = AsyncIOScheduler()
+        self.scheduler = None
         self.bot.loop.create_task(self._initialize_scheduler())
 
     async def _initialize_scheduler(self) -> None:
         """Initialize the scheduler after cog is loaded."""
-        try:
-            await self._schedule_resets()
-            logger.info("Scheduler initialized successfully.")
-        except Exception as e:
-            logger.error(f"Failed to initialize scheduler: {e}", exc_info=True)
-
-    async def _get_owner_timezone(self) -> pytz.timezone:
-        """Retrieve the owner's timezone from config, default to UTC."""
-        timezone_str = await self.config.timezone()
-        try:
-            tz = pytz.timezone(timezone_str)
-            logger.debug(f"Retrieved timezone: {timezone_str}")
-            return tz
-        except pytz.exceptions.UnknownTimeZoneError:
-            logger.warning(f"Invalid timezone in config: {timezone_str}, falling back to UTC")
-            return pytz.UTC
-
-    async def _schedule_resets(self) -> None:
-        """Schedule periodic count resets in the owner's timezone."""
-        owner_tz = await self._get_owner_timezone()
-        self.scheduler.remove_all_jobs()  # Clear existing jobs to avoid duplicates
-        self.scheduler.add_job(
-            self.reset_count,
-            "cron",
-            day_of_week="sun",
-            hour=0,
-            minute=0,
-            timezone=owner_tz,
-            args=["weekly"],
-            id="weekly_reset",
-        )
-        self.scheduler.add_job(
-            self.reset_count,
-            "cron",
-            day=1,
-            hour=0,
-            minute=0,
-            timezone=owner_tz,
-            args=["monthly"],
-            id="monthly_reset",
-        )
-        self.scheduler.add_job(
-            self.reset_count,
-            "cron",
-            month=1,
-            day=1,
-            hour=0,
-            minute=0,
-            timezone=owner_tz,
-            args=["yearly"],
-            id="yearly_reset",
-        )
-        if not self.scheduler.running:
-            self.scheduler.start()
-            logger.info("Scheduler started with jobs: weekly, monthly, yearly")
+        self.scheduler = await initialize_scheduler(self)
+        await schedule_resets(self)
 
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
-        if self.scheduler.running:
+        if self.scheduler and self.scheduler.running:
+            self.scheduler.remove_all_jobs()
             self.scheduler.shutdown()
             logger.debug("Scheduler shut down")
-
-    async def reset_count(self, period: Literal["weekly", "monthly", "yearly"]) -> None:
-        """Reset the specified count period, checking date in owner's timezone."""
-        owner_tz = await self._get_owner_timezone()
-        now_in_owner_tz = datetime.now(owner_tz)
-        async with self.config.all() as data:
-            if period == "weekly":
-                data["published_weekly_count"] = 0
-                logger.info("Weekly count reset.")
-            elif period == "monthly":
-                if now_in_owner_tz.day == 1:
-                    data["published_monthly_count"] = 0
-                    logger.info("Monthly count reset.")
-                else:
-                    logger.debug(
-                        f"Skipped monthly reset: not the 1st day (current day: {now_in_owner_tz.day})."
-                    )
-            elif period == "yearly":
-                if now_in_owner_tz.month == 1 and now_in_owner_tz.day == 1:
-                    data["published_yearly_count"] = 0
-                    logger.info("Yearly count reset.")
-                else:
-                    logger.debug(
-                        f"Skipped yearly reset: not Jan 1 (current date: {now_in_owner_tz.month}/{now_in_owner_tz.day})."
-                    )
-
-    async def increment_published_count(self) -> None:
-        """Increment all published message counts."""
-        async with self.config.all() as data:
-            for key in [
-                "published_count",
-                "published_weekly_count",
-                "published_monthly_count",
-                "published_yearly_count",
-            ]:
-                data[key] = data.get(key, 0) + 1
-            data["last_count_time"] = datetime.utcnow().isoformat()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Format help with cog metadata."""
@@ -214,7 +128,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         try:
             await asyncio.sleep(0.5)
             await asyncio.wait_for(message.publish(), timeout=60)
-            await self.increment_published_count()
+            await increment_published_count(self.config)
         except (discord.HTTPException, discord.Forbidden, asyncio.TimeoutError) as e:
             logger.error(f"Failed to publish message in {message.channel.id}: {e}", exc_info=True)
 
@@ -236,7 +150,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         """
         try:
             pytz.timezone(timezone)
-            await self.config.set_raw("timezone", value=timezone)
+            await self.config.timezone.set(timezone)
             message = (
                 f"Timezone set to {timezone}. Please reload the cog to apply changes:\n"
                 f"`{ctx.clean_prefix}reload autopublisher`\n"
@@ -251,60 +165,17 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
             logger.error(f"Invalid timezone set attempt {timezone}", exc_info=True)
 
     @commands.is_owner()
+    @commands.bot_has_permissions(embed_links=True)
     @autopublisher.command(name="stats")
     async def stats(self, ctx: commands.Context) -> None:
         """
         Show statistics for published messages.
- 
-        This shows global stats across all servers.
+
+        This shows global stats across all servers in an interactive view.
         """
-        owner_tz = await self._get_owner_timezone()
-        data = await self.config.all()
-        last_count_time = data.get("last_count_time")
-        last_published = "Never"
-        if last_count_time:
-            try:
-                last_count_dt = datetime.fromisoformat(last_count_time)
-                last_count_dt = last_count_dt.replace(tzinfo=pytz.UTC).astimezone(owner_tz)
-                last_published = discord_utils.format_dt(last_count_dt, "R")
-            except ValueError:
-                last_published = "Invalid timestamp"
-
-        table_data = [
-            ["Weekly", humanize_number(data["published_weekly_count"])],
-            ["Monthly", humanize_number(data["published_monthly_count"])],
-            ["Yearly", humanize_number(data["published_yearly_count"])],
-            ["Total Published", humanize_number(data["published_count"])],
-        ]
-        table = tabulate(table_data, headers=["Period", "Count"], tablefmt="simple")
-
-        now = datetime.now(owner_tz)
-        days_until_sunday = (6 - now.weekday()) % 7
-        if days_until_sunday == 0 and now.hour >= 0:
-            days_until_sunday = 7
-        next_weekly = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(
-            days=days_until_sunday
-        )
-        next_weekly_ts = int(next_weekly.timestamp())
-        next_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0) + timedelta(
-            days=32
-        )
-        next_month = next_month.replace(day=1)
-        next_monthly_ts = int(next_month.timestamp())
-        next_year = now.year + 1 if now.month > 1 or (now.month == 1 and now.day > 1) else now.year
-        next_yearly = now.replace(
-            year=next_year, month=1, day=1, hour=0, minute=0, second=0, microsecond=0
-        )
-        next_yearly_ts = int(next_yearly.timestamp())
-
-        await ctx.send(
-            f"{box(table, lang='prolog')}\n"
-            f"Timezone: `{owner_tz.zone}`\n"
-            f"Next Weekly Reset: <t:{next_weekly_ts}:R> (<t:{next_weekly_ts}:f>)\n"
-            f"Next Monthly Reset: <t:{next_monthly_ts}:R> (<t:{next_monthly_ts}:f>)\n"
-            f"Next Yearly Reset: <t:{next_yearly_ts}:R> (<t:{next_yearly_ts}:f>)\n"
-            f"Last Published: {last_published}"
-        )
+        view = StatsView(self)
+        await view.start(ctx)
+        view.message = await ctx.send(view=view)
 
     @autopublisher.command()
     @commands.bot_has_permissions(manage_messages=True, view_channel=True)
@@ -317,7 +188,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
                     style=discord.ButtonStyle.gray,
                     label="Learn More",
                     url="https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server",
-                    emoji="<:icons_info:880113401207095346>",
+                    emoji="ℹ️",
                 )
             )
             return await ctx.send("This server lacks the News Channel feature.", view=view)
@@ -339,7 +210,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
                     style=discord.ButtonStyle.gray,
                     label="Learn More",
                     url="https://support.discord.com/hc/en-us/articles/360047132851-Enabling-Your-Community-Server",
-                    emoji="<:icons_info:880113401207095346>",
+                    emoji="ℹ️",
                 )
             )
             return await ctx.send("This server lacks the News Channel feature.", view=view)
@@ -385,34 +256,17 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.bot_has_permissions(embed_links=True)
-    @autopublisher.command()
-    async def version(self, ctx: commands.Context) -> None:
-        """Show the cog version."""
-        embed = discord.Embed(
-            title="Cog Information",
-            description=box(
-                f"Author: {self.__author__}\nVersion: {self.__version__}", lang="yaml"
-            ),
-            color=await ctx.embed_color(),
-        )
-        view = discord.ui.View()
-        view.add_item(
-            discord.ui.Button(style=discord.ButtonStyle.gray, label="Docs", url=self.__docs__)
-        )
-        await ctx.send(embed=embed, view=view)
-
     @autopublisher.command()
     async def reset(self, ctx: commands.Context) -> None:
         """Reset guild-specific AutoPublisher settings."""
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send("Reset AutoPublisher settings?", view=view)
         await view.wait()
-        await (
-            ctx.send("Settings reset.")
-            if view.result and await self.config.guild(ctx.guild).clear()
-            else ctx.send("Reset cancelled.")
-        )
+        if view.result:
+            await self.config.guild(ctx.guild).clear()
+            await ctx.send("Settings reset.")
+        else:
+            await ctx.send("Reset cancelled.")
 
     @commands.is_owner()
     @autopublisher.command(hidden=True)
@@ -421,7 +275,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         """Reset global published message counts."""
         embed = discord.Embed(
             title="Reset Count",
-            description="Reset all published message counts?\n\n**Warning:** This is irreversible without backups.",
+            description="Reset all published message counts?\n**Warning:** This is irreversible without backups.",
             color=await ctx.embed_color(),
         )
         view = ConfirmView(ctx.author, disable_buttons=True)
@@ -429,9 +283,15 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         await view.wait()
         if view.result:
             await self.config.clear_all_globals()
+            # Re-register defaults
             await self.config.register_global(
-                **self.config.defaults["GLOBAL"]
-            )  # Re-register defaults
+                published_count=0,
+                published_weekly_count=0,
+                published_monthly_count=0,
+                published_yearly_count=0,
+                last_count_time=None,
+                timezone="UTC",
+            )
             await ctx.send("Counts reset.")
         else:
             await ctx.send("Reset cancelled.")

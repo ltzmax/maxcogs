@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import typing
 from datetime import datetime
+from typing import Any, Dict
 
 import discord
 import pytz
@@ -31,9 +31,11 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_number
 
+from .utils import get_owner_timezone
+
 
 def dashboard_page(*args, **kwargs):
-    def decorator(func: typing.Callable):
+    def decorator(func):
         func.__dashboard_decorator_params__ = (args, kwargs)
         return func
 
@@ -49,9 +51,9 @@ class DashboardIntegration:
         dashboard_cog.rpc.third_parties_handler.add_third_party(self)
 
     @dashboard_page(name="stats", description="View AutoPublisher statistics", is_owner=True)
-    async def dashboard_stats(self, user: discord.User, **kwargs) -> typing.Dict[str, typing.Any]:
+    async def dashboard_stats(self, user: discord.User, **kwargs) -> Dict[str, Any]:
         """Dashboard page to display AutoPublisher stats."""
-        owner_tz = await self._get_owner_timezone()
+        owner_tz = await get_owner_timezone(self.config)
         data = await self.config.all()
         last_count_time = data.get("last_count_time", "Never")
         last_published = "Never"
