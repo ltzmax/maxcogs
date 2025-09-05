@@ -22,24 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 from typing import Any, Final, Literal, Optional
 
 import discord
+from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
 from .view import RestartButton, URLModal
 
-log = logging.getLogger("red.maxcogs.redupdate")
+log = getLogger("red.maxcogs.redupdate")
 
 
 class RedUpdate(commands.Cog):
     """Update [botname] to latest dev/stable changes."""
 
     __author__: Final[str] = "MAX, kuro"
-    __version__: Final[str] = "1.9.0"
+    __version__: Final[str] = "1.10.0"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):

@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 import re
 
 import discord
+from red_commons.logging import getLogger
 from redbot.core import Config
 
-log = logging.getLogger("red.maxcogs.redupdate.view")
+log = getLogger("red.maxcogs.redupdate.view")
 GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
 
 
@@ -125,7 +125,7 @@ class RestartButton(discord.ui.View):
         try:
             if self.message:
                 await self.message.edit(view=self)
-        except discord.HTTPException:
+        except (discord.HTTPException, RuntimeError):
             pass
 
     async def interaction_check(self, interaction: discord.Interaction):
