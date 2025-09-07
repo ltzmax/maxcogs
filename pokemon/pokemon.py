@@ -28,6 +28,7 @@ from random import randint
 import aiohttp
 import discord
 import orjson
+import asyncio
 from discord import File
 from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
