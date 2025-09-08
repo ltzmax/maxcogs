@@ -32,7 +32,7 @@ ACTIONS: Dict[str, str] = {
     "cuddle": "cuddles",
     "dance": "dance",
     "feed": "feeds",
-    "hug": "hugs",
+    "hug": "hugged",
     "kiss": "just kissed",
     "laugh": "laugh at",
     "pat": "pats",
