@@ -43,7 +43,7 @@ RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best + RolePlay Commands."""
 
-    __version__: Final[str] = "2.4.0"
+    __version__: Final[str] = "2.5.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "This does not require docs."
 
@@ -51,7 +51,7 @@ class NekosBest(commands.Cog):
         self.bot: Red = bot
         self.session: aiohttp.ClientSession = aiohttp.ClientSession()
         self.config = Config.get_conf(self, identifier=1234567890)
-        default_user = {"command_counts": {}}
+        default_user = {"command_counts": {}, "received_counts": {}}
         self.config.register_user(**default_user)
 
     async def cog_unload(self) -> None:
@@ -113,7 +113,19 @@ class NekosBest(commands.Cog):
         await user_config.command_counts.set(command_counts)
         count = command_counts[action]
 
+        # Count received actions for the target member
+        received_counts = {}
+        if member and member != ctx.author:
+            target_config = self.config.user(member)
+            received_counts = await target_config.received_counts() or {}
+            if action not in received_counts:
+                received_counts[action] = 0
+            received_counts[action] += 1
+            await target_config.received_counts.set(received_counts)
+        received_count = received_counts.get(action, 0)
+
         grammar = "times" if count > 1 else "time"
+        received_grammar = "times" if received_count > 1 else "time"
         action_fmt = ACTIONS.get(action, action)
         anime_name = url["results"][0]["anime_name"]
         emb = discord.Embed(
@@ -123,8 +135,12 @@ class NekosBest(commands.Cog):
             ),
         )
         emb.add_field(
-            name=f"{ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}!",
-            value=f"Anime Name: {anime_name}",
+            name=" ",
+            value=(
+                f"**Anime Name**: {anime_name}\n"
+                f"{f'{member.display_name} has received {action} {humanize_number(received_count)} {received_grammar}!' if member and member != ctx.author else ''}\n"
+                f"{ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}"
+            ),
         )
         emb.set_image(url=url["results"][0]["url"])
         emb.set_footer(text=f"Powered by nekos.best", icon_url=ICON)
