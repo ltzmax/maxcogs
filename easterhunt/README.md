@@ -124,4 +124,3 @@ Use the achievement key from [p]easterhunt achievements.<br/>
 ## [p]ownerset resetall
 Reset all Easter hunt data for all users and global config.<br/>
  - Usage: `[p]ownerset resetall`
-
