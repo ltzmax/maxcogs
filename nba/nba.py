@@ -164,7 +164,15 @@ class NBA(commands.Cog):
                             (game_id, home_team, away_team, home_score, away_score, game_clock, period)
                             VALUES (?, ?, ?, ?, ?, ?, ?)
                         """,
-                            (game_id, home_team_name, away_team_name, home_score, away_score, game_clock, period),
+                            (
+                                game_id,
+                                home_team_name,
+                                away_team_name,
+                                home_score,
+                                away_score,
+                                game_clock,
+                                period,
+                            ),
                         )
                         conn.commit()
                     self.finalized_games.add(game_id)
