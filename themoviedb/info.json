@@ -15,7 +15,8 @@
         "tvshows"
     ],
     "permissions": [
-        "embed_links"
+        "embed_links",
+        "manage_webhooks"
     ],
     "requirements": [],
     "min_python_version": [
