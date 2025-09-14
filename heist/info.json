@@ -3,7 +3,7 @@
         "max"
     ],
     "name": "Heist",
-    "install_msg": "Thanks for installing.\nBot owners can change the default settings under `[p]heistset`.\n<https://github.com/ltzmax/maxcogs/tree/master/counting/README.md> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "install_msg": "Thanks for installing.\nBot owners can change the default settings under `[p]heistset`.\n<https://github.com/ltzmax/maxcogs/tree/master/heist/README.md> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "A game where players commit heists to steal valuable items or currency, using tools to boost success and shields to reduce losses, with a risk of getting caught by police.",
     "short": "Commit daring heists to steal valuable items or currency, using tools to boost success and shields to reduce losses, but beware the risk of getting caught!",
     "hidden": false,
