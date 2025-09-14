@@ -181,7 +181,6 @@ class HeistSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         heist_type = self.values[0]
-        log.debug(f"User {interaction.user.id} selected heist: {heist_type}")
         data = await self.cog.get_heist_settings(heist_type)
         user = interaction.user
 
@@ -200,9 +199,6 @@ class HeistSelect(discord.ui.Select):
                 remaining = data["cooldown"] - (now - last_time)
                 end_time = now + remaining
                 end_timestamp = int(end_time.timestamp())
-                log.debug(
-                    f"Heist {heist_type} on cooldown for user {user.id}, ready at {end_timestamp}"
-                )
                 await interaction.followup.send(
                     f"On cooldown! Ready <t:{end_timestamp}:R>.", ephemeral=True
                 )
@@ -224,7 +220,6 @@ class HeistSelect(discord.ui.Select):
             )
             await view.wait()
             if view.result is None or not view.result:
-                log.debug(f"Debt agreement cancelled for user {user.id}")
                 await prompt_msg.edit(
                     content="Heist cancelled. You will not be charged when you start a new heist.",
                     view=None,
@@ -266,11 +261,9 @@ class HeistSelect(discord.ui.Select):
         )
         self.cog.pending_tasks[user.id] = task
         try:
-            log.debug(f"Attempting to disable dropdown for interaction {interaction.id}")
             for item in self.view.children:
                 item.disabled = True
             await interaction.message.edit(view=self.view)
-            log.debug(f"Successfully updated dropdown for interaction {interaction.id}")
         except discord.HTTPException as e:
             log.error(
                 f"Failed to update heist view after heist start for interaction {interaction.id}: {e}"

@@ -48,7 +48,7 @@ async def schedule_resolve(
         if user_id in cog.pending_tasks:
             del cog.pending_tasks[user_id]
     except asyncio.CancelledError:
-        log.debug(f"Schedule resolve task cancelled for user {user_id} on heist {heist_type}")
+        log.info(f"Schedule resolve task cancelled for user {user_id} on heist {heist_type}")
         raise
     except Exception as e:
         log.error(
