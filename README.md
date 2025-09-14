@@ -39,6 +39,8 @@ To install any cog you want:
     - A cog that deletes forwarded messages and allows them in specified channels or by roles.
 - GitHub
     - GitHub RSS Commit Feeds
+- Heist
+    - A game where players commit heists to steal valuable items or currency, using tools to boost success and shields to reduce losses, with a risk of getting caught by police!
 - History
     - A cog to display historical events for the current day in your timezone.
 - HonyComps

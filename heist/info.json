@@ -1,0 +1,28 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "Heist",
+    "install_msg": "Thanks for installing.\nBot owners can change the default settings under `[p]heistset`.\n<https://github.com/ltzmax/maxcogs/tree/master/counting/README.md> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "A game where players commit heists to steal valuable items or currency, using tools to boost success and shields to reduce losses, with a risk of getting caught by police.",
+    "short": "Commit daring heists to steal valuable items or currency, using tools to boost success and shields to reduce losses, but beware the risk of getting caught!",
+    "hidden": false,
+    "min_bot_version": "3.5.21",
+    "tags": [
+        "heist",
+        "commit crimes",
+        "crime",
+        "steal"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data however, it does store some of the following user data for gameplay purposes: Discord user ID, heist cooldowns, active heist status, inventory of items, debt, jail status, equipped items, and heat counters for police and material drop chances. This data is stored to track player progress and game state. All data can be deleted upon request using the bot's data deletion commands.",
+    "type": "COG"
+}
