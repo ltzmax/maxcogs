@@ -50,6 +50,7 @@ PREDEFINED_CHANNELS = {
     "sonyanimation": {"id": "UCnLuLSV-Oi0ctqjxGgxFlmg", "name": "Sony Pictures Animation"},
     "universal": {"id": "UCq0OueAsdxH6b8nyAspwViw", "name": "Universal Pictures"},
     "paramount": {"id": "UCF9imwPMSGz4Vq1NiTWCC7g", "name": "Paramount Pictures"},
+    "paramountmovies": {"id": "UC9YHyj7QSkkSg2pjQ7M8Khg", "name": "Paramount Movies"}, # A different channel from paramount.
     "20thcentury": {"id": "UC2-BeLxzUBSs0uSrmzWhJuQ", "name": "20th Century Studios"},
     "lionsgate": {"id": "UCJ6nMHaJPZvsJ-HmUmj1SeA", "name": "Lionsgate Movies"},
     "a24": {"id": "UCuPivVjnfNo4mb3Oog_frZg", "name": "A24"},
@@ -62,6 +63,7 @@ PREDEFINED_CHANNELS = {
         "id": "UC6pGDc4bFGD1_36IKv3FnYg",
         "name": "Crunchyroll (Anime, Manga, and More)",
     },
+    "voltage": {"id": "UC9S7BBUoWErI-50YI2ASoiw", "name": "Voltage Pictures"},
 }
 
 
