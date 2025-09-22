@@ -6,7 +6,7 @@ repos:
     -   id: end-of-file-fixer
         exclude: docs/
 -   repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 25.9.0
     hooks:
     -   id: black
         args: [--target-version=py39, --line-length=99]
