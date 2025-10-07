@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import discord
+from redbot.core import Config
 from red_commons.logging import getLogger
 
 logger = getLogger("red.maxcogs.counting.utils")
@@ -92,10 +93,10 @@ async def handle_invalid_count(
 
 
 async def assign_ruin_role(
-    bot: discord.Client,
+    config: Config,
     member: discord.Member, 
     guild: discord.Guild, 
-    settings: dict[str, any]
+    settings: dict[str, Any]
 ) -> None:
     """Assign the ruin role to a member, temporarily if a duration is set."""
     ruin_role_id = settings["ruin_role_id"]
@@ -121,14 +122,13 @@ async def assign_ruin_role(
         await member.add_roles(role, reason="Ruined the count")
         if duration:
             expiry = datetime.now(timezone.utc) + timedelta(seconds=duration)
-            async with bot.config.guild(guild).temp_roles() as temp_roles:
+            async with config.guild(guild).temp_roles() as temp_roles:
                 temp_roles[str(member.id)] = {
                     "role_id": role.id,
                     "expiry": expiry.timestamp(),
                 }
     except discord.Forbidden:
         logger.warning(f"Missing permissions to assign role {role.name} in {guild.name}")
-
 
 async def remove_expired_roles(bot: discord.Client, guild: discord.Guild) -> None:
     """Remove expired temporary roles from users in a guild."""
