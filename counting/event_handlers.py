@@ -50,6 +50,7 @@ class EventHandlers:
         self.settings = settings
         self.remove_expired_roles = tasks.loop(minutes=10)(self._remove_expired_roles)
         self.remove_expired_roles.before_loop(self._before_remove_expired_roles)
+        self.remove_expired_roles.start()
 
     async def _remove_expired_roles(self):
         for guild in self.bot.guilds:
@@ -221,7 +222,7 @@ class EventHandlers:
             self.settings.update_guild(message.guild, "count", 0),
             self.settings.update_guild(message.guild, "last_user_id", None),
         )
-        await assign_ruin_role(message.author, message.guild, settings)
+        await assign_ruin_role(self.bot, message.author, message.guild, settings)
         response = settings["ruin_message"].format(user=message.author.mention, count=old_count)
         delete_after = (
             settings["delete_after"] if settings.get("toggle_delete_after", False) else None

@@ -92,7 +92,10 @@ async def handle_invalid_count(
 
 
 async def assign_ruin_role(
-    member: discord.Member, guild: discord.Guild, settings: dict[str, any]
+    bot: discord.Client,
+    member: discord.Member, 
+    guild: discord.Guild, 
+    settings: dict[str, any]
 ) -> None:
     """Assign the ruin role to a member, temporarily if a duration is set."""
     ruin_role_id = settings["ruin_role_id"]
@@ -107,7 +110,7 @@ async def assign_ruin_role(
         logger.warning(f"Cannot assign ruin role {role.name} in {guild.name} ({guild.id})")
         return
 
-    if any(role.id in excluded_role_ids for role in member.roles):
+    if any(r.id in excluded_role_ids for r in member.roles):
         logger.warning(f"User {member.display_name} has excluded role(s) in {guild.name}")
         return
 
@@ -118,7 +121,7 @@ async def assign_ruin_role(
         await member.add_roles(role, reason="Ruined the count")
         if duration:
             expiry = datetime.now(timezone.utc) + timedelta(seconds=duration)
-            async with member.guild.config.guild(guild).temp_roles() as temp_roles:
+            async with bot.config.guild(guild).temp_roles() as temp_roles:
                 temp_roles[str(member.id)] = {
                     "role_id": role.id,
                     "expiry": expiry.timestamp(),
