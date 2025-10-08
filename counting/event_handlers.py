@@ -54,7 +54,7 @@ class EventHandlers:
 
     async def _remove_expired_roles(self):
         for guild in self.bot.guilds:
-            await remove_expired_roles(self.bot, guild)
+            await remove_expired_roles(self.settings.config, guild)
 
     async def _before_remove_expired_roles(self):
         await self.bot.wait_until_ready()

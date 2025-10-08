@@ -130,9 +130,12 @@ async def assign_ruin_role(
     except discord.Forbidden:
         logger.warning(f"Missing permissions to assign role {role.name} in {guild.name}")
 
-async def remove_expired_roles(bot: discord.Client, guild: discord.Guild) -> None:
+async def remove_expired_roles(
+    config: Config,
+    guild: discord.Guild
+) -> None:
     """Remove expired temporary roles from users in a guild."""
-    async with bot.config.guild(guild).temp_roles() as temp_roles:
+    async with config.guild(guild).temp_roles() as temp_roles:
         to_remove = []
         for user_id, data in temp_roles.items():
             if datetime.now(timezone.utc).timestamp() >= data["expiry"]:
