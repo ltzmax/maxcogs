@@ -222,7 +222,7 @@ class EventHandlers:
             self.settings.update_guild(message.guild, "count", 0),
             self.settings.update_guild(message.guild, "last_user_id", None),
         )
-        await assign_ruin_role(self.bot, message.author, message.guild, settings)
+        await assign_ruin_role(self.settings.config, message.author, message.guild, settings)
         response = settings["ruin_message"].format(user=message.author.mention, count=old_count)
         delete_after = (
             settings["delete_after"] if settings.get("toggle_delete_after", False) else None

@@ -93,10 +93,7 @@ async def handle_invalid_count(
 
 
 async def assign_ruin_role(
-    config: Config,
-    member: discord.Member, 
-    guild: discord.Guild, 
-    settings: dict[str, Any]
+    config: Config, member: discord.Member, guild: discord.Guild, settings: dict[str, Any]
 ) -> None:
     """Assign the ruin role to a member, temporarily if a duration is set."""
     ruin_role_id = settings["ruin_role_id"]
@@ -130,10 +127,8 @@ async def assign_ruin_role(
     except discord.Forbidden:
         logger.warning(f"Missing permissions to assign role {role.name} in {guild.name}")
 
-async def remove_expired_roles(
-    config: Config,
-    guild: discord.Guild
-) -> None:
+
+async def remove_expired_roles(config: Config, guild: discord.Guild) -> None:
     """Remove expired temporary roles from users in a guild."""
     async with config.guild(guild).temp_roles() as temp_roles:
         to_remove = []
