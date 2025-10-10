@@ -48,7 +48,7 @@ class EventHandlers:
     def __init__(self, bot, settings: SettingsManager):
         self.bot = bot
         self.settings = settings
-        self.remove_expired_roles = tasks.loop(minutes=10)(self._remove_expired_roles)
+        self.remove_expired_roles = tasks.loop(minutes=1)(self._remove_expired_roles)
         self.remove_expired_roles.before_loop(self._before_remove_expired_roles)
         self.remove_expired_roles.start()
 
@@ -218,6 +218,13 @@ class EventHandlers:
 
     async def _handle_count_ruin(self, message: discord.Message, settings: dict[str, Any]) -> None:
         old_count = settings["count"]
+        leaderboard = settings.get("leaderboard", {})
+        if (
+            settings.get("toggle_reset_leaderboard_on_ruin", False)
+            and message.author.id in leaderboard
+        ):
+            leaderboard[message.author.id] = 0
+            await self.settings.update_guild(message.guild, "leaderboard", leaderboard)
         await asyncio.gather(
             self.settings.update_guild(message.guild, "count", 0),
             self.settings.update_guild(message.guild, "last_user_id", None),

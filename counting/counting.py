@@ -37,7 +37,7 @@ from .settings import SettingsManager
 class Counting(UserCommands, AdminCommands, commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "3.0.2"
+    __version__: Final[str] = "3.0.3"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/counting/README.md"
 
@@ -77,6 +77,7 @@ class Counting(UserCommands, AdminCommands, commands.Cog):
             "toggle_progress": False,
             "reset_roles": [],
             "leaderboard": {},
+            "toggle_reset_leaderboard_on_ruin": False,
         }
         self._default_user: Dict[str, Any] = {
             "count": 0,

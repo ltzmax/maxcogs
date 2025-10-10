@@ -76,6 +76,17 @@ class AdminCommands(commands.Cog):
     async def countingset_toggle(self, ctx: commands.Context) -> None:
         """Manage toggle settings for counting features."""
 
+    @toggle.command(name="resetleaderboard")
+    async def toggle_reset_leaderboard_on_ruin(self, ctx: commands.Context):
+        """Toggle resetting a user's leaderboard count to 0 when they ruin the count."""
+        settings = await self.settings.get_guild_settings(ctx.guild)
+        current = settings.get("toggle_reset_leaderboard_on_ruin", False)
+        new_value = not current
+        await self.settings.update_guild(ctx.guild, "toggle_reset_leaderboard_on_ruin", new_value)
+        await ctx.send(
+            f"Reset leaderboard on ruin is now {'enabled' if new_value else 'disabled'}."
+        )
+
     @countingset_toggle.command(name="enable")
     async def set_toggle(self, ctx: commands.Context) -> None:
         """Toggle the counting game on or off."""

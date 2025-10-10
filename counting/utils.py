@@ -27,8 +27,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import discord
-from redbot.core import Config
 from red_commons.logging import getLogger
+from redbot.core import Config
 
 logger = getLogger("red.maxcogs.counting.utils")
 
@@ -139,8 +139,17 @@ async def remove_expired_roles(config: Config, guild: discord.Guild) -> None:
                 if member and role:
                     try:
                         await member.remove_roles(role, reason="Temporary ruin role expired")
-                    except discord.Forbidden as e:
-                        logger.warning(f"Failed to remove role {role.name}: {e}")
+                    except discord.HTTPException as e:
+                        if e.status == 429:
+                            logger.warning(
+                                f"Rate limited removing role {role.name} for {member.id}. Retrying after {e.retry_after}s."
+                            )
+                            await asyncio.sleep(e.retry_after)
+                            await member.remove_roles(role, reason="Temporary ruin role expired")
+                        elif isinstance(e, discord.Forbidden):
+                            logger.warning(f"Failed to remove role {role.name}: {e}")
+                        else:
+                            raise
                 to_remove.append(user_id)
         for user_id in to_remove:
             del temp_roles[user_id]
