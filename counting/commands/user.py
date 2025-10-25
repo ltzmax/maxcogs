@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import asyncio
+from collections import defaultdict
 from datetime import datetime
 from typing import Optional
 
@@ -93,35 +95,74 @@ class UserCommands(commands.Cog):
         """
         Show the counting leaderboard for the server.
 
-        Displays the top 15 users with the highest counts.
-        Please note that the leaderboard only includes users who have counted at least once. if you have counted before this command was added, you will not be on the leaderboard until you count again.
+        Displays the top users with the highest counts, paginated by 15.
+        Note: Only users who have counted at least once since the leaderboard tracking began will appear.
+        If you counted before this feature was added, you'll need to count again to be included.
         """
         settings = await self.settings.get_guild_settings(ctx.guild)
         leaderboard = settings.get("leaderboard", {})
 
-        if not leaderboard:
-            return await ctx.send("No counts recorded yet.")
+        if leaderboard and any(isinstance(k, str) for k in leaderboard):
+            new_leaderboard = defaultdict(int)
+            name_to_id = {}
+            for member in ctx.guild.members:
+                dl = member.display_name.lower()
+                nl = member.name.lower()
+                if dl not in name_to_id:
+                    name_to_id[dl] = member.id
+                if nl not in name_to_id:
+                    name_to_id[nl] = member.id
+            unmapped_count = 0
+            for key, count in leaderboard.items():
+                if isinstance(key, int):
+                    new_leaderboard[key] += count
+                else:
+                    lower_key = key.lower()
+                    if lower_key in name_to_id:
+                        uid = name_to_id[lower_key]
+                        new_leaderboard[uid] += count
+                    else:
+                        new_leaderboard[key] += count
+                        unmapped_count += 1
 
-        sorted_leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
+            # Persist the migrated data
+            await self.settings.update_guild(ctx.guild, "leaderboard", dict(new_leaderboard))
+            settings = await self.settings.get_guild_settings(ctx.guild)
+            leaderboard = settings.get("leaderboard", {})
+            if unmapped_count > 0:
+                await ctx.send(
+                    f"Note: {unmapped_count} legacy name entries couldn't be migrated (name changes?).\nThey remain as separate entries. Count again to consolidate under your current ID."
+                )
+
+        if not leaderboard:
+            return await ctx.send("No counts recorded yet. Get counting!")
+
+        sorted_items = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
+        all_keys = [key for key, _ in sorted_items]
+        display_names = await self._build_display_names(ctx, all_keys)
+
         pages = []
         page_size = 15
-        for i in range(0, len(sorted_leaderboard), page_size):
-            page_leaderboard = sorted_leaderboard[i : i + page_size]
-            table = tabulate(
+        for i in range(0, len(sorted_items), page_size):
+            page_items = sorted_items[i : i + page_size]
+            table_data = [
                 [
-                    [
-                        str(pos),
-                        await self._get_display_name(ctx, user_id),
-                        cf.humanize_number(count),
-                    ]
-                    for pos, (user_id, count) in enumerate(page_leaderboard, start=i + 1)
-                ],
+                    str(pos),
+                    display_names.get(key, f"Unknown ({key})"),
+                    cf.humanize_number(count),
+                ]
+                for pos, (key, count) in enumerate(page_items, start=i + 1)
+            ]
+            table = tabulate(
+                table_data,
                 headers=["Position", "User", "Count"],
                 tablefmt="simple",
                 stralign="left",
             )
+            page_num = (i // page_size) + 1
+            total_pages = (len(sorted_items) + page_size - 1) // page_size
             embed = discord.Embed(
-                title="Counting Leaderboard",
+                title=f"Counting Leaderboard - Page {page_num}/{total_pages}",
                 description=box(table, lang="prolog"),
                 color=await ctx.embed_color(),
             )
@@ -129,13 +170,34 @@ class UserCommands(commands.Cog):
 
         await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
 
-    async def _get_display_name(self, ctx: commands.Context, user_id: int) -> str:
-        """Helper method to get a user's display name, handling cases where get_member fails."""
-        member = ctx.guild.get_member(user_id)
-        if member:
-            return member.display_name
-        try:
-            user = await self.bot.fetch_user(user_id)
-            return user.display_name if user else f"Unknown User ({user_id})"
-        except discord.errors.NotFound:
-            return f"Unknown User ({user_id})"
+    async def _build_display_names(self, ctx: commands.Context, keys: list) -> dict:
+        """
+        Efficiently build a mapping of key (int user_id or str legacy_name) to display_name.
+
+        For int keys: Prioritizes guild members, then parallel-fetches missing via API.
+        For str keys: Uses the string itself (legacy name).
+        """
+        display_names = {}
+        str_keys = [k for k in keys if isinstance(k, str)]
+        for sk in str_keys:
+            display_names[sk] = sk
+
+        int_keys = [k for k in keys if isinstance(k, int)]
+        if not int_keys:
+            return display_names
+
+        relevant_members = {
+            m.id: m.display_name for m in ctx.guild.members if m.id in set(int_keys)
+        }
+        display_names.update(relevant_members)
+        missing_ids = [uid for uid in int_keys if uid not in relevant_members]
+        if missing_ids:
+            fetch_tasks = [self.bot.fetch_user(uid) for uid in missing_ids]
+            fetched_results = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+
+            for result, uid in zip(fetched_results, missing_ids):
+                if isinstance(result, (discord.User, discord.Member)):
+                    display_names[uid] = result.display_name
+                else:
+                    display_names[uid] = f"Unknown User ({uid})"
+        return display_names
