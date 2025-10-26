@@ -482,7 +482,7 @@ class AdminCommands(commands.Cog):
     async def reset_leaderboard(self, ctx: commands.Context) -> None:
         """
         Reset the counting leaderboard for the server.
-        
+
         This will clear all entries, starting everyone from 0 counts.
         Use this if migration left legacy entries or to wipe the slate clean.
         """

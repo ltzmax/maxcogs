@@ -142,7 +142,7 @@ class UserCommands(commands.Cog):
         pages = []
         page_size = 15
         for i in range(0, len(sorted_items), page_size):
-            page_items = sorted_items[i:i + page_size]
+            page_items = sorted_items[i : i + page_size]
             table_data = [
                 [
                     str(pos),
