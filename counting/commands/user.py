@@ -124,14 +124,12 @@ class UserCommands(commands.Cog):
                     else:
                         new_leaderboard[key] += count
                         unmapped_count += 1
-
-            # Persist the migrated data
             await self.settings.update_guild(ctx.guild, "leaderboard", dict(new_leaderboard))
             settings = await self.settings.get_guild_settings(ctx.guild)
             leaderboard = settings.get("leaderboard", {})
             if unmapped_count > 0:
                 await ctx.send(
-                    f"Note: {unmapped_count} legacy name entries couldn't be migrated (name changes?).\nThey remain as separate entries. Count again to consolidate under your current ID."
+                    f"Note: {unmapped_count} legacy name entries couldn't be migrated (likely due to name changes or users who left).\nThey remain as separate entries. Use `{ctx.clean_prefix}countingset misc resetleaderboard` to clear the leaderboard and start fresh if desired."
                 )
 
         if not leaderboard:
@@ -144,7 +142,7 @@ class UserCommands(commands.Cog):
         pages = []
         page_size = 15
         for i in range(0, len(sorted_items), page_size):
-            page_items = sorted_items[i : i + page_size]
+            page_items = sorted_items[i:i + page_size]
             table_data = [
                 [
                     str(pos),

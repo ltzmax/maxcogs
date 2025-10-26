@@ -478,6 +478,28 @@ class AdminCommands(commands.Cog):
     async def countingset_misc(self, ctx: commands.Context) -> None:
         """Manage miscellaneous counting settings."""
 
+    @countingset_misc.command(name="resetleaderboard", aliases=["resetlb"])
+    async def reset_leaderboard(self, ctx: commands.Context) -> None:
+        """
+        Reset the counting leaderboard for the server.
+        
+        This will clear all entries, starting everyone from 0 counts.
+        Use this if migration left legacy entries or to wipe the slate clean.
+        """
+        embed = discord.Embed(
+            title="Confirm Leaderboard Reset",
+            description="This will **permanently delete** all leaderboard data for this server. Everyone's counts will reset to 0, This Action cannot be undone and we are unable to revert.\n\nAre you sure you want to proceed?",
+            color=discord.Color.red(),
+        )
+        view = ConfirmView(ctx.author, disable_buttons=True)
+        view.message = await ctx.send(embed=embed, view=view)
+        await view.wait()
+        if view.result:
+            await self.settings.update_guild(ctx.guild, "leaderboard", {})
+            await ctx.send("Leaderboard reset successfully.")
+        else:
+            await ctx.send("Reset cancelled.")
+
     @countingset_misc.command(name="emoji", aliases=["setemoji"])
     async def set_emoji(self, ctx: commands.Context, emoji_input: str) -> None:
         """
