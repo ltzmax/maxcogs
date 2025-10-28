@@ -118,7 +118,7 @@ class RestrictPosts(commands.Cog):
                 "Lacking manage_messages or send_messages permissions in %s in %s (%s).",
                 message.channel.mention,
                 message.guild.name,
-                message.guild.id
+                message.guild.id,
             )
             return
 
@@ -136,7 +136,7 @@ class RestrictPosts(commands.Cog):
                             "Lacking create_public_threads permission in %s in %s (%s).",
                             message.channel.mention,
                             message.guild.name,
-                            message.guild.id
+                            message.guild.id,
                         )
                         return
                     await asyncio.sleep(1)
@@ -151,7 +151,7 @@ class RestrictPosts(commands.Cog):
                         log.error(
                             "Cannot create thread for message %s in guild %s: Max threads reached (1000)",
                             message.id,
-                            message.guild.id
+                            message.guild.id,
                         )
                     else:
                         log.error(
@@ -171,15 +171,23 @@ class RestrictPosts(commands.Cog):
                 await message.delete()
                 if send_in_channel:
                     guild_me = message.guild.me
-                    if settings["toggle_embed"] and not message.channel.permissions_for(guild_me).embed_links:
+                    if (
+                        settings["toggle_embed"]
+                        and not message.channel.permissions_for(guild_me).embed_links
+                    ):
                         log.warning(
                             "Lacking embed_links permission in %s in %s (%s). Falling back to text warning.",
                             message.channel.mention,
                             message.guild.name,
-                            message.guild.id
+                            message.guild.id,
                         )
-                    if settings["toggle_embed"] and message.channel.permissions_for(guild_me).embed_links:
-                        author_prefix = message.author.mention if mentionable else message.author.display_name
+                    if (
+                        settings["toggle_embed"]
+                        and message.channel.permissions_for(guild_me).embed_links
+                    ):
+                        author_prefix = (
+                            message.author.mention if mentionable else message.author.display_name
+                        )
                         description = "{}: {}".format(author_prefix, warning_message)
                         embed = discord.Embed(
                             title=settings["default_title"],
@@ -202,7 +210,7 @@ class RestrictPosts(commands.Cog):
                 log.error(
                     "Missing permissions to delete message %s in guild %s",
                     message.id,
-                    message.guild.id
+                    message.guild.id,
                 )
             except discord.NotFound:
                 log.warning("Message %s already deleted in guild %s", message.id, message.guild.id)
@@ -230,7 +238,7 @@ class RestrictPosts(commands.Cog):
             log.debug(
                 "Edited message %s not in cache for guild %s, skipping",
                 payload.message_id,
-                guild.id
+                guild.id,
             )
             return
 
@@ -251,7 +259,7 @@ class RestrictPosts(commands.Cog):
                 "Lacking manage_messages or send_messages permissions in %s in %s (%s).",
                 message.channel.mention,
                 guild.name,
-                guild.id
+                guild.id,
             )
             return
 
@@ -269,15 +277,23 @@ class RestrictPosts(commands.Cog):
             try:
                 await message.delete()
                 if send_in_channel:
-                    if settings["toggle_embed"] and not message.channel.permissions_for(guild.me).embed_links:
+                    if (
+                        settings["toggle_embed"]
+                        and not message.channel.permissions_for(guild.me).embed_links
+                    ):
                         log.warning(
                             "Lacking embed_links permission in %s in %s (%s). Falling back to text warning.",
                             message.channel.mention,
                             guild.name,
-                            guild.id
+                            guild.id,
                         )
-                    if settings["toggle_embed"] and message.channel.permissions_for(guild.me).embed_links:
-                        author_prefix = message.author.mention if mentionable else message.author.display_name
+                    if (
+                        settings["toggle_embed"]
+                        and message.channel.permissions_for(guild.me).embed_links
+                    ):
+                        author_prefix = (
+                            message.author.mention if mentionable else message.author.display_name
+                        )
                         description = "{}: {}".format(author_prefix, warning_message)
                         embed = discord.Embed(
                             title=settings["default_title"],
@@ -300,7 +316,7 @@ class RestrictPosts(commands.Cog):
                 log.error(
                     "Missing permissions to delete edited message %s in guild %s",
                     message.id,
-                    guild.id
+                    guild.id,
                 )
             except discord.NotFound:
                 log.warning("Edited message %s already deleted in guild %s", message.id, guild.id)
@@ -334,7 +350,9 @@ class RestrictPosts(commands.Cog):
                 and channel.permissions_for(ctx.guild.me).manage_messages
             ):
                 return await ctx.send(
-                    "I need `Send Messages` and `Manage Messages` permissions in {}.".format(channel.mention)
+                    "I need `Send Messages` and `Manage Messages` permissions in {}.".format(
+                        channel.mention
+                    )
                 )
 
             if channel.id in channel_ids:
@@ -395,9 +413,7 @@ class RestrictPosts(commands.Cog):
                 return await ctx.send("Message is too long, must be 2000 characters or less.")
         else:
             message = default_message
-        await self._update_guild_cache(
-            ctx.guild, "warning_message", message
-        )
+        await self._update_guild_cache(ctx.guild, "warning_message", message)
         if message == default_message:
             await ctx.send("Reset warning message to default.")
         else:
@@ -417,9 +433,7 @@ class RestrictPosts(commands.Cog):
                 return await ctx.send("Title is too long, must be 256 characters or less.")
         else:
             title = default_title
-        await self._update_guild_cache(
-            ctx.guild, "default_title", title
-        )
+        await self._update_guild_cache(ctx.guild, "default_title", title)
         if title == default_title:
             await ctx.send("Reset default title to default.")
         else:
@@ -458,7 +472,7 @@ class RestrictPosts(commands.Cog):
         if len(warning_message) > 100:
             warning_message = warning_message[:97] + "..."
         send_in_channel = "Enabled" if settings["send_in_channel"] else "Disabled"
-        delete_after = "{} seconds".format(settings['delete_after'])
+        delete_after = "{} seconds".format(settings["delete_after"])
         embed = discord.Embed(
             title="RestrictPosts Settings",
             color=await ctx.embed_color(),
