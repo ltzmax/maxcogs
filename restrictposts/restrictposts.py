@@ -40,7 +40,7 @@ class RestrictPosts(commands.Cog):
     """A cog to restrict posts to attachments and links in a specific channel(s)."""
 
     __author__: Final[str] = "MAX"
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
@@ -59,7 +59,7 @@ class RestrictPosts(commands.Cog):
         self.config.register_guild(**default_guild)
         self._cache: Dict[int, Dict[str, Any]] = {}
         self.url_regex = re.compile(
-            r"http[s]?://(?:[a-zA-Z]|[0-9]|[\$_@.&+\-]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+            r"http[s]?://(?:[a-zA-Z]|[0-9]|[_@.&+-]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
         )
         self.bot.loop.create_task(self._initialize_cache())
 
@@ -75,7 +75,7 @@ class RestrictPosts(commands.Cog):
     async def _initialize_cache(self) -> None:
         """Load guild settings into cache."""
         self._cache = await self.config.all_guilds()
-        log.debug(f"Initialized cache: {len(self._cache)} guilds.")
+        log.debug("Initialized cache: %s guilds.", len(self._cache))
 
     async def _get_guild_settings(self, guild: discord.Guild) -> Dict[str, Any]:
         """Retrieve guild settings from cache or Config."""
@@ -115,8 +115,10 @@ class RestrictPosts(commands.Cog):
             and message.channel.permissions_for(message.guild.me).send_messages
         ):
             log.warning(
-                f"Lacking manage_messages or send_messages permissions in {message.channel.mention} "
-                f"in {message.guild.name} ({message.guild.id})."
+                "Lacking manage_messages or send_messages permissions in %s in %s (%s).",
+                message.channel.mention,
+                message.guild.name,
+                message.guild.id
             )
             return
 
@@ -131,46 +133,57 @@ class RestrictPosts(commands.Cog):
                 try:
                     if not message.channel.permissions_for(message.guild.me).create_public_threads:
                         log.warning(
-                            f"Lacking create_public_threads permission in {message.channel.mention} "
-                            f"in {message.guild.name} ({message.guild.id})."
+                            "Lacking create_public_threads permission in %s in %s (%s).",
+                            message.channel.mention,
+                            message.guild.name,
+                            message.guild.id
                         )
                         return
                     await asyncio.sleep(1)
-                    thread_name = f"Discussion for {message.author.display_name}'s post"
+                    thread_name = "Discussion for {}'s post".format(message.author.display_name)
                     await message.create_thread(
-                        name=thread_name[:100],  # Truncate to 100 chars (Discord limit)
-                        auto_archive_duration=1440,  # 24 hours
+                        name=thread_name[:100],
+                        auto_archive_duration=1440,
                         reason="Auto-thread for valid message",
                     )
                 except discord.HTTPException as e:
-                    if e.code == 40058:  # Max threads reached (1000 active threads)
+                    if e.code == 40058:
                         log.error(
-                            f"Cannot create thread for message {message.id} in guild {message.guild.id}: Max threads reached (1000)"
+                            "Cannot create thread for message %s in guild %s: Max threads reached (1000)",
+                            message.id,
+                            message.guild.id
                         )
                     else:
                         log.error(
-                            f"Failed to create thread for message {message.id} in guild {message.guild.id}: {e}",
+                            "Failed to create thread for message %s in guild %s: %s",
+                            message.id,
+                            message.guild.id,
+                            e,
                             exc_info=True,
                         )
             return
         else:
-            warning_message = settings["warning_message"]
+            warning_message = settings["warning_message"].strip()
             send_in_channel = settings["send_in_channel"]
             delete = settings["delete_after"]
             mentionable = settings["mentionable"]
             try:
                 await message.delete()
                 if send_in_channel:
-                    if settings["toggle_embed"]:
-                        if not message.channel.permissions_for(message.guild.me).embed_links:
-                            log.warning(
-                                f"Lacking embed_links permission in {message.channel.mention} "
-                                f"in {message.guild.name} ({message.guild.id})."
-                            )
-                            return
+                    guild_me = message.guild.me
+                    if settings["toggle_embed"] and not message.channel.permissions_for(guild_me).embed_links:
+                        log.warning(
+                            "Lacking embed_links permission in %s in %s (%s). Falling back to text warning.",
+                            message.channel.mention,
+                            message.guild.name,
+                            message.guild.id
+                        )
+                    if settings["toggle_embed"] and message.channel.permissions_for(guild_me).embed_links:
+                        author_prefix = message.author.mention if mentionable else message.author.display_name
+                        description = "{}: {}".format(author_prefix, warning_message)
                         embed = discord.Embed(
                             title=settings["default_title"],
-                            description=warning_message,
+                            description=description,
                             color=0xFF0000,
                         )
                         await message.channel.send(
@@ -178,19 +191,21 @@ class RestrictPosts(commands.Cog):
                         )
                     else:
                         content = (
-                            f"{message.author.mention} {warning_message}"
+                            "{} {}".format(message.author.mention, warning_message)
                             if mentionable
-                            else f"{message.author.display_name} {warning_message}"
+                            else "{} {}".format(message.author.display_name, warning_message)
                         )
                         await message.channel.send(
                             content, delete_after=delete, mention_author=mentionable
                         )
             except discord.Forbidden:
                 log.error(
-                    f"Missing permissions to delete message {message.id} in guild {message.guild.id}"
+                    "Missing permissions to delete message %s in guild %s",
+                    message.id,
+                    message.guild.id
                 )
             except discord.NotFound:
-                log.warning(f"Message {message.id} already deleted in guild {message.guild.id}")
+                log.warning("Message %s already deleted in guild %s", message.id, message.guild.id)
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
@@ -213,8 +228,13 @@ class RestrictPosts(commands.Cog):
         message = payload.cached_message
         if not message:
             log.debug(
-                f"Edited message {payload.message_id} not in cache for guild {guild.id}, skipping"
+                "Edited message %s not in cache for guild %s, skipping",
+                payload.message_id,
+                guild.id
             )
+            return
+
+        if message.author.bot:
             return
 
         if isinstance(message.channel, discord.Thread):
@@ -224,16 +244,15 @@ class RestrictPosts(commands.Cog):
             return
 
         if not (
-            message.channel.permissions_for(message.guild.me).manage_messages
-            and message.channel.permissions_for(message.guild.me).send_messages
+            message.channel.permissions_for(guild.me).manage_messages
+            and message.channel.permissions_for(guild.me).send_messages
         ):
             log.warning(
-                f"Lacking manage_messages or send_messages permissions in {message.channel.mention} "
-                f"in {message.guild.name} ({message.guild.id})."
+                "Lacking manage_messages or send_messages permissions in %s in %s (%s).",
+                message.channel.mention,
+                guild.name,
+                guild.id
             )
-            return
-
-        if message.author.bot:
             return
 
         has_attachment = len(message.attachments) > 0
@@ -243,23 +262,26 @@ class RestrictPosts(commands.Cog):
             # message is valid, no action needed
             return
         else:
-            warning_message = settings["warning_message"]
+            warning_message = settings["warning_message"].strip()
             send_in_channel = settings["send_in_channel"]
             delete = settings["delete_after"]
             mentionable = settings["mentionable"]
             try:
                 await message.delete()
                 if send_in_channel:
-                    if settings["toggle_embed"]:
-                        if not message.channel.permissions_for(guild.me).embed_links:
-                            log.warning(
-                                f"Lacking embed_links permission in {message.channel.mention} "
-                                f"in {guild.name} ({guild.id})."
-                            )
-                            return
+                    if settings["toggle_embed"] and not message.channel.permissions_for(guild.me).embed_links:
+                        log.warning(
+                            "Lacking embed_links permission in %s in %s (%s). Falling back to text warning.",
+                            message.channel.mention,
+                            guild.name,
+                            guild.id
+                        )
+                    if settings["toggle_embed"] and message.channel.permissions_for(guild.me).embed_links:
+                        author_prefix = message.author.mention if mentionable else message.author.display_name
+                        description = "{}: {}".format(author_prefix, warning_message)
                         embed = discord.Embed(
                             title=settings["default_title"],
-                            description=warning_message,
+                            description=description,
                             color=0xFF0000,
                         )
                         await message.channel.send(
@@ -267,19 +289,21 @@ class RestrictPosts(commands.Cog):
                         )
                     else:
                         content = (
-                            f"{message.author.mention} {warning_message}"
+                            "{} {}".format(message.author.mention, warning_message)
                             if mentionable
-                            else f"{message.author.display_name} {warning_message}"
+                            else "{} {}".format(message.author.display_name, warning_message)
                         )
                         await message.channel.send(
                             content, delete_after=delete, mention_author=mentionable
                         )
             except discord.Forbidden:
                 log.error(
-                    f"Missing permissions to delete edited message {message.id} in guild {guild.id}"
+                    "Missing permissions to delete edited message %s in guild %s",
+                    message.id,
+                    guild.id
                 )
             except discord.NotFound:
-                log.warning(f"Edited message {message.id} already deleted in guild {guild.id}")
+                log.warning("Edited message %s already deleted in guild %s", message.id, guild.id)
 
     @commands.group(aliases=["restrictpost", "restrict"])
     @commands.guild_only()
@@ -310,17 +334,17 @@ class RestrictPosts(commands.Cog):
                 and channel.permissions_for(ctx.guild.me).manage_messages
             ):
                 return await ctx.send(
-                    f"I need `Send Messages` and `Manage Messages` permissions in {channel.mention}."
+                    "I need `Send Messages` and `Manage Messages` permissions in {}.".format(channel.mention)
                 )
 
             if channel.id in channel_ids:
                 channel_ids.remove(channel.id)
                 await self._update_guild_cache(ctx.guild, "channel_id", channel_ids)
-                await ctx.send(f"Removed {channel.mention} from restricted channels.")
+                await ctx.send("Removed {} from restricted channels.".format(channel.mention))
             else:
                 channel_ids.append(channel.id)
                 await self._update_guild_cache(ctx.guild, "channel_id", channel_ids)
-                await ctx.send(f"Added {channel.mention} as a restricted channel.")
+                await ctx.send("Added {} as a restricted channel.".format(channel.mention))
         else:
             await self._update_guild_cache(ctx.guild, "channel_id", [])
             await ctx.send("Cleared all restricted channels.")
@@ -332,7 +356,7 @@ class RestrictPosts(commands.Cog):
         new_value = not settings["autothread"]
         await self._update_guild_cache(ctx.guild, "autothread", new_value)
         status = "enabled" if new_value else "disabled"
-        await ctx.send(f"Auto-threading {status}.")
+        await ctx.send("Auto-threading {}.".format(status))
 
     @restrictposts.command(name="mentionable")
     async def set_mentionable(self, ctx, mentionable: bool = None):
@@ -344,7 +368,7 @@ class RestrictPosts(commands.Cog):
             mentionable = not settings["mentionable"]
         await self._update_guild_cache(ctx.guild, "mentionable", mentionable)
         status = "enabled" if mentionable else "disabled"
-        await ctx.send(f"Mentionable status for warning message {status}.")
+        await ctx.send("Mentionable status for warning message {}.".format(status))
 
     @restrictposts.command(name="deleteafter")
     async def set_delete_after(self, ctx, seconds: commands.Range[int, 10, 300] = None):
@@ -352,10 +376,10 @@ class RestrictPosts(commands.Cog):
         Set or reset delete-after time for invalid messages (10-300 seconds).
         """
         await self._update_guild_cache(ctx.guild, "delete_after", seconds)
-        if seconds:
-            await ctx.send(f"Delete-after set to {seconds} seconds.")
+        if seconds is None:
+            await ctx.send("Delete-after reset to default (10 seconds).")
         else:
-            await ctx.send("Delete-after reset.")
+            await ctx.send("Delete-after set to {} seconds.".format(seconds))
 
     @restrictposts.command(name="message")
     async def set_warning_message(self, ctx, *, message: str = None):
@@ -363,16 +387,21 @@ class RestrictPosts(commands.Cog):
         Set or reset the custom warning message for deleted messages.
         """
         default_message = DEFAULT_MSG
-        await self._update_guild_cache(
-            ctx.guild, "warning_message", message if message else default_message
-        )
-        # cannot be longer than 2000 characters
-        if message and len(message) > 2000:
-            return await ctx.send("Message is too long, must be 2000 characters or less.")
         if message:
-            await ctx.send("Custom warning message set.")
+            message = message.strip()
+            if not message:
+                message = default_message
+            if len(message) > 2000:
+                return await ctx.send("Message is too long, must be 2000 characters or less.")
         else:
+            message = default_message
+        await self._update_guild_cache(
+            ctx.guild, "warning_message", message
+        )
+        if message == default_message:
             await ctx.send("Reset warning message to default.")
+        else:
+            await ctx.send("Custom warning message set.")
 
     @restrictposts.command(name="defaulttitle")
     async def set_default_title(self, ctx, *, title: str = None):
@@ -380,16 +409,21 @@ class RestrictPosts(commands.Cog):
         Set or reset the default title for the warning embed.
         """
         default_title = DEFAULT_TITLE
-        await self._update_guild_cache(
-            ctx.guild, "default_title", title if title else default_title
-        )
-        # cannot be longer than 256 characters
-        if title and len(title) > 256:
-            return await ctx.send("Title is too long, must be 256 characters or less.")
         if title:
-            await ctx.send("Custom default title set.")
+            title = title.strip()
+            if not title:
+                title = default_title
+            if len(title) > 256:
+                return await ctx.send("Title is too long, must be 256 characters or less.")
         else:
+            title = default_title
+        await self._update_guild_cache(
+            ctx.guild, "default_title", title
+        )
+        if title == default_title:
             await ctx.send("Reset default title to default.")
+        else:
+            await ctx.send("Custom default title set.")
 
     @restrictposts.command(name="embed")
     async def toggle_embed(self, ctx):
@@ -398,7 +432,7 @@ class RestrictPosts(commands.Cog):
         new_value = not settings["toggle_embed"]
         await self._update_guild_cache(ctx.guild, "toggle_embed", new_value)
         status = "enabled" if new_value else "disabled"
-        await ctx.send(f"Embed warning messages {status}.")
+        await ctx.send("Embed warning messages {}.".format(status))
 
     @restrictposts.command(name="togglemessage", aliases=["togglemsg"])
     async def toggle_channel_warning(self, ctx):
@@ -407,7 +441,7 @@ class RestrictPosts(commands.Cog):
         new_value = not settings["send_in_channel"]
         await self._update_guild_cache(ctx.guild, "send_in_channel", new_value)
         status = "enabled" if new_value else "disabled"
-        await ctx.send(f"Channel warning messages {status}.")
+        await ctx.send("Channel warning messages {}.".format(status))
 
     @restrictposts.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
@@ -420,11 +454,11 @@ class RestrictPosts(commands.Cog):
             if ctx.guild.get_channel(cid)
         ]
         channel_str = ", ".join(channel_mentions) if channel_mentions else "Not set"
-        warning_message = settings["warning_message"] or "Default"
+        warning_message = settings["warning_message"]
+        if len(warning_message) > 100:
+            warning_message = warning_message[:97] + "..."
         send_in_channel = "Enabled" if settings["send_in_channel"] else "Disabled"
-        delete_after = (
-            f"{settings['delete_after']} seconds" if settings["delete_after"] else "Immediate"
-        )
+        delete_after = "{} seconds".format(settings['delete_after'])
         embed = discord.Embed(
             title="RestrictPosts Settings",
             color=await ctx.embed_color(),
