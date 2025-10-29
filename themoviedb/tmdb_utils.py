@@ -67,6 +67,10 @@ PREDEFINED_CHANNELS = {
         "name": "Crunchyroll (Anime, Manga, and More)",
     },
     "voltage": {"id": "UC9S7BBUoWErI-50YI2ASoiw", "name": "Voltage Pictures"},
+    "kinocheck": {
+        "id": "UCLRlryMfL8ffxzrtqv0_k_w",
+        "name": "KinoCheck - Your Ultimate Movie Destination!.",
+    },
 }
 
 

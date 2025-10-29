@@ -482,7 +482,7 @@ class TheMovieDB(commands.Cog):
             status = (
                 "Enabled" if channels_status.get(key, {}).get("enabled", False) else "Disabled"
             )
-            msg += f"- {details['name']} (`{key}`): **{status}**\n"
+            msg += f"- (`{key}`): **{status}** {details['name']}\n"
 
         pages = []
         current_page = ""
