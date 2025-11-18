@@ -117,7 +117,9 @@ class TheMovieDB(commands.Cog):
                 if wh.name == our_name and wh.user == self.bot.user:
                     return wh
         except discord.Forbidden:
-            logger.warning(f"Missing Manage Webhooks in {channel}. disabling webhooks for this server")
+            logger.warning(
+                f"Missing Manage Webhooks in {channel}. disabling webhooks for this server"
+            )
             await self.config.guild(channel.guild).use_webhook.set(False)
             return None
         except discord.HTTPException as e:
@@ -136,7 +138,9 @@ class TheMovieDB(commands.Cog):
                 logger.warning(f"Max webhooks reached in {channel}. disabled")
             return None
 
-    async def send_notification(self, channel: discord.TextChannel, webhook: discord.Webhook | None, content: str):
+    async def send_notification(
+        self, channel: discord.TextChannel, webhook: discord.Webhook | None, content: str
+    ):
         full_content = content.strip()
         if webhook:
             try:
@@ -186,13 +190,15 @@ class TheMovieDB(commands.Cog):
 
         statuses = data.get("channels_status", {})
         enabled_channels = {
-            k: v for k, v in PREDEFINED_CHANNELS.items()
+            k: v
+            for k, v in PREDEFINED_CHANNELS.items()
             if statuses.get(k, {}).get("enabled", False)
         }
         if not enabled_channels:
             return
 
         sem = asyncio.Semaphore(6)
+
         async def fetch_one(key, info):
             async with sem:
                 url = f"https://www.youtube.com/feeds/videos.xml?channel_id={info['id']}"
@@ -223,7 +229,9 @@ class TheMovieDB(commands.Cog):
 
                 latest = entries[0]
                 video_id = latest.find("{http://www.youtube.com/xml/schemas/2015}videoId").text
-                published = latest.find("{http://www.w3.org/2005/Atom}published").text.replace("Z", "+00:00")
+                published = latest.find("{http://www.w3.org/2005/Atom}published").text.replace(
+                    "Z", "+00:00"
+                )
                 published_ts = datetime.datetime.fromisoformat(published).timestamp()
                 link = latest.find("{http://www.w3.org/2005/Atom}link").attrib["href"]
                 title = latest.find("{http://www.w3.org/2005/Atom}title").text
