@@ -46,7 +46,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "2.4.0"
+    __version__ = "2.5.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/tree/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -89,246 +89,172 @@ class TheMovieDB(commands.Cog):
         """Nothing to delete."""
         return
 
-    async def fetch_feed(self, youtube_channel_id: str) -> str | None:
+    async def fetch_feed(self, youtube_channel_id: str):
         url = f"https://www.youtube.com/feeds/videos.xml?channel_id={youtube_channel_id}"
         try:
-            async with self.session.get(url, timeout=10) as response:
-                if response.status == 200:
-                    return await response.text()
-                else:
+            async with self.session.get(url) as resp:
+                if resp.status == 200:
+                    return await resp.text()
+                elif resp.status == 404:
                     logger.warning(
-                        f"Failed to fetch feed for channel {youtube_channel_id}: HTTP {response.status}"
+                        f"YouTube RSS 404 (channel probably deleted, disabled or renamed channel name): {youtube_channel_id}"
                     )
                     return None
-        except aiohttp.ClientError as e:
-            logger.error(f"Error fetching feed for channel {youtube_channel_id}: {e}")
+                else:
+                    logger.warning(f"YouTube RSS returned {resp.status} for {youtube_channel_id}")
+                    return None
+        except discord.HTTPException as e:
+            logger.error(
+                f"Exception fetching YouTube RSS {youtube_channel_id}: {e}", exc_info=True
+            )
             return None
 
     async def get_or_create_webhook(self, channel: discord.TextChannel) -> discord.Webhook | None:
-        """Get or create a webhook for trailer notifications in the channel."""
         our_name = "Trailer Notifications"
         try:
             webhooks = await channel.webhooks()
-        except (discord.Forbidden, discord.HTTPException):
-            logger.error(f"Failed to fetch webhooks in {channel.name} ({channel.guild.name})")
+            for wh in webhooks:
+                if wh.name == our_name and wh.user == self.bot.user:
+                    return wh
+        except discord.Forbidden:
+            logger.warning(f"Missing Manage Webhooks in {channel}. disabling webhooks for this server")
+            await self.config.guild(channel.guild).use_webhook.set(False)
             return None
-
-        for wh in webhooks:
-            if wh.name == our_name and wh.user == self.bot.user:
-                return wh
+        except discord.HTTPException as e:
+            logger.error(f"Failed to list webhooks in {channel}: {e}")
+            return None
 
         try:
-            wh = await channel.create_webhook(name=our_name)
-            return wh
+            webhook = await channel.create_webhook(name=our_name)
+            return webhook
+        except discord.Forbidden:
+            await self.config.guild(channel.guild).use_webhook.set(False)
+            return None
         except discord.HTTPException as e:
-            if e.code == 30007:  # Maximum number of webhooks reached
+            if e.code == 30007:  # max webhooks
                 await self.config.guild(channel.guild).use_webhook.set(False)
-                logger.warning(
-                    f"Maximum number of webhooks reached in {channel.name} ({channel.guild.name}). Disabling webhook use."
-                )
-            else:
-                logger.error(
-                    f"Failed to create webhook in {channel.name} ({channel.guild.name}): {e}"
-                )
-            return None
-        except discord.Forbidden as e:
-            logger.error(
-                f"Permission denied to create webhook in {channel.name} ({channel.guild.name}): {e}"
-            )
+                logger.warning(f"Max webhooks reached in {channel}. disabled")
             return None
 
-    async def check_trailers(self, guild: discord.Guild) -> None:
-        guild_data = await self.config.guild(guild).all()
-        notification_channel_id = guild_data.get("notification_channel")
-        if not notification_channel_id:
+    async def send_notification(self, channel: discord.TextChannel, webhook: discord.Webhook | None, content: str):
+        full_content = content.strip()
+        if webhook:
+            try:
+                await webhook.send(
+                    content=full_content,
+                    username=self.bot.user.display_name,
+                    avatar_url=self.bot.user.avatar.url if self.bot.user.avatar else None,
+                    allowed_mentions=discord.AllowedMentions(roles=True),
+                    wait=True,
+                )
+                return
+            except discord.NotFound:
+                logger.info(f"Webhook gone in {channel} recreating next loop")
+                try:
+                    for wh in await channel.webhooks():
+                        if wh.name == "Trailer Notifications":
+                            await wh.delete()
+                except:
+                    pass
+            except (discord.Forbidden, discord.HTTPException) as e:
+                logger.warning(f"Webhook failed ({e}). disabling webhooks for this server")
+                await self.config.guild(channel.guild).use_webhook.set(False)
+
+        try:
+            await channel.send(full_content, allowed_mentions=discord.AllowedMentions(roles=True))
+        except discord.Forbidden:
+            logger.error(f"Bot lost send permission in notification channel {channel}")
+        except discord.HTTPException as e:
+            logger.error(f"Failed to send trailer notification: {e}")
+
+    async def check_trailers(self, guild: discord.Guild):
+        data = await self.config.guild(guild).all()
+        chan_id = data.get("notification_channel")
+        if not chan_id:
             return
 
-        channel_to_post = guild.get_channel(notification_channel_id)
-        if not channel_to_post:
+        channel = guild.get_channel(chan_id)
+        if not channel or not channel.permissions_for(guild.me).send_messages:
             return
 
-        perms = channel_to_post.permissions_for(guild.me)
-        if not perms.send_messages:
-            logger.warning(
-                f"Bot does not have send_messages permission in {channel_to_post.name} in guild {guild.name}"
-            )
-            return
-
-        use_webhook = guild_data.get("use_webhook", False)
         webhook = None
-        if use_webhook and perms.manage_webhooks:
-            webhook = await self.get_or_create_webhook(channel_to_post)
+        if data.get("use_webhook", True) and guild.me.guild_permissions.manage_webhooks:
+            webhook = await self.get_or_create_webhook(channel)
 
-        ping_role_id = guild_data.get("ping_role")
-        ping_role = guild.get_role(ping_role_id) if ping_role_id else None
-        ping_mention = f"{ping_role.mention} " if ping_role else ""
-        channels_status = guild_data.get("channels_status", {})
+        ping_role = guild.get_role(data.get("ping_role")) if data.get("ping_role") else None
+        mention = f"{ping_role.mention} " if ping_role else ""
 
-        enabled_channels = [
-            (key, details)
-            for key, details in PREDEFINED_CHANNELS.items()
-            if channels_status.get(key, {}).get("enabled", False)
-        ]
+        statuses = data.get("channels_status", {})
+        enabled_channels = {
+            k: v for k, v in PREDEFINED_CHANNELS.items()
+            if statuses.get(k, {}).get("enabled", False)
+        }
         if not enabled_channels:
             return
 
-        sem = asyncio.Semaphore(5)
-
-        async def fetch_with_sem(key, details):
+        sem = asyncio.Semaphore(6)
+        async def fetch_one(key, info):
             async with sem:
-                return key, details, await self.fetch_feed(details["id"])
+                url = f"https://www.youtube.com/feeds/videos.xml?channel_id={info['id']}"
+                try:
+                    async with self.session.get(url, timeout=15) as resp:
+                        if resp.status == 200:
+                            return key, info, await resp.text()
+                        else:
+                            logger.debug(f"RSS {resp.status} for {info['name']} ({info['id']})")
+                            return key, info, None
+                except discord.HTTPException as e:
+                    logger.error(f"Exception fetching {info['name']}: {e}")
+                    return key, info, None
 
-        fetch_tasks = [fetch_with_sem(key, details) for key, details in enabled_channels]
-        results = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+        tasks = [fetch_one(k, v) for k, v in enabled_channels.items()]
+        results = await asyncio.gather(*tasks)
 
         updates = {}
-        for result in results:
-            if isinstance(result, Exception):
-                logger.error(f"Fetch error: {result}")
+        for key, info, feed in results:
+            if not feed:
                 continue
 
-            key, details, feed_data = result
-            if not feed_data:
-                failure_count = channels_status.get(key, {}).get("failure_count", 0) + 1
-                updates[key] = {"enabled": failure_count < 3, "failure_count": failure_count}
-                if failure_count >= 3:
-                    disable_message = (
-                        f"Disabled notifications for **{details['name']}** due to repeated failures (HTTP 404).\n"
-                        "Please contact the bot owner to resolve this issue."
-                    )
-                    try:
-                        if webhook:
-                            await webhook.send(
-                                content=disable_message,
-                                username=self.bot.user.name,
-                                avatar_url=(
-                                    str(self.bot.user.avatar) if self.bot.user.avatar else None
-                                ),
-                                allowed_mentions=discord.AllowedMentions(roles=True),
-                            )
-                        else:
-                            await channel_to_post.send(disable_message)
-                    except (discord.Forbidden, discord.HTTPException) as e:
-                        logger.error(
-                            f"Failed to send disable message to {channel_to_post.name} in {guild.name}: {e}"
-                        )
-                    continue
-            else:
-                updates[key] = {"enabled": True, "failure_count": 0}
-
             try:
-                root = ET.fromstring(feed_data)
+                root = ET.fromstring(feed)
                 entries = root.findall("{http://www.w3.org/2005/Atom}entry")
                 if not entries:
-                    logger.debug(f"No entries in feed for {details['name']}")
                     continue
 
-                latest_video = entries[0]
-                video_id_elem = latest_video.find(
-                    "{http://www.youtube.com/xml/schemas/2015}videoId"
-                )
-                if video_id_elem is None:
-                    logger.warning(f"No video ID in latest entry for {details['name']}")
+                latest = entries[0]
+                video_id = latest.find("{http://www.youtube.com/xml/schemas/2015}videoId").text
+                published = latest.find("{http://www.w3.org/2005/Atom}published").text.replace("Z", "+00:00")
+                published_ts = datetime.datetime.fromisoformat(published).timestamp()
+                link = latest.find("{http://www.w3.org/2005/Atom}link").attrib["href"]
+                title = latest.find("{http://www.w3.org/2005/Atom}title").text
+                last_ts = statuses.get(key, {}).get("last_published_ts", 0)
+                last_vid = statuses.get(key, {}).get("last_video_id")
+
+                if video_id == last_vid or published_ts <= last_ts:
                     continue
-
-                video_id = video_id_elem.text
-                last_video_id = channels_status.get(key, {}).get("last_video_id")
-
-                published_elem = latest_video.find("{http://www.w3.org/2005/Atom}published")
-                if published_elem is None:
-                    logger.warning(f"No published date in latest entry for {details['name']}")
-                    continue
-
-                published_str = published_elem.text.replace("Z", "+00:00")
-                published_dt = datetime.datetime.fromisoformat(published_str)
-                published_ts = published_dt.timestamp()
-                last_published_ts = channels_status.get(key, {}).get("last_published_ts", 0)
-
-                if last_published_ts == 0:
-                    updates[key] = {"last_published_ts": published_ts, "last_video_id": video_id}
-                    continue
-
-                if published_ts <= last_published_ts or video_id == last_video_id:
-                    logger.debug(f"No new video for {details['name']}")
-                    continue
-
-                video_url_elem = latest_video.find("{http://www.w3.org/2005/Atom}link")
-                if video_url_elem is None:
-                    logger.warning(f"No link in latest entry for {details['name']}")
-                    continue
-
-                video_url = video_url_elem.attrib["href"]
-                # Skip YouTube Shorts
-                if "/shorts/" in video_url:
+                if "/shorts/" in link:
                     continue
 
                 updates[key] = {"last_published_ts": published_ts, "last_video_id": video_id}
-                author_name = (
-                    root.findtext(
-                        "{http://www.w3.org/2005/Atom}author/{http://www.w3.org/2005/Atom}name"
-                    )
-                    or details["name"]
-                )
-                message = (
-                    f"{ping_mention}**{author_name}** has uploaded a new video!\n{video_url}"
-                ).strip()
-                try:
-                    if webhook:
-                        await webhook.send(
-                            content=message,
-                            username=self.bot.user.name,
-                            avatar_url=str(self.bot.user.avatar) if self.bot.user.avatar else None,
-                            allowed_mentions=discord.AllowedMentions(roles=True),
-                        )
-                    else:
-                        await channel_to_post.send(
-                            content=message,
-                            allowed_mentions=discord.AllowedMentions(roles=True),
-                        )
-                except (discord.Forbidden, discord.HTTPException) as e:
-                    logger.error(
-                        f"Failed to send notification to {channel_to_post.name} in {guild.name}: {e}"
-                    )
-            except ET.ParseError as e:
-                logger.error(f"Failed to parse RSS feed for {details['name']}: {e}")
-                continue
-            except discord.HTTPException as e:
-                logger.error(f"Unexpected error processing feed for {details['name']}: {e}")
+                message = f"{mention}**{info['name']}** just uploaded:\n**{title}**\n{link}"
+                await self.send_notification(channel, webhook, message)
+
+            except ET.ParseError:
                 continue
 
         if updates:
-            try:
-                async with self.config.guild(guild).channels_status() as statuses:
-                    for key, data in updates.items():
-                        if key not in statuses:
-                            statuses[key] = {"enabled": True, "failure_count": 0}
-                        statuses[key] |= data
-            except discord.HTTPException as e:
-                logger.error(f"Failed to update channels_status for guild {guild.id}: {e}")
+            async with self.config.guild(guild).channels_status() as s:
+                for k, v in updates.items():
+                    s.setdefault(k, {}).update(v)
 
     @tasks.loop(minutes=5)
-    async def check_for_new_trailers(self) -> None:
-        all_guilds = await self.config.all_guilds()
-        for guild_id in all_guilds:
+    async def check_for_new_trailers(self):
+        if not self.bot.is_ready():
+            return
+        for guild_id in await self.config.all_guilds():
             guild = self.bot.get_guild(guild_id)
-            if not guild:
-                continue
-            guild_data = all_guilds[guild_id]
-            notification_channel_id = guild_data.get("notification_channel")
-            if not notification_channel_id:
-                continue
-            channel = guild.get_channel(notification_channel_id)
-            if not channel:
-                continue
-
-            perms = channel.permissions_for(guild.me)
-            if not perms.send_messages or not perms.manage_webhooks:
-                logger.warning(
-                    f"Bot does not have send_messages or manage_webhooks permission in {channel.name} in guild {guild.name} (ID: {guild.id})"
-                )
-                continue
-
-            await self.check_trailers(guild)
+            if guild:
+                await self.check_trailers(guild)
 
     @check_for_new_trailers.before_loop
     async def before_check_for_new_trailers(self) -> None:
@@ -475,7 +401,6 @@ class TheMovieDB(commands.Cog):
             msg += "Ping Role: Not Set\n"
 
         msg += f"Use Webhook: {'Enabled' if webhook_status else 'Disabled'}\n"
-
         msg += "\nAvailable Studios:\n"
         channels_status = guild_data.get("channels_status", {})
         for key, details in PREDEFINED_CHANNELS.items():
