@@ -95,7 +95,6 @@ class History(commands.Cog):
             await ctx.send(
                 "Invalid timezone. Please use <https://whatismyti.me/> for your timezone in the format `Continent/City`."
             )
-            log.error(f"Invalid timezone '{timezone}' provided by user {ctx.author.id}.")
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)

@@ -52,7 +52,7 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
             discord.ui.TextDisplay(
                 "Select news channels to ignore/unignore.\n"
                 "Use the Confirm button to save changes.\n"
-                "Alternatively, use the command with #channel(s) to manage manually."
+                "Alternatively, use the command with `[p]autopublisher channel #channel(s)` to manage manually."
             )
         )
         self.container.add_item(discord.ui.Separator())
@@ -112,7 +112,7 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
         await interaction.response.defer(ephemeral=True)
         self.ignored_channels = self.select.values
         await interaction.followup.send(
-            "Click Confirm to save the selected news channels.",
+            "Click Confirm to save the selected discord news channel(s).",
             ephemeral=True,
         )
 
@@ -129,7 +129,7 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
 
         await self.cog.config.guild(self.ctx.guild).ignored_channels.set(new_ignored_channels)
         await interaction.response.send_message(
-            ":white_check_mark: Ignored news channels saved!", ephemeral=True
+            ":white_check_mark: Ignored discord news channel(s) saved!", ephemeral=True
         )
 
     async def unignore_callback(self, interaction: discord.Interaction) -> None:
@@ -137,13 +137,13 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
         current_ignored = await self.cog.config.guild(self.ctx.guild).ignored_channels()
         if not current_ignored:
             return await interaction.response.send_message(
-                "No news channels are currently ignored.",
+                "No discord news channel(s) are currently ignored.",
                 ephemeral=True,
             )
 
         await self.cog.config.guild(self.ctx.guild).ignored_channels.set([])
         await interaction.response.send_message(
-            ":white_check_mark: Ignored news channels removed!", ephemeral=True
+            ":white_check_mark: Ignored discord news channel(s) removed!", ephemeral=True
         )
         self.ignored_channels = []
         self.select.default_values = []
