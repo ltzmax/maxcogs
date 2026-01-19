@@ -106,8 +106,7 @@ class NBA(commands.Cog):
     def setup_database(self):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS game_scores (
                     game_id TEXT PRIMARY KEY,
                     home_team TEXT,
@@ -117,8 +116,7 @@ class NBA(commands.Cog):
                     game_clock TEXT,
                     period INTEGER
                 )
-            """
-            )
+            """)
             conn.commit()
 
     def reset_finalized_games_if_needed(self):
