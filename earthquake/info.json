@@ -3,9 +3,9 @@
         "max"
     ],
     "name": "Earthquake",
-    "install_msg": "Thanks for installing.\n# ⚠️WARNING⚠️\nThis cog provides informational alerts only and may have 15–30 minute delays. Always prioritize local authorities for real-time safety information.\nDefault minimum magnitude is 4.5, alerts will report earthquakes above this threshold. You can change this by using `[p]earthquakeset magnitude`.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
-    "description": "Posts live worldwide earthquake updates from USGS to a designated channel.",
-    "short": "Posts live worldwide earthquake updates from USGS to a designated channel.",
+    "install_msg": "Thanks for installing.\n# ⚠️WARNING⚠️\nThis cog provides informational alerts only and may have 15–30 minutes or more delays. Always prioritize local authorities for real-time safety information.\nDefault minimum magnitude is 4.5, alerts will report earthquakes above this threshold. You can change this by using `[p]earthquakeset magnitude`.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "Posts live worldwide or country-specific earthquake updates from USGS to a designated channel.",
+    "short": "Posts live worldwide or country-specifice earthquake updates from USGS to a designated channel.",
     "hidden": false,
     "min_bot_version": "3.5.13",
     "tags": [
