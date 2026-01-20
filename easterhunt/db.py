@@ -185,14 +185,12 @@ class Database:
 
     async def get_leaderboard_data(self) -> List[Tuple[int, int]]:
         async with self.conn.cursor() as cursor:
-            await cursor.execute(
-                """
+            await cursor.execute("""
                 SELECT user_id, SUM(count) as total
                 FROM user_eggs
                 WHERE egg_type IN ('common', 'silver', 'gold')
                 GROUP BY user_id
                 HAVING total > 0
                 ORDER BY total DESC
-                """
-            )
+                """)
             return await cursor.fetchall()
