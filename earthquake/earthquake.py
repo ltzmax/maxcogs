@@ -111,13 +111,11 @@ class Earthquake(commands.Cog):
             # USGS supports multiple country codes with repeated 'country' param
             for code in country_codes:
                 params.setdefault("country", []).append(code.upper())
-            logger.info(f"Fetching earthquakes for countries: {', '.join(country_codes)}")
         else:
             # Worldwide: limit to last 24 hours
             params["starttime"] = (
                 datetime.datetime.utcnow() - datetime.timedelta(hours=24)
             ).isoformat(timespec="seconds") + "Z"
-            logger.info("Fetching worldwide earthquakes (last 24h)")
 
         async with self.session.get(base_url, params=params, timeout=15) as response:
             if response.status != 200:
