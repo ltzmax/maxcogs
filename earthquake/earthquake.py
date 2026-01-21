@@ -24,6 +24,7 @@ SOFTWARE.
 
 import asyncio
 import datetime
+from operator import itemgetter
 from typing import Dict, Final, List, Optional
 
 import aiohttp
@@ -38,9 +39,9 @@ logger = getLogger("red.maxcogs.earthquake")
 
 
 class Earthquake(commands.Cog):
-    """Real-time worldwide or country-specific earthquake alerts from USGS."""
+    """Real-time worldwide earthquake alerts from USGS."""
 
-    __version__: Final[str] = "1.3.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
 
     def __init__(self, bot):
@@ -54,7 +55,6 @@ class Earthquake(commands.Cog):
             "ping_role": None,
             "min_magnitude": 4.5,
             "safety_message": "*Monitor local news and follow instructions from emergency officials.*",
-            "country_codes": None,
         }
         default_global = {
             "last_processed_time": 0,
@@ -85,11 +85,8 @@ class Earthquake(commands.Cog):
             f"Retrying USGS fetch (attempt {retry_state.attempt_number})"
         ),
     )
-    async def fetch_earthquakes(
-        self,
-        min_magnitude: float = 4.5,
-        country_codes: Optional[List[str]] = None,
-    ) -> List[Dict]:
+    async def fetch_earthquakes(self, min_magnitude: float = 1.0) -> List[Dict]:
+        # Validate min_magnitude
         try:
             min_magnitude = float(min_magnitude)
             if not 1.0 <= min_magnitude <= 10.0:
@@ -99,27 +96,12 @@ class Earthquake(commands.Cog):
             logger.error(f"Invalid min_magnitude value: {min_magnitude}")
             return []
 
-        base_url = "https://earthquake.usgs.gov/fdsnws/event/1/query"
-        params = {
-            "format": "geojson",
-            "minmagnitude": min_magnitude,
-            "limit": 200,
-            "orderby": "time",
-        }
-
-        if country_codes:
-            # USGS supports multiple country codes with repeated 'country' param
-            for code in country_codes:
-                params.setdefault("country", []).append(code.upper())
-        else:
-            # Worldwide: limit to last 24 hours
-            params["starttime"] = (
-                datetime.datetime.utcnow() - datetime.timedelta(hours=24)
-            ).isoformat(timespec="seconds") + "Z"
-
-        async with self.session.get(base_url, params=params, timeout=15) as response:
+        url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
+        async with self.session.get(url, timeout=10) as response:
             if response.status != 200:
-                logger.error(f"USGS API returned {response.status}: {await response.text()}")
+                logger.error(
+                    f"USGS API returned {response.status}: {await response.text()}", exc_info=True
+                )
                 return []
             data = await response.json(loads=orjson.loads)
             if not isinstance(data, dict) or "features" not in data:
@@ -132,6 +114,7 @@ class Earthquake(commands.Cog):
                 and "properties" in eq
                 and "geometry" in eq
                 and isinstance(eq["properties"].get("mag"), (int, float))
+                and eq["properties"]["mag"] >= min_magnitude
             ]
 
     def cog_unload(self):
@@ -153,9 +136,6 @@ class Earthquake(commands.Cog):
                 if settings.get("channel")
             ]
             fetch_magnitude = min(min_magnitudes, default=4.5) if min_magnitudes else 4.5
-
-            # For simplicity we fetch once with lowest magnitude
-            # (USGS will return all >= minmagnitude anyway)
             earthquakes = await self.fetch_earthquakes(min_magnitude=fetch_magnitude)
             if not earthquakes:
                 return
@@ -187,13 +167,11 @@ class Earthquake(commands.Cog):
                     continue
 
                 min_magnitude = settings["min_magnitude"]
-                country_codes = settings.get("country_codes")
-
                 for earthquake in new_earthquakes:
                     magnitude = earthquake["properties"].get("mag")
                     if magnitude is None or magnitude < min_magnitude:
                         continue
-                    # If countries are set, USGS already filtered — no extra check needed
+                    send_time = datetime.datetime.now(datetime.timezone.utc)
                     await self.post_earthquake(guild, channel, earthquake)
 
         except asyncio.CancelledError:
@@ -272,6 +250,9 @@ class Earthquake(commands.Cog):
         details.append(f"**Depth:** {depth} km" if depth != "Unknown" else "**Depth:** Unknown")
         details.append(f"**Tsunami Warning:** {tsunami}")
 
+        # The following fields may be null or missing in some earthquakes
+        # felt: This field counts user-submitted “Did You Feel It?” reports. For minor earthquakes (e.g., <M4.0) or those in remote areas, few or no reports at all may be submitted, resulting in null.
+        # alert: The PAGER (Prompt Assessment of Global Earthquakes for Response) alert level is computed for significant earthquakes based on estimated impact. For minor events or those still being analyzed, it’s often null or not assessed.
         if felt_reports is not None:
             details.append(f"**Felt Reports:** {felt_reports}")
         if alert_level is not None:
@@ -350,51 +331,8 @@ class Earthquake(commands.Cog):
         Configure earthquake alerts for this server.
 
         ⚠️**WARNING**⚠️
-        This cog provides informational alerts only and may have 15–30 minutes or more delays. Always prioritize local authorities for real-time safety information.
+        This cog provides informational alerts only and may have 15–30 minute delays. Always prioritize local authorities for real-time safety information.
         """
-
-    @earthquakeset.command(name="country")
-    async def set_country(self, ctx: commands.Context, *, countries: str = None):
-        """
-        Set or clear one or more countries for earthquake alerts (2-letter ISO codes).
-
-        Note: USGS may not have data for all countries. If no earthquakes are detected in the specified countries, no alerts will be sent.
-
-        To disable country filtering and receive worldwide alerts, use:
-        - `[p]earthquakeset country worldwide`
-
-        Example to set multiple countries:
-        - `[p]earthquakeset country NO, JP, US`
-
-        Accepts multiple country codes separated by commas. Invalid codes will be ignored.
-        """
-        if not countries or countries.lower() in ("worldwide", "global", "none", "all"):
-            await self.config.guild(ctx.guild).country_codes.set(None)
-            await ctx.send("Country filter **disabled** — now showing **worldwide** earthquakes.")
-            return
-
-        # Split by comma and clean up
-        codes = [c.strip().upper() for c in countries.split(",") if c.strip()]
-        valid_codes = []
-        invalid_codes = []
-
-        for code in codes:
-            if len(code) == 2 and code.isalpha():
-                valid_codes.append(code)
-            else:
-                invalid_codes.append(code)
-
-        if invalid_codes:
-            await ctx.send(
-                f"Invalid country codes ignored: {', '.join(invalid_codes)}\n"
-                f"Only 2-letter ISO codes are accepted (e.g. NO, JP, US)."
-            )
-
-        if not valid_codes:
-            return await ctx.send("No valid country codes provided.")
-
-        await self.config.guild(ctx.guild).country_codes.set(valid_codes)
-        await ctx.send(f"Earthquake alerts now restricted to: **{', '.join(valid_codes)}**")
 
     @earthquakeset.command(name="webhook")
     @commands.bot_has_permissions(manage_webhooks=True)
@@ -411,6 +349,7 @@ class Earthquake(commands.Cog):
         """
         if not ctx.guild.me.guild_permissions.manage_webhooks:
             return await ctx.send("I need the `manage_webhooks` permission to use webhooks.")
+
         await self.config.guild(ctx.guild).use_webhook.set(use_webhook)
         status = "enabled" if use_webhook else "disabled"
         await ctx.send(f"Webhook usage for earthquake alerts has been {status}.")
@@ -465,8 +404,7 @@ class Earthquake(commands.Cog):
         """
         await self.config.guild(ctx.guild).min_magnitude.set(magnitude)
         await ctx.send(
-            f"Minimum magnitude for alerts set to {magnitude:.1f}.\n"
-            f"-# Note: Lower values may result in frequent notifications."
+            f"Minimum magnitude for alerts set to {magnitude:.1f}.\n-# Note: Lower values may result in frequent notifications."
         )
 
     @earthquakeset.command(name="safety")
@@ -487,26 +425,24 @@ class Earthquake(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     async def show_settings(self, ctx: commands.Context):
         """Show current earthquake alert settings."""
-        settings = await self.config.guild(ctx.guild).all()
-        channel = ctx.guild.get_channel(settings["channel"]) if settings["channel"] else None
-        role = ctx.guild.get_role(settings["ping_role"]) if settings["ping_role"] else None
-        countries = (
-            ", ".join(settings["country_codes"]) if settings["country_codes"] else "Worldwide"
-        )
+        channel_id = await self.config.guild(ctx.guild).channel()
+        ping_role_id = await self.config.guild(ctx.guild).ping_role()
+        min_magnitude = await self.config.guild(ctx.guild).min_magnitude()
+        safety_message = await self.config.guild(ctx.guild).safety_message()
+        channel = ctx.guild.get_channel(channel_id) if channel_id else None
+        ping_role = ctx.guild.get_role(ping_role_id) if ping_role_id else None
+        use_webhook = await self.config.guild(ctx.guild).use_webhook()
 
         embed = discord.Embed(title="Earthquake Alert Settings", color=await ctx.embed_color())
         embed.add_field(
             name="Alert Channel", value=channel.mention if channel else "None", inline=False
         )
-        embed.add_field(name="Ping Role", value=role.mention if role else "None", inline=False)
         embed.add_field(
-            name="Minimum Magnitude", value=f"{settings['min_magnitude']:.1f}", inline=False
+            name="Ping Role", value=ping_role.mention if ping_role else "None", inline=False
         )
-        embed.add_field(name="Countries", value=countries, inline=False)
+        embed.add_field(name="Minimum Magnitude", value=f"{min_magnitude:.1f}", inline=False)
         embed.add_field(
-            name="Use Webhook",
-            value="Enabled" if settings["use_webhook"] else "Disabled",
-            inline=False,
+            name="Use Webhook", value="Enabled" if use_webhook else "Disabled", inline=False
         )
-        embed.add_field(name="Safety Message", value=settings["safety_message"], inline=False)
+        embed.add_field(name="Safety Message", value=safety_message, inline=False)
         await ctx.send(embed=embed)
