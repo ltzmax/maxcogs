@@ -69,4 +69,6 @@ ACTIONS: Dict[str, str] = {
     "yawn": "yawns at",
     "angry": "angry at",
     "run": "runs from",
+    "bonk": "bonks",
+    "tableflip": "flips a table at",
 }

@@ -43,7 +43,7 @@ RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best + RolePlay Commands."""
 
-    __version__: Final[str] = "2.5.0"
+    __version__: Final[str] = "2.6.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "This does not require docs."
 
