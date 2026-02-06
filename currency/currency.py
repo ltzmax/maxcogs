@@ -35,7 +35,7 @@ from redbot.core.utils.views import SetApiView
 class Currency(commands.Cog):
     """A cog to convert currencies using ExchangeRate-API."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -105,7 +105,7 @@ class Currency(commands.Cog):
     @app_commands.describe(
         amount="The amount to convert (e.g., 100)",
         from_currency="The currency to convert from (e.g., USD)",
-        to_currency="The currency to convert to (e.g., EUR)",
+        to_currency="The currency to convert to (e.g., EUR, peso)",
     )
     async def convert_currency(
         self, interaction: discord.Interaction, amount: float, from_currency: str, to_currency: str
@@ -118,17 +118,55 @@ class Currency(commands.Cog):
                 "Error: The ExchangeRate-API key has not been set. Please ask the bot owner to set it.",
             )
 
+        # small mapping of common currency names to their 3-letter codes
+        # This aint all of them but it covers the most common ones. The API will handle the rest if you use the correct codes.
+        aliases = {
+            "dollar": "USD",
+            "dollars": "USD",
+            "bucks": "USD",
+            "euro": "EUR",
+            "euros": "EUR",
+            "pound": "GBP",
+            "pounds": "GBP",
+            "sterling": "GBP",
+            "peso": "MXN",
+            "pesos": "MXN",
+            "mexican peso": "MXN",
+            "philippine peso": "PHP",
+            "filipino peso": "PHP",
+            "pinoy peso": "PHP",
+            "yen": "JPY",
+            "rupee": "INR",
+            "rupees": "INR",
+        }
+
+        from_lower = from_currency.lower().strip()
+        to_lower = to_currency.lower().strip()
+        from_currency = aliases.get(from_lower, from_currency)
+        to_currency = aliases.get(to_lower, to_currency)
+        from_cur = from_currency.upper()
+        to_cur = to_currency.upper()
+
         try:
-            data = await self._fetch_conversion(api_key, amount, from_currency, to_currency)
+            data = await self._fetch_conversion(api_key, amount, from_cur, to_cur)
+
             if data.get("result") != "success":
-                return await self._send_error(
-                    interaction, f"Error Please check the currency codes you provided."
-                )
-                self.logger.error(f"Error: {data.get('error-type', 'Unknown error occurred.')}")
+                error_type = data.get("error-type", "unknown error")
+                if error_type == "unsupported-code":
+                    return await self._send_error(
+                        interaction,
+                        f"Invalid currency code(s): **{from_cur}** → **{to_cur}**\n\n"
+                        "Please use 3-letter codes like USD, EUR, MXN, PHP, GBP...\n"
+                        "or try common names: dollar, euro, pound, peso, yen...",
+                    )
+                return await self._send_error(interaction, f"API error: {error_type}")
 
             converted_amount = round(data["conversion_result"], 2)
+            rate = data.get("conversion_rate", 0)
             await interaction.response.send_message(
-                f"{amount} {from_currency.upper()} = {converted_amount} {to_currency.upper()}"
+                f"**{amount:,.2f} {from_cur}** = **{converted_amount:,.2f} {to_cur}**\n"
+                f"(1 {from_cur} ≈ {rate:,.4f} {to_cur})"
             )
+
         except discord.HTTPException as e:
-            self.logger.error(f"{e}", exc_info=True)
+            self.logger.error(f"Failed to send message: {e}", exc_info=True)
