@@ -74,7 +74,7 @@ class Vanish(commands.Cog):
         toggle = await self.config.guild(ctx.guild).toggle()
         if not toggle:
             return await ctx.send(
-                f"The vanish command is currently disabled in this server. Ask an administrator to enable it using `{ctx.clean_prefix}vanishconfig toggle True`."
+                f"The vanish command is currently disabled in this server.\nAsk an administrator to enable it using `{ctx.clean_prefix}vanishconfig toggle True`."
             )
 
         member = ctx.author
