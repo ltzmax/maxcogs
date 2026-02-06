@@ -6,7 +6,7 @@
     "install_msg": "Thanks for installing.\nBase commands for everyone is available under `[p]nba`.\n<https://cogs.maxapp.tv/> for documentation.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
     "description": "NBA Cog that provides NBA game updates, schedules, and news.",
     "short": "NBA Cog that provides NBA game updates, schedules, and news.",
-    "hidden": false,
+    "hidden": true,
     "min_bot_version": "3.5.14",
     "tags": [
         "basketball",
