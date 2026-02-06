@@ -1,0 +1,24 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "Vanish",
+    "install_msg": "Thanks for installing!\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "This will allow you to self-timeout yourself, similar to Twitch's timeout command from streamelemets and fossabot.",
+    "short": "This will allow you to self-timeout yourself, similar to Twitch's timeout command from streamelemets and fossabot.",
+    "hidden": false,
+    "min_bot_version": "3.5.21",
+    "tags": [
+        "self-timeout",
+        "timeout"
+    ],
+    "permissions": [],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
