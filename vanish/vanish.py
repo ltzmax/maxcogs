@@ -73,7 +73,11 @@ class Vanish(commands.Cog):
         """
         toggle = await self.config.guild(ctx.guild).toggle()
         if not toggle:
-            return await ctx.send("The vanish command is currently disabled in this server.")
+            return await ctx.send(
+                "The vanish command is currently disabled in this server. Ask an administrator to enable it using `[p]vanishconfig toggle True`.".format(
+                    ctx.clean_prefix
+                )
+            )
 
         member = ctx.author
         duration_str = await self.config.guild(ctx.guild).vanish_duration()
@@ -143,7 +147,9 @@ class Vanish(commands.Cog):
             duration, minimum=datetime.timedelta(seconds=60), maximum=datetime.timedelta(days=28)
         )
         if delta is None:
-            log.error(f"Invalid vanish duration input by {ctx.author} in guild {ctx.guild.id}: {duration}")
+            log.error(
+                f"Invalid vanish duration input by {ctx.author} in guild {ctx.guild.id}: {duration}"
+            )
             return await ctx.send(
                 "Invalid duration format or out of bounds (must be between 60s and 28 days). Use formats like 10m, 1h, 2d, etc."
             )
