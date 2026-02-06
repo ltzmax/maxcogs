@@ -1,0 +1,31 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "TechNews",
+    "install_msg": "Thanks for installing\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "Auto posts new articles from Wccftech to a specified channel in your server.",
+    "short": "Auto posts new articles from Wccftech to a specified channel in your server.",
+    "hidden": false,
+    "min_bot_version": "3.5.13",
+    "tags": [
+        "technews",
+        "wccftech",
+        "news",
+        "tech",
+        "mobile",
+        "gaming",
+        "hardware"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "requirements": ["feedparser", "beautifulsoup4"],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
