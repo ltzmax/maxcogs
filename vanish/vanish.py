@@ -40,7 +40,7 @@ class Vanish(commands.Cog):
     Note to admins: It is not recommended to set the timeout duration to very high values as users will not be able to interact in any way in the server during the timeout period.
     """
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/vanish/README.md"
 
@@ -49,7 +49,7 @@ class Vanish(commands.Cog):
         self.config = Config.get_conf(self, identifier=987485415)
         default_guild = {
             "toggle": False,
-            "vanish_duration": "1m",
+            "vanish_duration": "60s",
         }
         self.config.register_guild(**default_guild)
 
