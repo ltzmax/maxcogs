@@ -76,17 +76,6 @@ class AdminCommands(commands.Cog):
     async def countingset_toggle(self, ctx: commands.Context) -> None:
         """Manage toggle settings for counting features."""
 
-    @countingset_toggle.command(name="resetleaderboard")
-    async def toggle_reset_leaderboard_on_ruin(self, ctx: commands.Context):
-        """Toggle resetting a user's leaderboard count to 0 when they ruin the count."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        current = settings.get("toggle_reset_leaderboard_on_ruin", False)
-        new_value = not current
-        await self.settings.update_guild(ctx.guild, "toggle_reset_leaderboard_on_ruin", new_value)
-        await ctx.send(
-            f"Reset leaderboard on ruin is now {'enabled' if new_value else 'disabled'}."
-        )
-
     @countingset_toggle.command(name="enable")
     async def set_toggle(self, ctx: commands.Context) -> None:
         """Toggle the counting game on or off."""
@@ -477,28 +466,6 @@ class AdminCommands(commands.Cog):
     @countingset.group(name="misc")
     async def countingset_misc(self, ctx: commands.Context) -> None:
         """Manage miscellaneous counting settings."""
-
-    @countingset_misc.command(name="resetleaderboard", aliases=["resetlb"])
-    async def reset_leaderboard(self, ctx: commands.Context) -> None:
-        """
-        Reset the counting leaderboard for the server.
-
-        This will clear all entries, starting everyone from 0 counts.
-        Use this if migration left legacy entries or to wipe the slate clean.
-        """
-        embed = discord.Embed(
-            title="Confirm Leaderboard Reset",
-            description="This will **permanently delete** all leaderboard data for this server. Everyone's counts will reset to 0, This Action cannot be undone and we are unable to revert.\n\nAre you sure you want to proceed?",
-            color=discord.Color.red(),
-        )
-        view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(embed=embed, view=view)
-        await view.wait()
-        if view.result:
-            await self.settings.update_guild(ctx.guild, "leaderboard", {})
-            await ctx.send("Leaderboard reset successfully.")
-        else:
-            await ctx.send("Reset cancelled.")
 
     @countingset_misc.command(name="emoji", aliases=["setemoji"])
     async def set_emoji(self, ctx: commands.Context, emoji_input: str) -> None:

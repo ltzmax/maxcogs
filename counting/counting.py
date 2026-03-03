@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Dict, Final, Optional
+from typing import Any, Dict, Final
 
 import discord
 from redbot.core import Config, commands
@@ -37,7 +37,7 @@ from .settings import SettingsManager
 class Counting(UserCommands, AdminCommands, commands.Cog):
     """Count from 1 to infinity!"""
 
-    __version__: Final[str] = "3.1.0"
+    __version__: Final[str] = "3.3.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/counting/README.md"
 
@@ -68,7 +68,7 @@ class Counting(UserCommands, AdminCommands, commands.Cog):
             "temp_roles": {},
             "ruin_role_duration": None,
             "excluded_roles": [],
-            "goal": [],
+            "goals": [],
             "goal_message": "{user} reached the goal of {goal}! Congratulations!",
             "toggle_goal_delete": False,
             "progress_interval": 10,
@@ -76,8 +76,6 @@ class Counting(UserCommands, AdminCommands, commands.Cog):
             "toggle_progress_delete": False,
             "toggle_progress": False,
             "reset_roles": [],
-            "leaderboard": {},
-            "toggle_reset_leaderboard_on_ruin": False,
         }
         self._default_user: Dict[str, Any] = {
             "count": 0,

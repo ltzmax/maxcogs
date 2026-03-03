@@ -66,7 +66,6 @@ class EventHandlers:
             response = settings["goal_message"].format(
                 user=message.author.mention,
                 goal=reached_goal,
-                count=reached_goal,
             )
             delete_after = (
                 settings["delete_after"] if settings.get("toggle_goal_delete", False) else None
@@ -79,12 +78,10 @@ class EventHandlers:
             )
             goals = settings.get("goals", [])
             if reached_goal in goals:
-                goals.remove(reached_goal)
+                goals = [g for g in goals if g != reached_goal]
                 await self.settings.update_guild(message.guild, "goals", goals)
         except KeyError as e:
-            logger.error(
-                f"Failed to format goal message in guild {message.guild.id}: Invalid placeholder {e}"
-            )
+            logger.error(f"Failed to format goal message in guild {message.guild.id}: {e}")
             await send_message(
                 message.channel,
                 f"{message.author.mention} reached the goal of {reached_goal}! But the goal message is misconfigured.",
@@ -108,6 +105,7 @@ class EventHandlers:
         if not (perms.send_messages and perms.manage_messages):
             logger.warning(f"Missing permissions in {message.channel.id}")
             return
+
         if settings["min_account_age"]:
             account_age = (datetime.now(timezone.utc) - message.author.created_at).days
             if account_age < settings["min_account_age"]:
@@ -117,20 +115,19 @@ class EventHandlers:
                     settings,
                 )
                 return
+
         if settings["same_user_to_count"] and settings["last_user_id"] == message.author.id:
             await handle_invalid_count(message, settings["default_same_user_message"], settings)
             return
+
         expected_count = settings["count"] + 1
+
         if message.content.isdigit():
             message_count = int(message.content)
             if message_count == expected_count:
-                leaderboard = settings.get("leaderboard", {})
-                logger.debug(f"Adding count for user ID: {message.author.id}")
-                leaderboard[message.author.id] = leaderboard.get(message.author.id, 0) + 1
                 await asyncio.gather(
                     self.settings.update_guild(message.guild, "count", expected_count),
                     self.settings.update_guild(message.guild, "last_user_id", message.author.id),
-                    self.settings.update_guild(message.guild, "leaderboard", leaderboard),
                     self.settings.update_user(
                         message.author,
                         "count",
@@ -142,22 +139,15 @@ class EventHandlers:
                         datetime.now(timezone.utc).isoformat(),
                     ),
                 )
+
                 if settings["toggle_reactions"] and perms.add_reactions:
                     await add_reaction(message, settings["default_reaction"])
                 goals = settings.get("goals", [])
                 legacy_goal = settings.get("goal", None)
+
                 cleaned_goals = []
                 if isinstance(goals, list):
-                    for goal in goals:
-                        if isinstance(goal, (int, float)) and goal not in cleaned_goals:
-                            cleaned_goals.append(int(goal))
-                        else:
-                            logger.warning(
-                                f"Invalid goal entry in guild {message.guild.id}: {goal}"
-                            )
-                else:
-                    logger.warning(f"Invalid goals data in guild {message.guild.id}: {goals}")
-                    cleaned_goals = []
+                    cleaned_goals = [int(g) for g in goals if isinstance(g, (int, float))]
                 if legacy_goal is not None:
                     if isinstance(legacy_goal, (int, float)) and legacy_goal not in cleaned_goals:
                         cleaned_goals.append(int(legacy_goal))
@@ -165,16 +155,15 @@ class EventHandlers:
                         for g in legacy_goal:
                             if isinstance(g, (int, float)) and g not in cleaned_goals:
                                 cleaned_goals.append(int(g))
-                    else:
-                        logger.warning(
-                            f"Invalid legacy goal in guild {message.guild.id}: {legacy_goal}"
-                        )
                     await self.settings.update_guild(message.guild, "goal", None)
+
                 if cleaned_goals:
-                    cleaned_goals.sort()
-                await self.settings.update_guild(message.guild, "goals", cleaned_goals)
+                    cleaned_goals = sorted(set(cleaned_goals))
+                    await self.settings.update_guild(message.guild, "goals", cleaned_goals)
+
                 if cleaned_goals and expected_count in cleaned_goals:
                     await self._handle_goal_reached(message, settings, expected_count)
+
                 if settings.get("toggle_progress") and cleaned_goals:
                     next_goal = next((g for g in cleaned_goals if g > expected_count), None)
                     if next_goal and expected_count % settings["progress_interval"] == 0:
@@ -183,11 +172,8 @@ class EventHandlers:
                             response = settings["progress_message"].format(
                                 remaining=remaining, goal=next_goal
                             )
-                        except KeyError as e:
-                            logger.error(
-                                f"Failed to format progress message in guild {message.guild.id}: Invalid placeholder {e}"
-                            )
-                            response = f"Progress message misconfigured: Invalid placeholder"
+                        except KeyError:
+                            response = "Progress message misconfigured."
                         delete_after = (
                             settings["delete_after"]
                             if settings.get("toggle_progress_delete", False)
@@ -218,13 +204,6 @@ class EventHandlers:
 
     async def _handle_count_ruin(self, message: discord.Message, settings: dict[str, Any]) -> None:
         old_count = settings["count"]
-        leaderboard = settings.get("leaderboard", {})
-        if (
-            settings.get("toggle_reset_leaderboard_on_ruin", False)
-            and message.author.id in leaderboard
-        ):
-            leaderboard[message.author.id] = 0
-            await self.settings.update_guild(message.guild, "leaderboard", leaderboard)
         await asyncio.gather(
             self.settings.update_guild(message.guild, "count", 0),
             self.settings.update_guild(message.guild, "last_user_id", None),
@@ -259,14 +238,17 @@ class EventHandlers:
         if not (perms.send_messages and perms.manage_messages):
             logger.warning(f"Missing permissions in {channel.id}")
             return
+
         author_id = int(payload.data.get("author", {}).get("id", 0))
-        if not author_id or self.bot.get_user(author_id) and self.bot.get_user(author_id).bot:
+        if not author_id or (self.bot.get_user(author_id) and self.bot.get_user(author_id).bot):
             return
+
         try:
             await channel.delete_messages([discord.Object(id=payload.message_id)])
         except (discord.HTTPException, discord.Forbidden) as e:
             logger.warning(f"Failed to delete edited message {payload.message_id}: {e}")
             return
+
         if settings["allow_ruin"]:
             author = guild.get_member(author_id) or discord.Object(id=author_id)
             await self._handle_count_ruin(
