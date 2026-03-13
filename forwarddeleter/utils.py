@@ -31,12 +31,9 @@ log = getLogger("red.maxcogs.forwarddeleter.utils")
 
 
 def is_forwarded_message(message: discord.Message) -> bool:
-    if getattr(message, "snapshots", None) or getattr(message, "message_snapshots", None):
-        return True
-    ref = message.reference
-    if ref and getattr(ref, "type", None):
-        return int(ref.type) == 1
-    return getattr(message, "is_forwarded", False)
+    """Determine if the message is forwarded."""
+    reference = message.reference
+    return reference is not None and reference.type == discord.MessageReferenceType.forward
 
 
 def has_allowed_role(member: discord.Member, allowed_roles: set[int]) -> bool:
