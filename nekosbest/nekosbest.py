@@ -468,3 +468,93 @@ class NekosBest(commands.Cog):
     async def run(self, ctx: commands.Context, member: discord.Member) -> None:
         """Run away from a user."""
         await self.embedgen(ctx, member, "run")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def bleh(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Bleh at a user."""
+        await self.embedgen(ctx, member, "bleh")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def blowkiss(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Blows kiss at a user."""
+        await self.embedgen(ctx, member, "blowkiss")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def carry(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Carry a user."""
+        await self.embedgen(ctx, member, "carry")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def clap(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Claps at a user."""
+        await self.embedgen(ctx, member, "clap")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def confused(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Confused at a user."""
+        await self.embedgen(ctx, member, "confused")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def kabedon(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Kabedon a user."""
+        await self.embedgen(ctx, member, "kabedon")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def lappillow(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Lappillows on a user."""
+        await self.embedgen(ctx, member, "lappillow")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def nya(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Nyaaah at a user."""
+        await self.embedgen(ctx, member, "nya")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def salute(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Salute at a user."""
+        await self.embedgen(ctx, member, "salute")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def shake(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Shakes a user."""
+        await self.embedgen(ctx, member, "shake")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def shocked(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Shocked at a user."""
+        await self.embedgen(ctx, member, "shocked")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def sip(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Sips with a user."""
+        await self.embedgen(ctx, member, "sip")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def spin(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Spins a user."""
+        await self.embedgen(ctx, member, "spin")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def teehee(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Teeheeeheheh at a user."""
+        await self.embedgen(ctx, member, "teehee")
+
+    @commands.command()
+    @commands.bot_has_permissions(embed_links=True)
+    async def wag(self, ctx: commands.Context, member: discord.Member) -> None:
+        """Wag at a user."""
+        await self.embedgen(ctx, member, "wag")
