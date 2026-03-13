@@ -122,10 +122,10 @@ class ForwardDeleter(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
 
-        if await self.bot.is_automod_immune(message.author):
+        if not is_forwarded_message(message):
             return
 
-        if not is_forwarded_message(message):
+        if await self.bot.is_automod_immune(message.author):
             return
 
         try:

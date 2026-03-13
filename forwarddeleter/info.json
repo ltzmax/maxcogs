@@ -7,7 +7,7 @@
     "description": "A cog that deletes forwarded messages and allows them in specified channels.",
     "short": "A cog that deletes forwarded messages and allows them in specified channels.",
     "hidden": false,
-    "min_bot_version": "3.5.17",
+    "min_bot_version": "3.5.24",
     "tags": [
         "forward"
     ],
