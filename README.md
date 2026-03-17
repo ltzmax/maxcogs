@@ -35,6 +35,8 @@ To install any cog you want:
     - Worldwide earthquake updates.
 - EasterHunt
     - Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements.
+- Enforce
+    - Requires users to accept ToS and privacy policy before using any bot commands.
 - ForwadDeleter
     - A cog that deletes forwarded messages and allows them in specified channels or by roles.
 - GitHub
@@ -47,8 +49,6 @@ To install any cog you want:
     - Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.
 - Lockdown
     - Let moderators lockdown a channel to prevent messages from being sent.
-- NBA
-    - NBA information cog.
 - NekosBest
     - Sends random images from nekos.best + RolePlay Commands.
 - NoSpoiler
@@ -61,8 +61,12 @@ To install any cog you want:
     - Update your bot to latest dev/stable changes.
 - RestrictPosts
     - A cog to restrict posts to attachments and links in a specific channel.
+- TechNews
+    - Auto posts new articles from Wccftech to a specified channel in your server.
 - TheMovieDB
     - Search for informations of movies and TV shows from themoviedb.org.
+- Vanish
+    - This will allow you to self-timeout yourself, similar to Twitch's timeout command from streamelemets and fossabot and probably hundered of other twitch bots.
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.

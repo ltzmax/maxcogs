@@ -1,0 +1,29 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "Enforce",
+    "install_msg": "Thanks for installing. This cog is in beta and may not function as expected but please report any issues.\nPlease note that you as a bot owner already bypass all enforcement.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "Requires users to accept ToS and privacy policy before using any bot commands.",
+    "short": "Requires users to accept ToS and privacy policy before using any bot commands.",
+    "hidden": false,
+    "min_bot_version": "3.5.24",
+    "tags": [
+        "tos enforcement",
+        "terms of service",
+        "enforce",
+        "accept",
+        "rules"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
