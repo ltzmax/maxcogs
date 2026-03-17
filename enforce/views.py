@@ -30,7 +30,7 @@ log = getLogger("red.maxcogs.enforce.views")
 
 
 class AcceptView(discord.ui.View):
-    """Persistent accept view with timeout"""
+    """Accept view with timeout"""
 
     def __init__(self, config: Config, author: discord.User):
         super().__init__(timeout=120)
