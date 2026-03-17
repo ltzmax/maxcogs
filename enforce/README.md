@@ -66,4 +66,3 @@ Set ToS or Privacy Policy link.<br/>
 
  - Usage: `[p]tosconfig set <tos_or_privacy> <url>`
  - Restricted to: `BOT_OWNER`
-
