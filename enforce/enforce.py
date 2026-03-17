@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from datetime import datetime, timedelta
+import asyncio
+from datetime import timedelta
 from typing import Final
 
 import discord
@@ -41,7 +42,7 @@ log = getLogger("red.maxcogs.tosenforcer")
 class Enforce(commands.Cog):
     """Requires users to accept ToS and privacy policy before using any bot commands."""
 
-    __version__: Final[str] = "0.0.1b"
+    __version__: Final[str] = "0.0.1c"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/enforce/README.md"
 
@@ -64,6 +65,7 @@ class Enforce(commands.Cog):
         self.config.register_user(accepted_tos=False, accepted_at=None)
         self.tos_prompt_antispam = {}
         self.bot.add_check(self.tos_global_check)
+        self._cleanup_task = self.bot.loop.create_task(self._cleanup_antispam())
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -72,13 +74,11 @@ class Enforce(commands.Cog):
 
     async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
         """Delete stored data for a user."""
-        user = self.bot.get_user(user_id)
-        if user is None:
-            return
-        await self.config.user(user).clear()
+        await self.config.user_from_id(user_id).clear()
 
     def cog_unload(self):
         self.bot.remove_check(self.tos_global_check)
+        self._cleanup_task.cancel()
 
     async def tos_global_check(self, ctx: commands.Context) -> bool:
         if ctx.author.bot:
@@ -91,6 +91,7 @@ class Enforce(commands.Cog):
             return True
 
         if await self.config.user(ctx.author).accepted_tos():
+            self.tos_prompt_antispam.pop(ctx.author.id, None)
             return True
 
         user_id = ctx.author.id
@@ -98,6 +99,7 @@ class Enforce(commands.Cog):
             self.tos_prompt_antispam[user_id] = AntiSpam([(timedelta(seconds=60), 1)])
 
         antispam = self.tos_prompt_antispam[user_id]
+        antispam.stamp()
         if antispam.spammy:
             log.info(f"Skipping ToS prompt for {user_id} - antispam triggered")
             return False
@@ -107,6 +109,13 @@ class Enforce(commands.Cog):
         except (discord.Forbidden, discord.HTTPException) as e:
             log.warning(f"Failed to send ToS prompt to {ctx.author.id}: {e}")
         return False
+
+    async def _cleanup_antispam(self):
+        """Periodically remove stale antispam entries."""
+        await self.bot.wait_until_ready()
+        while not self.bot.is_closed():
+            await asyncio.sleep(300)
+            self.tos_prompt_antispam.clear()
 
     async def send_tos_prompt(self, ctx: commands.Context):
         tos_url = await self.config.tos_url()
@@ -156,7 +165,6 @@ class Enforce(commands.Cog):
         await ctx.send(f"ToS enforcement {status}.")
 
     @tosconfig.command(name="set")
-    @commands.is_owner()
     async def set_link(self, ctx: commands.Context, tos_or_privacy: str, *, url: str):
         """
         Set ToS or Privacy Policy link.
@@ -222,13 +230,13 @@ class Enforce(commands.Cog):
         )
         await view.wait()
         if view.result:
-            await self.config.clear_all()
+            await self.config.clear_all_globals()
             await ctx.send("ToS settings reset to default.")
         else:
             await ctx.send("Reset cancelled.")
 
     @tosconfig.command(name="resetuser")
-    async def reset_user(self, ctx, user: discord.User = None):
+    async def reset_user(self, ctx, user: discord.User | None = None):
         """
         Reset ToS acceptance for a user.
 
