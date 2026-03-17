@@ -44,7 +44,9 @@ class RedUpdate(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=0x1A108201, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=0x1A108201, force_registration=True
+        )
         self.config.register_global(redupdate_url=[])
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
@@ -88,7 +90,9 @@ class RedUpdate(commands.Cog):
             await self._send_update_failure(ctx)
             return False
         await shell._shell_command(
-            ctx, f"pip install -U --force-reinstall {package}", send_message_on_success=False
+            ctx,
+            f"pip install -U --force-reinstall {package}",
+            send_message_on_success=False,
         )
         await self._send_update_success(ctx)
         return True
@@ -129,10 +133,14 @@ class RedUpdate(commands.Cog):
 
         for name, (desc, link) in examples.items():
             embed.add_field(name=name, value=desc, inline=False)
-            embed.add_field(name="Example Link:", value=box(link, lang="yaml"), inline=False)
+            embed.add_field(
+                name="Example Link:", value=box(link, lang="yaml"), inline=False
+            )
 
         embed.add_field(
-            name="Link should end with:", value=box("#egg=Red-DiscordBot", lang="cs"), inline=False
+            name="Link should end with:",
+            value=box("#egg=Red-DiscordBot", lang="cs"),
+            inline=False,
         )
         embed.add_field(
             name="How does it work?",
@@ -178,7 +186,9 @@ class RedUpdate(commands.Cog):
             await self._perform_update(ctx, package)
             return
 
-        embed = discord.Embed(title="Red Update Information", color=await ctx.embed_color())
+        embed = discord.Embed(
+            title="Red Update Information", color=await ctx.embed_color()
+        )
         embed.add_field(
             name="⚠️Warning⚠️",
             value="This will update to latest dev changes which may include breaking changes that may not work with some cogs. Do you wanna continue?",
@@ -219,6 +229,8 @@ class RedUpdate(commands.Cog):
             fork_url
             == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
         ):
-            return await ctx.send(f"Set a custom fork URL using `{prefix}redset url` first.")
+            return await ctx.send(
+                f"Set a custom fork URL using `{prefix}redset url` first."
+            )
 
         await self._perform_update(ctx, fork_url)

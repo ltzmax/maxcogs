@@ -48,11 +48,15 @@ class TechNews(commands.Cog):
 
     __version__: Final[str] = "1.0.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/technews/README.md"
+    __docs__: Final[str] = (
+        "https://github.com/ltzmax/maxcogs/tree/master/technews/README.md"
+    )
 
     def __init__(self, bot: Red):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=5823741293, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=5823741293, force_registration=True
+        )
         default_guild = {
             "channel_id": None,
             "last_article_link": None,
@@ -143,7 +147,9 @@ class TechNews(commands.Cog):
         if description:
             soup = BeautifulSoup(description, "html.parser")
             description = soup.get_text(separator=" ").strip()
-            description = (description[:700] + "...") if len(description) > 700 else description
+            description = (
+                (description[:700] + "...") if len(description) > 700 else description
+            )
 
         link = entry.get("link", "")
 
@@ -161,7 +167,9 @@ class TechNews(commands.Cog):
                 if img and img.get("src"):
                     image_url = img["src"]
             except discord.HTTPException as e:
-                log.error(f"Failed to parse article content for image: {e}", exc_info=True)
+                log.error(
+                    f"Failed to parse article content for image: {e}", exc_info=True
+                )
 
         view = NewsLayout(
             title=title, description=description, image_url=image_url, article_url=link
@@ -184,13 +192,17 @@ class TechNews(commands.Cog):
         """Manage Wccftech news auto-posting."""
 
     @technews.command(name="channel")
-    async def set_channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
+    async def set_channel(
+        self, ctx: commands.Context, channel: discord.TextChannel = None
+    ):
         """Set or clear the channel for tech news in this server."""
         guild = ctx.guild
         if channel is None:
             await self.config.guild(guild).channel_id.clear()
             await self.config.guild(guild).last_article_link.clear()
-            return await ctx.send("Tech news auto-posting has been **disabled** in this server.")
+            return await ctx.send(
+                "Tech news auto-posting has been **disabled** in this server."
+            )
 
         if (
             not channel.permissions_for(guild.me).send_messages
@@ -199,7 +211,9 @@ class TechNews(commands.Cog):
             log.warning(
                 f"no permission to send messages or embed links in the channel {channel.name} of guild {guild.name}"
             )
-            return await ctx.send("I don't have permission to send messages in that channel.")
+            return await ctx.send(
+                "I don't have permission to send messages in that channel."
+            )
 
         await self.config.guild(guild).channel_id.set(channel.id)
         await ctx.send(f"Tech news will now be posted in {channel.mention}")

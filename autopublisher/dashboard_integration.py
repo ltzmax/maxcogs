@@ -50,7 +50,9 @@ class DashboardIntegration:
         """Register this cog with the dashboard."""
         dashboard_cog.rpc.third_parties_handler.add_third_party(self)
 
-    @dashboard_page(name="stats", description="View AutoPublisher statistics", is_owner=True)
+    @dashboard_page(
+        name="stats", description="View AutoPublisher statistics", is_owner=True
+    )
     async def dashboard_stats(self, user: discord.User, **kwargs) -> Dict[str, Any]:
         """Dashboard page to display AutoPublisher stats."""
         owner_tz = await get_owner_timezone(self.config)
@@ -60,7 +62,9 @@ class DashboardIntegration:
         if last_count_time != "Never":
             try:
                 last_count_dt = datetime.fromisoformat(last_count_time)
-                last_count_dt = last_count_dt.replace(tzinfo=pytz.UTC).astimezone(owner_tz)
+                last_count_dt = last_count_dt.replace(tzinfo=pytz.UTC).astimezone(
+                    owner_tz
+                )
                 last_published = last_count_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
             except ValueError:
                 last_published = "Invalid timestamp"
@@ -71,9 +75,7 @@ class DashboardIntegration:
             ["Yearly", humanize_number(data.get("published_yearly_count", 0))],
             ["Total Published", humanize_number(data.get("published_count", 0))],
         ]
-        table_html = (
-            "<table border='1' style='border-collapse: collapse; width: 50%; margin: auto;'>"
-        )
+        table_html = "<table border='1' style='border-collapse: collapse; width: 50%; margin: auto;'>"
         table_html += "<tr><th>Period</th><th>Count</th></tr>"
         for period, count in table_data:
             table_html += f"<tr><td>{period}</td><td>{count}</td></tr>"

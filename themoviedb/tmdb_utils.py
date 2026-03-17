@@ -44,10 +44,16 @@ PREDEFINED_CHANNELS = {
     "pixar": {"id": "UC_IRYSp4auq7hKLvziWVH6w", "name": "Pixar"},
     "disney": {"id": "UC_5niPa-d35gg88HaS7RrIw", "name": "Disney"},
     "disneyplus": {"id": "UCIrgJInjLS2BhlHOMDW7v0g", "name": "Disney+"},
-    "illumination": {"id": "UCq7OHvWO6Z3u-LztFdrcU-g", "name": "Illumination Entertainment"},
+    "illumination": {
+        "id": "UCq7OHvWO6Z3u-LztFdrcU-g",
+        "name": "Illumination Entertainment",
+    },
     "warnerbros": {"id": "UCjmJDM5pRKbUlVIzDYYWb6g", "name": "Warner Bros. Pictures"},
     "sony": {"id": "UCz97F7dMxBNOfGYu3rx8aCw", "name": "Sony Pictures Entertainment"},
-    "sonyanimation": {"id": "UCnLuLSV-Oi0ctqjxGgxFlmg", "name": "Sony Pictures Animation"},
+    "sonyanimation": {
+        "id": "UCnLuLSV-Oi0ctqjxGgxFlmg",
+        "name": "Sony Pictures Animation",
+    },
     "universal": {"id": "UCq0OueAsdxH6b8nyAspwViw", "name": "Universal Pictures"},
     "paramount": {"id": "UCF9imwPMSGz4Vq1NiTWCC7g", "name": "Paramount Pictures"},
     "paramountmovies": {
@@ -156,7 +162,9 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
         raise ValueError("Data is null")
 
     url = f"https://www.themoviedb.org/{item_type}/{item_id}"
-    title = data.get("title" if item_type == "movie" else "name", "No title available.")[:256]
+    title = data.get("title" if item_type == "movie" else "name", "No title available.")[
+        :256
+    ]
     description = data.get("overview", "No description available.")[:1048]
 
     fields = {
@@ -173,7 +181,8 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
         ),
         "Next Episode Air Date": (
             f"<t:{int(datetime.strptime(data.get('next_episode_to_air', {}).get('air_date', ''), '%Y-%m-%d').timestamp())}:D>"
-            if data.get("next_episode_to_air") and data.get("next_episode_to_air").get("air_date")
+            if data.get("next_episode_to_air")
+            and data.get("next_episode_to_air").get("air_date")
             else None
         ),
         "Status": data.get("status"),
@@ -244,7 +253,9 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
         total_length += field_length
 
     if data.get("poster_path"):
-        embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/original{data['poster_path']}")
+        embed.set_thumbnail(
+            url=f"https://image.tmdb.org/t/p/original{data['poster_path']}"
+        )
 
     embed.set_footer(text="Powered by TMDB", icon_url="https://i.maxapp.tv/tmdblogo.png")
 
@@ -285,18 +296,27 @@ async def search_and_display(ctx, query: str, media_type: str):
                 continue
             if not isinstance(data, dict) or "results" not in data:
                 continue
-            filtered_results.extend(filter_media_results(data["results"], query, media_type))
+            filtered_results.extend(
+                filter_media_results(data["results"], query, media_type)
+            )
 
         if not filtered_results:
             return await ctx.send(f"No results found for `{query}`.")
 
         if len(filtered_results) == 1:
-            data = await get_media_data(ctx, session, filtered_results[0]["id"], media_type)
+            data = await get_media_data(
+                ctx, session, filtered_results[0]["id"], media_type
+            )
             if not data:
                 return await ctx.send("Failed to fetch media details.")
 
             embed, view = await build_embed(
-                ctx, data, filtered_results[0]["id"], 0, filtered_results, item_type=media_type
+                ctx,
+                data,
+                filtered_results[0]["id"],
+                0,
+                filtered_results,
+                item_type=media_type,
             )
             await ctx.send(embed=embed, view=view)
             return
@@ -364,7 +384,9 @@ async def search_and_display(ctx, query: str, media_type: str):
                 row = discord.ui.ActionRow()
                 if self.current_page > 0:
                     row.add_item(NavButton("prev"))
-                if (self.current_page + 1) * self.items_per_page < len(self.filtered_results):
+                if (self.current_page + 1) * self.items_per_page < len(
+                    self.filtered_results
+                ):
                     row.add_item(NavButton("next"))
                 self.add_item(row)
 
@@ -430,11 +452,17 @@ async def search_and_display(ctx, query: str, media_type: str):
                     self.view.media_type,
                 )
                 if not data:
-                    return await self._send_error(interaction, "Failed to fetch media details.")
+                    return await self._send_error(
+                        interaction, "Failed to fetch media details."
+                    )
             except aiohttp.ClientConnectionError as e:
-                return await self._send_error(interaction, "Network error, please try again.", e)
+                return await self._send_error(
+                    interaction, "Network error, please try again.", e
+                )
             except Exception as e:
-                return await self._send_error(interaction, "Error fetching media details.", e)
+                return await self._send_error(
+                    interaction, "Error fetching media details.", e
+                )
 
             embed, view = await build_embed(
                 self.view.ctx,
@@ -472,14 +500,18 @@ async def search_and_display(ctx, query: str, media_type: str):
                 end_idx = start_idx + self.view.items_per_page
                 if self.direction == "prev" and self.view.current_page > 0:
                     self.view.current_page -= 1
-                elif self.direction == "next" and end_idx < len(self.view.filtered_results):
+                elif self.direction == "next" and end_idx < len(
+                    self.view.filtered_results
+                ):
                     self.view.current_page += 1
 
                 self.view._update_content()
                 await interaction.response.defer()
                 await self.view.message.edit(content=None, view=self.view)
             except discord.HTTPException as e:
-                await self._send_error(interaction, "Error navigating, please try again.", e)
+                await self._send_error(
+                    interaction, "Error navigating, please try again.", e
+                )
 
     paginator = MediaPaginator(ctx, filtered_results, media_type)
     message = await ctx.send(content="", view=paginator)
@@ -532,8 +564,12 @@ async def person_embed(ctx, query: str):
                     embed.add_field(name=name, value=value, inline=True)
 
             if data.get("profile_path"):
-                embed.set_thumbnail(url=f"https://image.tmdb.org/t/p/w500{data['profile_path']}")
-            embed.set_footer(text="Powered by TMDB", icon_url="https://i.maxapp.tv/tmdblogo.png")
+                embed.set_thumbnail(
+                    url=f"https://image.tmdb.org/t/p/w500{data['profile_path']}"
+                )
+            embed.set_footer(
+                text="Powered by TMDB", icon_url="https://i.maxapp.tv/tmdblogo.png"
+            )
             embeds.append(embed)
 
         if not embeds:

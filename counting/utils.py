@@ -60,7 +60,9 @@ async def delete_message(message: discord.Message) -> None:
     try:
         await message.delete()
     except discord.HTTPException as e:
-        logger.warning(f"Failed to delete message {message.id} in {message.channel.id}: {e}")
+        logger.warning(
+            f"Failed to delete message {message.id} in {message.channel.id}: {e}"
+        )
 
 
 async def add_reaction(message: discord.Message, reaction: str) -> None:
@@ -69,7 +71,9 @@ async def add_reaction(message: discord.Message, reaction: str) -> None:
     try:
         await message.add_reaction(reaction)
     except discord.HTTPException as e:
-        logger.warning(f"Failed to add reaction to {message.id} in {message.channel.id}: {e}")
+        logger.warning(
+            f"Failed to add reaction to {message.id} in {message.channel.id}: {e}"
+        )
 
 
 async def handle_invalid_count(
@@ -82,7 +86,9 @@ async def handle_invalid_count(
     await delete_message(message)
     if send_response:
         delete_after = (
-            settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+            settings["delete_after"]
+            if settings.get("toggle_delete_after", True)
+            else None
         )
         await send_message(
             message.channel,
@@ -105,7 +111,9 @@ async def assign_ruin_role(
 
     role = guild.get_role(ruin_role_id)
     if not role or role >= guild.me.top_role:
-        logger.warning(f"Cannot assign ruin role {role.name} in {guild.name} ({guild.id})")
+        logger.warning(
+            f"Cannot assign ruin role {role.name} in {guild.name} ({guild.id})"
+        )
         return
 
     if any(r.id in excluded_role_ids for r in member.roles):
@@ -114,7 +122,9 @@ async def assign_ruin_role(
 
     try:
         if not guild.me.guild_permissions.manage_roles:
-            logger.warning(f"Missing manage_roles permission in {guild.name} ({guild.id})")
+            logger.warning(
+                f"Missing manage_roles permission in {guild.name} ({guild.id})"
+            )
             return
         await member.add_roles(role, reason="Ruined the count")
         if duration:
@@ -138,14 +148,18 @@ async def remove_expired_roles(config: Config, guild: discord.Guild) -> None:
                 role = guild.get_role(data["role_id"])
                 if member and role:
                     try:
-                        await member.remove_roles(role, reason="Temporary ruin role expired")
+                        await member.remove_roles(
+                            role, reason="Temporary ruin role expired"
+                        )
                     except discord.HTTPException as e:
                         if e.status == 429:
                             logger.warning(
                                 f"Rate limited removing role {role.name} for {member.id}. Retrying after {e.retry_after}s."
                             )
                             await asyncio.sleep(e.retry_after)
-                            await member.remove_roles(role, reason="Temporary ruin role expired")
+                            await member.remove_roles(
+                                role, reason="Temporary ruin role expired"
+                            )
                         elif isinstance(e, discord.Forbidden):
                             logger.warning(f"Failed to remove role {role.name}: {e}")
                         else:

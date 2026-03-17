@@ -43,7 +43,9 @@ class UserCommands(commands.Cog):
 
     @counting.command(name="stats")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def stats(self, ctx: commands.Context, user: Optional[discord.Member] = None) -> None:
+    async def stats(
+        self, ctx: commands.Context, user: Optional[discord.Member] = None
+    ) -> None:
         """Show counting stats for a user."""
         user = user or ctx.author
         if user.bot:
@@ -79,7 +81,8 @@ class UserCommands(commands.Cog):
         """
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
-            "Are you sure you want to reset your counting stats? This cannot be undone.", view=view
+            "Are you sure you want to reset your counting stats? This cannot be undone.",
+            view=view,
         )
         await view.wait()
         if view.result:

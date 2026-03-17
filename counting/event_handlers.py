@@ -68,7 +68,9 @@ class EventHandlers:
                 goal=reached_goal,
             )
             delete_after = (
-                settings["delete_after"] if settings.get("toggle_goal_delete", False) else None
+                settings["delete_after"]
+                if settings.get("toggle_goal_delete", False)
+                else None
             )
             await send_message(
                 message.channel,
@@ -81,12 +83,16 @@ class EventHandlers:
                 goals = [g for g in goals if g != reached_goal]
                 await self.settings.update_guild(message.guild, "goals", goals)
         except KeyError as e:
-            logger.error(f"Failed to format goal message in guild {message.guild.id}: {e}")
+            logger.error(
+                f"Failed to format goal message in guild {message.guild.id}: {e}"
+            )
             await send_message(
                 message.channel,
                 f"{message.author.mention} reached the goal of {reached_goal}! But the goal message is misconfigured.",
                 delete_after=(
-                    settings["delete_after"] if settings.get("toggle_goal_delete", False) else None
+                    settings["delete_after"]
+                    if settings.get("toggle_goal_delete", False)
+                    else None
                 ),
                 silent=settings["use_silent"],
             )
@@ -96,7 +102,9 @@ class EventHandlers:
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot or not message.guild:
             return
-        if await self.bot.cog_disabled_in_guild(self.bot.get_cog("Counting"), message.guild):
+        if await self.bot.cog_disabled_in_guild(
+            self.bot.get_cog("Counting"), message.guild
+        ):
             return
         settings = await self.settings.get_guild_settings(message.guild)
         if not settings["toggle"] or message.channel.id != settings["channel"]:
@@ -116,8 +124,13 @@ class EventHandlers:
                 )
                 return
 
-        if settings["same_user_to_count"] and settings["last_user_id"] == message.author.id:
-            await handle_invalid_count(message, settings["default_same_user_message"], settings)
+        if (
+            settings["same_user_to_count"]
+            and settings["last_user_id"] == message.author.id
+        ):
+            await handle_invalid_count(
+                message, settings["default_same_user_message"], settings
+            )
             return
 
         expected_count = settings["count"] + 1
@@ -127,11 +140,14 @@ class EventHandlers:
             if message_count == expected_count:
                 await asyncio.gather(
                     self.settings.update_guild(message.guild, "count", expected_count),
-                    self.settings.update_guild(message.guild, "last_user_id", message.author.id),
+                    self.settings.update_guild(
+                        message.guild, "last_user_id", message.author.id
+                    ),
                     self.settings.update_user(
                         message.author,
                         "count",
-                        (await self.settings.get_user_settings(message.author))["count"] + 1,
+                        (await self.settings.get_user_settings(message.author))["count"]
+                        + 1,
                     ),
                     self.settings.update_user(
                         message.author,
@@ -149,7 +165,10 @@ class EventHandlers:
                 if isinstance(goals, list):
                     cleaned_goals = [int(g) for g in goals if isinstance(g, (int, float))]
                 if legacy_goal is not None:
-                    if isinstance(legacy_goal, (int, float)) and legacy_goal not in cleaned_goals:
+                    if (
+                        isinstance(legacy_goal, (int, float))
+                        and legacy_goal not in cleaned_goals
+                    ):
                         cleaned_goals.append(int(legacy_goal))
                     elif isinstance(legacy_goal, list):
                         for g in legacy_goal:
@@ -159,13 +178,17 @@ class EventHandlers:
 
                 if cleaned_goals:
                     cleaned_goals = sorted(set(cleaned_goals))
-                    await self.settings.update_guild(message.guild, "goals", cleaned_goals)
+                    await self.settings.update_guild(
+                        message.guild, "goals", cleaned_goals
+                    )
 
                 if cleaned_goals and expected_count in cleaned_goals:
                     await self._handle_goal_reached(message, settings, expected_count)
 
                 if settings.get("toggle_progress") and cleaned_goals:
-                    next_goal = next((g for g in cleaned_goals if g > expected_count), None)
+                    next_goal = next(
+                        (g for g in cleaned_goals if g > expected_count), None
+                    )
                     if next_goal and expected_count % settings["progress_interval"] == 0:
                         remaining = next_goal - expected_count
                         try:
@@ -197,21 +220,31 @@ class EventHandlers:
         elif settings["allow_ruin"]:
             await self._handle_count_ruin(message, settings)
         else:
-            response = settings["default_next_number_message"].format(next_count=expected_count)
+            response = settings["default_next_number_message"].format(
+                next_count=expected_count
+            )
             await handle_invalid_count(
                 message, response, settings, settings["toggle_next_number_message"]
             )
 
-    async def _handle_count_ruin(self, message: discord.Message, settings: dict[str, Any]) -> None:
+    async def _handle_count_ruin(
+        self, message: discord.Message, settings: dict[str, Any]
+    ) -> None:
         old_count = settings["count"]
         await asyncio.gather(
             self.settings.update_guild(message.guild, "count", 0),
             self.settings.update_guild(message.guild, "last_user_id", None),
         )
-        await assign_ruin_role(self.settings.config, message.author, message.guild, settings)
-        response = settings["ruin_message"].format(user=message.author.mention, count=old_count)
+        await assign_ruin_role(
+            self.settings.config, message.author, message.guild, settings
+        )
+        response = settings["ruin_message"].format(
+            user=message.author.mention, count=old_count
+        )
         delete_after = (
-            settings["delete_after"] if settings.get("toggle_delete_after", False) else None
+            settings["delete_after"]
+            if settings.get("toggle_delete_after", False)
+            else None
         )
         await send_message(
             message.channel,
@@ -227,7 +260,9 @@ class EventHandlers:
         if not guild:
             return
         channel = guild.get_channel(payload.channel_id)
-        if not isinstance(channel, (discord.TextChannel, discord.Thread, discord.ForumChannel)):
+        if not isinstance(
+            channel, (discord.TextChannel, discord.Thread, discord.ForumChannel)
+        ):
             return
         if await self.bot.cog_disabled_in_guild(self.bot.get_cog("Counting"), guild):
             return
@@ -240,7 +275,9 @@ class EventHandlers:
             return
 
         author_id = int(payload.data.get("author", {}).get("id", 0))
-        if not author_id or (self.bot.get_user(author_id) and self.bot.get_user(author_id).bot):
+        if not author_id or (
+            self.bot.get_user(author_id) and self.bot.get_user(author_id).bot
+        ):
             return
 
         try:
@@ -256,9 +293,13 @@ class EventHandlers:
                 settings,
             )
         elif settings["toggle_edit_message"]:
-            response = settings["default_edit_message"].format(next_count=settings["count"] + 1)
+            response = settings["default_edit_message"].format(
+                next_count=settings["count"] + 1
+            )
             delete_after = (
-                settings["delete_after"] if settings.get("toggle_delete_after", False) else None
+                settings["delete_after"]
+                if settings.get("toggle_delete_after", False)
+                else None
             )
             await send_message(
                 channel,

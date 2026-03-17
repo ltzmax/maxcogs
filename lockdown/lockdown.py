@@ -86,7 +86,9 @@ class Lockdown(commands.Cog):
                 return await ctx.send(
                     "❌ This command can only be used in guild channels or threads."
                 )
-            overwrites = ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
+            overwrites = (
+                ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
+            )
             send_messages = False if is_lock else None
             if overwrites.send_messages == send_messages:
                 return await ctx.send(
@@ -164,7 +166,9 @@ class Lockdown(commands.Cog):
                     if not reason:
                         reason = None
                 else:
-                    logger.warning(f"Role ID {last_mention_id} not found in guild {guild.id}")
+                    logger.warning(
+                        f"Role ID {last_mention_id} not found in guild {guild.id}"
+                    )
         return reason, role
 
     @commands.guild_only()

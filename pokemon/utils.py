@@ -53,7 +53,9 @@ async def fetch_data(session: aiohttp.ClientSession, url: str) -> dict | None:
     try:
         async with session.get(url) as response:
             if response.status != 200:
-                log.error(f"Failed to get data from {url} with status code {response.status}")
+                log.error(
+                    f"Failed to get data from {url} with status code {response.status}"
+                )
                 return {"http_code": response.status}
             return await response.json()
     except asyncio.TimeoutError:
@@ -78,7 +80,9 @@ async def generate_image(cog, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
     pbytes = BytesIO(data)
     poke_image = Image.open(pbytes)
     poke_width, poke_height = poke_image.size
-    poke_image_resized = poke_image.resize((int(poke_width * 1.6), int(poke_height * 1.6)))
+    poke_image_resized = poke_image.resize(
+        (int(poke_width * 1.6), int(poke_height * 1.6))
+    )
 
     if hide:
         p_load = poke_image_resized.load()  # type: ignore
@@ -135,7 +139,9 @@ def _format_abilities(abilities: list[dict]) -> str:
     if not abilities:
         return "No abilities available."
     ability_names = [a["ability"]["name"].capitalize() for a in abilities]
-    hidden = [a["ability"]["name"].capitalize() for a in abilities if a.get("is_hidden", False)]
+    hidden = [
+        a["ability"]["name"].capitalize() for a in abilities if a.get("is_hidden", False)
+    ]
     hidden_str = f" (Hidden: {_format_list(hidden or ['None'])})"
     return _format_list(ability_names) + hidden_str
 
@@ -156,7 +162,11 @@ def _format_types(types: list[dict]) -> str:
 
 def _truncate_description(text: str) -> str:
     """Truncate text if it exceeds the maximum description length."""
-    return text[:MAX_DESCRIPTION_LENGTH] + "..." if len(text) > MAX_DESCRIPTION_LENGTH else text
+    return (
+        text[:MAX_DESCRIPTION_LENGTH] + "..."
+        if len(text) > MAX_DESCRIPTION_LENGTH
+        else text
+    )
 
 
 async def create_pokemon_embed(
@@ -278,7 +288,9 @@ async def create_pokemon_embed(
                         .replace("-", " ")
                         .title()
                     )
-                    chance = detail.get("encounter_details", [{}])[0].get("chance", "Unknown")
+                    chance = detail.get("encounter_details", [{}])[0].get(
+                        "chance", "Unknown"
+                    )
                     versions.append(f"{version_name}: {chance}%")
                 versions_str = "\n".join(versions) if versions else "No version details"
                 locations.append(f"**{location_name}**:\n{versions_str}")
@@ -288,5 +300,7 @@ async def create_pokemon_embed(
     else:
         raise ValueError(f"Unsupported section: {section}")
 
-    embed.set_footer(text=f"Powered by PokéAPI | Pokémon ID: {pokemon_data.get('id', 'Unknown')}")
+    embed.set_footer(
+        text=f"Powered by PokéAPI | Pokémon ID: {pokemon_data.get('id', 'Unknown')}"
+    )
     return embed

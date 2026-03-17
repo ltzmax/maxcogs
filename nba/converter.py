@@ -29,7 +29,9 @@ from datetime import datetime, timezone
 import pytz
 
 log = logging.getLogger("red.maxcogs.nba.converter")
-TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
+TODAY_SCOREBOARD = (
+    "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
+)
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 ESPN_NBA_NEWS = "http://www.espn.com/espn/rss/nba/news"
 PLAYBYPLAY = "https://cdn.nba.com/static/json"
@@ -123,7 +125,8 @@ def parse_game_time_to_seconds(duration):
         milliseconds = 0
     else:
         log.error(
-            f"Unexpected duration format: {duration} - defaulting to 0 seconds", exc_info=True
+            f"Unexpected duration format: {duration} - defaulting to 0 seconds",
+            exc_info=True,
         )
         return 0
 
@@ -153,7 +156,9 @@ def parse_duration(duration):
         seconds = int(match_mmss.group(2))
         milliseconds = 0
     else:
-        log.error(f"Unexpected duration format: {duration} - defaulting to 0:00", exc_info=True)
+        log.error(
+            f"Unexpected duration format: {duration} - defaulting to 0:00", exc_info=True
+        )
         return "0:00"
 
     # Cap minutes at 12 for NBA quarters
@@ -245,11 +250,18 @@ def get_games(schedule):
                             .replace(tzinfo=timezone.utc)
                             .timestamp()
                         )
-                        if timestamp >= datetime.utcnow().replace(tzinfo=timezone.utc).timestamp():
+                        if (
+                            timestamp
+                            >= datetime.utcnow().replace(tzinfo=timezone.utc).timestamp()
+                        ):
                             games.append(
                                 {
-                                    "home_team": game["homeTeam"].get("teamName", "Unknown"),
-                                    "away_team": game["awayTeam"].get("teamName", "Unknown"),
+                                    "home_team": game["homeTeam"].get(
+                                        "teamName", "Unknown"
+                                    ),
+                                    "away_team": game["awayTeam"].get(
+                                        "teamName", "Unknown"
+                                    ),
                                     "timestamp": timestamp,
                                     "arena": game.get("arenaName", "Unknown"),
                                     "arenastate": game.get("arenaState", "Unknown"),

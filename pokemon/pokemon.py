@@ -117,7 +117,9 @@ class Pokemon(commands.Cog):
         img_timeout = discord.utils.format_dt(
             datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
         )
-        species_data = await fetch_data(self.session, f"{API_URL}/pokemon-species/{poke_id}")
+        species_data = await fetch_data(
+            self.session, f"{API_URL}/pokemon-species/{poke_id}"
+        )
         if not species_data or species_data.get("http_code"):
             log.error(f"Failed to get species data from PokeAPI. {species_data}")
             return await ctx.send("Failed to get species data from PokeAPI.")
@@ -134,7 +136,9 @@ class Pokemon(commands.Cog):
 
         view = WhosThatPokemonView(eligible_names)
         hint_view = HintView(
-            {"species_data": species_data, "pokemon_data": pokemon_data}, view, english_name
+            {"species_data": species_data, "pokemon_data": pokemon_data},
+            view,
+            english_name,
         )
         view.add_item(hint_view.children[0])
         view.message = await ctx.send(
@@ -149,7 +153,9 @@ class Pokemon(commands.Cog):
             color=0x76EE00,
         )
         embed.set_image(url="attachment://whosthatpokemon.png")
-        embed.set_footer(text=f"Author: {ctx.author}", icon_url=ctx.author.display_avatar.url)
+        embed.set_footer(
+            text=f"Author: {ctx.author}", icon_url=ctx.author.display_avatar.url
+        )
         timeout = await view.wait()
         if timeout:
             return await ctx.send(
@@ -174,7 +180,9 @@ class Pokemon(commands.Cog):
         headers = {"X-Api-Key": api_key} if api_key else None
         await ctx.typing()
         select_fields = "id,name,supertype,subtypes,hp,types,evolvesFrom,evolvesTo,abilities,attacks,weaknesses,resistances,retreatCost,convertedRetreatCost,number,artist,rarity,flavorText,nationalPokedexNumbers,legalities,regulationMark,images,set"
-        base_url = f"https://api.pokemontcg.io/v2/cards?q=name:{query}&select={select_fields}"
+        base_url = (
+            f"https://api.pokemontcg.io/v2/cards?q=name:{query}&select={select_fields}"
+        )
         try:
             async with self.session.get(base_url, headers=headers) as response:
                 if response.status != 200:
@@ -210,11 +218,15 @@ class Pokemon(commands.Cog):
             basic_info.append(f"{'Evolves To:':<18}{evolves_to_str}")
             basic_info.append(f"{'Rarity:':<18}{data.get('rarity', 'Common')}")
             basic_info.append(f"{'Artist:':<18}{data.get('artist', 'N/A')}")
-            basic_info.append(f"{'Regulation Mark:':<18}{data.get('regulationMark', 'N/A')}")
+            basic_info.append(
+                f"{'Regulation Mark:':<18}{data.get('regulationMark', 'N/A')}"
+            )
             basic_info.append(f"{'Card Number:':<18}{data.get('number', 'N/A')}")
             basic_info.append(f"{'Set:':<18}{data['set']['name']}")
             national_pokedex = data.get("nationalPokedexNumbers", [])
-            nat_dex_str = ", ".join(map(str, national_pokedex)) if national_pokedex else "N/A"
+            nat_dex_str = (
+                ", ".join(map(str, national_pokedex)) if national_pokedex else "N/A"
+            )
             basic_info.append(f"{'National Pokedex:':<18}{nat_dex_str}")
             legalities = data.get("legalities", {})
             legal_str = (
@@ -260,7 +272,9 @@ class Pokemon(commands.Cog):
                     if text:
                         attacks_str.append(f"{'Text:':<18}{text}")
                     attacks_str.append("")  # Spacer
-                attacks_box = box("\n".join(attacks_str[:-1]), lang="yaml")  # Remove last spacer
+                attacks_box = box(
+                    "\n".join(attacks_str[:-1]), lang="yaml"
+                )  # Remove last spacer
                 embed.add_field(name="Attacks", value=attacks_box, inline=False)
 
             # Weaknesses, Resistances, Retreat
@@ -278,7 +292,9 @@ class Pokemon(commands.Cog):
             retreat_cost = data.get("retreatCost", [])
             retreat_symbols = "🌟" * len(retreat_cost) if retreat_cost else "None"
             converted_retreat = data.get("convertedRetreatCost", 0)
-            wr_info.append(f"{'Retreat Cost:':<18}{retreat_symbols} ({converted_retreat})")
+            wr_info.append(
+                f"{'Retreat Cost:':<18}{retreat_symbols} ({converted_retreat})"
+            )
             if wr_info:
                 wr_box = box("\n".join(wr_info), lang="yaml")
                 embed.add_field(

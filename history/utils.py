@@ -89,7 +89,9 @@ async def fetch_events(
     url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/{month}/{day}"
     async with session.get(url) as response:
         if response.status != 200:
-            log.warning(f"API request failed with status {response.status} for {month}/{day}")
+            log.warning(
+                f"API request failed with status {response.status} for {month}/{day}"
+            )
             raise ValueError(f"Failed to fetch history data! (Status: {response.status})")
         try:
             data = orjson.loads(await response.read())

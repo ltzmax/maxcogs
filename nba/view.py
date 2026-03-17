@@ -37,8 +37,12 @@ class PlayByPlay(discord.ui.View):
         super().__init__(timeout=None)
         self.game_id = game_id
 
-    @discord.ui.button(label="View Play by Play", style=discord.ButtonStyle.blurple, emoji="🏀")
-    async def view_play_by_play(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(
+        label="View Play by Play", style=discord.ButtonStyle.blurple, emoji="🏀"
+    )
+    async def view_play_by_play(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{self.game_id}.json"
@@ -106,6 +110,10 @@ class GameMenu(discord.ui.View):
         return True
 
     @discord.ui.select(placeholder="Choose a match", options=[])
-    async def select_menu(self, interaction: discord.Interaction, select: discord.ui.Select):
+    async def select_menu(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ):
         self.current_page = int(self.select_menu.values[0])
-        await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
+        await interaction.response.edit_message(
+            embed=self.pages[self.current_page], view=self
+        )

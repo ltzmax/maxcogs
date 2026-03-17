@@ -86,7 +86,9 @@ class UserCommands(commands.Cog):
             )
 
         current_time = time.time()
-        can_hunt, cooldown_message = await check_hunt_cooldown(self.db, user.id, current_time)
+        can_hunt, cooldown_message = await check_hunt_cooldown(
+            self.db, user.id, current_time
+        )
         if not can_hunt:
             return await ctx.send(
                 cooldown_message,
@@ -109,7 +111,15 @@ class UserCommands(commands.Cog):
             adjusted_chances, pity_counters, can_roll_legendary, can_roll_mythical = (
                 await calculate_hunt_probabilities(self.db, user.id, current_streak)
             )
-            outcomes = ["nothing", "common", "silver", "gold", "shiny", "legendary", "mythical"]
+            outcomes = [
+                "nothing",
+                "common",
+                "silver",
+                "gold",
+                "shiny",
+                "legendary",
+                "mythical",
+            ]
             weights = [adjusted_chances[outcome] for outcome in outcomes]
             result = random.choices(outcomes, weights=weights, k=1)[0]
             if pity_counters.get("silver", 0) >= 50:
@@ -124,7 +134,12 @@ class UserCommands(commands.Cog):
                 result = "mythical"
 
             embed = await process_hunt_outcome(
-                self.db, user.id, result, pity_counters, can_roll_legendary, can_roll_mythical
+                self.db,
+                user.id,
+                result,
+                pity_counters,
+                can_roll_legendary,
+                can_roll_mythical,
             )
             embed.set_footer(text=f"Hunt Streak: {current_streak}")
 
@@ -192,7 +207,9 @@ class UserCommands(commands.Cog):
         eggs = await self.db.get_eggs(user.id)
 
         can_roll_legendary = (
-            eggs.get("silver", 0) >= 20 and eggs.get("gold", 0) >= 10 and eggs.get("shiny", 0) >= 1
+            eggs.get("silver", 0) >= 20
+            and eggs.get("gold", 0) >= 10
+            and eggs.get("shiny", 0) >= 1
         )
         can_roll_mythical = can_roll_legendary and eggs.get("legendary", 0) >= 1
 
@@ -219,13 +236,17 @@ class UserCommands(commands.Cog):
         embed.add_field(
             name="⏳ Pity Counters (Hunts since last drop)", value=pity_text, inline=False
         )
-        embed.add_field(name="🥚 Egg Collection (Towards Unlocks)", value=egg_text, inline=False)
+        embed.add_field(
+            name="🥚 Egg Collection (Towards Unlocks)", value=egg_text, inline=False
+        )
         embed.set_footer(text="Keep hunting to boost your pity and streak!")
         await ctx.send(embed=embed)
 
     @easterhunt.command(aliases=["inv", "view", "views"])
     @commands.bot_has_permissions(embed_links=True)
-    async def inventory(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+    async def inventory(
+        self, ctx: commands.Context, member: Optional[discord.Member] = None
+    ):
         """Check your Easter haul!"""
         if not member:
             member = ctx.author
@@ -267,7 +288,9 @@ class UserCommands(commands.Cog):
 
     @easterhunt.command(aliases=["achievement"])
     @commands.bot_has_permissions(embed_links=True)
-    async def achievements(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+    async def achievements(
+        self, ctx: commands.Context, member: Optional[discord.Member] = None
+    ):
         """
         Check if you've completed any Easter Hunt!
 
@@ -287,7 +310,8 @@ class UserCommands(commands.Cog):
         for achievement in achievements:
             if achievement["condition_type"] == "egg":
                 condition = (
-                    eggs.get(achievement["condition_key"], 0) >= achievement["condition_value"]
+                    eggs.get(achievement["condition_key"], 0)
+                    >= achievement["condition_value"]
                 )
             elif achievement["condition_type"] == "streak":
                 streak = await self.db.get_user_field(member.id, "hunt_streak")
@@ -317,7 +341,8 @@ class UserCommands(commands.Cog):
         for achievement in achievements:
             if achievement["condition_type"] == "egg":
                 condition = (
-                    eggs.get(achievement["condition_key"], 0) >= achievement["condition_value"]
+                    eggs.get(achievement["condition_key"], 0)
+                    >= achievement["condition_value"]
                 )
             elif achievement["condition_type"] == "streak":
                 streak = await self.db.get_user_field(member.id, "hunt_streak")
@@ -379,7 +404,11 @@ class UserCommands(commands.Cog):
     @easterhunt.command()
     @commands.bot_has_permissions(embed_links=True)
     async def give(
-        self, ctx: commands.Context, member: discord.Member, egg_type: str, amount: int = 1
+        self,
+        ctx: commands.Context,
+        member: discord.Member,
+        egg_type: str,
+        amount: int = 1,
     ):
         """
         Give some of your eggs to another user!
@@ -548,7 +577,9 @@ class UserCommands(commands.Cog):
             color=discord.Color.red(),
         )
         msg = await ctx.send(
-            embed=embed, view=view, reference=ctx.message.to_reference(fail_if_not_exists=False)
+            embed=embed,
+            view=view,
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
         )
 
         await view.wait()
@@ -672,12 +703,16 @@ class UserCommands(commands.Cog):
                         self.db, user.id, interaction.guild
                     )
                     if target and stolen_egg_type:
-                        target_count = await self.db.get_egg_count(target.id, stolen_egg_type)
+                        target_count = await self.db.get_egg_count(
+                            target.id, stolen_egg_type
+                        )
                         user_count = await self.db.get_egg_count(user.id, stolen_egg_type)
                         await self.db.set_egg_count(
                             target.id, stolen_egg_type, max(0, target_count - 1)
                         )
-                        await self.db.set_egg_count(user.id, stolen_egg_type, user_count + 1)
+                        await self.db.set_egg_count(
+                            user.id, stolen_egg_type, user_count + 1
+                        )
 
                         await interaction.channel.send(
                             f"{user.mention} sneaks back from stealing! You nabbed a {stolen_egg_type.title()} Egg from {target.name}!"
@@ -733,12 +768,16 @@ class UserCommands(commands.Cog):
                 if random.random() < 0.4:  # 40% chance for gem
                     gems = await self.db.get_user_field(user.id, "gems")
                     await self.db.set_user_field(user.id, "gems", gems + 1)
-                    await interaction.channel.send(f"{user.mention} mined a hidden gem! 💎")
+                    await interaction.channel.send(
+                        f"{user.mention} mined a hidden gem! 💎"
+                    )
                 else:
                     if random.random() < 0.5:
                         shards = random.randint(1, 25)
                         current_shards = await self.db.get_user_field(user.id, "shards")
-                        await self.db.set_user_field(user.id, "shards", current_shards + shards)
+                        await self.db.set_user_field(
+                            user.id, "shards", current_shards + shards
+                        )
                         await interaction.channel.send(
                             f"{user.mention} found {shards} shards while mining."
                         )

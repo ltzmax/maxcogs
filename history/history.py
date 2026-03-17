@@ -100,7 +100,10 @@ class History(commands.Cog):
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def history(
-        self, ctx: commands.Context, month: Optional[int] = None, day: Optional[int] = None
+        self,
+        ctx: commands.Context,
+        month: Optional[int] = None,
+        day: Optional[int] = None,
     ) -> None:
         """
         View historical events that happened on this day or a specified date.
@@ -141,9 +144,14 @@ class History(commands.Cog):
         day_str: str = f"{day:02d}"
 
         try:
-            events: list[dict[str, Any]] = await fetch_events(self.session, month_str, day_str)
+            events: list[dict[str, Any]] = await fetch_events(
+                self.session, month_str, day_str
+            )
         except ValueError as e:
-            log.error(f"Failed to fetch events for {month_str}/{day_str}: {str(e)}", exc_info=True)
+            log.error(
+                f"Failed to fetch events for {month_str}/{day_str}: {str(e)}",
+                exc_info=True,
+            )
             return await ctx.send(
                 f"Failed to fetch events for {display_date}. Please try again later."
             )

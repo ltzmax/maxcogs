@@ -52,7 +52,9 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
 
     __version__: Final[str] = "3.4.0"
     __author__: Final[str] = "MAX, AAA3A"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/autopublisher/README.md"
+    __docs__: Final[str] = (
+        "https://github.com/ltzmax/maxcogs/tree/master/autopublisher/README.md"
+    )
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
@@ -130,7 +132,9 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
             await asyncio.wait_for(message.publish(), timeout=60)
             await increment_published_count(self.config)
         except (discord.HTTPException, discord.Forbidden, asyncio.TimeoutError) as e:
-            logger.error(f"Failed to publish message in {message.channel.id}: {e}", exc_info=True)
+            logger.error(
+                f"Failed to publish message in {message.channel.id}: {e}", exc_info=True
+            )
 
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
@@ -191,7 +195,9 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
                     emoji="ℹ️",
                 )
             )
-            return await ctx.send("This server lacks the News Channel feature.", view=view)
+            return await ctx.send(
+                "This server lacks the News Channel feature.", view=view
+            )
 
         guild_config = self.config.guild(ctx.guild)
         toggle = not await guild_config.toggle()
@@ -213,7 +219,9 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
                     emoji="ℹ️",
                 )
             )
-            return await ctx.send("This server lacks the News Channel feature.", view=view)
+            return await ctx.send(
+                "This server lacks the News Channel feature.", view=view
+            )
 
         news_channels = [ch for ch in ctx.guild.text_channels if ch.is_news()]
         if not news_channels:

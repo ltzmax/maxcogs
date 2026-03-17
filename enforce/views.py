@@ -62,7 +62,9 @@ class AcceptView(discord.ui.View):
             )
 
         await self.config.user(user).accepted_tos.set(True)
-        await self.config.user(user).accepted_at.set(int(interaction.created_at.timestamp()))
+        await self.config.user(user).accepted_at.set(
+            int(interaction.created_at.timestamp())
+        )
 
         button.disabled = True
         accepted_embed = discord.Embed(

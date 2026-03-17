@@ -47,7 +47,9 @@ class NoSpoiler(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
-        self.config: Config = Config.get_conf(self, identifier=1234567890, force_registration=True)
+        self.config: Config = Config.get_conf(
+            self, identifier=1234567890, force_registration=True
+        )
         self._cache: Dict[int, Dict[str, Any]] = {}
         default_guild: Dict[str, Union[bool, Optional[int], str]] = {
             "enabled": False,
@@ -172,7 +174,9 @@ class NoSpoiler(commands.Cog):
             return
 
         channel = guild.get_channel(payload.channel_id)
-        if not isinstance(channel, (discord.TextChannel, discord.Thread, discord.ForumChannel)):
+        if not isinstance(
+            channel, (discord.TextChannel, discord.Thread, discord.ForumChannel)
+        ):
             return
 
         settings = await self._get_guild_settings(guild)
@@ -206,7 +210,9 @@ class NoSpoiler(commands.Cog):
     async def toggle(self, ctx: commands.Context) -> None:
         """Toggle the spoiler filter on or off."""
         if not ctx.bot_permissions.manage_messages:
-            await ctx.send("I need `manage_messages` permission to toggle the spoiler filter.")
+            await ctx.send(
+                "I need `manage_messages` permission to toggle the spoiler filter."
+            )
             return
 
         current = (await self._get_guild_settings(ctx.guild))["enabled"]
@@ -215,7 +221,9 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Spoiler filter is now {'enabled' if new_value else 'disabled'}.")
 
     @nospoiler.command()
-    async def useembed(self, ctx: commands.Context, toggle: Optional[bool] = None) -> None:
+    async def useembed(
+        self, ctx: commands.Context, toggle: Optional[bool] = None
+    ) -> None:
         """Toggle whether the warning message uses an embed."""
         await self._update_cache(ctx.guild, "use_embed", toggle)
         await ctx.send(
@@ -231,17 +239,25 @@ class NoSpoiler(commands.Cog):
         await ctx.send(f"Warning message timeout set to {seconds} seconds.")
 
     @nospoiler.command()
-    async def togglewarnmsg(self, ctx: commands.Context, toggle: Optional[bool] = None) -> None:
+    async def togglewarnmsg(
+        self, ctx: commands.Context, toggle: Optional[bool] = None
+    ) -> None:
         """Toggle the spoiler warning message on or off."""
         await self._update_cache(ctx.guild, "spoiler_warn", toggle)
-        await ctx.send(f"Spoiler warning message is now {'enabled' if toggle else 'disabled'}.")
+        await ctx.send(
+            f"Spoiler warning message is now {'enabled' if toggle else 'disabled'}."
+        )
 
     @nospoiler.command()
-    async def message(self, ctx: commands.Context, *, message: Optional[str] = None) -> None:
+    async def message(
+        self, ctx: commands.Context, *, message: Optional[str] = None
+    ) -> None:
         """Set or reset the custom spoiler warning message."""
         new_message = message or DEFAULT_WARNING_MESSAGE
         await self._update_cache(ctx.guild, "spoiler_warn_message", new_message)
-        await ctx.send("Spoiler warning message has been " + ("set." if message else "reset."))
+        await ctx.send(
+            "Spoiler warning message has been " + ("set." if message else "reset.")
+        )
 
     @nospoiler.command(aliases=["view", "views"])
     async def settings(self, ctx: commands.Context) -> None:

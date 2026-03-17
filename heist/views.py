@@ -108,7 +108,9 @@ class ShopSelect(discord.ui.Select):
                 )
                 return  # Keep view active for reselections
             duration = datetime.timedelta(hours=data.get("duration_hours", 48))
-            end_time = (datetime.datetime.now(datetime.timezone.utc) + duration).timestamp()
+            end_time = (
+                datetime.datetime.now(datetime.timezone.utc) + duration
+            ).timestamp()
             await self.cog.config.user(interaction.user).shield.set(item_type)
             await self.cog.config.user(interaction.user).shield_end.set(end_time)
             await interaction.response.send_message(
@@ -194,7 +196,9 @@ class HeistSelect(discord.ui.Select):
         cooldowns = await self.cog.config.user(user).heist_cooldowns()
         last_timestamp = cooldowns.get(heist_type)
         if last_timestamp:
-            last_time = datetime.datetime.fromtimestamp(last_timestamp, tz=datetime.timezone.utc)
+            last_time = datetime.datetime.fromtimestamp(
+                last_timestamp, tz=datetime.timezone.utc
+            )
             if now - last_time < data["cooldown"]:
                 remaining = data["cooldown"] - (now - last_time)
                 end_time = now + remaining
@@ -314,7 +318,9 @@ class HeistConfigButton(discord.ui.Button):
 class HeistSetModal(discord.ui.Modal, title="Configure Heist Settings"):
     heist_type = discord.ui.TextInput(label="Heist Type", placeholder="e.g. pocket_steal")
     param = discord.ui.TextInput(label="Parameter", placeholder="e.g. risk, min_reward")
-    value = discord.ui.TextInput(label="Value", placeholder="Enter a number (must be seconds)")
+    value = discord.ui.TextInput(
+        label="Value", placeholder="Enter a number (must be seconds)"
+    )
 
     def __init__(self, cog):
         super().__init__()
@@ -352,7 +358,9 @@ class HeistSetModal(discord.ui.Modal, title="Configure Heist Settings"):
                 ephemeral=True,
             )
 
-        current_settings = await self.cog.config.heist_settings.get_raw(heist_type, default={})
+        current_settings = await self.cog.config.heist_settings.get_raw(
+            heist_type, default={}
+        )
         default_settings = HEISTS.get(heist_type, {})
 
         if param in ["risk", "police_chance"]:
@@ -383,7 +391,9 @@ class HeistSetModal(discord.ui.Modal, title="Configure Heist Settings"):
                 )
 
         if param == "max_reward":
-            min_reward = current_settings.get("min_reward", default_settings.get("min_reward", 0))
+            min_reward = current_settings.get(
+                "min_reward", default_settings.get("min_reward", 0)
+            )
             if value < min_reward:
                 return await interaction.response.send_message(
                     f"Max reward ({value}) cannot be less than min reward ({min_reward}).",
@@ -468,7 +478,9 @@ class ItemPriceConfigButton(discord.ui.Button):
 
 class ItemPriceSetModal(discord.ui.Modal, title="Configure Item Price"):
     item_name = discord.ui.TextInput(label="Item Name", placeholder="e.g. wooden_shield")
-    new_cost = discord.ui.TextInput(label="New Cost", placeholder="Enter a positive integer")
+    new_cost = discord.ui.TextInput(
+        label="New Cost", placeholder="Enter a positive integer"
+    )
 
     def __init__(self, cog):
         super().__init__()

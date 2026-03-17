@@ -46,9 +46,18 @@ ITEMS: Dict[str, tuple] = {
         "🛡️",
         {"type": "shield", "cost": 35000, "reduction": 0.12, "duration_hours": 72},
     ),
-    "full": ("🛡️", {"type": "shield", "cost": 100000, "reduction": 1.0, "duration_hours": 96}),
-    "bike_tool": ("🔧", {"type": "tool", "cost": 500, "boost": 0.1, "for_heist": "street_bike"}),
-    "car_tool": ("🔓", {"type": "tool", "cost": 1000, "boost": 0.15, "for_heist": "street_car"}),
+    "full": (
+        "🛡️",
+        {"type": "shield", "cost": 100000, "reduction": 1.0, "duration_hours": 96},
+    ),
+    "bike_tool": (
+        "🔧",
+        {"type": "tool", "cost": 500, "boost": 0.1, "for_heist": "street_bike"},
+    ),
+    "car_tool": (
+        "🔓",
+        {"type": "tool", "cost": 1000, "boost": 0.15, "for_heist": "street_car"},
+    ),
     "motorcycle_tool": (
         "🛠️",
         {"type": "tool", "cost": 800, "boost": 0.12, "for_heist": "street_motorcycle"},
@@ -57,7 +66,10 @@ ITEMS: Dict[str, tuple] = {
         "🧤",
         {"type": "tool", "cost": 200, "boost": 0.05, "for_heist": "pocket_steal"},
     ),
-    "crowbar": ("🪓", {"type": "tool", "cost": 300, "boost": 0.07, "for_heist": "atm_smash"}),
+    "crowbar": (
+        "🪓",
+        {"type": "tool", "cost": 300, "boost": 0.07, "for_heist": "atm_smash"},
+    ),
     "glass_cutter": (
         "🔪",
         {"type": "tool", "cost": 600, "boost": 0.10, "for_heist": "jewelry_store"},

@@ -89,7 +89,9 @@ class Database:
     async def get_user_field(self, user_id: int, field: str):
         await self.ensure_user(user_id)
         async with self.conn.cursor() as cursor:
-            await cursor.execute(f"SELECT {field} FROM users WHERE user_id = ?", (user_id,))
+            await cursor.execute(
+                f"SELECT {field} FROM users WHERE user_id = ?", (user_id,)
+            )
             return (await cursor.fetchone())[0]
 
     async def set_user_field(self, user_id: int, field: str, value):
@@ -109,7 +111,14 @@ class Database:
                 "SELECT egg_type, count FROM user_eggs WHERE user_id = ?", (user_id,)
             )
             rows = await cursor.fetchall()
-            eggs = {"common": 0, "silver": 0, "gold": 0, "shiny": 0, "legendary": 0, "mythical": 0}
+            eggs = {
+                "common": 0,
+                "silver": 0,
+                "gold": 0,
+                "shiny": 0,
+                "legendary": 0,
+                "mythical": 0,
+            }
             eggs.update(dict(rows))
             return eggs
 
@@ -154,7 +163,9 @@ class Database:
     async def set_egg_image(self, egg_type: str, url: Optional[str]):
         async with self.conn.cursor() as cursor:
             if url is None:
-                await cursor.execute("DELETE FROM egg_images WHERE egg_type = ?", (egg_type,))
+                await cursor.execute(
+                    "DELETE FROM egg_images WHERE egg_type = ?", (egg_type,)
+                )
             else:
                 await cursor.execute(
                     "INSERT OR REPLACE INTO egg_images (egg_type, image_url) VALUES (?, ?)",
@@ -169,7 +180,9 @@ class Database:
 
     async def get_stale_active_users(self) -> List[Tuple[int, float]]:
         async with self.conn.cursor() as cursor:
-            await cursor.execute("SELECT user_id, last_work FROM users WHERE active_work = 1")
+            await cursor.execute(
+                "SELECT user_id, last_work FROM users WHERE active_work = 1"
+            )
             return await cursor.fetchall()
 
     async def get_user_count(self) -> int:

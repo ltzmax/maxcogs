@@ -45,7 +45,9 @@ class Heist(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=11236022492481444, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=11236022492481444, force_registration=True
+        )
         default_user = {
             "shield": None,
             "shield_end": None,
@@ -74,7 +76,9 @@ class Heist(commands.Cog):
                 for name, data in HEISTS.items()
             },
             "item_settings": {
-                name: {"cost": data["cost"]} for name, (_, data) in ITEMS.items() if "cost" in data
+                name: {"cost": data["cost"]}
+                for name, (_, data) in ITEMS.items()
+                if "cost" in data
             },
         }
         self.config.register_user(**default_user)
@@ -130,7 +134,9 @@ class Heist(commands.Cog):
                 del inventory[item_name]
             await self.config.user(member).inventory.set(inventory)
 
-    async def _has_active_heist(self, user: discord.Member, channel_id: int = None) -> bool:
+    async def _has_active_heist(
+        self, user: discord.Member, channel_id: int = None
+    ) -> bool:
         active = await self.config.user(user).active_heist()
         if not active:
             return False
@@ -171,7 +177,9 @@ class Heist(commands.Cog):
                         channel = self.bot.get_channel(active["channel_id"])
                         if channel:
                             task = asyncio.create_task(
-                                schedule_resolve(self, user_id, remaining, active["type"], channel)
+                                schedule_resolve(
+                                    self, user_id, remaining, active["type"], channel
+                                )
                             )
                             self.pending_tasks[user_id] = task
 
@@ -209,7 +217,9 @@ class Heist(commands.Cog):
         )
         return remaining_debt == 0
 
-    async def check_jail(self, ctx: commands.Context, jailed_user: discord.Member) -> bool:
+    async def check_jail(
+        self, ctx: commands.Context, jailed_user: discord.Member
+    ) -> bool:
         """Check if a user is in jail and prompt for bailout."""
         if jailed_user.bot:
             await ctx.send("Bots can't be in jail!")
@@ -264,22 +274,29 @@ class Heist(commands.Cog):
             "max_reward": int(custom.get("max_reward", defaults.get("max_reward", 0))),
             "cooldown": datetime.timedelta(
                 seconds=custom.get(
-                    "cooldown", defaults.get("cooldown", datetime.timedelta()).total_seconds()
+                    "cooldown",
+                    defaults.get("cooldown", datetime.timedelta()).total_seconds(),
                 )
             ),
             "min_success": int(custom.get("min_success", defaults.get("min_success", 0))),
-            "max_success": int(custom.get("max_success", defaults.get("max_success", 100))),
+            "max_success": int(
+                custom.get("max_success", defaults.get("max_success", 100))
+            ),
             "duration": datetime.timedelta(
                 seconds=custom.get(
-                    "duration", defaults.get("duration", datetime.timedelta()).total_seconds()
+                    "duration",
+                    defaults.get("duration", datetime.timedelta()).total_seconds(),
                 )
             ),
             "min_loss": defaults.get("min_loss", 0),
             "max_loss": defaults.get("max_loss", 0),
-            "police_chance": custom.get("police_chance", defaults.get("police_chance", 0.0)),
+            "police_chance": custom.get(
+                "police_chance", defaults.get("police_chance", 0.0)
+            ),
             "jail_time": datetime.timedelta(
                 seconds=custom.get(
-                    "jail_time", defaults.get("jail_time", datetime.timedelta()).total_seconds()
+                    "jail_time",
+                    defaults.get("jail_time", datetime.timedelta()).total_seconds(),
                 )
             ),
         }
@@ -319,7 +336,9 @@ class Heist(commands.Cog):
         equipped = await self.config.user(ctx.author).equipped()
         equipped["shield"] = shield_type
         await self.config.user(ctx.author).equipped.set(equipped)
-        await ctx.send(f"Equipped {shield_type.replace('_', ' ').title()} as your shield.")
+        await ctx.send(
+            f"Equipped {shield_type.replace('_', ' ').title()} as your shield."
+        )
 
     @heist_equip.command(name="tool")
     async def equip_tool(self, ctx: commands.Context, tool_type: str):
@@ -353,7 +372,10 @@ class Heist(commands.Cog):
                 "You have an active heist ongoing. You can't equip during a heist"
             )
         consumable_type = consumable_type.lower().replace(" ", "_")
-        if consumable_type not in ITEMS or ITEMS[consumable_type][1]["type"] != "consumable":
+        if (
+            consumable_type not in ITEMS
+            or ITEMS[consumable_type][1]["type"] != "consumable"
+        ):
             return await ctx.send("Invalid consumable type.")
         inventory = await self.config.user(ctx.author).inventory()
         if inventory.get(consumable_type, 0) <= 0:
@@ -363,7 +385,9 @@ class Heist(commands.Cog):
         equipped = await self.config.user(ctx.author).equipped()
         equipped["consumable"] = consumable_type
         await self.config.user(ctx.author).equipped.set(equipped)
-        await ctx.send(f"Equipped {consumable_type.replace('_', ' ').title()} as your consumable.")
+        await ctx.send(
+            f"Equipped {consumable_type.replace('_', ' ').title()} as your consumable."
+        )
 
     @heist_equip.command(name="unequip")
     async def equip_unequip_item(self, ctx: commands.Context, item_type: str):
@@ -376,7 +400,9 @@ class Heist(commands.Cog):
             )
         item_type = item_type.lower()
         if item_type not in ["shield", "tool", "consumable"]:
-            return await ctx.send("Invalid item type. Use 'shield', 'tool', or 'consumable'.")
+            return await ctx.send(
+                "Invalid item type. Use 'shield', 'tool', or 'consumable'."
+            )
         equipped = await self.config.user(ctx.author).equipped()
         if equipped[item_type] is None:
             return await ctx.send(f"No {item_type} equipped.")
@@ -433,7 +459,9 @@ class Heist(commands.Cog):
         if not await self.check_jail(ctx, ctx.author):
             return
         if await self._has_active_heist(ctx.author, ctx.channel.id):
-            return await ctx.send("You have an active heist ongoing. Wait for it to finish.")
+            return await ctx.send(
+                "You have an active heist ongoing. Wait for it to finish."
+            )
 
         equipped = await self.config.user(ctx.author).equipped()
         inventory = await self.config.user(ctx.author).inventory()
@@ -461,7 +489,9 @@ class Heist(commands.Cog):
             color=await ctx.embed_color(),
         )
         for name, data in heist_settings.items():
-            loot_item = name if name in ITEMS and ITEMS[name][1]["type"] == "loot" else None
+            loot_item = (
+                name if name in ITEMS and ITEMS[name][1]["type"] == "loot" else None
+            )
             if loot_item:
                 min_reward = ITEMS[loot_item][1]["min_sell"]
                 max_reward = ITEMS[loot_item][1]["max_sell"]
@@ -518,7 +548,9 @@ class Heist(commands.Cog):
             color=await ctx.embed_color(),
         )
         if debt > 0:
-            embed.add_field(name="Debt", value=f"Owed: {debt:,} {currency_name}", inline=False)
+            embed.add_field(
+                name="Debt", value=f"Owed: {debt:,} {currency_name}", inline=False
+            )
         equipped = await self.config.user(ctx.author).equipped()
         for item, count in inventory.items():
             emoji, data = ITEMS.get(item, ("❓", {"type": "unknown"}))
@@ -563,13 +595,17 @@ class Heist(commands.Cog):
         inventory = await self.config.user(ctx.author).inventory()
         item = item.lower().replace(" ", "_")
         if item not in ITEMS or ITEMS[item][1]["type"] not in ["loot", "material"]:
-            return await ctx.send("Invalid item type. Only loot and materials can be sold.")
+            return await ctx.send(
+                "Invalid item type. Only loot and materials can be sold."
+            )
         if inventory.get(item, 0) < amount:
             return await ctx.send(
                 f"You don't have enough {item.replace('_', ' ').title()} to sell."
             )
         data = ITEMS[item][1]
-        sell_price = sum(random.randint(data["min_sell"], data["max_sell"]) for _ in range(amount))
+        sell_price = sum(
+            random.randint(data["min_sell"], data["max_sell"]) for _ in range(amount)
+        )
         await bank.deposit_credits(ctx.author, sell_price)
         inventory[item] -= amount
         if inventory[item] <= 0:
@@ -616,7 +652,9 @@ class Heist(commands.Cog):
         result = recipe["result"]
         inventory[result] = inventory.get(result, 0) + recipe["quantity"]
         await self.config.user(ctx.author).inventory.set(inventory)
-        await ctx.send(f"Crafted {recipe['quantity']} {result.replace('_', ' ').title()}!")
+        await ctx.send(
+            f"Crafted {recipe['quantity']} {result.replace('_', ' ').title()}!"
+        )
 
     @heist.command(name="shield")
     async def check_shield(self, ctx: commands.Context):
@@ -646,9 +684,7 @@ class Heist(commands.Cog):
                 active["end_time"], tz=datetime.timezone.utc
             )
             remaining = end_time - datetime.datetime.now(datetime.timezone.utc)
-            msg += (
-                f"Active {active['type'].replace('_', ' ').title()} heist. Ends in {remaining}.\n"
-            )
+            msg += f"Active {active['type'].replace('_', ' ').title()} heist. Ends in {remaining}.\n"
         if jail:
             now = datetime.datetime.now(datetime.timezone.utc).timestamp()
             if now < jail["end_time"]:
@@ -674,7 +710,9 @@ class Heist(commands.Cog):
             color=await ctx.embed_color(),
         )
         any_on_cooldown = False
-        for heist_type in sorted(HEISTS.keys(), key=lambda x: x.replace("_", " ").title()):
+        for heist_type in sorted(
+            HEISTS.keys(), key=lambda x: x.replace("_", " ").title()
+        ):
             data = await self.get_heist_settings(heist_type)
             last_timestamp = cooldowns.get(heist_type)
             heist_name = heist_type.replace("_", " ").title()
@@ -686,12 +724,12 @@ class Heist(commands.Cog):
                     remaining = data["cooldown"] - (now - last_time)
                     end_time = now + remaining
                     end_timestamp = int(end_time.timestamp())
-                    embed.description += (
-                        f"{data['emoji']} `{heist_name + ':':<18}`: <t:{end_timestamp}:R>\n"
-                    )
+                    embed.description += f"{data['emoji']} `{heist_name + ':':<18}`: <t:{end_timestamp}:R>\n"
                     any_on_cooldown = True
                 else:
-                    embed.description += f"{data['emoji']} `{heist_name + ':':<18}`: Ready\n"
+                    embed.description += (
+                        f"{data['emoji']} `{heist_name + ':':<18}`: Ready\n"
+                    )
             else:
                 embed.description += f"{data['emoji']} `{heist_name + ':':<18}`: Ready\n"
         if not any_on_cooldown:
@@ -844,7 +882,8 @@ class Heist(commands.Cog):
             is_custom = {
                 param: param in custom
                 and (
-                    custom[param] != defaults.get(param, datetime.timedelta()).total_seconds()
+                    custom[param]
+                    != defaults.get(param, datetime.timedelta()).total_seconds()
                     if param in ["cooldown", "duration", "jail_time"]
                     else custom[param] != defaults.get(param, 0)
                 )
@@ -860,7 +899,9 @@ class Heist(commands.Cog):
                     "jail_time",
                 ]
             }
-            loot_item = name if name in ITEMS and ITEMS[name][1]["type"] == "loot" else None
+            loot_item = (
+                name if name in ITEMS and ITEMS[name][1]["type"] == "loot" else None
+            )
             reward_text = (
                 f"{ITEMS[loot_item][1]['min_sell']:,}-{ITEMS[loot_item][1]['max_sell']:,} credits"
                 if loot_item

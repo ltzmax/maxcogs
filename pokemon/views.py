@@ -62,7 +62,9 @@ class WhosThatPokemonView(discord.ui.View):
         await self.message.edit(view=self)
 
     @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
-    async def guess_the_pokemon(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def guess_the_pokemon(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         modal = WhosThatPokemonModal()
         await interaction.response.send_modal(modal)
         await modal.wait()
@@ -86,7 +88,9 @@ class WhosThatPokemonView(discord.ui.View):
 class HintView(discord.ui.View):
     """A view that provides a one-time hint for Who's That Pokémon game."""
 
-    def __init__(self, pokemon_data: dict, parent_view: "WhosThatPokemonView", pokemon_name: str):
+    def __init__(
+        self, pokemon_data: dict, parent_view: "WhosThatPokemonView", pokemon_name: str
+    ):
         super().__init__(timeout=None)
         self.pokemon_data = pokemon_data
         self.parent_view = parent_view
@@ -94,7 +98,9 @@ class HintView(discord.ui.View):
         self.hint_used = False
 
     @discord.ui.button(label="Get Hint", style=discord.ButtonStyle.primary, emoji="💡")
-    async def hint_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def hint_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         """Handle the hint button click."""
         if self.hint_used:
             return await interaction.response.send_message(
@@ -223,7 +229,9 @@ class PokemonView(discord.ui.View):
             log.error(f"Error loading {self.current_section} section: {e}")
 
     @discord.ui.button(label="Close", style=discord.ButtonStyle.danger, row=1)
-    async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def close_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         await interaction.response.defer()
         for item in self.children:
             item.disabled = True

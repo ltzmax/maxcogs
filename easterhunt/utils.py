@@ -28,7 +28,9 @@ from typing import Dict, Tuple
 import discord
 
 
-async def check_hunt_cooldown(db, user_id: int, current_time: float) -> tuple[bool, str | None]:
+async def check_hunt_cooldown(
+    db, user_id: int, current_time: float
+) -> tuple[bool, str | None]:
     """Check if the user can hunt again, returning (can_hunt, message)."""
     last_hunt = await db.get_user_field(user_id, "last_hunt")
     cooldown_remaining = 300 - (current_time - last_hunt)
@@ -62,7 +64,8 @@ async def calculate_hunt_probabilities(
         pity_counters[egg_type] = pity_counters.get(egg_type, 0) + 1
 
     can_roll_legendary = all(
-        eggs.get(key, 0) >= value for key, value in {"silver": 20, "gold": 10, "shiny": 1}.items()
+        eggs.get(key, 0) >= value
+        for key, value in {"silver": 20, "gold": 10, "shiny": 1}.items()
     )
     can_roll_mythical = can_roll_legendary and eggs.get("legendary", 0) >= 1
 
@@ -166,7 +169,9 @@ async def process_hunt_outcome(
     return embed
 
 
-async def find_target_player(db, user_id: int, guild) -> tuple[discord.Member | None, str | None]:
+async def find_target_player(
+    db, user_id: int, guild
+) -> tuple[discord.Member | None, str | None]:
     """Find a random player with eggs to steal from, excluding the user."""
     potential_targets = []
     async with db.conn.cursor() as cursor:
@@ -189,7 +194,9 @@ async def find_target_player(db, user_id: int, guild) -> tuple[discord.Member | 
         return None, None
 
     target, target_eggs = random.choice(potential_targets)
-    available_egg_types = [egg_type for egg_type, count in target_eggs.items() if count > 0]
+    available_egg_types = [
+        egg_type for egg_type, count in target_eggs.items() if count > 0
+    ]
     if not available_egg_types:
         return None, None
     egg_type = random.choice(available_egg_types)

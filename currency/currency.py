@@ -99,7 +99,8 @@ class Currency(commands.Cog):
         await ctx.send(msg, view=view)
 
     @app_commands.command(
-        name="currencyconvert", description="Convert an amount from one currency to another."
+        name="currencyconvert",
+        description="Convert an amount from one currency to another.",
     )
     @app_commands.allowed_installs(guilds=True, users=True)
     @app_commands.describe(
@@ -108,7 +109,11 @@ class Currency(commands.Cog):
         to_currency="The currency to convert to (e.g., EUR, peso)",
     )
     async def convert_currency(
-        self, interaction: discord.Interaction, amount: float, from_currency: str, to_currency: str
+        self,
+        interaction: discord.Interaction,
+        amount: float,
+        from_currency: str,
+        to_currency: str,
     ):
         """Convert currency using ExchangeRate-API."""
         api_key = await self._get_api_key()

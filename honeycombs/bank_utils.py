@@ -30,7 +30,9 @@ from redbot.core.errors import BankError
 # But i already had writen stuff so there's no point removing right away... i'll do someday when im less lazy.
 
 
-async def safe_withdraw(user: discord.Member, amount: int, currency_name: str) -> tuple[bool, str]:
+async def safe_withdraw(
+    user: discord.Member, amount: int, currency_name: str
+) -> tuple[bool, str]:
     """
     Safely withdraw credits from a user's bank account.
 
@@ -59,10 +61,15 @@ async def safe_withdraw(user: discord.Member, amount: int, currency_name: str) -
         return True, f"Withdrew {amount} {currency_name} from {user.mention}."
 
     except BankError as e:
-        return False, f"Failed to withdraw {amount} {currency_name} from {user.mention}: {str(e)}"
+        return (
+            False,
+            f"Failed to withdraw {amount} {currency_name} from {user.mention}: {str(e)}",
+        )
 
 
-async def safe_deposit(user: discord.Member, amount: int, currency_name: str) -> tuple[bool, str]:
+async def safe_deposit(
+    user: discord.Member, amount: int, currency_name: str
+) -> tuple[bool, str]:
     """
     Safely deposit credits to a user's bank account.
 
@@ -84,4 +91,7 @@ async def safe_deposit(user: discord.Member, amount: int, currency_name: str) ->
         return True, f"Deposited {amount} {currency_name} to {user.mention}."
 
     except BankError as e:
-        return False, f"Failed to deposit {amount} {currency_name} to {user.mention}: {str(e)}"
+        return (
+            False,
+            f"Failed to deposit {amount} {currency_name} to {user.mention}: {str(e)}",
+        )

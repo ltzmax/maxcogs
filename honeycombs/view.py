@@ -48,7 +48,8 @@ class JoinButton(discord.ui.Button):
 
         if user_balance < winning_price + losing_price:
             return await interaction.response.send_message(
-                f"You do not have enough {currency_name} to enter the game.", ephemeral=True
+                f"You do not have enough {currency_name} to enter the game.",
+                ephemeral=True,
             )
 
         player_ids = {data["user_id"] for data in game_state.players.values()}
@@ -62,7 +63,8 @@ class JoinButton(discord.ui.Button):
 
         if len(game_state.players) >= 456:
             return await interaction.response.send_message(
-                "The game is already full. Please wait for the next game to start.", ephemeral=True
+                "The game is already full. Please wait for the next game to start.",
+                ephemeral=True,
             )
 
         available_numbers = [i for i in range(1, 457) if i not in game_state.players]

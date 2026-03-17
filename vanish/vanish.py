@@ -42,7 +42,9 @@ class Vanish(commands.Cog):
 
     __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/vanish/README.md"
+    __docs__: Final[str] = (
+        "https://github.com/ltzmax/maxcogs/tree/master/vanish/README.md"
+    )
 
     def __init__(self, bot):
         self.bot = bot
@@ -142,7 +144,9 @@ class Vanish(commands.Cog):
         - `<duration>`: The duration for the timeout (e.g., 10m, 1h, 2d).
         """
         delta = parse_timedelta(
-            duration, minimum=datetime.timedelta(seconds=60), maximum=datetime.timedelta(days=28)
+            duration,
+            minimum=datetime.timedelta(seconds=60),
+            maximum=datetime.timedelta(days=28),
         )
         if delta is None:
             log.error(
