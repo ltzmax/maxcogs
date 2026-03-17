@@ -43,15 +43,11 @@ class Enforce(commands.Cog):
 
     __version__: Final[str] = "0.0.1b"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = (
-        "https://github.com/ltzmax/maxcogs/tree/master/enforce/README.md"
-    )
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/enforce/README.md"
 
     def __init__(self, bot: Red):
         self.bot = bot
-        self.config = Config.get_conf(
-            self, identifier=9842069111, force_registration=True
-        )
+        self.config = Config.get_conf(self, identifier=9842069111, force_registration=True)
         self.config.register_global(
             tos_url="https://i.maxapp.tv/d6761E.png",
             privacy_url="https://i.maxapp.tv/75771F.png",
@@ -209,9 +205,7 @@ class Enforce(commands.Cog):
         Use `{tos_url}` and `{privacy_url}` as placeholders for the privacy policy and terms of service url.
         """
         if len(desc) > 2000:
-            return await ctx.send(
-                "Description is too long. Must be under 2000 characters."
-            )
+            return await ctx.send("Description is too long. Must be under 2000 characters.")
         if "{tos_url}" not in desc or "{privacy_url}" not in desc:
             return await ctx.send(
                 "Description must include both `{tos_url}` and `{privacy_url}` placeholders.\nExample: `To use this bot, you must accept our ToS ({tos_url}) and Privacy Policy ({privacy_url}).`"
@@ -285,9 +279,7 @@ class Enforce(commands.Cog):
         embed = discord.Embed(
             title="Current ToS Enforcement Settings", color=await ctx.embed_color()
         )
-        embed.add_field(
-            name="Enforcement Enabled", value=str(enforcement_enabled), inline=False
-        )
+        embed.add_field(name="Enforcement Enabled", value=str(enforcement_enabled), inline=False)
         embed.add_field(name="ToS URL", value=tos_url, inline=False)
         embed.add_field(name="Privacy Policy URL", value=privacy_url, inline=False)
         embed.add_field(name="Prompt Title", value=title, inline=False)

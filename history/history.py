@@ -144,9 +144,7 @@ class History(commands.Cog):
         day_str: str = f"{day:02d}"
 
         try:
-            events: list[dict[str, Any]] = await fetch_events(
-                self.session, month_str, day_str
-            )
+            events: list[dict[str, Any]] = await fetch_events(self.session, month_str, day_str)
         except ValueError as e:
             log.error(
                 f"Failed to fetch events for {month_str}/{day_str}: {str(e)}",

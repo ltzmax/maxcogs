@@ -30,9 +30,7 @@ from redbot.core.errors import BankError
 # But i already had writen stuff so there's no point removing right away... i'll do someday when im less lazy.
 
 
-async def safe_withdraw(
-    user: discord.Member, amount: int, currency_name: str
-) -> tuple[bool, str]:
+async def safe_withdraw(user: discord.Member, amount: int, currency_name: str) -> tuple[bool, str]:
     """
     Safely withdraw credits from a user's bank account.
 
@@ -67,9 +65,7 @@ async def safe_withdraw(
         )
 
 
-async def safe_deposit(
-    user: discord.Member, amount: int, currency_name: str
-) -> tuple[bool, str]:
+async def safe_deposit(user: discord.Member, amount: int, currency_name: str) -> tuple[bool, str]:
     """
     Safely deposit credits to a user's bank account.
 

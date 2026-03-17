@@ -162,9 +162,7 @@ def get_next_reset_times(owner_tz: pytz.timezone) -> tuple[int, int, int]:
     next_monthly_ts = int(next_month.timestamp())
 
     # Yearly reset: January 1st of next year
-    next_year = (
-        now.year + 1 if now.month > 1 or (now.month == 1 and now.day > 1) else now.year
-    )
+    next_year = now.year + 1 if now.month > 1 or (now.month == 1 and now.day > 1) else now.year
     next_yearly = datetime(
         year=next_year,
         month=1,

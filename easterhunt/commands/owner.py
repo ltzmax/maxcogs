@@ -42,22 +42,16 @@ class OwnerCommands(commands.Cog):
 
         size_bytes = self.db.db_path.stat().st_size
         size_mb = size_bytes / (1024 * 1024)
-        await ctx.send(
-            f"Database size: {size_mb:.2f} MB ({humanize_number(size_bytes)} bytes)"
-        )
+        await ctx.send(f"Database size: {size_mb:.2f} MB ({humanize_number(size_bytes)} bytes)")
 
     @ownerset.command(name="setshards")
-    async def ownerset_setshards(
-        self, ctx: commands.Context, user: discord.Member, amount: int
-    ):
+    async def ownerset_setshards(self, ctx: commands.Context, user: discord.Member, amount: int):
         """Set a user's shard amount."""
         await self.db.set_user_field(user.id, "shards", amount)
         await ctx.send(f"Set {user.name}'s shards to {humanize_number(amount)}")
 
     @ownerset.command(name="setgems")
-    async def ownerset_setgems(
-        self, ctx: commands.Context, user: discord.Member, amount: int
-    ):
+    async def ownerset_setgems(self, ctx: commands.Context, user: discord.Member, amount: int):
         """Set a user's hidden gems amount."""
         await self.db.set_user_field(user.id, "gems", amount)
         await ctx.send(f"Set {user.name}'s gems to {humanize_number(amount)}")

@@ -45,9 +45,7 @@ class RestrictPosts(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(
-            self, identifier=8884206978542444, force_registration=True
-        )
+        self.config = Config.get_conf(self, identifier=8884206978542444, force_registration=True)
         default_guild = {
             "channel_id": [],
             "warning_message": DEFAULT_MSG,
@@ -85,9 +83,7 @@ class RestrictPosts(commands.Cog):
             self._cache[guild.id] = await self.config.guild(guild).all()
         return self._cache[guild.id]
 
-    async def _update_guild_cache(
-        self, guild: discord.Guild, key: str, value: Any
-    ) -> None:
+    async def _update_guild_cache(self, guild: discord.Guild, key: str, value: Any) -> None:
         """Update guild cache and Config."""
         await self.config.guild(guild).set_raw(key, value=value)
         if guild.id not in self._cache:
@@ -135,9 +131,7 @@ class RestrictPosts(commands.Cog):
         if has_attachment or has_link:
             if settings["autothread"]:
                 try:
-                    if not message.channel.permissions_for(
-                        message.guild.me
-                    ).create_public_threads:
+                    if not message.channel.permissions_for(message.guild.me).create_public_threads:
                         log.warning(
                             "Lacking create_public_threads permission in %s in %s (%s).",
                             message.channel.mention,
@@ -146,9 +140,7 @@ class RestrictPosts(commands.Cog):
                         )
                         return
                     await asyncio.sleep(1)
-                    thread_name = "Discussion for {}'s post".format(
-                        message.author.display_name
-                    )
+                    thread_name = "Discussion for {}'s post".format(message.author.display_name)
                     await message.create_thread(
                         name=thread_name[:100],
                         auto_archive_duration=1440,
@@ -194,9 +186,7 @@ class RestrictPosts(commands.Cog):
                         and message.channel.permissions_for(guild_me).embed_links
                     ):
                         author_prefix = (
-                            message.author.mention
-                            if mentionable
-                            else message.author.display_name
+                            message.author.mention if mentionable else message.author.display_name
                         )
                         description = "{}: {}".format(author_prefix, warning_message)
                         embed = discord.Embed(
@@ -211,9 +201,7 @@ class RestrictPosts(commands.Cog):
                         content = (
                             "{} {}".format(message.author.mention, warning_message)
                             if mentionable
-                            else "{} {}".format(
-                                message.author.display_name, warning_message
-                            )
+                            else "{} {}".format(message.author.display_name, warning_message)
                         )
                         await message.channel.send(
                             content, delete_after=delete, mention_author=mentionable
@@ -225,9 +213,7 @@ class RestrictPosts(commands.Cog):
                     message.guild.id,
                 )
             except discord.NotFound:
-                log.warning(
-                    "Message %s already deleted in guild %s", message.id, message.guild.id
-                )
+                log.warning("Message %s already deleted in guild %s", message.id, message.guild.id)
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
@@ -306,9 +292,7 @@ class RestrictPosts(commands.Cog):
                         and message.channel.permissions_for(guild.me).embed_links
                     ):
                         author_prefix = (
-                            message.author.mention
-                            if mentionable
-                            else message.author.display_name
+                            message.author.mention if mentionable else message.author.display_name
                         )
                         description = "{}: {}".format(author_prefix, warning_message)
                         embed = discord.Embed(
@@ -323,9 +307,7 @@ class RestrictPosts(commands.Cog):
                         content = (
                             "{} {}".format(message.author.mention, warning_message)
                             if mentionable
-                            else "{} {}".format(
-                                message.author.display_name, warning_message
-                            )
+                            else "{} {}".format(message.author.display_name, warning_message)
                         )
                         await message.channel.send(
                             content, delete_after=delete, mention_author=mentionable
@@ -337,9 +319,7 @@ class RestrictPosts(commands.Cog):
                     guild.id,
                 )
             except discord.NotFound:
-                log.warning(
-                    "Edited message %s already deleted in guild %s", message.id, guild.id
-                )
+                log.warning("Edited message %s already deleted in guild %s", message.id, guild.id)
 
     @commands.group(aliases=["restrictpost", "restrict"])
     @commands.guild_only()
@@ -378,15 +358,11 @@ class RestrictPosts(commands.Cog):
             if channel.id in channel_ids:
                 channel_ids.remove(channel.id)
                 await self._update_guild_cache(ctx.guild, "channel_id", channel_ids)
-                await ctx.send(
-                    "Removed {} from restricted channels.".format(channel.mention)
-                )
+                await ctx.send("Removed {} from restricted channels.".format(channel.mention))
             else:
                 channel_ids.append(channel.id)
                 await self._update_guild_cache(ctx.guild, "channel_id", channel_ids)
-                await ctx.send(
-                    "Added {} as a restricted channel.".format(channel.mention)
-                )
+                await ctx.send("Added {} as a restricted channel.".format(channel.mention))
         else:
             await self._update_guild_cache(ctx.guild, "channel_id", [])
             await ctx.send("Cleared all restricted channels.")
@@ -434,9 +410,7 @@ class RestrictPosts(commands.Cog):
             if not message:
                 message = default_message
             if len(message) > 2000:
-                return await ctx.send(
-                    "Message is too long, must be 2000 characters or less."
-                )
+                return await ctx.send("Message is too long, must be 2000 characters or less.")
         else:
             message = default_message
         await self._update_guild_cache(ctx.guild, "warning_message", message)
@@ -456,9 +430,7 @@ class RestrictPosts(commands.Cog):
             if not title:
                 title = default_title
             if len(title) > 256:
-                return await ctx.send(
-                    "Title is too long, must be 256 characters or less."
-                )
+                return await ctx.send("Title is too long, must be 256 characters or less.")
         else:
             title = default_title
         await self._update_guild_cache(ctx.guild, "default_title", title)
@@ -523,8 +495,6 @@ class RestrictPosts(commands.Cog):
             inline=False,
         )
         embed.add_field(name="Restricted Channel(s)", value=channel_str, inline=False)
-        embed.add_field(
-            name="Default Title", value=settings["default_title"], inline=False
-        )
+        embed.add_field(name="Default Title", value=settings["default_title"], inline=False)
         embed.add_field(name="Warning Message", value=warning_message, inline=False)
         await ctx.send(embed=embed)

@@ -68,19 +68,15 @@ class NekosBest(commands.Cog):
     async def red_get_data_for_user(self, *, user_id: int):
         return
 
-    async def _api_call(
-        self, ctx: commands.Context, endpoint: str
-    ) -> Optional[Dict[str, Any]]:
+    async def _api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
         async with self.session.get(NEKOS + endpoint) as response:
             if response.status != 200:
                 log.error(
-                    "Something went wrong while trying to contact API. "
-                    "Status code: %s",
+                    "Something went wrong while trying to contact API. " "Status code: %s",
                     response.status,
                 )
                 return await ctx.send(
-                    "Something went wrong while trying to contact API. "
-                    "Please try again later.",
+                    "Something went wrong while trying to contact API. " "Please try again later.",
                 )
             data = await response.read()
             return orjson.loads(data)
@@ -104,9 +100,7 @@ class NekosBest(commands.Cog):
         view = ImageButtonView(artist_link, source, image_url)
         await ctx.send(embed=embed, view=view)
 
-    async def embedgen(
-        self, ctx: commands.Context, member: discord.Member, action: str
-    ) -> None:
+    async def embedgen(self, ctx: commands.Context, member: discord.Member, action: str) -> None:
         url = await self._api_call(ctx, action)
         if url is None:
             return
@@ -165,9 +159,7 @@ class NekosBest(commands.Cog):
     async def resetall(self, ctx: commands.Context) -> None:
         """Reset all command counts."""
         view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(
-            "Are you sure you want to reset everything?", view=view
-        )
+        view.message = await ctx.send("Are you sure you want to reset everything?", view=view)
         await view.wait()
         if view.result:
             await self.config.clear_all_users()

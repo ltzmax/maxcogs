@@ -39,9 +39,7 @@ class Counting(UserCommands, AdminCommands, commands.Cog):
 
     __version__: Final[str] = "3.3.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = (
-        "https://github.com/ltzmax/maxcogs/tree/master/counting/README.md"
-    )
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/counting/README.md"
 
     def __init__(self, bot: Red):
         self.bot = bot

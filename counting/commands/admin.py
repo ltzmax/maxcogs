@@ -69,9 +69,7 @@ class AdminCommands(commands.Cog):
         await self.settings.update_guild(ctx.guild, "channel", channel.id)
         msg = f"Counting channel set to {channel.mention}."
         if not (await self.settings.get_guild_settings(ctx.guild))["toggle"]:
-            msg += (
-                f"\nEnable counting with `{ctx.clean_prefix}countingset toggle enable`."
-            )
+            msg += f"\nEnable counting with `{ctx.clean_prefix}countingset toggle enable`."
         await ctx.send(msg)
 
     @countingset.group(name="toggle")
@@ -142,14 +140,10 @@ class AdminCommands(commands.Cog):
         if msg_type == "edit":
             toggle = not settings["toggle_edit_message"]
             await self.settings.update_guild(ctx.guild, "toggle_edit_message", toggle)
-            await ctx.send(
-                f"Edit message visibility is now {toggle and 'enabled' or 'disabled'}."
-            )
+            await ctx.send(f"Edit message visibility is now {toggle and 'enabled' or 'disabled'}.")
         elif msg_type == "count":
             toggle = not settings["toggle_next_number_message"]
-            await self.settings.update_guild(
-                ctx.guild, "toggle_next_number_message", toggle
-            )
+            await self.settings.update_guild(ctx.guild, "toggle_next_number_message", toggle)
             await ctx.send(
                 f"Next number message visibility is now {toggle and 'enabled' or 'disabled'}."
             )
@@ -170,18 +164,14 @@ class AdminCommands(commands.Cog):
         settings = await self.settings.get_guild_settings(ctx.guild)
         toggle = not settings["toggle_progress_delete"]
         await self.settings.update_guild(ctx.guild, "toggle_progress_delete", toggle)
-        await ctx.send(
-            f"Goal message deletion is now {toggle and 'enabled' or 'disabled'}."
-        )
+        await ctx.send(f"Goal message deletion is now {toggle and 'enabled' or 'disabled'}.")
 
     @countingset.group(name="messages")
     async def countingset_messages(self, ctx: commands.Context) -> None:
         """Manage custom messages for counting events."""
 
     @countingset_messages.command(name="message")
-    async def set_message(
-        self, ctx: commands.Context, msg_type: str, *, message: str
-    ) -> None:
+    async def set_message(self, ctx: commands.Context, msg_type: str, *, message: str) -> None:
         """
         Set custom messages for specific events.
 
@@ -203,9 +193,7 @@ class AdminCommands(commands.Cog):
         - `<message>`: The custom message to set for the specified type.
         """
         if len(message) > 2000:
-            return await ctx.send(
-                "Message is too long. Maximum length is 2000 characters."
-            )
+            return await ctx.send("Message is too long. Maximum length is 2000 characters.")
         if "goal" in msg_type.lower():
             return await ctx.send(
                 f"Use the `{ctx.clean_prefix}countingset messages goal` command to set the goal message."
@@ -222,9 +210,7 @@ class AdminCommands(commands.Cog):
             await self.settings.update_guild(ctx.guild, key, message)
             await ctx.send(f"Message for `{msg_type}` updated.")
         except ValueError:
-            await ctx.send(
-                f"Invalid type. Use: {', '.join(mt.value for mt in MessageType)}."
-            )
+            await ctx.send(f"Invalid type. Use: {', '.join(mt.value for mt in MessageType)}.")
 
     @countingset_messages.command(name="goalmessage")
     async def set_goal_message(self, ctx: commands.Context, *, message: str) -> None:
@@ -241,9 +227,7 @@ class AdminCommands(commands.Cog):
         - `<message>`: The custom message to set for the goal. This can include placeholders `{user}` and `{goal}`.
         """
         if len(message) > 2000:
-            return await ctx.send(
-                "Message is too long. Maximum length is 2000 characters."
-            )
+            return await ctx.send("Message is too long. Maximum length is 2000 characters.")
         await self.settings.update_guild(ctx.guild, "goal_message", message)
         await ctx.send("Goal message updated.")
 
@@ -261,9 +245,7 @@ class AdminCommands(commands.Cog):
         - `<message>`: The custom message for progress updates.
         """
         if len(message) > 2000:
-            return await ctx.send(
-                "Message is too long. Maximum length is 2000 characters."
-            )
+            return await ctx.send("Message is too long. Maximum length is 2000 characters.")
         await self.settings.update_guild(ctx.guild, "progress_message", message)
         await ctx.send("Progress message updated.")
 
@@ -294,13 +276,9 @@ class AdminCommands(commands.Cog):
             )
             return await ctx.send("Ruin role cleared.")
         if role >= ctx.guild.me.top_role:
-            return await ctx.send(
-                f"Cannot set {role.name}, it must be below my highest role."
-            )
+            return await ctx.send(f"Cannot set {role.name}, it must be below my highest role.")
         if role >= ctx.author.top_role:
-            return await ctx.send(
-                f"Cannot set {role.name}, it must be below your highest role."
-            )
+            return await ctx.send(f"Cannot set {role.name}, it must be below your highest role.")
         duration_seconds = None
         if duration:
             duration = duration.lower().strip()
@@ -314,13 +292,9 @@ class AdminCommands(commands.Cog):
                 elif duration.endswith("d"):
                     duration_seconds = int(duration[:-1]) * 86400
                 else:
-                    return await ctx.send(
-                        "Invalid duration format. Use 's', 'm', 'h', or 'd'."
-                    )
+                    return await ctx.send("Invalid duration format. Use 's', 'm', 'h', or 'd'.")
                 if not (60 <= duration_seconds <= 30 * 86400):
-                    return await ctx.send(
-                        "Duration must be between 60 seconds and 30 days."
-                    )
+                    return await ctx.send("Duration must be between 60 seconds and 30 days.")
             except ValueError:
                 return await ctx.send(
                     "Invalid duration. Use a number followed by 's', 'm', 'h', or 'd'."
@@ -336,9 +310,7 @@ class AdminCommands(commands.Cog):
         await ctx.send(f"Ruin role set to {role.name}{duration_str}.")
 
     @countingset_roles.command(name="exclude")
-    async def set_exclude_roles(
-        self, ctx: commands.Context, *roles: discord.Role
-    ) -> None:
+    async def set_exclude_roles(self, ctx: commands.Context, *roles: discord.Role) -> None:
         """Set roles to exclude from receiving the ruin role."""
         if not roles:
             await self.settings.update_guild(ctx.guild, "excluded_roles", [])
@@ -483,9 +455,7 @@ class AdminCommands(commands.Cog):
         ):
             return await ctx.send("You do not have permission to reset the count.")
         view = ConfirmView(ctx.author, disable_buttons=True)
-        view.message = await ctx.send(
-            "Are you sure you want to reset counting?", view=view
-        )
+        view.message = await ctx.send("Are you sure you want to reset counting?", view=view)
         await view.wait()
         if view.result:
             await self.settings.update_guild(ctx.guild, "count", 0)
@@ -533,14 +503,10 @@ class AdminCommands(commands.Cog):
         else:
             try:
                 if unicode_emoji == emoji_input and not is_emoji(unicode_emoji):
-                    return await ctx.send(
-                        f"'{emoji_input}' is not a valid emoji or shortcode."
-                    )
+                    return await ctx.send(f"'{emoji_input}' is not a valid emoji or shortcode.")
             except ImportError:
                 if unicode_emoji == emoji_input and not emoji_input.startswith(":"):
-                    return await ctx.send(
-                        f"'{emoji_input}' is not a valid emoji or shortcode."
-                    )
+                    return await ctx.send(f"'{emoji_input}' is not a valid emoji or shortcode.")
         try:
             await ctx.message.add_reaction(unicode_emoji)
             await self.settings.update_guild(ctx.guild, "default_reaction", unicode_emoji)
@@ -561,15 +527,9 @@ class AdminCommands(commands.Cog):
     async def set_settings(self, ctx: commands.Context) -> None:
         """Show current counting settings."""
         settings = await self.settings.get_guild_settings(ctx.guild)
-        channel = (
-            get(ctx.guild.channels, id=settings["channel"])
-            if settings["channel"]
-            else None
-        )
+        channel = get(ctx.guild.channels, id=settings["channel"]) if settings["channel"] else None
         role = (
-            get(ctx.guild.roles, id=settings["ruin_role_id"])
-            if settings["ruin_role_id"]
-            else None
+            get(ctx.guild.roles, id=settings["ruin_role_id"]) if settings["ruin_role_id"] else None
         )
 
         def bool_to_status(value: bool) -> str:
@@ -602,18 +562,14 @@ class AdminCommands(commands.Cog):
             (
                 "Excluded Roles",
                 ", ".join(
-                    role.name
-                    for role in ctx.guild.roles
-                    if role.id in settings["excluded_roles"]
+                    role.name for role in ctx.guild.roles if role.id in settings["excluded_roles"]
                 )
                 or "None",
             ),
             (
                 "Reset Roles",
                 ", ".join(
-                    role.name
-                    for role in ctx.guild.roles
-                    if role.id in settings["reset_roles"]
+                    role.name for role in ctx.guild.roles if role.id in settings["reset_roles"]
                 )
                 or "None",
             ),

@@ -75,9 +75,7 @@ class Earthquake(commands.Cog):
 
     async def get_guild_settings(self) -> Dict[int, Dict]:
         """Cache guild settings to reduce config calls."""
-        return {
-            guild.id: await self.config.guild(guild).all() for guild in self.bot.guilds
-        }
+        return {guild.id: await self.config.guild(guild).all() for guild in self.bot.guilds}
 
     @retry(
         stop=stop_after_attempt(3),
@@ -92,9 +90,7 @@ class Earthquake(commands.Cog):
         try:
             min_magnitude = float(min_magnitude)
             if not 1.0 <= min_magnitude <= 10.0:
-                logger.error(
-                    f"min_magnitude must be between 1.0 and 10.0, got {min_magnitude}"
-                )
+                logger.error(f"min_magnitude must be between 1.0 and 10.0, got {min_magnitude}")
                 return []
         except (ValueError, TypeError):
             logger.error(f"Invalid min_magnitude value: {min_magnitude}")
@@ -159,9 +155,7 @@ class Earthquake(commands.Cog):
             if not new_earthquakes:
                 return
 
-            await self.config.last_processed_time.set(
-                new_earthquakes[0]["properties"]["time"]
-            )
+            await self.config.last_processed_time.set(new_earthquakes[0]["properties"]["time"])
             for guild_id, settings in guild_settings.items():
                 channel_id = settings.get("channel")
                 if not channel_id:
@@ -230,9 +224,7 @@ class Earthquake(commands.Cog):
         magnitude = properties.get("mag", 0.0)
         place = properties.get("place", "Unknown location")
         time = discord.utils.format_dt(
-            datetime.datetime.fromtimestamp(
-                properties["time"] / 1000, tz=datetime.timezone.utc
-            ),
+            datetime.datetime.fromtimestamp(properties["time"] / 1000, tz=datetime.timezone.utc),
             style="F",
         )
         url = properties.get("url", "https://earthquake.usgs.gov/")
@@ -256,9 +248,7 @@ class Earthquake(commands.Cog):
         )
 
         details = []
-        details.append(
-            f"**Depth:** {depth} km" if depth != "Unknown" else "**Depth:** Unknown"
-        )
+        details.append(f"**Depth:** {depth} km" if depth != "Unknown" else "**Depth:** Unknown")
         details.append(f"**Tsunami Warning:** {tsunami}")
 
         # The following fields may be null or missing in some earthquakes
@@ -294,9 +284,7 @@ class Earthquake(commands.Cog):
                             embed=embed,
                             username=self.bot.user.name,
                             avatar_url=(
-                                str(self.bot.user.avatar)
-                                if self.bot.user.avatar
-                                else None
+                                str(self.bot.user.avatar) if self.bot.user.avatar else None
                             ),
                             allowed_mentions=discord.AllowedMentions(roles=True),
                         )
@@ -363,18 +351,14 @@ class Earthquake(commands.Cog):
         - `[use_webhook]`: `true` to enable webhooks, `false` to disable.
         """
         if not ctx.guild.me.guild_permissions.manage_webhooks:
-            return await ctx.send(
-                "I need the `manage_webhooks` permission to use webhooks."
-            )
+            return await ctx.send("I need the `manage_webhooks` permission to use webhooks.")
 
         await self.config.guild(ctx.guild).use_webhook.set(use_webhook)
         status = "enabled" if use_webhook else "disabled"
         await ctx.send(f"Webhook usage for earthquake alerts has been {status}.")
 
     @earthquakeset.command(name="channel")
-    async def set_channel(
-        self, ctx: commands.Context, channel: Optional[discord.TextChannel]
-    ):
+    async def set_channel(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
         """Set or clear the channel for earthquake alerts."""
         if channel:
             if (
@@ -431,9 +415,7 @@ class Earthquake(commands.Cog):
         """Set or clear a custom safety message for alerts."""
         if message:
             if message and len(message) > 1024:
-                return await ctx.send(
-                    "Safety message cannot exceed 1024 characters in length."
-                )
+                return await ctx.send("Safety message cannot exceed 1024 characters in length.")
             await self.config.guild(ctx.guild).safety_message.set(message)
             await ctx.send("Custom safety message set.")
         else:
@@ -454,9 +436,7 @@ class Earthquake(commands.Cog):
         ping_role = ctx.guild.get_role(ping_role_id) if ping_role_id else None
         use_webhook = await self.config.guild(ctx.guild).use_webhook()
 
-        embed = discord.Embed(
-            title="Earthquake Alert Settings", color=await ctx.embed_color()
-        )
+        embed = discord.Embed(title="Earthquake Alert Settings", color=await ctx.embed_color())
         embed.add_field(
             name="Alert Channel",
             value=channel.mention if channel else "None",
@@ -467,9 +447,7 @@ class Earthquake(commands.Cog):
             value=ping_role.mention if ping_role else "None",
             inline=False,
         )
-        embed.add_field(
-            name="Minimum Magnitude", value=f"{min_magnitude:.1f}", inline=False
-        )
+        embed.add_field(name="Minimum Magnitude", value=f"{min_magnitude:.1f}", inline=False)
         embed.add_field(
             name="Use Webhook",
             value="Enabled" if use_webhook else "Disabled",

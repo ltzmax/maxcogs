@@ -67,9 +67,7 @@ class URLModal(discord.ui.View):
         return True
 
     @discord.ui.button(label="Add Your Fork", style=discord.ButtonStyle.blurple)
-    async def on_submit(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def on_submit(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = URLModalView()
         await interaction.response.send_modal(modal)
         await modal.wait()
@@ -137,16 +135,12 @@ class RestartButton(discord.ui.View):
             )
             return False
         if self.clicked:
-            await interaction.response.send_message(
-                ("Button already clicked."), ephemeral=True
-            )
+            await interaction.response.send_message(("Button already clicked."), ephemeral=True)
             return False
         return True
 
     @discord.ui.button(label="Restart", style=discord.ButtonStyle.gray)
-    async def restart_button(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def restart_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.clicked = True
         button.disabled = True
         await interaction.response.send_message("Restarting...", ephemeral=True)

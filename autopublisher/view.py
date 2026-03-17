@@ -64,17 +64,13 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
         self.select.callback = self.select_callback
         self.container.add_item(discord.ui.ActionRow(self.select))
         self.container.add_item(discord.ui.Separator())
-        self.confirm_button = discord.ui.Button(
-            label="Confirm", style=discord.ButtonStyle.success
-        )
+        self.confirm_button = discord.ui.Button(label="Confirm", style=discord.ButtonStyle.success)
         self.confirm_button.callback = self.save_callback
         self.unignore_button = discord.ui.Button(
             label="Unignore", style=discord.ButtonStyle.danger
         )
         self.unignore_button.callback = self.unignore_callback
-        self.container.add_item(
-            discord.ui.ActionRow(self.confirm_button, self.unignore_button)
-        )
+        self.container.add_item(discord.ui.ActionRow(self.confirm_button, self.unignore_button))
         self.add_item(self.container)
 
     async def start(self, ctx: commands.Context) -> None:
@@ -131,9 +127,7 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
                 ephemeral=True,
             )
 
-        await self.cog.config.guild(self.ctx.guild).ignored_channels.set(
-            new_ignored_channels
-        )
+        await self.cog.config.guild(self.ctx.guild).ignored_channels.set(new_ignored_channels)
         await interaction.response.send_message(
             ":white_check_mark: Ignored discord news channel(s) saved!", ephemeral=True
         )
@@ -181,9 +175,7 @@ class StatsView(discord.ui.LayoutView):
         self.container.add_item(discord.ui.Separator())
         self.container.add_item(discord.ui.TextDisplay(last_published))
         self.container.add_item(discord.ui.Separator())
-        self.container.add_item(
-            discord.ui.ActionRow(self.refresh_button, self.close_button)
-        )
+        self.container.add_item(discord.ui.ActionRow(self.refresh_button, self.close_button))
         self.clear_items()
         self.add_item(self.container)
 
@@ -209,18 +201,12 @@ class StatsView(discord.ui.LayoutView):
         if last_count_time:
             try:
                 last_count_dt = datetime.fromisoformat(last_count_time)
-                last_count_dt = last_count_dt.replace(tzinfo=pytz.UTC).astimezone(
-                    self.owner_tz
-                )
-                last_published = (
-                    f"Last Published: {discord.utils.format_dt(last_count_dt, 'R')}"
-                )
+                last_count_dt = last_count_dt.replace(tzinfo=pytz.UTC).astimezone(self.owner_tz)
+                last_published = f"Last Published: {discord.utils.format_dt(last_count_dt, 'R')}"
             except ValueError:
                 last_published = "Last Published: Invalid timestamp"
 
-        next_weekly_ts, next_monthly_ts, next_yearly_ts = get_next_reset_times(
-            self.owner_tz
-        )
+        next_weekly_ts, next_monthly_ts, next_yearly_ts = get_next_reset_times(self.owner_tz)
         reset_info = (
             f"Timezone: `{self.owner_tz.zone}`\n"
             f"{last_published}\n"
@@ -238,9 +224,7 @@ class StatsView(discord.ui.LayoutView):
         self.container.add_item(discord.ui.Separator())
         self.container.add_item(discord.ui.TextDisplay(reset_info))
         self.container.add_item(discord.ui.Separator())
-        self.container.add_item(
-            discord.ui.ActionRow(self.refresh_button, self.close_button)
-        )
+        self.container.add_item(discord.ui.ActionRow(self.refresh_button, self.close_button))
         self.clear_items()
         self.add_item(self.container)
 

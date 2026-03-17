@@ -63,8 +63,7 @@ class UnlockView(discord.ui.View):
             is_locked = self.ctx.channel.locked
         else:
             overwrites = (
-                self.ctx.channel.overwrites_for(target_role)
-                or discord.PermissionOverwrite()
+                self.ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
             )
             is_locked = overwrites.send_messages is False
         if not is_locked:

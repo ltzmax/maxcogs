@@ -43,9 +43,7 @@ class UserCommands(commands.Cog):
 
     @counting.command(name="stats")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def stats(
-        self, ctx: commands.Context, user: Optional[discord.Member] = None
-    ) -> None:
+    async def stats(self, ctx: commands.Context, user: Optional[discord.Member] = None) -> None:
         """Show counting stats for a user."""
         user = user or ctx.author
         if user.bot:

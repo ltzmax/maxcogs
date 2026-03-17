@@ -48,9 +48,7 @@ class ForwardDeleter(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
-        self.config = Config.get_conf(
-            self, identifier=12937268327, force_registration=True
-        )
+        self.config = Config.get_conf(self, identifier=12937268327, force_registration=True)
         default_guild = {
             "enabled": False,
             "allowed_channels": [],
@@ -205,9 +203,7 @@ class ForwardDeleter(commands.Cog):
             else:
                 already.append(channel.mention)
         if added:
-            await self._update_cache(
-                ctx.guild, "allowed_channels", list(allowed_channels)
-            )
+            await self._update_cache(ctx.guild, "allowed_channels", list(allowed_channels))
         await ctx.send(await self._format_channel_response(added, already, "allow"))
 
     @forwarddeleter.command()
@@ -225,12 +221,8 @@ class ForwardDeleter(commands.Cog):
             else:
                 not_present.append(channel.mention)
         if removed:
-            await self._update_cache(
-                ctx.guild, "allowed_channels", list(allowed_channels)
-            )
-        await ctx.send(
-            await self._format_channel_response(removed, not_present, "disallow")
-        )
+            await self._update_cache(ctx.guild, "allowed_channels", list(allowed_channels))
+        await ctx.send(await self._format_channel_response(removed, not_present, "disallow"))
 
     @forwarddeleter.command()
     async def togglewarn(self, ctx: commands.Context) -> None:
@@ -264,12 +256,8 @@ class ForwardDeleter(commands.Cog):
     async def settings(self, ctx: commands.Context) -> None:
         """Display Forward Deleter settings with pagination if necessary."""
         config = self._config_cache[ctx.guild.id]
-        embed = discord.Embed(
-            title="Forward Deleter Settings", color=await ctx.embed_color()
-        )
-        embed.add_field(
-            name="Status", value="Enabled" if config["enabled"] else "Disabled"
-        )
+        embed = discord.Embed(title="Forward Deleter Settings", color=await ctx.embed_color())
+        embed.add_field(name="Status", value="Enabled" if config["enabled"] else "Disabled")
         embed.add_field(
             name="Warn Users", value="Enabled" if config["warn_enabled"] else "Disabled"
         )
@@ -290,17 +278,12 @@ class ForwardDeleter(commands.Cog):
         channel_pages = (
             ["None"]
             if not channels
-            else [
-                "\n".join(channels[i : i + per_page])
-                for i in range(0, len(channels), per_page)
-            ]
+            else ["\n".join(channels[i : i + per_page]) for i in range(0, len(channels), per_page)]
         )
         role_pages = (
             ["None"]
             if not roles
-            else [
-                "\n".join(roles[i : i + per_page]) for i in range(0, len(roles), per_page)
-            ]
+            else ["\n".join(roles[i : i + per_page]) for i in range(0, len(roles), per_page)]
         )
 
         max_pages = max(len(channel_pages), len(role_pages))

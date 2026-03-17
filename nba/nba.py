@@ -197,9 +197,7 @@ class NBA(commands.Cog):
                 period == previous_period and new_time < old_time
             )
 
-            scores_changed = (
-                home_score != previous_home_score or away_score != previous_away_score
-            )
+            scores_changed = home_score != previous_home_score or away_score != previous_away_score
 
             if scores_changed and is_newer:
                 with sqlite3.connect(self.db_path) as conn:
@@ -276,9 +274,7 @@ class NBA(commands.Cog):
                     if resp.status != 200:
                         log.error(f"Failed to fetch {url}: {resp.status}")
                         if ctx:
-                            await ctx.send(
-                                f"Failed to fetch data from {url}. Try again later."
-                            )
+                            await ctx.send(f"Failed to fetch data from {url}. Try again later.")
                         return None
                     return await resp.read()
             except aiohttp.ClientError as e:
@@ -339,7 +335,9 @@ class NBA(commands.Cog):
             )
             for game in islice(games, i, i + 6):
                 arena_info = f"{game.get('arena', 'Unknown')}"
-                city_info = f"{game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}"
+                city_info = (
+                    f"{game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}"
+                )
                 embed.add_field(
                     name=f"{game['home_team']} vs {game['away_team']}",
                     value=f"- **Start**: <t:{game['timestamp']}:F> (<t:{game['timestamp']}:R>)\n- **Arena**: {arena_info}\n- **City**: {city_info}",
@@ -395,9 +393,7 @@ class NBA(commands.Cog):
                     )
                     total_seconds = int(minutes) * 60 + int(float(seconds))
                     end_time = datetime.now() + timedelta(seconds=total_seconds)
-                    ongoing_timestamp = int(
-                        end_time.replace(tzinfo=timezone.utc).timestamp()
-                    )
+                    ongoing_timestamp = int(end_time.replace(tzinfo=timezone.utc).timestamp())
                 except ValueError:
                     ongoing_timestamp = None
 
@@ -464,9 +460,7 @@ class NBA(commands.Cog):
             if game.get("seriesText"):
                 embed.add_field(name="Series:", value=game["seriesText"])
             if game.get("seriesGameNumber"):
-                embed.add_field(
-                    name="Series Game Number:", value=game["seriesGameNumber"]
-                )
+                embed.add_field(name="Series Game Number:", value=game["seriesGameNumber"])
             footer_text = f"🏀Provided by NBA.com | Page {len(pages) + 1}/{len([g for g in games if not team or team.lower() in (g['homeTeam']['teamName'] + g['awayTeam']['teamName']).lower()])}"
             embed.set_footer(text=footer_text)
             pages.append(embed)
@@ -622,14 +616,10 @@ class NBA(commands.Cog):
                 if team not in TEAM_NAMES:
                     await ctx.send("Invalid team name.")
                     return
-                games = [
-                    g for g in games if team in (g["home_team"] + g["away_team"]).lower()
-                ]
+                games = [g for g in games if team in (g["home_team"] + g["away_team"]).lower()]
             pages = await self.build_schedule_embeds(ctx, games, team)
             if pages:
-                await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(
-                    ctx
-                )
+                await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
         except orjson.JSONDecodeError as e:
             log.error(f"Failed to decode schedule: {e}")
             await ctx.send("Error decoding schedule data. Report to devs.")

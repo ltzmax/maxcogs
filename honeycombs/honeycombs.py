@@ -65,9 +65,7 @@ class HoneyCombs(commands.Cog):
 
     def __init__(self, bot: Red):
         self.bot = bot
-        self.config = Config.get_conf(
-            self, identifier=34562809777, force_registration=True
-        )
+        self.config = Config.get_conf(self, identifier=34562809777, force_registration=True)
         self.cache = {"global": {}, "guilds": {}}
         self.game_states = {}
         self.locks = {}
@@ -169,9 +167,7 @@ class HoneyCombs(commands.Cog):
                 shape = data["shape"]
                 chance = 0.08 if shape == "umbrella☂️" else 0.2
                 if random.random() < chance:
-                    success, message = await safe_deposit(
-                        user, winning_price, currency_name
-                    )
+                    success, message = await safe_deposit(user, winning_price, currency_name)
                     if success:
                         passed_players.append(
                             f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})"
@@ -182,9 +178,7 @@ class HoneyCombs(commands.Cog):
                             f"Player {num}, Shape: {shape} - (User ID: {data['user_id']}) - Deposit Failed"
                         )
                 else:
-                    success, message = await safe_withdraw(
-                        user, losing_price, currency_name
-                    )
+                    success, message = await safe_withdraw(user, losing_price, currency_name)
                     if success:
                         failed_players.append(
                             f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})"
@@ -205,9 +199,7 @@ class HoneyCombs(commands.Cog):
             if failed_players
             else "\nNo players were eliminated."
         )
-        error_content = (
-            "\n\nErrors:\n" + "\n".join(error_messages) if error_messages else ""
-        )
+        error_content = "\n\nErrors:\n" + "\n".join(error_messages) if error_messages else ""
         full_content = passed_content + failed_content + error_content
 
         embed = discord.Embed(
@@ -321,13 +313,8 @@ class HoneyCombs(commands.Cog):
         if not game_state.players:
             return await ctx.send("No ongoing game found.")
 
-        player_list = [
-            f"Player {player_number}" for player_number in game_state.players.keys()
-        ]
-        pages = [
-            humanize_number(player_list[i : i + 10])
-            for i in range(0, len(player_list), 10)
-        ]
+        player_list = [f"Player {player_number}" for player_number in game_state.players.keys()]
+        pages = [humanize_number(player_list[i : i + 10]) for i in range(0, len(player_list), 10)]
         await SimpleMenu(
             pages,
             disable_after_timeout=True,
@@ -347,9 +334,7 @@ class HoneyCombs(commands.Cog):
             return await ctx.send("Game settings are already reset.")
 
         view = ConfirmView(ctx.author, disable_buttons=True)
-        message = await ctx.send(
-            "Are you sure you want to reset the game settings?", view=view
-        )
+        message = await ctx.send("Are you sure you want to reset the game settings?", view=view)
         await view.wait()
         if view.result:
             game_state.players.clear()
@@ -389,9 +374,7 @@ class HoneyCombs(commands.Cog):
             try:
                 async with session.get(image_url) as r:
                     if r.status != 200:
-                        return await ctx.send(
-                            "Failed to set the start image. URL is invalid."
-                        )
+                        return await ctx.send("Failed to set the start image. URL is invalid.")
                     data = await r.read()
             except aiohttp.ClientError as e:
                 return await ctx.send("Failed to set the start image. Client error.")
@@ -399,9 +382,7 @@ class HoneyCombs(commands.Cog):
                 return await ctx.send("Failed to set the start image. Timeout error.")
 
         image_formats = ["JPG", "JPEG", "PNG", "GIF", "WEBP"]
-        if not data or not any(
-            data.startswith(bytes(f"{sig}", "utf-8")) for sig in image_formats
-        ):
+        if not data or not any(data.startswith(bytes(f"{sig}", "utf-8")) for sig in image_formats):
             return await ctx.send(
                 f"Failed to set the start image. Only {humanize_list(image_formats)} format is supported."
             )
@@ -434,9 +415,7 @@ class HoneyCombs(commands.Cog):
 
     @commands.admin()
     @honeycombset.command(name="endtime")
-    async def endtime(
-        self, ctx: commands.Context, default_minutes: commands.Range[int, 10, 720]
-    ):
+    async def endtime(self, ctx: commands.Context, default_minutes: commands.Range[int, 10, 720]):
         """
         Change the default minutes for when the game should end.
 
@@ -457,9 +436,7 @@ class HoneyCombs(commands.Cog):
         The default minimum number of players is 5.
         """
         await self.update_guild_config(ctx.guild, "minimum_players", minimum_players)
-        await ctx.send(
-            f"The minimum number of players has been set to {minimum_players}."
-        )
+        await ctx.send(f"The minimum number of players has been set to {minimum_players}.")
 
     @commands.is_owner()
     @honeycombset.command(name="winningprice")

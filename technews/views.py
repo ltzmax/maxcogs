@@ -33,9 +33,7 @@ class NewsLayout(discord.ui.LayoutView):
     ) -> None:
         super().__init__(timeout=None)
 
-        main_container = discord.ui.Container(
-            accent_color=discord.Color.from_rgb(0, 120, 215)
-        )
+        main_container = discord.ui.Container(accent_color=discord.Color.from_rgb(0, 120, 215))
         main_container.add_item(discord.ui.TextDisplay(f"**{title}**"))
         main_container.add_item(discord.ui.TextDisplay(description))
         action_row = discord.ui.ActionRow()
@@ -56,7 +54,5 @@ class NewsLayout(discord.ui.LayoutView):
         main_container.add_item(discord.ui.Separator())
         now = datetime.utcnow()
         timestamp_markdown = f"<t:{int(now.timestamp())}:f>"
-        main_container.add_item(
-            discord.ui.TextDisplay(f"*From Wccftech • {timestamp_markdown}*")
-        )
+        main_container.add_item(discord.ui.TextDisplay(f"*From Wccftech • {timestamp_markdown}*"))
         self.add_item(main_container)

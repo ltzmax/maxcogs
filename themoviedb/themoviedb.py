@@ -101,9 +101,7 @@ class TheMovieDB(commands.Cog):
                     )
                     return None
                 else:
-                    logger.warning(
-                        f"YouTube RSS returned {resp.status} for {youtube_channel_id}"
-                    )
+                    logger.warning(f"YouTube RSS returned {resp.status} for {youtube_channel_id}")
                     return None
         except discord.HTTPException as e:
             logger.error(
@@ -111,9 +109,7 @@ class TheMovieDB(commands.Cog):
             )
             return None
 
-    async def get_or_create_webhook(
-        self, channel: discord.TextChannel
-    ) -> discord.Webhook | None:
+    async def get_or_create_webhook(self, channel: discord.TextChannel) -> discord.Webhook | None:
         our_name = "Trailer Notifications"
         try:
             webhooks = await channel.webhooks()
@@ -165,15 +161,11 @@ class TheMovieDB(commands.Cog):
                 except:
                     pass
             except (discord.Forbidden, discord.HTTPException) as e:
-                logger.warning(
-                    f"Webhook failed ({e}). disabling webhooks for this server"
-                )
+                logger.warning(f"Webhook failed ({e}). disabling webhooks for this server")
                 await self.config.guild(channel.guild).use_webhook.set(False)
 
         try:
-            await channel.send(
-                full_content, allowed_mentions=discord.AllowedMentions(roles=True)
-            )
+            await channel.send(full_content, allowed_mentions=discord.AllowedMentions(roles=True))
         except discord.Forbidden:
             logger.error(f"Bot lost send permission in notification channel {channel}")
         except discord.HTTPException as e:
@@ -193,9 +185,7 @@ class TheMovieDB(commands.Cog):
         if data.get("use_webhook", True) and guild.me.guild_permissions.manage_webhooks:
             webhook = await self.get_or_create_webhook(channel)
 
-        ping_role = (
-            guild.get_role(data.get("ping_role")) if data.get("ping_role") else None
-        )
+        ping_role = guild.get_role(data.get("ping_role")) if data.get("ping_role") else None
         mention = f"{ping_role.mention} " if ping_role else ""
 
         statuses = data.get("channels_status", {})
@@ -217,9 +207,7 @@ class TheMovieDB(commands.Cog):
                         if resp.status == 200:
                             return key, info, await resp.text()
                         else:
-                            logger.debug(
-                                f"RSS {resp.status} for {info['name']} ({info['id']})"
-                            )
+                            logger.debug(f"RSS {resp.status} for {info['name']} ({info['id']})")
                             return key, info, None
                 except discord.HTTPException as e:
                     logger.error(f"Exception fetching {info['name']}: {e}")
@@ -240,12 +228,10 @@ class TheMovieDB(commands.Cog):
                     continue
 
                 latest = entries[0]
-                video_id = latest.find(
-                    "{http://www.youtube.com/xml/schemas/2015}videoId"
-                ).text
-                published = latest.find(
-                    "{http://www.w3.org/2005/Atom}published"
-                ).text.replace("Z", "+00:00")
+                video_id = latest.find("{http://www.youtube.com/xml/schemas/2015}videoId").text
+                published = latest.find("{http://www.w3.org/2005/Atom}published").text.replace(
+                    "Z", "+00:00"
+                )
                 published_ts = datetime.datetime.fromisoformat(published).timestamp()
                 link = latest.find("{http://www.w3.org/2005/Atom}link").attrib["href"]
                 title = latest.find("{http://www.w3.org/2005/Atom}title").text
@@ -261,9 +247,7 @@ class TheMovieDB(commands.Cog):
                     "last_published_ts": published_ts,
                     "last_video_id": video_id,
                 }
-                message = (
-                    f"{mention}**{info['name']}** just uploaded:\n**{title}**\n{link}"
-                )
+                message = f"{mention}**{info['name']}** just uploaded:\n**{title}**\n{link}"
                 await self.send_notification(channel, webhook, message)
 
             except ET.ParseError:
@@ -300,15 +284,11 @@ class TheMovieDB(commands.Cog):
         Enable or disable the use of webhooks for trailer notifications.
         """
         if not ctx.guild.me.guild_permissions.manage_webhooks:
-            return await ctx.send(
-                "I need the `Manage Webhooks` permission to use webhooks."
-            )
+            return await ctx.send("I need the `Manage Webhooks` permission to use webhooks.")
 
         webhook_status = "enabled" if use_webhook else "disabled"
         await self.config.guild(ctx.guild).use_webhook.set(use_webhook)
-        await ctx.send(
-            f"Webhook usage for trailer notifications has been {webhook_status}."
-        )
+        await ctx.send(f"Webhook usage for trailer notifications has been {webhook_status}.")
 
     @tmdbset.command(name="channel")
     async def set_channel(
@@ -318,9 +298,7 @@ class TheMovieDB(commands.Cog):
         guild_data = await self.config.guild(ctx.guild).all()
         channels_status = guild_data.get("channels_status", {})
 
-        any_enabled = any(
-            status.get("enabled", False) for status in channels_status.values()
-        )
+        any_enabled = any(status.get("enabled", False) for status in channels_status.values())
 
         if channel:
             if not channel.permissions_for(ctx.me).send_messages:
@@ -390,9 +368,7 @@ class TheMovieDB(commands.Cog):
                     statuses[key]["enabled"] = not statuses[key].get("enabled", False)
                     statuses[key]["failure_count"] = 0
                 status = "enabled" if statuses[key]["enabled"] else "disabled"
-                valid_toggles.append(
-                    f"{PREDEFINED_CHANNELS[key]['name']} (`{key}`): **{status}**"
-                )
+                valid_toggles.append(f"{PREDEFINED_CHANNELS[key]['name']} (`{key}`): **{status}**")
 
         response = ""
         if valid_toggles:
@@ -440,9 +416,7 @@ class TheMovieDB(commands.Cog):
         channels_status = guild_data.get("channels_status", {})
         for key, details in PREDEFINED_CHANNELS.items():
             status = (
-                "Enabled"
-                if channels_status.get(key, {}).get("enabled", False)
-                else "Disabled"
+                "Enabled" if channels_status.get(key, {}).get("enabled", False) else "Disabled"
             )
             msg += f"- (`{key}`): **{status}** {details['name']}\n"
 
@@ -459,9 +433,7 @@ class TheMovieDB(commands.Cog):
         await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
 
     @tmdbset.command(name="role")
-    async def set_role(
-        self, ctx: commands.Context, role: discord.Role | None = None
-    ) -> None:
+    async def set_role(self, ctx: commands.Context, role: discord.Role | None = None) -> None:
         """Set or unset a role to ping for new video notifications."""
         if role:
             if role >= ctx.guild.me.top_role:

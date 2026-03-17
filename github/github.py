@@ -47,9 +47,7 @@ TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 # Regular expressions
 TOKEN_REGEX: re.Pattern = re.compile(r"token=(.*)")
 COMMIT_REGEX: re.Pattern = re.compile(r"https://github\.com/.*?/.*?/commit/(.*?)")
-USER_REPO_BRANCH_REGEX: re.Pattern = re.compile(
-    r"/(.*?)/(.*?)/?(commits)?/(.*?(?=\.atom))?"
-)
+USER_REPO_BRANCH_REGEX: re.Pattern = re.compile(r"/(.*?)/(.*?)/?(commits)?/(.*?(?=\.atom))?")
 
 LONG_COMMIT_REGEX: re.Pattern = re.compile(r"^<pre.*?>|</pre>$|(?<=\n)\n+")
 LONG_RELEASE_REGEX: re.Pattern = re.compile(r"^<pre.*?>|</pre>$|(?<=\n)\n+")
@@ -123,9 +121,7 @@ class GitHub(commands.Cog):
                 ).feeds() as member_feeds:
                     # Loop through each feed
                     for feed_name, feed_data in member_data.items():
-                        user, repo, branch, token = await self._parse_url(
-                            feed_data["url"]
-                        )
+                        user, repo, branch, token = await self._parse_url(feed_data["url"])
                         member_feeds[feed_name] = {
                             "user": user,
                             "repo": repo,
@@ -184,9 +180,7 @@ class GitHub(commands.Cog):
         entries_new = []
         for e in entries:
             e_time = (
-                datetime.strptime(e.updated, TIME_FORMAT)
-                .replace(tzinfo=timezone.utc)
-                .timestamp()
+                datetime.strptime(e.updated, TIME_FORMAT).replace(tzinfo=timezone.utc).timestamp()
             )
             if e_time > last_time:
                 entries_new.insert(0, e)
@@ -214,11 +208,7 @@ class GitHub(commands.Cog):
             user_repo_branch.group(1),
             user_repo_branch.group(2),
             user_repo_branch.group(4),
-            (
-                TOKEN_REGEX.fullmatch(parsed_url.query).group(1)
-                if parsed_url.query
-                else None
-            ),
+            (TOKEN_REGEX.fullmatch(parsed_url.query).group(1) if parsed_url.query else None),
         )
 
         # Set branch to None if it is commits.atom
@@ -249,9 +239,7 @@ class GitHub(commands.Cog):
             "token": token,
         }
 
-    async def _get_feed_channel(
-        self, bot: discord.Member, guild_channel: int, feed_channel
-    ):
+    async def _get_feed_channel(self, bot: discord.Member, guild_channel: int, feed_channel):
         channel = None
         if feed_channel:
             channel = self.bot.get_channel(feed_channel)
@@ -372,9 +360,7 @@ class GitHub(commands.Cog):
             )
 
         await self.config.guild(ctx.guild).channel.set(channel.id)
-        return await ctx.send(
-            f"The GitHub RSS feed channel has been set to {channel.mention}."
-        )
+        return await ctx.send(f"The GitHub RSS feed channel has been set to {channel.mention}.")
 
     @_github_set.command(name="role")
     async def _set_role(self, ctx: commands.Context, role: discord.Role = None):
@@ -386,14 +372,10 @@ class GitHub(commands.Cog):
         """
         if not role:
             await self.config.guild(ctx.guild).role.set(None)
-            return await ctx.send(
-                f"The GitHub RSS feed role requirement has been removed."
-            )
+            return await ctx.send(f"The GitHub RSS feed role requirement has been removed.")
         else:
             await self.config.guild(ctx.guild).role.set(role.id)
-            return await ctx.send(
-                f"The GitHub RSS feed role has been set to {role.mention}."
-            )
+            return await ctx.send(f"The GitHub RSS feed role has been set to {role.mention}.")
 
     @_github_set.command(name="limit")
     async def _set_limit(self, ctx: commands.Context, num: int = 5):
@@ -401,9 +383,7 @@ class GitHub(commands.Cog):
         if num < 1:
             return await ctx.send("Please enter a positive integer!")
         await self.config.guild(ctx.guild).limit.set(num)
-        return await ctx.send(
-            f"The GitHub RSS feed limit per user has been set to {num}."
-        )
+        return await ctx.send(f"The GitHub RSS feed limit per user has been set to {num}.")
 
     @_github_set.command(name="timestamp")
     async def _set_timestamp(self, ctx: commands.Context, true_or_false: bool):
@@ -503,9 +483,7 @@ class GitHub(commands.Cog):
 
         feeds_string = ""
         async with ctx.typing():
-            for member_id, member_data in (
-                await self.config.all_members(ctx.guild)
-            ).items():
+            for member_id, member_data in (await self.config.all_members(ctx.guild)).items():
                 if len(member_data["feeds"]) < 1:
                     continue
                 feeds_string += f"{(await self.bot.get_or_fetch_user(member_id)).mention}: `{len(member_data['feeds'])}` feed(s) \n"
@@ -514,9 +492,7 @@ class GitHub(commands.Cog):
                 feeds_string += "\n"
 
         if not feeds_string:
-            return await ctx.send(
-                "No GitHub RSS feeds have been set up in this server yet."
-            )
+            return await ctx.send("No GitHub RSS feeds have been set up in this server yet.")
 
         embeds: typing.List[discord.Embed] = []
         for page in pagify(feeds_string, delims=["\n\n"]):
@@ -614,9 +590,7 @@ class GitHub(commands.Cog):
         guild_config = await self.config.guild(ctx.guild).all()
 
         # Check role requirement
-        if (role := guild_config["role"]) and role not in [
-            r.id for r in ctx.author.roles
-        ]:
+        if (role := guild_config["role"]) and role not in [r.id for r in ctx.author.roles]:
             return await ctx.send(NO_ROLE)
 
         # Filter name
@@ -626,12 +600,9 @@ class GitHub(commands.Cog):
 
         # Get channel
         if not (
-            (channel := guild_config["channel"])
-            and (channel := ctx.guild.get_channel(channel))
+            (channel := guild_config["channel"]) and (channel := ctx.guild.get_channel(channel))
         ):
-            return await ctx.send(
-                "The mods have not set up a GitHub RSS feed channel yet."
-            )
+            return await ctx.send("The mods have not set up a GitHub RSS feed channel yet.")
 
         # Get RSS feed url
         if not (user_repo_branch_token := await self._parse_url_input(url, branch)):
@@ -698,9 +669,7 @@ class GitHub(commands.Cog):
         """Remove a GitHub RSS feed from the server."""
 
         guild_config = await self.config.guild(ctx.guild).all()
-        if (role := guild_config["role"]) and role not in [
-            r.id for r in ctx.author.roles
-        ]:
+        if (role := guild_config["role"]) and role not in [r.id for r in ctx.author.roles]:
             return await ctx.send(NO_ROLE)
 
         name = self._escape(name)
@@ -732,9 +701,7 @@ class GitHub(commands.Cog):
         """List your GitHub RSS feeds in the server."""
 
         guild_config = await self.config.guild(ctx.guild).all()
-        if (role := guild_config["role"]) and role not in [
-            r.id for r in ctx.author.roles
-        ]:
+        if (role := guild_config["role"]) and role not in [r.id for r in ctx.author.roles]:
             return await ctx.send(NO_ROLE)
 
         feeds_string = ""
@@ -792,9 +759,7 @@ class GitHub(commands.Cog):
                         continue
 
                     # Find new entries
-                    new_entries, new_time = await self.new_entries(
-                        parsed.entries, feed["time"]
-                    )
+                    new_entries, new_time = await self.new_entries(parsed.entries, feed["time"])
 
                     # Create feed embed
                     if e := await self._commit_embeds(

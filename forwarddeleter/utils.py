@@ -33,9 +33,7 @@ log = getLogger("red.maxcogs.forwarddeleter.utils")
 def is_forwarded_message(message: discord.Message) -> bool:
     """Determine if the message is forwarded."""
     reference = message.reference
-    return (
-        reference is not None and reference.type == discord.MessageReferenceType.forward
-    )
+    return reference is not None and reference.type == discord.MessageReferenceType.forward
 
 
 def has_allowed_role(member: discord.Member, allowed_roles: set[int]) -> bool:
@@ -49,9 +47,7 @@ async def check_permissions(
     """Verify if the bot has manage_messages permission in the channel or thread."""
     perms = channel.permissions_for(guild.me)
     if not perms.manage_messages:
-        log.warning(
-            f"Missing manage_messages permission in {channel.mention} ({guild.id})"
-        )
+        log.warning(f"Missing manage_messages permission in {channel.mention} ({guild.id})")
         return False
     return True
 

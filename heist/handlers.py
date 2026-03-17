@@ -52,9 +52,7 @@ async def schedule_resolve(
         if user_id in cog.pending_tasks:
             del cog.pending_tasks[user_id]
     except asyncio.CancelledError:
-        log.info(
-            f"Schedule resolve task cancelled for user {user_id} on heist {heist_type}"
-        )
+        log.info(f"Schedule resolve task cancelled for user {user_id} on heist {heist_type}")
         raise
     except Exception as e:
         log.error(
@@ -101,9 +99,7 @@ async def resolve_heist(
         success_chance = min((base_success + int(tool_boost * 100)) / 100, 1.0)
         success = random.random() < success_chance
         loot_item = (
-            heist_type
-            if heist_type in ITEMS and ITEMS[heist_type][1]["type"] == "loot"
-            else None
+            heist_type if heist_type in ITEMS and ITEMS[heist_type][1]["type"] == "loot" else None
         )
         reward = 0
         msg = ""
@@ -148,7 +144,9 @@ async def resolve_heist(
             else:
                 msg = f"Failed the {heist_type.replace('_', ' ').title()}! But your shield prevented any loss."
         if used_tool:
-            msg += f" (Used {used_tool.replace('_', ' ').title()} for +{tool_boost*100:.0f}% success)"
+            msg += (
+                f" (Used {used_tool.replace('_', ' ').title()} for +{tool_boost*100:.0f}% success)"
+            )
 
         heat = await cog.config.user(member).heat()
         heat += 1
@@ -157,18 +155,14 @@ async def resolve_heist(
         material_heat += 1
         await cog.config.user(member).material_heat.set(material_heat)
         material_drop_chance = data.get("material_drop_chance", 0.0)
-        adjusted_material_drop_chance = min(
-            material_drop_chance + (material_heat * 0.04), 0.9
-        )
+        adjusted_material_drop_chance = min(material_drop_chance + (material_heat * 0.04), 0.9)
         if random.random() < adjusted_material_drop_chance:
             await cog.config.user(member).material_heat.set(0)
             materials = [k for k, v in ITEMS.items() if v[1]["type"] == "material"]
             if materials:
                 dropped_material = random.choice(materials)
                 drop_qty = random.randint(1, 3) if success else random.randint(1, 2)
-                inventory[dropped_material] = (
-                    inventory.get(dropped_material, 0) + drop_qty
-                )
+                inventory[dropped_material] = inventory.get(dropped_material, 0) + drop_qty
                 await cog.config.user(member).inventory.set(inventory)
                 msg += f"\nFound {drop_qty} {dropped_material.replace('_', ' ').title()} material!"
 
@@ -201,9 +195,7 @@ async def resolve_heist(
                     inventory[conf_item] -= 1
                     if inventory[conf_item] <= 0:
                         del inventory[conf_item]
-                    msg += (
-                        f" Police confiscated your {conf_item.replace('_', ' ').title()}."
-                    )
+                    msg += f" Police confiscated your {conf_item.replace('_', ' ').title()}."
             await cog.config.user(member).inventory.set(inventory)
             tax = int(bail_amount * 0.15)
             total_bail = bail_amount + tax
@@ -218,9 +210,7 @@ async def resolve_heist(
             )
             await channel.send(f"{member.mention}", embed=embed)
         except discord.Forbidden:
-            log.warning(
-                f"Cannot send heist result to channel {channel.id} for user {member.id}"
-            )
+            log.warning(f"Cannot send heist result to channel {channel.id} for user {member.id}")
             if fallback_channel_id:
                 fallback_channel = cog.bot.get_channel(fallback_channel_id)
                 if fallback_channel:
