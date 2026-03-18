@@ -46,12 +46,13 @@ async def get_owner_timezone(config: Config) -> pytz.timezone:
 
 async def initialize_scheduler(cog: commands.Cog) -> AsyncIOScheduler:
     """Initialize the scheduler."""
-    scheduler = AsyncIOScheduler()
     try:
+        scheduler = AsyncIOScheduler()
         logger.info("Scheduler initialized successfully.")
+        return scheduler
     except Exception as e:
         logger.error(f"Failed to initialize scheduler: {e}", exc_info=True)
-    return scheduler
+        raise
 
 
 async def schedule_resets(cog: commands.Cog) -> None:
@@ -133,9 +134,9 @@ def get_next_reset_times(owner_tz: pytz.timezone) -> tuple[int, int, int]:
 
     # Weekly reset: Next Sunday
     days_until_sunday = (6 - now.weekday()) % 7
-    if days_until_sunday == 0 and now.hour >= 0:
+    if days_until_sunday == 0:
         days_until_sunday = 7
-    next_weekly = datetime(
+    next_weekly_naive = datetime(
         year=now.year,
         month=now.month,
         day=now.day,
@@ -144,35 +145,20 @@ def get_next_reset_times(owner_tz: pytz.timezone) -> tuple[int, int, int]:
         second=0,
         microsecond=0,
     ) + timedelta(days=days_until_sunday)
-    next_weekly = owner_tz.localize(next_weekly)
+    next_weekly = owner_tz.normalize(owner_tz.localize(next_weekly_naive, is_dst=False))
     next_weekly_ts = int(next_weekly.timestamp())
 
     # Monthly reset: First day of next month
-    next_month = datetime(
-        year=now.year,
-        month=now.month,
-        day=1,
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    ) + timedelta(days=32)
-    next_month = next_month.replace(day=1)
-    next_month = owner_tz.localize(next_month)
+    if now.month == 12:
+        next_month_naive = datetime(year=now.year + 1, month=1, day=1)
+    else:
+        next_month_naive = datetime(year=now.year, month=now.month + 1, day=1)
+    next_month = owner_tz.normalize(owner_tz.localize(next_month_naive, is_dst=False))
     next_monthly_ts = int(next_month.timestamp())
 
     # Yearly reset: January 1st of next year
-    next_year = now.year + 1 if now.month > 1 or (now.month == 1 and now.day > 1) else now.year
-    next_yearly = datetime(
-        year=next_year,
-        month=1,
-        day=1,
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
-    )
-    next_yearly = owner_tz.localize(next_yearly)
+    next_yearly_naive = datetime(year=now.year + 1, month=1, day=1)
+    next_yearly = owner_tz.normalize(owner_tz.localize(next_yearly_naive, is_dst=False))
     next_yearly_ts = int(next_yearly.timestamp())
 
     return next_weekly_ts, next_monthly_ts, next_yearly_ts

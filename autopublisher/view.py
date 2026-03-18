@@ -60,6 +60,7 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
             channel_types=[discord.ChannelType.news],
             placeholder="Select the news channels to ignore.",
             min_values=0,
+            max_values=25,
         )
         self.select.callback = self.select_callback
         self.container.add_item(discord.ui.ActionRow(self.select))
@@ -128,6 +129,10 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
             )
 
         await self.cog.config.guild(self.ctx.guild).ignored_channels.set(new_ignored_channels)
+        self.select.default_values = [
+            discord.SelectDefaultValue(type="channel", id=channel.id)
+            for channel in self.ignored_channels
+        ]
         await interaction.response.send_message(
             ":white_check_mark: Ignored discord news channel(s) saved!", ephemeral=True
         )
@@ -142,11 +147,15 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
             )
 
         await self.cog.config.guild(self.ctx.guild).ignored_channels.set([])
+        self.ignored_channels = []
+        self.select.default_values = []
         await interaction.response.send_message(
             ":white_check_mark: Ignored discord news channel(s) removed!", ephemeral=True
         )
-        self.ignored_channels = []
-        self.select.default_values = []
+        try:
+            await self.message.edit(view=self)
+        except discord.HTTPException as e:
+            log.error(f"Failed to update view after unignore: {e}")
 
 
 class StatsView(discord.ui.LayoutView):
@@ -166,18 +175,7 @@ class StatsView(discord.ui.LayoutView):
             label="Close", style=discord.ButtonStyle.red, emoji="✖️"
         )
         self.close_button.callback = self.close_callback
-        self._build_container("Never")
-
-    def _build_container(self, last_published: str) -> None:
-        """Build or rebuild the container with current components."""
-        self.container = discord.ui.Container(accent_color=discord.Color.blurple())
-        self.container.add_item(discord.ui.TextDisplay("AutoPublisher Statistics"))
-        self.container.add_item(discord.ui.Separator())
-        self.container.add_item(discord.ui.TextDisplay(last_published))
-        self.container.add_item(discord.ui.Separator())
-        self.container.add_item(discord.ui.ActionRow(self.refresh_button, self.close_button))
-        self.clear_items()
-        self.add_item(self.container)
+        self.container: discord.ui.Container | None = None
 
     async def start(self, ctx: commands.Context) -> None:
         """Initialize the view with stats data."""
@@ -241,6 +239,8 @@ class StatsView(discord.ui.LayoutView):
         """Handle view timeout."""
         self.refresh_button.disabled = True
         self.close_button.disabled = True
+        if self.message is None:
+            return
         try:
             await self.message.edit(view=self)
         except discord.HTTPException as e:
