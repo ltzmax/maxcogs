@@ -148,18 +148,21 @@ class EventHandlers:
                 cleaned_goals = []
                 if isinstance(goals, list):
                     cleaned_goals = [int(g) for g in goals if isinstance(g, (int, float))]
+
                 if legacy_goal is not None:
+                    migrated = False
                     if isinstance(legacy_goal, (int, float)) and legacy_goal not in cleaned_goals:
                         cleaned_goals.append(int(legacy_goal))
+                        migrated = True
                     elif isinstance(legacy_goal, list):
                         for g in legacy_goal:
                             if isinstance(g, (int, float)) and g not in cleaned_goals:
                                 cleaned_goals.append(int(g))
+                                migrated = True
+                    if migrated:
+                        cleaned_goals = sorted(set(cleaned_goals))
+                        await self.settings.update_guild(message.guild, "goals", cleaned_goals)
                     await self.settings.update_guild(message.guild, "goal", None)
-
-                if cleaned_goals:
-                    cleaned_goals = sorted(set(cleaned_goals))
-                    await self.settings.update_guild(message.guild, "goals", cleaned_goals)
 
                 if cleaned_goals and expected_count in cleaned_goals:
                     await self._handle_goal_reached(message, settings, expected_count)
@@ -186,7 +189,9 @@ class EventHandlers:
                             silent=settings["use_silent"],
                         )
             elif settings["allow_ruin"]:
-                await self._handle_count_ruin(message, settings)
+                await self._handle_count_ruin(
+                    message.channel, message.guild, message.author, settings
+                )
             else:
                 response = settings["default_next_number_message"].format(
                     next_count=expected_count
@@ -195,26 +200,34 @@ class EventHandlers:
                     message, response, settings, settings["toggle_next_number_message"]
                 )
         elif settings["allow_ruin"]:
-            await self._handle_count_ruin(message, settings)
+            await self._handle_count_ruin(message.channel, message.guild, message.author, settings)
         else:
             response = settings["default_next_number_message"].format(next_count=expected_count)
             await handle_invalid_count(
                 message, response, settings, settings["toggle_next_number_message"]
             )
 
-    async def _handle_count_ruin(self, message: discord.Message, settings: dict[str, Any]) -> None:
+    async def _handle_count_ruin(
+        self,
+        channel: discord.abc.Messageable,
+        guild: discord.Guild,
+        author: discord.Member | discord.Object,
+        settings: dict[str, Any],
+    ) -> None:
         old_count = settings["count"]
         await asyncio.gather(
-            self.settings.update_guild(message.guild, "count", 0),
-            self.settings.update_guild(message.guild, "last_user_id", None),
+            self.settings.update_guild(guild, "count", 0),
+            self.settings.update_guild(guild, "last_user_id", None),
         )
-        await assign_ruin_role(self.settings.config, message.author, message.guild, settings)
-        response = settings["ruin_message"].format(user=message.author.mention, count=old_count)
+        if isinstance(author, discord.Member):
+            await assign_ruin_role(self.settings.config, author, guild, settings)
+        author_mention = getattr(author, "mention", f"<@{author.id}>")
+        response = settings["ruin_message"].format(user=author_mention, count=old_count)
         delete_after = (
             settings["delete_after"] if settings.get("toggle_delete_after", False) else None
         )
         await send_message(
-            message.channel,
+            channel,
             response,
             delete_after=delete_after,
             silent=settings["use_silent"],
@@ -251,10 +264,7 @@ class EventHandlers:
 
         if settings["allow_ruin"]:
             author = guild.get_member(author_id) or discord.Object(id=author_id)
-            await self._handle_count_ruin(
-                discord.Message(state=channel._state, channel=channel, data=payload.data),
-                settings,
-            )
+            await self._handle_count_ruin(channel, guild, author, settings)
         elif settings["toggle_edit_message"]:
             response = settings["default_edit_message"].format(next_count=settings["count"] + 1)
             delete_after = (

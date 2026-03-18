@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import asyncio
-from collections import defaultdict
 from datetime import datetime
 from typing import Optional
 
@@ -67,6 +65,60 @@ class UserCommands(commands.Cog):
             stralign="left",
         )
         await ctx.send(f"Last counted: {time_str}\n{box(table, lang='prolog')}")
+
+    @counting.command(name="leaderboard", aliases=["lb"])
+    @commands.cooldown(1, 10, commands.BucketType.guild)
+    @commands.bot_has_permissions(embed_links=True)
+    async def leaderboard(self, ctx: commands.Context) -> None:
+        """Show the counting leaderboard for the server.
+
+        Displays the top 15 users with the highest counts.
+        Please note that the leaderboard only includes users who have counted at least once.
+        """
+        user_cache: dict = self.settings._user_cache
+        entries = []
+        for member in ctx.guild.members:
+            if member.bot:
+                continue
+            data = user_cache.get(member.id)
+            if data and data.get("count", 0) > 0:
+                entries.append((member, data["count"]))
+        if not entries:
+            return await ctx.send("No one has counted yet in this server.")
+        entries.sort(key=lambda x: x[1], reverse=True)
+        invoker_pos = next(
+            (i + 1 for i, (m, _) in enumerate(entries) if m.id == ctx.author.id), None
+        )
+        footer_base = f"Total counters: {len(entries)}"
+        if invoker_pos and invoker_pos > 15:
+            invoker_count = next(c for m, c in entries if m.id == ctx.author.id)
+            footer_base += (
+                f" · Your rank: #{invoker_pos} ({cf.humanize_number(invoker_count)} counts)"
+            )
+        per_page = 15
+        total_pages = max(1, -(-len(entries) // per_page))
+        pages = []
+        for page_num, i in enumerate(range(0, len(entries), per_page), start=1):
+            chunk = entries[i : i + per_page]
+            table_data = [
+                [i + rank, member.display_name, cf.humanize_number(count)]
+                for rank, (member, count) in enumerate(chunk, start=1)
+            ]
+            table = tabulate(
+                table_data,
+                headers=["#", "User", "Count"],
+                tablefmt="simple",
+                stralign="left",
+                numalign="left",
+            )
+            embed = discord.Embed(
+                title=f"🏆 Counting Leaderboard — {ctx.guild.name}",
+                description=box(table, lang="prolog"),
+                color=await ctx.embed_color(),
+            )
+            embed.set_footer(text=f"Page {page_num}/{total_pages} · {footer_base}")
+            pages.append(embed)
+        await SimpleMenu(pages=pages, disable_after_timeout=True, timeout=120).start(ctx)
 
     @counting.command(name="resetme", with_app_command=False)
     @commands.cooldown(1, 360, commands.BucketType.user)

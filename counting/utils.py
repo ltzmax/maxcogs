@@ -82,7 +82,7 @@ async def handle_invalid_count(
     await delete_message(message)
     if send_response:
         delete_after = (
-            settings["delete_after"] if settings.get("toggle_delete_after", True) else None
+            settings["delete_after"] if settings.get("toggle_delete_after", False) else None
         )
         await send_message(
             message.channel,
@@ -105,7 +105,7 @@ async def assign_ruin_role(
 
     role = guild.get_role(ruin_role_id)
     if not role or role >= guild.me.top_role:
-        logger.warning(f"Cannot assign ruin role {role.name} in {guild.name} ({guild.id})")
+        logger.warning(f"Cannot assign ruin role {ruin_role_id} in {guild.name} ({guild.id})")
         return
 
     if any(r.id in excluded_role_ids for r in member.roles):
