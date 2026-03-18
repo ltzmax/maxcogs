@@ -30,6 +30,12 @@ from red_commons.logging import getLogger
 log = getLogger("red.maxcogs.forwarddeleter.utils")
 
 
+def is_forwarded_message(message: discord.Message) -> bool:
+    """Determine if the message is forwarded."""
+    reference = message.reference
+    return reference is not None and reference.type == discord.MessageReferenceType.forward
+
+
 def has_allowed_role(member: discord.Member, allowed_roles: set[int]) -> bool:
     """Check if the member has any allowed roles."""
     return any(role.id in allowed_roles for role in member.roles)
