@@ -9,7 +9,9 @@
     "hidden": false,
     "min_bot_version": "3.5.24",
     "tags": [
-        "forward"
+        "forward",
+        "forward deleter",
+        "automod"
     ],
     "permissions": [
         "embed_links",

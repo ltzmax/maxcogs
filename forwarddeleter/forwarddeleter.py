@@ -33,7 +33,7 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
-from .utils import check_permissions, has_allowed_role, is_forwarded_message, send_warning
+from .utils import check_permissions, has_allowed_role, send_warning
 
 log = getLogger("red.maxcogs.forwarddeleter")
 WARN_MESSAGE = "You are not allowed to forward message(s)."
@@ -42,7 +42,7 @@ WARN_MESSAGE = "You are not allowed to forward message(s)."
 class ForwardDeleter(commands.Cog):
     """A cog that deletes forwarded messages and allows them in specified channels/threads or by roles."""
 
-    __version__: Final[str] = "2.0.0"
+    __version__: Final[str] = "2.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -122,7 +122,7 @@ class ForwardDeleter(commands.Cog):
         if await self.bot.cog_disabled_in_guild(self, message.guild):
             return
 
-        if not is_forwarded_message(message):
+        if not message.is_forwardable():
             return
 
         if await self.bot.is_automod_immune(message.author):
