@@ -175,7 +175,18 @@ class StatsView(discord.ui.LayoutView):
             label="Close", style=discord.ButtonStyle.red, emoji="✖️"
         )
         self.close_button.callback = self.close_callback
-        self.container: discord.ui.Container | None = None
+        self._build_container("Never")
+
+    def _build_container(self, last_published: str) -> None:
+        """Build or rebuild the container with current components."""
+        self.container = discord.ui.Container(accent_color=discord.Color.blurple())
+        self.container.add_item(discord.ui.TextDisplay("AutoPublisher Statistics"))
+        self.container.add_item(discord.ui.Separator())
+        self.container.add_item(discord.ui.TextDisplay(last_published))
+        self.container.add_item(discord.ui.Separator())
+        self.container.add_item(discord.ui.ActionRow(self.refresh_button, self.close_button))
+        self.clear_items()
+        self.add_item(self.container)
 
     async def start(self, ctx: commands.Context) -> None:
         """Initialize the view with stats data."""
