@@ -162,8 +162,8 @@ class AdminCommands(commands.Cog):
     async def set_toggle_progress_delete(self, ctx: commands.Context) -> None:
         """Toggle whether the goal message is deleted after being sent."""
         settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["toggle_progress_delete"]
-        await self.settings.update_guild(ctx.guild, "toggle_progress_delete", toggle)
+        toggle = not settings["toggle_goal_delete"]
+        await self.settings.update_guild(ctx.guild, "toggle_goal_delete", toggle)
         await ctx.send(f"Goal message deletion is now {toggle and 'enabled' or 'disabled'}.")
 
     @countingset.group(name="messages")
@@ -296,11 +296,11 @@ class AdminCommands(commands.Cog):
                 if not (60 <= duration_seconds <= 30 * 86400):
                     return await ctx.send("Duration must be between 60 seconds and 30 days.")
             except ValueError:
-                return await ctx.send(
-                    "Invalid duration. Use a number followed by 's', 'm', 'h', or 'd'."
-                )
                 logger.error(
                     f"Invalid duration format '{duration}' provided by {ctx.author} in guild {ctx.guild.id}."
+                )
+                return await ctx.send(
+                    "Invalid duration. Use a number followed by 's', 'm', 'h', or 'd'."
                 )
         await asyncio.gather(
             self.settings.update_guild(ctx.guild, "ruin_role_id", role.id),
@@ -391,7 +391,9 @@ class AdminCommands(commands.Cog):
                 current_goals.append(goal)
                 current_goals.sort()
                 await self.settings.update_guild(ctx.guild, "goals", current_goals)
-                await ctx.send(f"Counting goal {goal} added. Current goals")
+                await ctx.send(
+                    f"Counting goal {goal} added. Current goals: {', '.join(str(g) for g in current_goals)}."
+                )
             else:
                 await ctx.send(f"Goal {goal} is already set.")
         elif action.lower() == "remove":
