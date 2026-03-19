@@ -35,11 +35,8 @@ from redbot.core.utils.views import ConfirmView
 
 from .dashboard_integration import DashboardIntegration
 from .utils import (
-    get_next_reset_times,
-    get_owner_timezone,
     increment_published_count,
     initialize_scheduler,
-    reset_count,
     schedule_resets,
 )
 from .view import IgnoredNewsChannelsView, StatsView
@@ -72,17 +69,15 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
         self.scheduler = None
-        self.bot.loop.create_task(self._initialize_scheduler())
 
-    async def _initialize_scheduler(self) -> None:
-        """Initialize the scheduler after cog is loaded."""
+    async def cog_load(self) -> None:
+        """Initialize the scheduler when the cog is loaded."""
         self.scheduler = await initialize_scheduler(self)
         await schedule_resets(self)
 
     def cog_unload(self) -> None:
         """Clean up scheduler on cog unload."""
         if self.scheduler and self.scheduler.running:
-            self.scheduler.remove_all_jobs()
             self.scheduler.shutdown()
             logger.debug("Scheduler shut down")
 
@@ -129,8 +124,22 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
             await asyncio.sleep(0.5)
             await asyncio.wait_for(message.publish(), timeout=60)
             await increment_published_count(self.config)
-        except (discord.HTTPException, discord.Forbidden, asyncio.TimeoutError) as e:
-            logger.error(f"Failed to publish message in {message.channel.id}: {e}", exc_info=True)
+        except asyncio.TimeoutError:
+            logger.error(f"Timed out publishing message in {message.channel.id}")
+        except discord.Forbidden as e:
+            logger.error(
+                f"Missing permissions to publish in {message.channel.id}: {e}", exc_info=True
+            )
+        except discord.HTTPException as e:
+            if e.status == 429:
+                logger.warning(
+                    f"Rate limited when publishing in {message.channel.id}. "
+                    "Discord limits 10 publishes/hour per channel."
+                )
+            else:
+                logger.error(
+                    f"Failed to publish message in {message.channel.id}: {e}", exc_info=True
+                )
 
     @commands.guild_only()
     @commands.admin_or_permissions(manage_guild=True)
@@ -283,15 +292,6 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         await view.wait()
         if view.result:
             await self.config.clear_all_globals()
-            # Re-register defaults
-            await self.config.register_global(
-                published_count=0,
-                published_weekly_count=0,
-                published_monthly_count=0,
-                published_yearly_count=0,
-                last_count_time=None,
-                timezone="UTC",
-            )
             await ctx.send("Counts reset.")
         else:
             await ctx.send("Reset cancelled.")
