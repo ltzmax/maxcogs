@@ -31,6 +31,28 @@ from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
 from redbot.core.utils.views import SetApiView
 
+logger = getLogger("red.maxcogs.currency")
+
+_CURRENCY_ALIASES: dict[str, str] = {
+    "dollar": "USD",
+    "dollars": "USD",
+    "bucks": "USD",
+    "euro": "EUR",
+    "euros": "EUR",
+    "pound": "GBP",
+    "pounds": "GBP",
+    "sterling": "GBP",
+    "peso": "MXN",
+    "pesos": "MXN",
+    "mexican peso": "MXN",
+    "philippine peso": "PHP",
+    "filipino peso": "PHP",
+    "pinoy peso": "PHP",
+    "yen": "JPY",
+    "rupee": "INR",
+    "rupees": "INR",
+}
+
 
 class Currency(commands.Cog):
     """A cog to convert currencies using ExchangeRate-API."""
@@ -42,7 +64,6 @@ class Currency(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = aiohttp.ClientSession()
-        self.logger = getLogger("red.maxcogs.currency")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """
@@ -66,16 +87,19 @@ class Currency(commands.Cog):
     async def _fetch_conversion(
         self, api_key: str, amount: float, from_currency: str, to_currency: str
     ) -> dict:
-        """Fetch conversion data from ExchangeRate-API."""
+        """
+        Fetch conversion data from ExchangeRate-API.
+        """
         url = f"https://v6.exchangerate-api.com/v6/{api_key}/pair/{from_currency.upper()}/{to_currency.upper()}/{amount}"
-        async with self.session.get(url) as response:
-            if response.status != 200:
-                raise ValueError("Could not fetch exchange rate data.")
-            return orjson.loads(await response.read())
-
-    async def _send_error(self, interaction: discord.Interaction, message: str):
-        """Send an ephemeral error message."""
-        await interaction.response.send_message(message, ephemeral=True)
+        try:
+            async with self.session.get(url) as response:
+                if response.status != 200:
+                    raise ValueError(
+                        f"Could not fetch exchange rate data (HTTP {response.status})."
+                    )
+                return orjson.loads(await response.read())
+        except aiohttp.ClientError as e:
+            raise ValueError(f"Network error while fetching exchange rate: {e}") from e
 
     @commands.group()
     @commands.is_owner()
@@ -86,13 +110,13 @@ class Currency(commands.Cog):
     async def get_api_instructions(self, ctx):
         """Explains how to get an ExchangeRate-API key."""
         msg = (
-            "To use the `/currencyconvert` command, you need an API key from ExchangeRate-API. Here’s how to get one:\n\n"
+            "To use the `/currencyconvert` command, you need an API key from ExchangeRate-API. Here's how to get one:\n\n"
             "1. **Visit the Website**: Go to <https://www.exchangerate-api.com/>.\n"
             "2. **Sign Up**: Click 'Get Free API Key' and fill out the form with your email and a password.\n"
-            "3. **Get Your Key**: After signing up, you’ll receive an API key (e.g., 'yourapikey123').\n"
+            "3. **Get Your Key**: After signing up, you'll receive an API key (e.g., 'yourapikey123').\n"
             "4. **Set the Key**: As the bot owner, use this command in Discord: `[p]set api exchangerate api_key yourapikey123`\n"
             "   - Replace `yourapikey123` with the key you got.\n\n"
-            f"That’s it! Once set, please use `{ctx.clean_prefix}slash enablecog currency` then `{ctx.clean_prefix}slash sync`.\nNow you can use the `/currencyconvert` command will work (up to 1,500 requests/month on the free tier)."
+            f"That's it! Once set, please use `{ctx.clean_prefix}slash enablecog currency` then `{ctx.clean_prefix}slash sync`.\nNow you can use the `/currencyconvert` command will work (up to 1,500 requests/month on the free tier)."
         )
         default_keys = {"api_key": ""}
         view = SetApiView("exchangerate", default_keys)
@@ -116,41 +140,24 @@ class Currency(commands.Cog):
         to_currency: str,
     ):
         """Convert currency using ExchangeRate-API."""
+        await interaction.response.defer()
         api_key = await self._get_api_key()
         if not api_key:
-            return await self._send_error(
-                interaction,
+            return await interaction.followup.send(
                 "Error: The ExchangeRate-API key has not been set. Please ask the bot owner to set it.",
+                ephemeral=True,
             )
-
-        # small mapping of common currency names to their 3-letter codes
-        # This aint all of them but it covers the most common ones. The API will handle the rest if you use the correct codes.
-        aliases = {
-            "dollar": "USD",
-            "dollars": "USD",
-            "bucks": "USD",
-            "euro": "EUR",
-            "euros": "EUR",
-            "pound": "GBP",
-            "pounds": "GBP",
-            "sterling": "GBP",
-            "peso": "MXN",
-            "pesos": "MXN",
-            "mexican peso": "MXN",
-            "philippine peso": "PHP",
-            "filipino peso": "PHP",
-            "pinoy peso": "PHP",
-            "yen": "JPY",
-            "rupee": "INR",
-            "rupees": "INR",
-        }
 
         from_lower = from_currency.lower().strip()
         to_lower = to_currency.lower().strip()
-        from_currency = aliases.get(from_lower, from_currency)
-        to_currency = aliases.get(to_lower, to_currency)
-        from_cur = from_currency.upper()
-        to_cur = to_currency.upper()
+        from_cur = _CURRENCY_ALIASES.get(from_lower, from_currency).upper()
+        to_cur = _CURRENCY_ALIASES.get(to_lower, to_currency).upper()
+        for code, label in ((from_cur, "source"), (to_cur, "target")):
+            if len(code) != 3:
+                return await interaction.followup.send(
+                    f"Invalid {label} currency: **{code}**. Please use a 3-letter code like USD, EUR, GBP, or a common name like dollar, euro, pound.",
+                    ephemeral=True,
+                )
 
         try:
             data = await self._fetch_conversion(api_key, amount, from_cur, to_cur)
@@ -158,20 +165,28 @@ class Currency(commands.Cog):
             if data.get("result") != "success":
                 error_type = data.get("error-type", "unknown error")
                 if error_type == "unsupported-code":
-                    return await self._send_error(
-                        interaction,
+                    return await interaction.followup.send(
                         f"Invalid currency code(s): **{from_cur}** → **{to_cur}**\n\n"
                         "Please use 3-letter codes like USD, EUR, MXN, PHP, GBP...\n"
                         "or try common names: dollar, euro, pound, peso, yen...",
+                        ephemeral=True,
                     )
-                return await self._send_error(interaction, f"API error: {error_type}")
+                return await interaction.followup.send(
+                    f"API error: {error_type}", ephemeral=True
+                )
 
             converted_amount = round(data["conversion_result"], 2)
             rate = data.get("conversion_rate", 0)
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 f"**{amount:,.2f} {from_cur}** = **{converted_amount:,.2f} {to_cur}**\n"
                 f"(1 {from_cur} ≈ {rate:,.4f} {to_cur})"
             )
 
+        except ValueError as e:
+            logger.error(f"Conversion error: {e}", exc_info=True)
+            await interaction.followup.send(
+                f"Failed to fetch exchange rate data. Please try again later.",
+                ephemeral=True,
+            )
         except discord.HTTPException as e:
-            self.logger.error(f"Failed to send message: {e}", exc_info=True)
+            logger.error(f"Failed to send message: {e}", exc_info=True)
