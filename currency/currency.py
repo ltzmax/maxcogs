@@ -171,9 +171,7 @@ class Currency(commands.Cog):
                         "or try common names: dollar, euro, pound, peso, yen...",
                         ephemeral=True,
                     )
-                return await interaction.followup.send(
-                    f"API error: {error_type}", ephemeral=True
-                )
+                return await interaction.followup.send(f"API error: {error_type}", ephemeral=True)
 
             converted_amount = round(data["conversion_result"], 2)
             rate = data.get("conversion_rate", 0)

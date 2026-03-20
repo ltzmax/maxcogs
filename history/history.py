@@ -62,7 +62,7 @@ class History(commands.Cog):
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+    async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
         """No user data to delete."""
         return
 
@@ -125,20 +125,19 @@ class History(commands.Cog):
                 f"Invalid timezone '{user_tz}' for user {ctx.author.id}, falling back to UTC."
             )
 
+        if (month is None) != (day is None):
+            return await ctx.send("Please provide both month and day, or neither.")
+
         if month is None or day is None:
             today = datetime.now(tz)
             month = today.month
             day = today.day
             display_date: str = today.strftime("%B %d")
         else:
-            if not (1 <= month <= 12 and 1 <= day <= 31):
-                return await ctx.send("Invalid date. Month must be 1-12, day 1-31.")
             try:
-                display_date = datetime(2000, month, day).strftime(
-                    "%B %d"
-                )  # Leap year safe for display
+                display_date = datetime(2000, month, day).strftime("%B %d")
             except ValueError:
-                return await ctx.send("Invalid day for the given month.")
+                return await ctx.send("Invalid date. Please provide a real month (1-12) and day.")
 
         month_str: str = f"{month:02d}"
         day_str: str = f"{day:02d}"

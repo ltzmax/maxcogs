@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 from typing import Any
 
 import aiohttp
@@ -31,6 +30,7 @@ from red_commons.logging import getLogger
 
 log = getLogger("red.maxcogs.history.utils")
 DEFAULT_ERA_NOTATION = "BC"
+_CIRCA_PREFIXES: tuple[str, ...] = ("circa", "c.", "ca.", "approximately")
 
 
 def format_year(year: int | str | None) -> str:
@@ -52,9 +52,8 @@ def format_year(year: int | str | None) -> str:
             year_str: str = str(year)
         else:
             year_str = str(year).strip().lower()
-            circa_prefixes: tuple[str, ...] = ("circa", "c.", "ca.", "approximately")
-            is_circa = any(prefix in year_str for prefix in circa_prefixes)
-            for prefix in circa_prefixes:
+            is_circa = any(prefix in year_str for prefix in _CIRCA_PREFIXES)
+            for prefix in _CIRCA_PREFIXES:
                 year_str = year_str.replace(prefix, "").strip()
 
         if year_str == "unknown year":
@@ -87,13 +86,17 @@ async def fetch_events(
 ) -> list[dict[str, Any]]:
     """Fetch historical events from Wikimedia API."""
     url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/{month}/{day}"
-    async with session.get(url) as response:
-        if response.status != 200:
-            log.warning(f"API request failed with status {response.status} for {month}/{day}")
-            raise ValueError(f"Failed to fetch history data! (Status: {response.status})")
-        try:
-            data = orjson.loads(await response.read())
-            return data.get("events", [])
-        except orjson.JSONDecodeError as e:
-            log.error(f"Failed to decode API response for {month}/{day}: {e}")
-            raise ValueError("Error processing history data from Wikimedia.")
+    try:
+        async with session.get(url) as response:
+            if response.status != 200:
+                log.warning(f"API request failed with status {response.status} for {month}/{day}")
+                raise ValueError(f"Failed to fetch history data! (Status: {response.status})")
+            try:
+                data = orjson.loads(await response.read())
+                return data.get("events", [])
+            except orjson.JSONDecodeError as e:
+                log.error(f"Failed to decode API response for {month}/{day}: {e}")
+                raise ValueError("Error processing history data from Wikimedia.")
+    except aiohttp.ClientError as e:
+        log.error(f"Network error fetching events for {month}/{day}: {e}", exc_info=True)
+        raise ValueError(f"Network error while fetching history data: {e}") from e

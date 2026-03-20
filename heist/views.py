@@ -104,7 +104,7 @@ class ShopSelect(discord.ui.Select):
                 await interaction.response.send_message(
                     "You already have an active shield.", ephemeral=True
                 )
-                return 
+                return
             await bank.withdraw_credits(interaction.user, cost)
             duration = datetime.timedelta(hours=data.get("duration_hours", 48))
             end_time = (datetime.datetime.now(datetime.timezone.utc) + duration).timestamp()

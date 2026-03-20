@@ -204,7 +204,9 @@ class TheMovieDB(commands.Cog):
             async with sem:
                 url = f"https://www.youtube.com/feeds/videos.xml?channel_id={info['id']}"
                 try:
-                    async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+                    async with self.session.get(
+                        url, timeout=aiohttp.ClientTimeout(total=15)
+                    ) as resp:
                         if resp.status == 200:
                             return key, info, await resp.text()
                         else:
@@ -596,7 +598,9 @@ class TheMovieDB(commands.Cog):
             try:
                 return dt(year=int(date_str[:4]), month=1, day=1).timestamp()
             except (ValueError, TypeError) as e:
-                logger.error(f"Error parsing date '{date_str}' for item {item.get('name', 'Unknown')}: {e}")
+                logger.error(
+                    f"Error parsing date '{date_str}' for item {item.get('name', 'Unknown')}: {e}"
+                )
                 return float("-inf")
 
         sorted_results = sorted(data.get("results", []), key=get_date, reverse=True)

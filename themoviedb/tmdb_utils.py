@@ -38,18 +38,20 @@ from redbot.core.utils.views import SimpleMenu
 log = getLogger("red.maxcogs.themoviedb.tmdb_utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
-_NON_INLINE_FIELDS = frozenset({
-    "Original Name",
-    "Tagline",
-    "Production Companies",
-    "Genres",
-    "Production Countries",
-    "Spoken Language",
-    "Spoken Languages",
-    "Homepage",
-    "Original Title",
-    "Belongs to Collection",
-})
+_NON_INLINE_FIELDS = frozenset(
+    {
+        "Original Name",
+        "Tagline",
+        "Production Companies",
+        "Genres",
+        "Production Countries",
+        "Spoken Language",
+        "Spoken Languages",
+        "Homepage",
+        "Original Title",
+        "Belongs to Collection",
+    }
+)
 
 PREDEFINED_CHANNELS = {
     "marvel": {"id": "UCvC4D8onUfXzvjTOM-dBfEA", "name": "Marvel Entertainment"},
@@ -299,6 +301,7 @@ async def search_and_display(ctx, query: str, media_type: str):
 
         total_pages = min(initial_data.get("total_pages", 1), 20)
         sem = asyncio.Semaphore(5)
+
         async def fetch_page(page):
             async with sem:
                 return await search_media(ctx, session, query, media_type, page, api_key=api_key)
@@ -321,7 +324,9 @@ async def search_and_display(ctx, query: str, media_type: str):
             return await ctx.send(f"No results found for `{query}`.")
 
         if len(filtered_results) == 1:
-            data = await get_media_data(ctx, session, filtered_results[0]["id"], media_type, api_key=api_key)
+            data = await get_media_data(
+                ctx, session, filtered_results[0]["id"], media_type, api_key=api_key
+            )
             if not data:
                 return await ctx.send("Failed to fetch media details.")
 
