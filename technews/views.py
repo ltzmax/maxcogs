@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import discord
 
@@ -52,7 +52,7 @@ class NewsLayout(discord.ui.LayoutView):
             main_container.add_item(gallery)
 
         main_container.add_item(discord.ui.Separator())
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         timestamp_markdown = f"<t:{int(now.timestamp())}:f>"
         main_container.add_item(discord.ui.TextDisplay(f"*From Wccftech • {timestamp_markdown}*"))
         self.add_item(main_container)

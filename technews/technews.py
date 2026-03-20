@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 from datetime import datetime
 from typing import Final
 
@@ -46,7 +45,7 @@ log = getLogger("red.maxcogs.technews")
 class TechNews(commands.Cog):
     """Auto posts new articles from Wccftech to a specified channel in your server."""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/technews/README.md"
 
@@ -70,71 +69,97 @@ class TechNews(commands.Cog):
         """Nothing to delete."""
         return
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.check_feed.cancel()
+
+    async def _fetch_feed(self):
+        """Fetch and parse the RSS feed in a thread so the event loop isn't blocked."""
+        loop = asyncio.get_event_loop()
+        feed = await loop.run_in_executor(None, feedparser.parse, self.feed_url)
+        if feed.bozo and not feed.entries:
+            log.warning(
+                f"Feed returned bozo error (no entries): {getattr(feed, 'bozo_exception', 'unknown')}"
+            )
+            return None
+        if feed.bozo:
+            log.debug(
+                f"Feed has bozo flag but entries present, continuing: {getattr(feed, 'bozo_exception', 'unknown')}"
+            )
+        return feed
 
     @tasks.loop(minutes=1)
     async def check_feed(self):
         try:
+            feed = await self._fetch_feed()
+            if not feed or not feed.entries:
+                return
+
+            entries = sorted(
+                feed.entries,
+                key=lambda e: e.get("published_parsed") or datetime.min.timetuple(),
+                reverse=True,
+            )
+
             all_guild_configs = await self.config.all_guilds()
-            for guild_id, guild_data in all_guild_configs.items():
-                channel_id = guild_data.get("channel_id")
-                if not channel_id:
-                    continue
+            await asyncio.gather(
+                *[
+                    self._process_guild(guild_id, guild_data, entries)
+                    for guild_id, guild_data in all_guild_configs.items()
+                ]
+            )
 
-                guild = self.bot.get_guild(guild_id)
-                if not guild:
-                    continue
+        except Exception as e:
+            log.error(f"Unexpected error in check_feed: {e}", exc_info=True)
 
-                channel = guild.get_channel(channel_id)
-                if (
-                    not channel
-                    or not channel.permissions_for(guild.me).send_messages
-                    or not channel.permissions_for(guild.me).embed_links
-                ):
-                    log.warning(f"no permission or channel missing in {guild.name}")
-                    continue
+    async def _process_guild(self, guild_id: int, guild_data: dict, entries: list):
+        """Handle feed processing for a single guild."""
+        channel_id = guild_data.get("channel_id")
+        if not channel_id:
+            return
 
-                feed = feedparser.parse(self.feed_url)
-                if feed.bozo or not feed.entries:
-                    continue
+        guild = self.bot.get_guild(guild_id)
+        if not guild:
+            return
 
-                entries = sorted(
-                    feed.entries,
-                    key=lambda e: e.get("published_parsed") or datetime.min.timetuple(),
-                    reverse=True,
+        channel = guild.get_channel(channel_id)
+        if (
+            not channel
+            or not channel.permissions_for(guild.me).send_messages
+            or not channel.permissions_for(guild.me).embed_links
+        ):
+            log.warning(f"no permission or channel missing in {guild.name}")
+            return
+
+        last_link = guild_data.get("last_article_link")
+
+        # First-time setup: post the most recent article and record it
+        if last_link is None:
+            newest_entry = entries[0]
+            newest_link = newest_entry.get("link")
+            if newest_link:
+                await self.post_article(channel, newest_entry)
+                await self.config.guild(guild).last_article_link.set(newest_link)
+                log.info(
+                    f"First-time post in {guild.name}: {newest_entry.get('title', 'no title')}"
                 )
-                last_link = guild_data.get("last_article_link")
-                if last_link is None:
-                    newest_entry = entries[0]
-                    newest_link = newest_entry.get("link")
+            return
 
-                    if newest_link:
-                        await self.post_article(channel, newest_entry)
-                        await self.config.guild(guild).last_article_link.set(newest_link)
-                        log.info(
-                            f"First-time post in {guild.name}: {newest_entry.get('title', 'no title')}"
-                        )
-                    continue
+        new_articles = []
+        for entry in entries:
+            link = entry.get("link")
+            if not link:
+                continue
+            if link == last_link:
+                break
+            new_articles.append(entry)
 
-                new_articles = []
-                for entry in entries:
-                    link = entry.get("link")
-                    if not link:
-                        continue
-                    if link == last_link:
-                        break
-                    new_articles.append(entry)
+        if not new_articles:
+            return
 
-                if not new_articles:
-                    continue
-
-                for entry in reversed(new_articles):
-                    await self.post_article(channel, entry)
-                    await self.config.guild(guild).last_article_link.set(entry.link)
-                    await asyncio.sleep(1.5)
-        except discord.HTTPException as e:
-            log.error(f"Failed to post TechNews article: {e}", exc_info=True)
+        for entry in reversed(new_articles):
+            await self.post_article(channel, entry)
+            await self.config.guild(guild).last_article_link.set(entry.link)
+            await asyncio.sleep(1.5)
 
     async def post_article(self, channel: discord.TextChannel, entry):
         title = entry.get("title", "No title")
@@ -160,16 +185,14 @@ class TechNews(commands.Cog):
                 img = soup.find("img")
                 if img and img.get("src"):
                     image_url = img["src"]
-            except discord.HTTPException as e:
+            except Exception as e:
                 log.error(f"Failed to parse article content for image: {e}", exc_info=True)
 
         view = NewsLayout(
             title=title, description=description, image_url=image_url, article_url=link
         )
         try:
-            await channel.send(
-                view=view,
-            )
+            await channel.send(view=view)
         except discord.HTTPException as e:
             log.error(f"Failed sending technews article: {e}", exc_info=True)
 
@@ -185,7 +208,11 @@ class TechNews(commands.Cog):
 
     @technews.command(name="channel")
     async def set_channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
-        """Set or clear the channel for tech news in this server."""
+        """Set or clear the channel for tech news in this server.
+
+        Note: changing the channel does not reset the last posted article.
+        The bot will only post articles newer than the last one it posted.
+        """
         guild = ctx.guild
         if channel is None:
             await self.config.guild(guild).channel_id.clear()
@@ -206,9 +233,7 @@ class TechNews(commands.Cog):
 
     @technews.command(name="status")
     async def status(self, ctx):
-        """
-        Check the current tech news posting status for this server.
-        """
+        """Check the current tech news posting status for this server."""
         guild = ctx.guild
         channel_id = await self.config.guild(guild).channel_id()
         last_link = await self.config.guild(guild).last_article_link()
@@ -226,9 +251,15 @@ class TechNews(commands.Cog):
     @commands.cooldown(1, 120, commands.BucketType.guild)
     async def forcepost_latest(self, ctx):
         """Force post the latest article for debugging purposes."""
-        feed = feedparser.parse(self.feed_url)
+        if (
+            not ctx.channel.permissions_for(ctx.guild.me).send_messages
+            or not ctx.channel.permissions_for(ctx.guild.me).embed_links
+        ):
+            return await ctx.send("I don't have permission to post in this channel.")
+
+        loop = asyncio.get_event_loop()
+        feed = await loop.run_in_executor(None, feedparser.parse, self.feed_url)
         if not feed.entries:
             return await ctx.send("No entries in feed.")
-        channel = ctx.channel
-        await self.post_article(channel, feed.entries[0])
+        await self.post_article(ctx.channel, feed.entries[0])
         await ctx.send("Posted the current latest article above for debugging.")
