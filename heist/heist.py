@@ -204,7 +204,7 @@ class Heist(commands.Cog):
         remaining_debt = debt - pay_amount
         await self.config.user(ctx.author).debt.set(remaining_debt)
         await prompt_msg.edit(
-            content=f"Paid {pay_amount:,} {currency_name} towards your debt. ({remaining_debt:,} {currency_name} dept remains.)",
+            content=f"Paid {pay_amount:,} {currency_name} towards your debt. ({remaining_debt:,} {currency_name} debt remains.)",
             view=None,
         )
         return remaining_debt == 0

@@ -24,8 +24,6 @@ SOFTWARE.
 
 import asyncio
 import datetime
-import logging
-import random
 
 import discord
 from red_commons.logging import getLogger
@@ -99,14 +97,15 @@ class ShopSelect(discord.ui.Select):
                 f"You don't have enough currency! Need {cost:,} {currency_name}, have {balance:,} {currency_name}.",
                 ephemeral=True,
             )
-            return  # Keep view active for reselections
-        await bank.withdraw_credits(interaction.user, cost)
+            return
+
         if data["type"] == "shield":
             if await self.cog._has_active_shield(interaction.user):
                 await interaction.response.send_message(
                     "You already have an active shield.", ephemeral=True
                 )
-                return  # Keep view active for reselections
+                return 
+            await bank.withdraw_credits(interaction.user, cost)
             duration = datetime.timedelta(hours=data.get("duration_hours", 48))
             end_time = (datetime.datetime.now(datetime.timezone.utc) + duration).timestamp()
             await self.cog.config.user(interaction.user).shield.set(item_type)
@@ -116,6 +115,7 @@ class ShopSelect(discord.ui.Select):
                 ephemeral=True,
             )
         elif data["type"] == "tool":
+            await bank.withdraw_credits(interaction.user, cost)
             inventory = await self.cog.config.user(interaction.user).inventory()
             inventory[item_type] = inventory.get(item_type, 0) + 1
             await self.cog.config.user(interaction.user).inventory.set(inventory)
