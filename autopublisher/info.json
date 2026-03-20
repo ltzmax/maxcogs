@@ -11,7 +11,8 @@
     "tags": [
         "news",
         "autopublish",
-        "autopublisher"
+        "autopublisher",
+        "Dashboard Integrated"
     ],
     "permissions": [
         "manage_messages",
