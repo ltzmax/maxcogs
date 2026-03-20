@@ -25,6 +25,12 @@ SOFTWARE.
 import datetime
 from typing import Dict
 
+
+def fmt(s: str) -> str:
+    """Quick helper for underscore, space + title case"""
+    return s.replace("_", " ").title()
+
+
 ITEMS: Dict[str, tuple] = {
     "wooden_shield": (
         "🛡️",
