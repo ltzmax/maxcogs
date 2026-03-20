@@ -26,6 +26,7 @@ import asyncio
 import datetime
 import urllib.parse
 import xml.etree.ElementTree as ET
+from datetime import datetime as dt
 from typing import Any
 
 import aiohttp
@@ -46,7 +47,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "2.5.0"
+    __version__ = "2.6.0"
     __docs__ = "https://github.com/ltzmax/maxcogs/tree/master/themoviedb/README.md"
 
     def __init__(self, bot):
@@ -74,7 +75,7 @@ class TheMovieDB(commands.Cog):
                     logger.info(f"Session closed successfully: {self.session.closed}")
                 except asyncio.TimeoutError:
                     logger.warning("Session close timed out—forcing shutdown.")
-                except discord.HTTPException as e:
+                except Exception as e:
                     logger.error(f"Error closing session: {e}", exc_info=True)
             else:
                 logger.info("Session already closed.")
@@ -103,7 +104,7 @@ class TheMovieDB(commands.Cog):
                 else:
                     logger.warning(f"YouTube RSS returned {resp.status} for {youtube_channel_id}")
                     return None
-        except discord.HTTPException as e:
+        except aiohttp.ClientError as e:
             logger.error(
                 f"Exception fetching YouTube RSS {youtube_channel_id}: {e}", exc_info=True
             )
@@ -158,8 +159,8 @@ class TheMovieDB(commands.Cog):
                     for wh in await channel.webhooks():
                         if wh.name == "Trailer Notifications":
                             await wh.delete()
-                except:
-                    pass
+                except discord.HTTPException as e:
+                    logger.warning(f"Failed to clean up stale webhook in {channel}: {e}")
             except (discord.Forbidden, discord.HTTPException) as e:
                 logger.warning(f"Webhook failed ({e}). disabling webhooks for this server")
                 await self.config.guild(channel.guild).use_webhook.set(False)
@@ -203,18 +204,18 @@ class TheMovieDB(commands.Cog):
             async with sem:
                 url = f"https://www.youtube.com/feeds/videos.xml?channel_id={info['id']}"
                 try:
-                    async with self.session.get(url, timeout=15) as resp:
+                    async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
                         if resp.status == 200:
                             return key, info, await resp.text()
                         else:
                             logger.debug(f"RSS {resp.status} for {info['name']} ({info['id']})")
                             return key, info, None
-                except discord.HTTPException as e:
+                except aiohttp.ClientError as e:
                     logger.error(f"Exception fetching {info['name']}: {e}")
                     return key, info, None
 
-        tasks = [fetch_one(k, v) for k, v in enabled_channels.items()]
-        results = await asyncio.gather(*tasks)
+        fetch_tasks = [fetch_one(k, v) for k, v in enabled_channels.items()]
+        results = await asyncio.gather(*fetch_tasks)
 
         updates = {}
         for key, info, feed in results:
@@ -262,10 +263,16 @@ class TheMovieDB(commands.Cog):
     async def check_for_new_trailers(self):
         if not self.bot.is_ready():
             return
-        for guild_id in await self.config.all_guilds():
-            guild = self.bot.get_guild(guild_id)
-            if guild:
-                await self.check_trailers(guild)
+        sem = asyncio.Semaphore(10)
+
+        async def check_one(guild_id):
+            async with sem:
+                guild = self.bot.get_guild(guild_id)
+                if guild:
+                    await self.check_trailers(guild)
+
+        guild_ids = await self.config.all_guilds()
+        await asyncio.gather(*[check_one(gid) for gid in guild_ids])
 
     @check_for_new_trailers.before_loop
     async def before_check_for_new_trailers(self) -> None:
@@ -514,8 +521,7 @@ class TheMovieDB(commands.Cog):
         include_adult = str(getattr(interaction.channel, "nsfw", False)).lower()
         encoded_query = urllib.parse.quote(current)
         url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={encoded_query}&page=1&include_adult={include_adult}"
-        async with aiohttp.ClientSession() as session:
-            data = await fetch_tmdb(url, session)
+        data = await fetch_tmdb(url, self.session)
 
         if not data or "results" not in data:
             return []
@@ -525,8 +531,7 @@ class TheMovieDB(commands.Cog):
             if not date_str or not isinstance(date_str, str) or len(date_str) < 4:
                 return float("-inf")
             try:
-                year = int(date_str[:4])
-                return datetime(year=year, month=1, day=1).timestamp()
+                return dt(year=int(date_str[:4]), month=1, day=1).timestamp()
             except (ValueError, TypeError):
                 return float("-inf")
 
@@ -579,8 +584,7 @@ class TheMovieDB(commands.Cog):
         include_adult = str(getattr(interaction.channel, "nsfw", False)).lower()
         encoded_query = urllib.parse.quote(current)
         url = f"https://api.themoviedb.org/3/search/tv?api_key={api_key}&query={encoded_query}&page=1&include_adult={include_adult}"
-        async with aiohttp.ClientSession() as session:
-            data = await fetch_tmdb(url, session)
+        data = await fetch_tmdb(url, self.session)
 
         if not data or "results" not in data:
             return []
@@ -590,9 +594,9 @@ class TheMovieDB(commands.Cog):
             if not date_str or not isinstance(date_str, str) or len(date_str) < 4:
                 return float("-inf")
             try:
-                year = int(date_str[:4])
-                return datetime(year=year, month=1, day=1).timestamp()
+                return dt(year=int(date_str[:4]), month=1, day=1).timestamp()
             except (ValueError, TypeError):
+                logger.error(f"Error parsing date '{date_str}' for item {item.get('name', 'Unknown')}: {e}")
                 return float("-inf")
 
         sorted_results = sorted(data.get("results", []), key=get_date, reverse=True)

@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 import re
+import urllib.parse
 from datetime import datetime
 from typing import Any
 
@@ -38,6 +38,19 @@ from redbot.core.utils.views import SimpleMenu
 log = getLogger("red.maxcogs.themoviedb.tmdb_utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"
 BASE_URL = "https://api.themoviedb.org/3"
+_NON_INLINE_FIELDS = frozenset({
+    "Original Name",
+    "Tagline",
+    "Production Companies",
+    "Genres",
+    "Production Countries",
+    "Spoken Language",
+    "Spoken Languages",
+    "Homepage",
+    "Original Title",
+    "Belongs to Collection",
+})
+
 PREDEFINED_CHANNELS = {
     "marvel": {"id": "UCvC4D8onUfXzvjTOM-dBfEA", "name": "Marvel Entertainment"},
     "dc": {"id": "UCiifkYAs_bq1pt_zbNAzYGg", "name": "DC Official"},
@@ -88,7 +101,7 @@ async def fetch_tmdb(url: str, session: aiohttp.ClientSession) -> dict[str, Any]
                 log.error(f"TMDB request failed with status: {response.status}")
                 return None
             return orjson.loads(await response.read())
-    except discord.HTTPException as e:
+    except aiohttp.ClientError as e:
         log.error(f"TMDB request error: {e}")
         return None
 
@@ -120,34 +133,47 @@ def filter_media_results(
         "july 22, 2011",
     }
     key = "title" if media_type == "movie" else "name"
+    date_key = "release_date" if media_type == "movie" else "first_air_date"
     return [
         r
         for r in results
         if r.get(key, "").lower().startswith(query.lower())
-        and r.get("release_date", "N/A")[:4] >= "1799"
+        and r.get(date_key, "N/A")[:4] >= "1799"
         and r.get(key, "").lower() not in banned_titles
     ]
 
 
 async def search_media(
-    ctx, session: aiohttp.ClientSession, query: str, media_type: str, page: int = 1
+    ctx,
+    session: aiohttp.ClientSession,
+    query: str,
+    media_type: str,
+    page: int = 1,
+    api_key: str | None = None,
 ) -> dict[str, Any] | None:
     """Search for media on TMDB."""
-    api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
+    if not api_key:
+        api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     if not api_key:
         log.error("TMDB API key is missing")
         await ctx.send("TMDB API key is missing.")
         return None
     include_adult = str(getattr(ctx.channel, "nsfw", False)).lower()
-    url = f"{BASE_MEDIA}/{media_type}?api_key={api_key}&query={query}&page={page}&include_adult={include_adult}"
+    encoded_query = urllib.parse.quote(query)
+    url = f"{BASE_MEDIA}/{media_type}?api_key={api_key}&query={encoded_query}&page={page}&include_adult={include_adult}"
     return await fetch_tmdb(url, session)
 
 
 async def get_media_data(
-    ctx, session: aiohttp.ClientSession, media_id: int, media_type: str
+    ctx,
+    session: aiohttp.ClientSession,
+    media_id: int,
+    media_type: str,
+    api_key: str | None = None,
 ) -> dict[str, Any] | None:
     """Fetch specific media data from TMDB."""
-    api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
+    if not api_key:
+        api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
     if not api_key:
         log.error("TMDB API key is missing")
         await ctx.send("TMDB API key is missing.")
@@ -235,17 +261,7 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
         field_length = len(name) + len(str(value))
         if total_length + field_length > 6000:
             break
-        inline = name not in [
-            "Original Name",
-            "Tagline",
-            "Production Companies",
-            "Genres",
-            "Production Countries",
-            "Spoken Language",
-            "Homepage",
-            "Original Title",
-            "Belongs to Collection",
-        ]
+        inline = name not in _NON_INLINE_FIELDS
         embed.add_field(name=name, value=value, inline=inline)
         total_length += field_length
 
@@ -272,17 +288,25 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
 async def search_and_display(ctx, query: str, media_type: str):
     """Search TMDB and display results with a paginated layout and selection buttons."""
     await ctx.typing()
+    api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
+    if not api_key:
+        return await ctx.send("TMDB API key is missing.")
+
     async with aiohttp.ClientSession() as session:
-        initial_data = await search_media(ctx, session, query, media_type)
+        initial_data = await search_media(ctx, session, query, media_type, api_key=api_key)
         if not await validate_results(ctx, initial_data, query):
             return
 
         total_pages = min(initial_data.get("total_pages", 1), 20)
-        page_tasks = [
-            search_media(ctx, session, query, media_type, page)
-            for page in range(1, total_pages + 1)
-        ]
-        page_results = await asyncio.gather(*page_tasks, return_exceptions=True)
+        sem = asyncio.Semaphore(5)
+        async def fetch_page(page):
+            async with sem:
+                return await search_media(ctx, session, query, media_type, page, api_key=api_key)
+
+        page_results = await asyncio.gather(
+            *[fetch_page(p) for p in range(1, total_pages + 1)],
+            return_exceptions=True,
+        )
 
         filtered_results = []
         for data in page_results:
@@ -297,7 +321,7 @@ async def search_and_display(ctx, query: str, media_type: str):
             return await ctx.send(f"No results found for `{query}`.")
 
         if len(filtered_results) == 1:
-            data = await get_media_data(ctx, session, filtered_results[0]["id"], media_type)
+            data = await get_media_data(ctx, session, filtered_results[0]["id"], media_type, api_key=api_key)
             if not data:
                 return await ctx.send("Failed to fetch media details.")
 
@@ -321,6 +345,7 @@ async def search_and_display(ctx, query: str, media_type: str):
             self.ctx = ctx
             self.filtered_results = self._sort_results(filtered_results, media_type)
             self.media_type = media_type
+            self.api_key = api_key
             self.session = aiohttp.ClientSession()
             self.current_page = 0
             self.items_per_page = items_per_page
@@ -439,6 +464,7 @@ async def search_and_display(ctx, query: str, media_type: str):
                     self.view.session,
                     self.view.filtered_results[self.index]["id"],
                     self.view.media_type,
+                    api_key=self.view.api_key,
                 )
                 if not data:
                     return await self._send_error(interaction, "Failed to fetch media details.")
@@ -500,18 +526,26 @@ async def search_and_display(ctx, query: str, media_type: str):
 async def person_embed(ctx, query: str):
     """Search and display person information from TMDB."""
     await ctx.typing()
+    api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
+    if not api_key:
+        return await ctx.send("TMDB API key is missing.")
+
     async with aiohttp.ClientSession() as session:
-        people_data = await search_media(ctx, session, query, "person")
+        people_data = await search_media(ctx, session, query, "person", api_key=api_key)
         if not await validate_results(ctx, people_data, query):
             return
 
         sorted_people = sorted(
             people_data["results"], key=lambda x: x.get("popularity", 0), reverse=True
         )
-        embeds = []
 
-        for person in sorted_people:
-            data = await get_media_data(ctx, session, person["id"], "person")
+        async def fetch_person(person):
+            return await get_media_data(ctx, session, person["id"], "person", api_key=api_key)
+
+        person_details = await asyncio.gather(*[fetch_person(p) for p in sorted_people])
+
+        embeds = []
+        for person, data in zip(sorted_people, person_details):
             if not data:
                 continue
 
