@@ -595,7 +595,7 @@ class TheMovieDB(commands.Cog):
                 return float("-inf")
             try:
                 return dt(year=int(date_str[:4]), month=1, day=1).timestamp()
-            except (ValueError, TypeError):
+            except (ValueError, TypeError) as e:
                 logger.error(f"Error parsing date '{date_str}' for item {item.get('name', 'Unknown')}: {e}")
                 return float("-inf")
 
