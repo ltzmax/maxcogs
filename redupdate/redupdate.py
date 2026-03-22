@@ -34,7 +34,9 @@ from .view import ForkURLView, RestartButton
 
 log = getLogger("red.maxcogs.redupdate")
 _STABLE_PACKAGE: Final[str] = "Red-DiscordBot"
-_DEV_PACKAGE: Final[str] = "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+_DEV_PACKAGE: Final[str] = (
+    "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
+)
 
 
 class RedUpdate(commands.Cog):

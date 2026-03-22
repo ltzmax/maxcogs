@@ -31,6 +31,7 @@ from redbot.core import Config
 log = getLogger("red.maxcogs.redupdate.view")
 GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
 
+
 class ForkURLModal(discord.ui.Modal, title="Set Your Custom Fork"):
     """The actual Modal that collects the fork URL from the user."""
 
@@ -90,9 +91,7 @@ class ForkURLView(discord.ui.View):
             await interaction.followup.send(
                 "This is not a valid url for your fork.", ephemeral=True
             )
-            log.info(
-                "Invalid fork URL submitted — does not end with #egg=Red-DiscordBot."
-            )
+            log.info("Invalid fork URL submitted — does not end with #egg=Red-DiscordBot.")
             return
         data = await self.config.redupdate_url()
         if data == url:
