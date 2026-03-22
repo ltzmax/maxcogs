@@ -31,8 +31,9 @@ from redbot.core import Config
 log = getLogger("red.maxcogs.redupdate.view")
 GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
 
+class ForkURLModal(discord.ui.Modal, title="Set Your Custom Fork"):
+    """The actual Modal that collects the fork URL from the user."""
 
-class URLModalView(discord.ui.Modal, title="Set Your Custom Fork"):
     forkurl: discord.ui.TextInput = discord.ui.TextInput(
         label="Custom Fork URL",
         placeholder="Enter your fork URL here....",
@@ -43,7 +44,9 @@ class URLModalView(discord.ui.Modal, title="Set Your Custom Fork"):
         await interaction.response.defer()
 
 
-class URLModal(discord.ui.View):
+class ForkURLView(discord.ui.View):
+    """View with a button that opens ForkURLModal to collect and save a fork URL."""
+
     def __init__(self, ctx, config):
         super().__init__(timeout=60)
         self.config = config
@@ -61,17 +64,22 @@ class URLModal(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not interaction.user.id == self.ctx.author.id:
             await interaction.response.send_message(
-                ("You are not the author of this command."), ephemeral=True
+                "You are not the author of this command.", ephemeral=True
             )
             return False
         return True
 
     @discord.ui.button(label="Add Your Fork", style=discord.ButtonStyle.blurple)
     async def on_submit(self, interaction: discord.Interaction, button: discord.ui.Button):
-        modal = URLModalView()
+        modal = ForkURLModal()
         await interaction.response.send_modal(modal)
-        await modal.wait()
-        url = modal.forkurl.value  # Access the TextInput value from the modal
+        timed_out = await modal.wait()
+        if timed_out:
+            await interaction.followup.send(
+                "You took too long to enter a URL. Please try again.", ephemeral=True
+            )
+            return
+        url = modal.forkurl.value
         if not url or not GITHUB.match(url):
             await interaction.followup.send(
                 f"This is not a valid url for your fork.\nCheck `redset whatlink` for more information.",
@@ -83,7 +91,7 @@ class URLModal(discord.ui.View):
                 "This is not a valid url for your fork.", ephemeral=True
             )
             log.info(
-                "This is not a valid url for your fork, please check `redset whatlink` for more information."
+                "Invalid fork URL submitted — does not end with #egg=Red-DiscordBot."
             )
             return
         data = await self.config.redupdate_url()
@@ -94,9 +102,9 @@ class URLModal(discord.ui.View):
             await self.config.redupdate_url.set(url)
         except Exception as e:
             await interaction.followup.send(
-                f"An error occured while setting the URL: {e}", ephemeral=True
+                f"An error occurred while setting the URL: {e}", ephemeral=True
             )
-            log.error(f"An error occured while setting the URL: {e}")
+            log.error("An error occurred while setting the URL: %s", e, exc_info=True)
             return
         await interaction.followup.send("URL has been set successfully.", ephemeral=True)
 
@@ -106,8 +114,8 @@ class URLModal(discord.ui.View):
         error: Exception,
         item: discord.ui.Item,
     ) -> None:
-        await interaction.followup.send(f"An error occured: {error}", ephemeral=True)
-        log.error(f"An error occured: {error}")
+        await interaction.followup.send(f"An error occurred: {error}", ephemeral=True)
+        log.error("An error occurred in ForkURLView: %s", error, exc_info=True)
 
 
 class RestartButton(discord.ui.View):
@@ -131,11 +139,11 @@ class RestartButton(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction):
         if not interaction.user.id == self.ctx.author.id:
             await interaction.response.send_message(
-                ("You are not the author of this command."), ephemeral=True
+                "You are not the author of this command.", ephemeral=True
             )
             return False
         if self.clicked:
-            await interaction.response.send_message(("Button already clicked."), ephemeral=True)
+            await interaction.response.send_message("Button already clicked.", ephemeral=True)
             return False
         return True
 
@@ -149,4 +157,4 @@ class RestartButton(discord.ui.View):
             await self.bot.shutdown(restart=True)
         except Exception as e:
             await interaction.channel.send(f"Error restarting bot: {str(e)}")
-            log.error(e)
+            log.error("Error restarting bot: %s", e, exc_info=True)

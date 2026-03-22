@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Final, Literal, Optional
+from typing import Final, Literal, Optional
 
 import discord
 from red_commons.logging import getLogger
@@ -30,9 +30,11 @@ from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import ConfirmView
 
-from .view import RestartButton, URLModal
+from .view import ForkURLView, RestartButton
 
 log = getLogger("red.maxcogs.redupdate")
+_STABLE_PACKAGE: Final[str] = "Red-DiscordBot"
+_DEV_PACKAGE: Final[str] = "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
 
 
 class RedUpdate(commands.Cog):
@@ -45,14 +47,14 @@ class RedUpdate(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=0x1A108201, force_registration=True)
-        self.config.register_global(redupdate_url=[])
+        self.config.register_global(redupdate_url="")
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre = super().format_help_for_context(ctx)
         return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+    async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
         """Nothing to delete."""
         return
 
@@ -103,7 +105,7 @@ class RedUpdate(commands.Cog):
     @redupdateset.command(name="url")
     async def redupdateset_url(self, ctx: commands.Context):
         """Set your custom fork url of red."""
-        view = URLModal(ctx, self.config)
+        view = ForkURLView(ctx, self.config)
         view.message = await ctx.send(
             f"Please enter your custom fork URL\n-# If you're unsure of what url, see `{ctx.prefix}redset whatlink`.",
             view=view,
@@ -155,7 +157,9 @@ class RedUpdate(commands.Cog):
     @redupdateset.command(name="settings")
     async def redupdateset_settings(self, ctx: commands.Context):
         """Show the url for redupdate cog."""
-        url = await self.config.redupdate_url() or "Not set"
+        url = await self.config.redupdate_url()
+        if not url:
+            return await ctx.send("No custom fork URL is currently set.")
         try:
             await ctx.author.send(f"Your current fork url is:\n`{url}`")
             await ctx.tick()
@@ -172,12 +176,7 @@ class RedUpdate(commands.Cog):
         Arguments:
         - `[version]`: `dev` to update to latest dev changes. Stable by default.
         """
-        packages = {
-            None: "Red-DiscordBot",
-            "dev": "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot",
-        }
-        package = packages[version]
-
+        package = _DEV_PACKAGE if version == "dev" else _STABLE_PACKAGE
         if not version:
             await self._perform_update(ctx, package)
             return
@@ -219,10 +218,7 @@ class RedUpdate(commands.Cog):
         if not fork_url:
             return await ctx.send(f"Set your fork URL using `{prefix}redset url` first.")
 
-        if (
-            fork_url
-            == "git+https://github.com/Cog-Creators/Red-DiscordBot@V3/develop#egg=Red-DiscordBot"
-        ):
+        if fork_url == _DEV_PACKAGE:
             return await ctx.send(f"Set a custom fork URL using `{prefix}redset url` first.")
 
         await self._perform_update(ctx, fork_url)
