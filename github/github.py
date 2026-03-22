@@ -42,7 +42,7 @@ from redbot.core.utils.chat_formatting import escape, pagify
 
 from .converters import ExplicitNone
 
-log = logging.getLogger("red.github")
+log = logging.getLogger("red.maxcogs.github")
 
 # Constants
 COLOR = 0x7289DA
