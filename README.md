@@ -37,8 +37,6 @@ To install any cog you want:
     - Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements.
 - Enforce
     - Requires users to accept ToS and privacy policy before using any bot commands.
-- ForwadDeleter
-    - A cog that deletes forwarded messages and allows them in specified channels or by roles.
 - GitHub
     - GitHub RSS Commit Feeds
 - Heist
@@ -49,18 +47,16 @@ To install any cog you want:
     - Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.
 - Lockdown
     - Let moderators lockdown a channel to prevent messages from being sent.
+- MessageGuard
+    - A unified message moderation cog combining spoiler blocking, attachment restriction, and forwarded message deletion.
 - NekosBest
     - Sends random images from nekos.best + RolePlay Commands.
-- NoSpoiler
-    - Prevent spoilers in this server by deleting messages with spoiler tags or attachments.
 - PlagueGame
     - A plague game.
 - Pokemon
     - This is pokemon related stuff cog.
 - RedUpdate
     - Update your bot to latest dev/stable changes.
-- RestrictPosts
-    - A cog to restrict posts to attachments and links in a specific channel.
 - TechNews
     - Auto posts new articles from Wccftech to a specified channel in your server.
 - TheMovieDB

@@ -20,20 +20,19 @@ body:
         - currency
         - earthquake
         - easterhunt
-        - forwarddeleter
         - github
         - heist
         - history
         - honeycoms
         - lockdown
-        - nba
+        - messageguard
         - nekosbest
         - nospoiler
         - plaguegame
         - pokemon
         - redupdate
-        - restrictposts
         - themoviedb
+        - vanish
     validations:
       required: true
   - type: input

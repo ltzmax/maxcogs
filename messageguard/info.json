@@ -1,0 +1,33 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "MessageGuard",
+    "install_msg": "Thanks for installing.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "A unified message moderation cog combining spoiler blocking, attachment restriction, and forwarded message deletion.",
+    "short": "A unified message moderation cog combining spoiler blocking, attachment restriction, and forwarded message deletion.",
+    "hidden": false,
+    "min_bot_version": "3.5.24",
+    "tags": [
+        "restrict posts",
+        "no spoilers",
+        "delete forwarded messages",
+        "automod",
+        "automoderator",
+        "moderation"
+    ],
+    "permissions": [
+        "manage_channels",
+        "manage_messages",
+        "manage_threads",
+        "embed_links"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        9,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}
