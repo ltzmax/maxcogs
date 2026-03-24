@@ -30,12 +30,12 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import commands
 
-from .utils import create_pokemon_embed
+from .formatters import create_pokemon_embed
 
 log = getLogger("red.maxcogs.whosthatpokemon.views")
 
 
-# Mainly flame who build this view and modal. All credits goes to flame for that work.
+# Credits to flame for the original WhosThatPokemon modal/view design.
 # https://discord.com/channels/133049272517001216/133251234164375552/1104515319604723762
 class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
     poke: discord.ui.TextInput = discord.ui.TextInput(
@@ -53,13 +53,18 @@ class WhosThatPokemonView(discord.ui.View):
     def __init__(self, eligible_names: List[Any]) -> None:
         self.eligible_names = eligible_names
         self.winner = None
+        self.message = None
         super().__init__(timeout=30.0)
 
     async def on_timeout(self) -> None:
         for item in self.children:
             item: discord.ui.Item
             item.disabled = True
-        await self.message.edit(view=self)
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except discord.HTTPException:
+                pass
 
     @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
     async def guess_the_pokemon(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -69,33 +74,37 @@ class WhosThatPokemonView(discord.ui.View):
         if modal.poke.value.casefold() in self.eligible_names and self.winner is None:
             self.winner = interaction.user
             self.stop()
-
             button.disabled = True
             button.label = "Correct Pokémon Guessed"
             button.style = discord.ButtonStyle.success
-            await self.message.edit(view=self)
-            await interaction.followup.send(
-                f"{interaction.user.mention} Guessed the Pokémon correctly!",
-            )
+            if self.message:
+                await self.message.edit(view=self)
+            try:
+                await interaction.followup.send(
+                    f"{interaction.user.mention} Guessed the Pokémon correctly!",
+                )
+            except discord.HTTPException:
+                pass
         else:
-            await interaction.followup.send(
-                f"{interaction.user.mention}, Wrong Pokémon name!",
-            )
+            try:
+                await interaction.followup.send(
+                    f"{interaction.user.mention}, Wrong Pokémon name!",
+                )
+            except discord.HTTPException:
+                pass
 
 
 class HintView(discord.ui.View):
-    """A view that provides a one-time hint for Who's That Pokémon game."""
+    """Provides a one-time hint button — intended to be added directly to WhosThatPokemonView."""
 
-    def __init__(self, pokemon_data: dict, parent_view: "WhosThatPokemonView", pokemon_name: str):
+    def __init__(self, pokemon_data: dict, pokemon_name: str):
         super().__init__(timeout=None)
         self.pokemon_data = pokemon_data
-        self.parent_view = parent_view
         self.pokemon_name = pokemon_name.lower()
         self.hint_used = False
 
     @discord.ui.button(label="Get Hint", style=discord.ButtonStyle.primary, emoji="💡")
     async def hint_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Handle the hint button click."""
         if self.hint_used:
             return await interaction.response.send_message(
                 "The hint has already been used!", ephemeral=True
@@ -125,34 +134,23 @@ class HintView(discord.ui.View):
             hints.append(random.choice(characteristics))
 
         name_length = len(self.pokemon_name)
-        if name_length <= 5:
-            reveal_count = 2
-        elif name_length <= 8:
-            reveal_count = 3
-        else:
-            reveal_count = 4
-
-        reveal_count = min(reveal_count, name_length)
-        reveal_indices = random.sample(range(name_length), reveal_count)
-
-        masked_name = ""
-        for i in range(name_length):
-            if i in reveal_indices:
-                masked_name += self.pokemon_name[i]
-            else:
-                masked_name += "_"
+        reveal_count = min(
+            2 if name_length <= 5 else 3 if name_length <= 8 else 4,
+            name_length,
+        )
+        reveal_indices = set(random.sample(range(name_length), reveal_count))
+        masked_name = "".join(
+            c if i in reveal_indices else "_" for i, c in enumerate(self.pokemon_name)
+        )
         hints.append(f"Name: {masked_name}")
-        hint_text = "\n".join(hints) if hints else "No hints available!"
 
         embed = discord.Embed(
             title="Pokémon Hint",
-            description=hint_text,
+            description="\n".join(hints) if hints else "No hints available!",
             color=0x3F0071,
         )
         embed.set_footer(text="This hint can only be used once per game!")
-
         await interaction.response.send_message(embed=embed, ephemeral=True)
-        await interaction.message.edit(view=self.parent_view)
 
 
 class PokemonSelect(discord.ui.Select):
@@ -190,7 +188,6 @@ class PokemonView(discord.ui.View):
         self.pokemon_data = pokemon_data
         self.current_section = "base"
         self.message = None
-
         self.add_item(PokemonSelect(self))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -220,7 +217,7 @@ class PokemonView(discord.ui.View):
             await interaction.response.send_message(
                 f"Error loading {self.current_section} section.", ephemeral=True
             )
-            log.error(f"Error loading {self.current_section} section: {e}")
+            log.error("Error loading %s section: %s", self.current_section, e)
 
     @discord.ui.button(label="Close", style=discord.ButtonStyle.danger, row=1)
     async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
