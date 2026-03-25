@@ -24,7 +24,7 @@ SOFTWARE.
 
 import asyncio
 from datetime import datetime
-from typing import Final
+from typing import Final, Union
 
 import discord
 import feedparser
@@ -35,17 +35,15 @@ from redbot.core import Config, commands
 from redbot.core.bot import Red
 
 from .views import NewsLayout
+from .utils import _can_post, ChannelOrThread
 
 log = getLogger("red.maxcogs.technews")
-
-# Small todo for later:
-# - Add role ping role for when news is posted, and add that to the status command output. Also add a command to set that role.
 
 
 class TechNews(commands.Cog):
     """Auto posts new articles from Wccftech to a specified channel in your server."""
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/technews/README.md"
 
@@ -71,6 +69,13 @@ class TechNews(commands.Cog):
 
     async def cog_unload(self):
         self.check_feed.cancel()
+
+    def _resolve_channel(self, guild: discord.Guild, channel_id: int) -> ChannelOrThread | None:
+        """
+        Resolve a stored channel_id to either a TextChannel or a Thread.
+        guild.get_channel_or_thread() handles both cases in one call.
+        """
+        return guild.get_channel_or_thread(channel_id)
 
     async def _fetch_feed(self):
         """Fetch and parse the RSS feed in a thread so the event loop isn't blocked."""
@@ -121,13 +126,17 @@ class TechNews(commands.Cog):
         if not guild:
             return
 
-        channel = guild.get_channel(channel_id)
-        if (
-            not channel
-            or not channel.permissions_for(guild.me).send_messages
-            or not channel.permissions_for(guild.me).embed_links
-        ):
-            log.warning(f"no permission or channel missing in {guild.name}")
+        channel = self._resolve_channel(guild, channel_id)
+        if not channel:
+            log.warning(f"Channel/thread {channel_id} not found in {guild.name}")
+            return
+
+        if not _can_post(guild.me, channel):
+            kind = "thread" if isinstance(channel, discord.Thread) else "channel"
+            log.warning(
+                f"Cannot post to {kind} {getattr(channel, 'name', channel_id)} in {guild.name} "
+                f"— missing permissions or thread is archived/locked."
+            )
             return
 
         last_link = guild_data.get("last_article_link")
@@ -161,7 +170,7 @@ class TechNews(commands.Cog):
             await self.config.guild(guild).last_article_link.set(entry.link)
             await asyncio.sleep(1.5)
 
-    async def post_article(self, channel: discord.TextChannel, entry):
+    async def post_article(self, channel: ChannelOrThread, entry):
         title = entry.get("title", "No title")
         description = entry.get("summary", "No description available.")
 
@@ -207,11 +216,22 @@ class TechNews(commands.Cog):
         """Manage Wccftech news auto-posting."""
 
     @technews.command(name="channel")
-    async def set_channel(self, ctx: commands.Context, channel: discord.TextChannel = None):
-        """Set or clear the channel for tech news in this server.
+    async def set_channel(
+        self,
+        ctx: commands.Context,
+        channel: Union[discord.TextChannel, discord.Thread] = None,
+    ):
+        """Set or clear the channel or thread for tech news in this server.
+
+        Supports both regular text channels and active threads.
 
         Note: changing the channel does not reset the last posted article.
         The bot will only post articles newer than the last one it posted.
+
+        **Examples:**
+        - `[p]technews channel #news` - post to a text channel.
+        - `[p]technews channel #some-thread` - post to a thread.
+        - `[p]technews channel` - disable auto-posting.
         """
         guild = ctx.guild
         if channel is None:
@@ -219,17 +239,18 @@ class TechNews(commands.Cog):
             await self.config.guild(guild).last_article_link.clear()
             return await ctx.send("Tech news auto-posting has been **disabled** in this server.")
 
-        if (
-            not channel.permissions_for(guild.me).send_messages
-            or not channel.permissions_for(guild.me).embed_links
-        ):
-            log.warning(
-                f"no permission to send messages or embed links in the channel {channel.name} of guild {guild.name}"
+        if not _can_post(guild.me, channel):
+            if isinstance(channel, discord.Thread) and (channel.archived or channel.locked):
+                return await ctx.send(
+                    f"{channel.mention} is archived or locked. Please choose an active thread."
+                )
+            return await ctx.send(
+                f"I don't have permission to send messages or embed links in {channel.mention}."
             )
-            return await ctx.send("I don't have permission to send messages in that channel.")
 
         await self.config.guild(guild).channel_id.set(channel.id)
-        await ctx.send(f"Tech news will now be posted in {channel.mention}")
+        kind = "thread" if isinstance(channel, discord.Thread) else "channel"
+        await ctx.send(f"Tech news will now be posted in {channel.mention} ({kind}).")
 
     @technews.command(name="status")
     async def status(self, ctx):
@@ -237,13 +258,18 @@ class TechNews(commands.Cog):
         guild = ctx.guild
         channel_id = await self.config.guild(guild).channel_id()
         last_link = await self.config.guild(guild).last_article_link()
-        channel = ctx.guild.get_channel(channel_id) if channel_id else None
 
-        status = (
-            f"**Posting channel:** {channel.mention if channel else 'Not set'}\n"
+        channel = self._resolve_channel(guild, channel_id) if channel_id else None
+        if channel:
+            kind = " (thread)" if isinstance(channel, discord.Thread) else ""
+            channel_display = f"{channel.mention}{kind}"
+        else:
+            channel_display = "Not set"
+
+        await ctx.send(
+            f"**Posting channel:** {channel_display}\n"
             f"**Last posted article link:** {last_link or 'None'}"
         )
-        await ctx.send(status)
 
     # This command is hidden and for debugging purposes only,
     # as it allows reposting the latest article regardless of whether it's new or not.
@@ -251,15 +277,13 @@ class TechNews(commands.Cog):
     @commands.cooldown(1, 120, commands.BucketType.guild)
     async def forcepost_latest(self, ctx):
         """Force post the latest article for debugging purposes."""
-        if (
-            not ctx.channel.permissions_for(ctx.guild.me).send_messages
-            or not ctx.channel.permissions_for(ctx.guild.me).embed_links
-        ):
-            return await ctx.send("I don't have permission to post in this channel.")
+        channel = ctx.channel
+        if not _can_post(ctx.guild.me, channel):
+            return await ctx.send("I don't have permission to post in this channel or thread.")
 
         loop = asyncio.get_event_loop()
         feed = await loop.run_in_executor(None, feedparser.parse, self.feed_url)
         if not feed.entries:
             return await ctx.send("No entries in feed.")
-        await self.post_article(ctx.channel, feed.entries[0])
+        await self.post_article(channel, feed.entries[0])
         await ctx.send("Posted the current latest article above for debugging.")
