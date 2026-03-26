@@ -22,11 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 import math
-import os
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from itertools import islice
 from time import time
 from typing import Any, Dict, Final, List, Optional, Union
@@ -36,6 +34,7 @@ import discord
 import feedparser
 import orjson
 from discord.ext import tasks
+from red_commons.logging import getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.chat_formatting import box, header, rich_markup
@@ -44,19 +43,19 @@ from redbot.core.utils.views import SimpleMenu
 from .converter import (
     ESPN_NBA_NEWS,
     SCHEDULE_URL,
+    TEAM_NAME_TO_API,
     TEAM_NAMES,
     TODAY_SCOREBOARD,
     get_games,
     get_leaders_info,
     get_time_bounds,
     parse_duration,
-    parse_game_time_to_seconds,
     periods,
     team_emojis,
 )
 from .view import GameMenu, PlayByPlay
 
-log = logging.getLogger("red.maxcogs.nba")
+log = getLogger("red.maxcogs.nba")
 
 
 class NBA(commands.Cog):
@@ -68,14 +67,14 @@ class NBA(commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.4.0"
+    __version__: Final[str] = "3.6.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567891011)
-        default_guild: Dict[str, Union[bool]] = {
+        default_guild: Dict[str, Any] = {
             "channel": None,
             "team": None,
         }
@@ -85,21 +84,22 @@ class NBA(commands.Cog):
         self.data_path.mkdir(parents=True, exist_ok=True)
         self.db_path = self.data_path / "game_scores.db"
         self.setup_database()
-        self.finalized_games = set()
+        self.finalized_games: set[str] = set()
+        self._load_finalized_from_db()
         self.last_reset_date = None
-        self.periodic_check.start()
         self.schedule_cache = None
         self.schedule_time = 0
         self.scoreboard_cache = None
         self.scoreboard_time = 0
         self.cache_ttl = 60
+        self.periodic_check.start()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
         pre_processed = super().format_help_for_context(ctx)
         return f"{pre_processed}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
-    async def red_delete_data_for_user(self, **kwargs: Any) -> None:
+    async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
         """Nothing to delete."""
         return
 
@@ -117,23 +117,60 @@ class NBA(commands.Cog):
                     period INTEGER
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS finalized_games (
+                    game_id TEXT PRIMARY KEY,
+                    finalized_date TEXT
+                )
+            """)
             conn.commit()
 
+    def _load_finalized_from_db(self):
+        today = datetime.now(tz=timezone.utc).date().isoformat()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT game_id FROM finalized_games WHERE finalized_date = ?", (today,)
+            )
+            for row in cursor.fetchall():
+                self.finalized_games.add(row[0])
+        log.info("Loaded %d finalized games from DB for %s", len(self.finalized_games), today)
+
     def reset_finalized_games_if_needed(self):
-        """Reset finalized_games if the date has changed."""
-        current_date = datetime.now().date()
+        """Reset finalized_games if the date has changed and clean up old DB rows."""
+        current_date = datetime.now(tz=timezone.utc).date()
         if self.last_reset_date is None or self.last_reset_date != current_date:
-            log.info(f"Resetting finalized_games for new date: {current_date}")
+            log.info("Resetting finalized_games for new date: %s", current_date)
             self.finalized_games.clear()
             self.last_reset_date = current_date
+            yesterday = (current_date.isoformat())
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "DELETE FROM finalized_games WHERE finalized_date != ?", (yesterday,)
+                )
+                cursor.execute("DELETE FROM game_scores")
+                conn.commit()
+            log.info("Cleaned up old game data from DB.")
 
     @tasks.loop(seconds=15)
     async def periodic_check(self):
         self.reset_finalized_games_if_needed()
-        async with aiohttp.ClientSession() as session:
-            async with session.get(TODAY_SCOREBOARD) as response:
-                data = await response.text()
+        try:
+            async with self.session.get(TODAY_SCOREBOARD) as response:
+                if response.status != 200:
+                    log.warning("Scoreboard returned status %s", response.status)
+                    return
+                data = await response.read()
+        except aiohttp.ClientError as e:
+            log.error("Network error fetching scoreboard: %s", e)
+            return
+
+        try:
             games = orjson.loads(data).get("scoreboard", {}).get("games", [])
+        except Exception as e:
+            log.error("Failed to parse scoreboard JSON: %s", e)
+            return
 
         for game in games:
             if not game:
@@ -142,146 +179,144 @@ class NBA(commands.Cog):
             home_team_name = game.get("homeTeam", {}).get("teamName")
             away_team_name = game.get("awayTeam", {}).get("teamName")
             game_id = game.get("gameId")
-            game_status = game.get("gameStatusText")
+            game_status = game.get("gameStatusText", "")
             home_score = game.get("homeTeam", {}).get("score") or 0
             away_score = game.get("awayTeam", {}).get("score") or 0
             game_clock = game.get("gameClock", "")
             period = game.get("period") or 0
 
+            if not game_id:
+                continue
+
             if game_id in self.finalized_games:
-                log.debug(f"Skipping finalized game {game_id}")
+                log.debug("Skipping finalized game %s", game_id)
                 continue
 
             if game_status == "Final":
-                if game_id not in self.finalized_games:
-                    with sqlite3.connect(self.db_path) as conn:
-                        cursor = conn.cursor()
-                        cursor.execute(
-                            """
-                            INSERT OR REPLACE INTO game_scores
-                            (game_id, home_team, away_team, home_score, away_score, game_clock, period)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """,
-                            (
-                                game_id,
-                                home_team_name,
-                                away_team_name,
-                                home_score,
-                                away_score,
-                                game_clock,
-                                period,
-                            ),
-                        )
-                        conn.commit()
-                    self.finalized_games.add(game_id)
+                today = datetime.now(tz=timezone.utc).date().isoformat()
+                with sqlite3.connect(self.db_path) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "DELETE FROM game_scores WHERE game_id = ?", (game_id,)
+                    )
+                    cursor.execute(
+                        "INSERT OR IGNORE INTO finalized_games (game_id, finalized_date) VALUES (?, ?)",
+                        (game_id, today),
+                    )
+                    conn.commit()
+                self.finalized_games.add(game_id)
+                log.info("Game %s finalised and removed from tracking.", game_id)
                 continue
-
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "SELECT home_score, away_score, game_clock, period FROM game_scores WHERE game_id = ?",
+                    "SELECT home_score, away_score FROM game_scores WHERE game_id = ?",
                     (game_id,),
                 )
                 result = cursor.fetchone()
 
-            previous_home_score = result[0] if result else 0
-            previous_away_score = result[1] if result else 0
-            previous_game_clock = result[2] if result else ""
-            previous_period = result[3] if result else 0
+            previous_home_score = result[0] if result else None
+            previous_away_score = result[1] if result else None
+            scores_changed = (
+                previous_home_score is not None
+                and previous_away_score is not None
+                and (home_score != previous_home_score or away_score != previous_away_score)
+            )
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO game_scores
+                    (game_id, home_team, away_team, home_score, away_score, game_clock, period)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (game_id, home_team_name, away_team_name, home_score, away_score, game_clock, period),
+                )
+                conn.commit()
 
-            new_time = parse_game_time_to_seconds(game_clock)
-            old_time = parse_game_time_to_seconds(previous_game_clock)
-            log.debug(f"New time: {new_time} seconds, Old time: {old_time} seconds")
+            if not scores_changed:
+                continue
 
-            is_newer = period > previous_period or (
-                period == previous_period and new_time < old_time
+            log.debug(
+                "Score changed for game %s: %s %d – %d %s",
+                game_id, home_team_name, home_score, away_score, away_team_name,
             )
 
-            scores_changed = home_score != previous_home_score or away_score != previous_away_score
+            # Notify all configured guilds
+            all_guild_configs = await self.config.all_guilds()
+            for guild_id, guild_data in all_guild_configs.items():
+                channel_id = guild_data.get("channel")
+                team_name = guild_data.get("team")
+                if not channel_id or not team_name:
+                    continue
 
-            if scores_changed and is_newer:
-                with sqlite3.connect(self.db_path) as conn:
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        """
-                        INSERT OR REPLACE INTO game_scores
-                        (game_id, home_team, away_team, home_score, away_score, game_clock, period)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """,
-                        (
-                            game_id,
-                            home_team_name,
-                            away_team_name,
-                            home_score,
-                            away_score,
-                            game_clock,
-                            period,
-                        ),
-                    )
-                    conn.commit()
+                api_team_name = TEAM_NAME_TO_API.get(team_name.lower())
+                if not api_team_name:
+                    continue
+                if api_team_name not in (home_team_name, away_team_name):
+                    continue
 
-                for guild in self.bot.guilds:
-                    channel_id = await self.config.guild(guild).channel()
-                    channel = guild.get_channel_or_thread(channel_id)
-                    team_name = await self.config.guild(guild).team()
-                    if (
-                        not channel
-                        or not team_name
-                        or team_name.lower()
-                        not in (home_team_name.lower(), away_team_name.lower())
-                    ):
-                        continue
+                guild = self.bot.get_guild(guild_id)
+                if not guild:
+                    continue
+                channel = guild.get_channel_or_thread(channel_id)
+                if not channel:
+                    continue
+                if not (
+                    channel.permissions_for(guild.me).send_messages
+                    and channel.permissions_for(guild.me).embed_links
+                ):
+                    log.warning(
+                        "Missing permissions for game %s in guild %s", game_id, guild_id
+                    )
+                    continue
 
-                    if not channel or (
-                        not channel.permissions_for(guild.me).send_messages
-                        and not channel.permissions_for(guild.me).embed_links
-                    ):
-                        log.warning(
-                            f"Skipping send for game {game_id} in guild {guild.id}: missing permissions"
-                        )
-                        continue
-
-                    gameclock = parse_duration(game["gameClock"])
-                    embed = discord.Embed(
-                        title="NBA Scoreboard Update",
-                        color=0xEE6730,
-                        description=f"**{home_team_name}** vs **{away_team_name}**\n**Q{game['period']} with time Left**: {gameclock}\n**Watch full game**: https://www.nba.com/game/{game_id}",
-                    )
-                    embed.add_field(
-                        name=f"{home_team_name}:",
-                        value=rich_markup(
-                            f"[bold magenta]Score:[/bold magenta] {home_score}",
-                            markup=True,
-                        ),
-                    )
-                    embed.add_field(
-                        name=f"{away_team_name}:",
-                        value=rich_markup(
-                            f"[bold red]Score:[/bold red] {away_score}", markup=True
-                        ),
-                    )
-                    embed.set_footer(text="🏀Provided by NBA.com")
-                    view = PlayByPlay(game_id)
+                gameclock = parse_duration(game_clock)
+                embed = discord.Embed(
+                    title="NBA Scoreboard Update",
+                    color=0xEE6730,
+                    description=(
+                        f"**{home_team_name}** vs **{away_team_name}**\n"
+                        f"**{periods.get(period, 'Game')} | Time Left**: {gameclock}\n"
+                        f"**Watch full game**: https://www.nba.com/game/{game_id}"
+                    ),
+                )
+                embed.add_field(
+                    name=f"{home_team_name}:",
+                    value=rich_markup(
+                        f"[bold magenta]Score:[/bold magenta] {home_score}", markup=True
+                    ),
+                )
+                embed.add_field(
+                    name=f"{away_team_name}:",
+                    value=rich_markup(
+                        f"[bold red]Score:[/bold red] {away_score}", markup=True
+                    ),
+                )
+                embed.set_footer(text="🏀Provided by NBA.com")
+                view = PlayByPlay(game_id)
+                try:
                     await channel.send(embed=embed, view=view)
+                except discord.HTTPException as e:
+                    log.error("Failed to send update for game %s to guild %s: %s", game_id, guild_id, e)
 
     async def fetch_data(
         self, url: str, ctx: Optional[commands.Context] = None
     ) -> Optional[bytes]:
-        """Fetch data from a URL with error handling, optional ctx for commands."""
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.get(url) as resp:
-                    if resp.status != 200:
-                        log.error(f"Failed to fetch {url}: {resp.status}")
-                        if ctx:
-                            await ctx.send(f"Failed to fetch data from {url}. Try again later.")
-                        return None
-                    return await resp.read()
-            except aiohttp.ClientError as e:
-                log.error(f"Network error fetching {url}: {e}")
-                if ctx:
-                    await ctx.send("Network error. Try again later.")
-                return None
+        """Fetch data from a URL using the shared session with error handling."""
+        try:
+            async with self.session.get(url) as resp:
+                if resp.status != 200:
+                    log.error("Failed to fetch %s: %s", url, resp.status)
+                    if ctx:
+                        await ctx.send(f"Failed to fetch data. Try again later.")
+                    return None
+                return await resp.read()
+        except aiohttp.ClientError as e:
+            log.error("Network error fetching %s: %s", url, e)
+            if ctx:
+                await ctx.send("Network error. Try again later.")
+            return None
 
     async def get_cached_data(
         self, url: str, ctx: commands.Context, cache_key: str
@@ -305,7 +340,7 @@ class NBA(commands.Cog):
         try:
             return orjson.loads(data)
         except orjson.JSONDecodeError as e:
-            log.error(f"Failed to decode NBA schedule: {e}")
+            log.error("Failed to decode NBA schedule: %s", e)
             await ctx.send("Error decoding schedule. Report to devs.")
             return None
 
@@ -334,10 +369,8 @@ class NBA(commands.Cog):
                 color=await ctx.embed_color(),
             )
             for game in islice(games, i, i + 6):
-                arena_info = f"{game.get('arena', 'Unknown')}"
-                city_info = (
-                    f"{game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}"
-                )
+                arena_info = game.get("arena", "Unknown")
+                city_info = f"{game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}"
                 embed.add_field(
                     name=f"{game['home_team']} vs {game['away_team']}",
                     value=f"- **Start**: <t:{game['timestamp']}:F> (<t:{game['timestamp']}:R>)\n- **Arena**: {arena_info}\n- **City**: {city_info}",
@@ -357,14 +390,14 @@ class NBA(commands.Cog):
         try:
             return orjson.loads(data).get("scoreboard", {}).get("games", [])
         except orjson.JSONDecodeError as e:
-            log.error(f"Failed to decode scoreboard: {e}")
+            log.error("Failed to decode scoreboard: %s", e)
             await ctx.send("Error decoding scoreboard. Report to devs.")
             return None
 
     async def build_scoreboard_embeds(
         self, ctx: commands.Context, games: List[dict], team: Optional[str]
     ) -> List[discord.Embed]:
-        """Build detailed paginated embeds for scoreboard with colored boxes."""
+        """Build detailed paginated embeds for scoreboard."""
         if not games:
             start, end = get_time_bounds()
             await ctx.send(
@@ -385,26 +418,24 @@ class NBA(commands.Cog):
 
             start_time_utc = datetime.strptime(game["gameTimeUTC"], "%Y-%m-%dT%H:%M:%SZ")
             start_timestamp = int(start_time_utc.replace(tzinfo=timezone.utc).timestamp())
-            ongoing_timestamp = None
-            if game["gameClock"]:
-                try:
-                    minutes, seconds = (
-                        game["gameClock"].replace("PT", "").replace("S", "").split("M")
-                    )
-                    total_seconds = int(minutes) * 60 + int(float(seconds))
-                    end_time = datetime.now() + timedelta(seconds=total_seconds)
-                    ongoing_timestamp = int(end_time.replace(tzinfo=timezone.utc).timestamp())
-                except ValueError:
-                    ongoing_timestamp = None
 
             home_score = game["homeTeam"]["score"]
             away_score = game["awayTeam"]["score"]
             home_record = f"{game['homeTeam']['wins']}-{game['homeTeam']['losses']}"
             away_record = f"{game['awayTeam']['wins']}-{game['awayTeam']['losses']}"
+            game_clock_str = parse_duration(game.get("gameClock", "")) if game.get("gameClock") else "N/A"
+            period_str = periods.get(game["period"], "Post Game")
+            game_status_text = game.get("gameStatusText", "")
+            is_final = game_status_text.lower() == "final"
+            is_ongoing = bool(game.get("gameClock")) and not is_final
 
             embed = discord.Embed(
                 title=f"NBA Scoreboard{' for ' + team.capitalize() if team else ''}",
-                description=f"**Period**: {periods.get(game['period'], 'Post Game')}\n**Time Left**: {ongoing_timestamp and f'<t:{ongoing_timestamp}:R>' or 'No ongoing game.'}\n**Full Game**: https://www.nba.com/game/{game['gameId']}",
+                description=(
+                    f"**Period**: {period_str}\n"
+                    f"**Clock**: {game_clock_str}\n"
+                    f"**Full Game**: https://www.nba.com/game/{game['gameId']}"
+                ),
                 color=await ctx.embed_color(),
             )
             embed.add_field(
@@ -421,34 +452,20 @@ class NBA(commands.Cog):
                     markup=True,
                 ),
             )
-            embed.add_field(
-                name="Game Status:",
-                value=(
-                    "Game is ongoing."
-                    if ongoing_timestamp
-                    else (
-                        game["gameStatusText"].lower() != "final"
-                        and f"<t:{start_timestamp}:F> (<t:{start_timestamp}:R>)"
-                        or "Game has ended."
-                    )
-                ),
-                inline=False,
-            )
+            if is_final:
+                game_status_value = "Game has ended."
+            elif is_ongoing:
+                game_status_value = "Game is ongoing."
+            else:
+                game_status_value = f"<t:{start_timestamp}:F> (<t:{start_timestamp}:R>)"
+            embed.add_field(name="Game Status:", value=game_status_value, inline=False)
+
             home_leader, away_leader = get_leaders_info(game)
             home_emoji = team_emojis.get(home_team, "")
             away_emoji = team_emojis.get(away_team, "")
+            field_name_home = f"{home_emoji} Home Leader:" if home_emoji else "Home Leader:"
+            field_name_away = f"{away_emoji} Away Leader:" if away_emoji else "Away Leader:"
 
-            # if you edit to add your own bot id, you need to change emoji ids too.
-            field_name_home = (
-                f"{home_emoji} Home Leader:"
-                if self.bot.user.id == 563787458135719967
-                else "Home Leader:"
-            )
-            field_name_away = (
-                f"{away_emoji} Away Leader:"
-                if self.bot.user.id == 563787458135719967
-                else "Away Leader:"
-            )
             embed.add_field(name=field_name_home, value=home_leader)
             embed.add_field(name=field_name_away, value=away_leader)
             embed.add_field(name=" ", value=" ", inline=False)
@@ -461,11 +478,18 @@ class NBA(commands.Cog):
                 embed.add_field(name="Series:", value=game["seriesText"])
             if game.get("seriesGameNumber"):
                 embed.add_field(name="Series Game Number:", value=game["seriesGameNumber"])
-            footer_text = f"🏀Provided by NBA.com | Page {len(pages) + 1}/{len([g for g in games if not team or team.lower() in (g['homeTeam']['teamName'] + g['awayTeam']['teamName']).lower()])}"
-            embed.set_footer(text=footer_text)
+
+            total_pages = len([
+                g for g in games
+                if not team or team.lower() in (
+                    g["homeTeam"]["teamName"] + g["awayTeam"]["teamName"]
+                ).lower()
+            ])
+            embed.set_footer(text=f"🏀Provided by NBA.com | Page {len(pages) + 1}/{total_pages}")
             pages.append(embed)
+
         if not pages and team:
-            await ctx.send("That team isn’t playing today or invalid team name.")
+            await ctx.send("That team isn't playing today or invalid team name.")
         return pages
 
     async def fetch_news(self, ctx: commands.Context) -> Optional[List[dict]]:
@@ -477,7 +501,7 @@ class NBA(commands.Cog):
             feed = feedparser.parse(data)
             return feed.get("entries", [])
         except Exception as e:
-            log.error(f"Failed to parse ESPN news: {e}")
+            log.error("Failed to parse ESPN news: %s", e)
             await ctx.send("Failed to parse news feed.")
             return None
 
@@ -511,10 +535,10 @@ class NBA(commands.Cog):
     async def before_periodic_check(self):
         await self.bot.wait_until_ready()
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.periodic_check.cancel()
-        if self.session:
-            self.bot.loop.create_task(self.session.close())
+        if self.session and not self.session.closed:
+            await self.session.close()
 
     @commands.group()
     @commands.guild_only()
@@ -542,18 +566,19 @@ class NBA(commands.Cog):
         - `channel`: The channel to send NBA game updates to.
         - `team`: The team to get the game updates for.
 
-        **Vaild Team Names:**
-        - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trailblazers, warriors, wizards
+        **Valid Team Names:**
+        - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trail blazers, warriors, wizards
         """
-        if not TEAM_NAMES:
+        if team.lower() not in TEAM_NAMES:
             return await ctx.send(
-                "That is not a vaild team",
+                "That is not a valid team name. Use one of: "
+                + ", ".join(TEAM_NAMES),
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
             )
         await self.config.guild(ctx.guild).channel.set(channel.id)
         await self.config.guild(ctx.guild).team.set(team.lower())
         await ctx.send(
-            f"Set channel to {channel} and team to {team}.",
+            f"Set channel to {channel.mention} and team to **{team.lower()}**.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
@@ -571,12 +596,12 @@ class NBA(commands.Cog):
     @nbaset.command(name="settings")
     async def nbaset_settings(self, ctx: commands.Context):
         """View the channel and team settings."""
-        all = await self.config.guild(ctx.guild).all()
-        channel_id = all["channel"]
-        channel = ctx.guild.get_channel(channel_id)
-        team = all["team"]
+        all_data = await self.config.guild(ctx.guild).all()
+        channel_id = all_data["channel"]
+        channel = ctx.guild.get_channel(channel_id) if channel_id else None
+        team = all_data["team"]
         await ctx.send(
-            f"Channel: {channel.mention if channel else channel_id}\nTeam: {team}",
+            f"Channel: {channel.mention if channel else 'Not set'}\nTeam: {team or 'Not set'}",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
@@ -601,8 +626,8 @@ class NBA(commands.Cog):
         - The [playoffs](https://www.nba.com/playoffs) is in April to June.
         - The [play-in tournament](https://www.nba.com/play-in-tournament) is in April.
 
-        **Vaild Team Names:**
-        - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trailblazers, warriors, wizards
+        **Valid Team Names:**
+        - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trail blazers, warriors, wizards
         """
         await ctx.typing()
         data = await self.fetch_data(SCHEDULE_URL, ctx)
@@ -614,14 +639,13 @@ class NBA(commands.Cog):
             if team:
                 team = team.lower()
                 if team not in TEAM_NAMES:
-                    await ctx.send("Invalid team name.")
-                    return
+                    return await ctx.send("Invalid team name.")
                 games = [g for g in games if team in (g["home_team"] + g["away_team"]).lower()]
             pages = await self.build_schedule_embeds(ctx, games, team)
             if pages:
                 await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
         except orjson.JSONDecodeError as e:
-            log.error(f"Failed to decode schedule: {e}")
+            log.error("Failed to decode schedule: %s", e)
             await ctx.send("Error decoding schedule data. Report to devs.")
 
     @schedule.autocomplete("team")
@@ -629,7 +653,6 @@ class NBA(commands.Cog):
         self, interaction: discord.Interaction, current: str
     ) -> List[app_commands.Choice]:
         choices = [t for t in TEAM_NAMES if current.lower() in t.lower()]
-        # Limit to 25 per Discord API
         return [app_commands.Choice(name=t, value=t) for t in choices[:25]]
 
     @nba.command()
@@ -653,7 +676,6 @@ class NBA(commands.Cog):
         """Get the current NBA scoreboard.
 
         - Scoreboard updates everyday between 12:00 PM ET and 1:00 PM ET.
-            - Feel free to convert the time to your timezone from https://dateful.com/time-zone-converter.
 
         **Note**:
         - The NBA's regular season runs from October to April.
@@ -665,7 +687,7 @@ class NBA(commands.Cog):
         - `[p]nba scoreboard heat` - Returns the current NBA scoreboard for the Miami Heat.
 
         **Arguments:**
-        - `[team]` - The team you want to get the scoreboard for. If not specified, it will return all games.
+        - `[team]` - The team you want to get the scoreboard for.
         """
         await ctx.typing()
         games = await self.fetch_scoreboard(ctx)
@@ -676,12 +698,9 @@ class NBA(commands.Cog):
             view = GameMenu(pages, ctx)
             view.message = await ctx.send(embed=pages[0], view=view)
 
-    # Same as schedule's autocomplete but with different @
-    # I really dont know how to do autocomplete so i made dublicate i guess?
     @scoreboard.autocomplete("team")
     async def scoreboard_autocomplete(
         self, interaction: discord.Interaction, current: str
     ) -> List[app_commands.Choice]:
         choices = [t for t in TEAM_NAMES if current.lower() in t.lower()]
-        # Limit to 25 per Discord API
         return [app_commands.Choice(name=t, value=t) for t in choices[:25]]

@@ -22,17 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 import re
 from datetime import datetime, timezone
 
 import pytz
+from red_commons.logging import getLogger
 
-log = logging.getLogger("red.maxcogs.nba.converter")
+log = getLogger("red.maxcogs.nba.converter")
+
 TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
 ESPN_NBA_NEWS = "http://www.espn.com/espn/rss/nba/news"
 PLAYBYPLAY = "https://cdn.nba.com/static/json"
+
 TEAM_NAMES = [
     "heat",
     "bucks",
@@ -65,6 +67,38 @@ TEAM_NAMES = [
     "warriors",
     "wizards",
 ]
+TEAM_NAME_TO_API: dict[str, str] = {
+    "heat": "Heat",
+    "bucks": "Bucks",
+    "bulls": "Bulls",
+    "cavaliers": "Cavaliers",
+    "celtics": "Celtics",
+    "clippers": "Clippers",
+    "grizzlies": "Grizzlies",
+    "hawks": "Hawks",
+    "hornets": "Hornets",
+    "jazz": "Jazz",
+    "kings": "Kings",
+    "knicks": "Knicks",
+    "lakers": "Lakers",
+    "magic": "Magic",
+    "mavericks": "Mavericks",
+    "nets": "Nets",
+    "nuggets": "Nuggets",
+    "pacers": "Pacers",
+    "pelicans": "Pelicans",
+    "pistons": "Pistons",
+    "raptors": "Raptors",
+    "rockets": "Rockets",
+    "sixers": "76ers",
+    "spurs": "Spurs",
+    "suns": "Suns",
+    "thunder": "Thunder",
+    "timberwolves": "Timberwolves",
+    "trail blazers": "Trail Blazers",
+    "warriors": "Warriors",
+    "wizards": "Wizards",
+}
 
 # Please do not change the names of the teams, as they are used to match the team names from the NBA API.
 team_emojis = {
@@ -101,19 +135,17 @@ team_emojis = {
 }
 
 
-def parse_game_time_to_seconds(duration):
+def parse_game_time_to_seconds(duration: str) -> float:
     """
-    Parse the duration string from the NBA API into total seconds for comparison.
+    Parse a game clock string from the NBA API into total seconds.
     """
-    if not duration or duration == "PT0M0S":  # Handle empty or zero-time strings
-        return 0
+    if not duration:
+        return 0.0
 
-    # Pattern for PT format
     match_pt = re.match(r"PT(?:(\d+)M)?(?:(\d+)(?:\.(\d+))?S)?", duration)
-    # Pattern for MM:SS format (optional, if API might return this)
     match_mmss = re.match(r"(\d+):(\d+)", duration)
 
-    if match_pt:
+    if match_pt and any(match_pt.groups()):
         minutes = int(match_pt.group(1) or 0)
         seconds = int(match_pt.group(2) or 0)
         milliseconds = int(match_pt.group(3) or 0) if match_pt.group(3) else 0
@@ -122,30 +154,24 @@ def parse_game_time_to_seconds(duration):
         seconds = int(match_mmss.group(2))
         milliseconds = 0
     else:
-        log.error(
-            f"Unexpected duration format: {duration} - defaulting to 0 seconds",
-            exc_info=True,
-        )
-        return 0
+        log.error("Unexpected duration format: %s — defaulting to 0 seconds", duration)
+        return 0.0
 
-    # Cap minutes at 12 for NBA quarters
     minutes = min(minutes, 12)
-
-    total_seconds = minutes * 60 + seconds + (milliseconds / 1000 if milliseconds else 0)
-    return total_seconds
+    return minutes * 60 + seconds + (milliseconds / 1000 if milliseconds else 0)
 
 
-def parse_duration(duration):
+def parse_duration(duration: str) -> str:
     """
-    Parse the duration string from the NBA API, handling various cases where
-    minutes or seconds might not be explicitly stated or in different formats.
+    Parse a game clock string from the NBA API into a human-readable MM:SS string.
     """
-    # Pattern for PT format
+    if not duration:
+        return "0:00"
+
     match_pt = re.match(r"PT(?:(\d+)M)?(?:(\d+)(?:\.(\d+))?S)?", duration)
-    # Pattern for MM:SS format
     match_mmss = re.match(r"(\d+):(\d+)", duration)
 
-    if match_pt:
+    if match_pt and any(match_pt.groups()):
         minutes = int(match_pt.group(1) or 0)
         seconds = int(match_pt.group(2) or 0)
         milliseconds = int(match_pt.group(3) or 0)
@@ -154,19 +180,13 @@ def parse_duration(duration):
         seconds = int(match_mmss.group(2))
         milliseconds = 0
     else:
-        log.error(f"Unexpected duration format: {duration} - defaulting to 0:00", exc_info=True)
+        log.error("Unexpected duration format: %s — defaulting to 0:00", duration)
         return "0:00"
 
-    # Cap minutes at 12 for NBA quarters
     minutes = min(minutes, 12)
-
-    if minutes == 0 and seconds == 0 and milliseconds == 0:
-        return "0:00"
-
     total_seconds = minutes * 60 + seconds + (milliseconds / 1000 if milliseconds else 0)
     minutes_left = int(total_seconds // 60)
     seconds_left = int(total_seconds % 60)
-
     return f"{minutes_left}:{str(seconds_left).zfill(2)}"
 
 
@@ -181,28 +201,18 @@ periods = {
 
 
 def get_time_bounds():
-    """
-    Get the start and end timestamps for the current hour in Eastern Time.
-    This function is used to when the scoreboard is updated each day(s).
-    """
+    """Get the start and end timestamps for the scoreboard update window in Eastern Time."""
     now_utc = datetime.now(pytz.utc)
     now_et = now_utc.astimezone(pytz.timezone("US/Eastern"))
-    # Define the start and end times in Eastern Time
     start_time_et = now_et.replace(hour=12, minute=0, second=0, microsecond=0)
     end_time_et = now_et.replace(hour=13, minute=0, second=0, microsecond=0)
-    # Convert the start and end times to UTC
-    start_time_utc = start_time_et.astimezone(pytz.utc)
-    end_time_utc = end_time_et.astimezone(pytz.utc)
-    # Get the start and end timestamps
-    start_timestamp = int(start_time_utc.timestamp())
-    end_timestamp = int(end_time_utc.timestamp())
+    start_timestamp = int(start_time_et.astimezone(pytz.utc).timestamp())
+    end_timestamp = int(end_time_et.astimezone(pytz.utc).timestamp())
     return start_timestamp, end_timestamp
 
 
 def get_leaders_info(game):
-    """
-    Get the leaders information for the home and away teams.
-    """
+    """Get the leaders information for the home and away teams."""
     home_leaders_str = away_leaders_str = "N/A"
     game_leaders = game.get("gameLeaders")
     if game_leaders is not None:
@@ -216,7 +226,6 @@ def get_leaders_info(game):
                 f"**Rebounds**: {home_leaders.get('rebounds') or 'N/A'}\n"
                 f"**Assists**: {home_leaders.get('assists') or 'N/A'}"
             )
-
         away_leaders = game_leaders.get("awayLeaders")
         if away_leaders is not None:
             away_leaders_str = (
@@ -227,7 +236,6 @@ def get_leaders_info(game):
                 f"**Rebounds**: {away_leaders.get('rebounds') or 'N/A'}\n"
                 f"**Assists**: {away_leaders.get('assists') or 'N/A'}"
             )
-
     return home_leaders_str, away_leaders_str
 
 
@@ -246,7 +254,7 @@ def get_games(schedule):
                             .replace(tzinfo=timezone.utc)
                             .timestamp()
                         )
-                        if timestamp >= datetime.utcnow().replace(tzinfo=timezone.utc).timestamp():
+                        if timestamp >= datetime.now(tz=timezone.utc).timestamp():
                             games.append(
                                 {
                                     "home_team": game["homeTeam"].get("teamName", "Unknown"),
@@ -258,7 +266,7 @@ def get_games(schedule):
                                 }
                             )
                 except (KeyError, ValueError) as e:
-                    log.error(f"Error processing game data: {e}")
+                    log.error("Error processing game data: %s", e)
     except Exception as e:
-        log.error(f"Error processing schedule data: {e}")
+        log.error("Error processing schedule data: %s", e)
     return games

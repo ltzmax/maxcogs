@@ -22,14 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
-
 import aiohttp
 import discord
+from red_commons.logging import getLogger
 
 from .converter import PLAYBYPLAY
 
-log = logging.getLogger("red.maxcogs.nba.view")
+log = getLogger("red.maxcogs.nba.view")
 
 
 class PlayByPlay(discord.ui.View):
@@ -39,33 +38,49 @@ class PlayByPlay(discord.ui.View):
 
     @discord.ui.button(label="View Play by Play", style=discord.ButtonStyle.blurple, emoji="🏀")
     async def view_play_by_play(self, interaction: discord.Interaction, button: discord.ui.Button):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{self.game_id}.json"
-            ) as response:
-                play_by_play_data = await response.json()
+        url = f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{self.game_id}.json"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status != 200:
+                        return await interaction.response.send_message(
+                            f"Failed to fetch play-by-play data (status {response.status}).",
+                            ephemeral=True,
+                        )
+                    play_by_play_data = await response.json()
+        except aiohttp.ClientError as e:
+            log.error("Network error fetching play-by-play for game %s: %s", self.game_id, e)
+            return await interaction.response.send_message(
+                "Network error fetching play-by-play. Please try again.", ephemeral=True
+            )
 
-        last_actions = play_by_play_data["game"]["actions"][-9:]
+        actions = play_by_play_data.get("game", {}).get("actions", [])
+        if not actions:
+            return await interaction.response.send_message(
+                "No play-by-play data available yet.", ephemeral=True
+            )
 
+        last_actions = actions[-9:]
         embed = discord.Embed(
             title="Play by Play",
             color=0x3820F0,
-            description="Only the last 9 actions is displayed",
+            description="Only the last 9 actions are displayed",
         )
         for action in last_actions:
-            description = action.get("description", "N/A")
-            area = action.get("area", "N/A")
-            area_details = action.get("areaDetail", "N/A")
-            sub_type = action.get("subType", "N/A")
-            side = action.get("side", "N/A")
-            action_type = action.get("actionType", "N/A")
-            shot_type = action.get("shotDistance", "N/A")
-            point = action.get("pointsTotal", "N/A")
             embed.add_field(
                 name=f"Team: {action.get('teamTricode', 'N/A')}",
-                value=f"**Description**: {description}\n**Points Total**: {point}\n**Action Type**: {action_type}\n**Shot Distance**: {shot_type}\n**Area**: {area}\n**Area Details**: {area_details}\n**SubType**: {sub_type}\n**Side**: {side}",
+                value=(
+                    f"**Description**: {action.get('description', 'N/A')}\n"
+                    f"**Points Total**: {action.get('pointsTotal', 'N/A')}\n"
+                    f"**Action Type**: {action.get('actionType', 'N/A')}\n"
+                    f"**Shot Distance**: {action.get('shotDistance', 'N/A')}\n"
+                    f"**Area**: {action.get('area', 'N/A')}\n"
+                    f"**Area Details**: {action.get('areaDetail', 'N/A')}\n"
+                    f"**SubType**: {action.get('subType', 'N/A')}\n"
+                    f"**Side**: {action.get('side', 'N/A')}"
+                ),
             )
-            embed.set_footer(text="🏀Provided by NBA")
+        embed.set_footer(text="🏀Provided by NBA")
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -74,6 +89,7 @@ class GameMenu(discord.ui.View):
         super().__init__(timeout=120)
         self.pages = pages
         self.current_page = 0
+        self.message = None
         self.author = ctx[0].author if isinstance(ctx, list) else ctx.author
 
         options = [
@@ -83,7 +99,6 @@ class GameMenu(discord.ui.View):
             )
             for i, embed in enumerate(pages)
         ]
-
         self.select_menu.options = options
 
     async def on_timeout(self) -> None:
@@ -91,9 +106,10 @@ class GameMenu(discord.ui.View):
             item: discord.ui.Item
             item.disabled = True
         try:
-            await self.message.edit(view=self)
+            if self.message:
+                await self.message.edit(view=self)
         except discord.HTTPException as e:
-            log.error(e)
+            log.error("Failed to edit GameMenu on timeout: %s", e)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.author:
