@@ -36,7 +36,7 @@ def _can_post(me: discord.Member, channel: ChannelOrThread) -> bool:
     own archived/locked state that prevents posting regardless of permissions.
     """
     if isinstance(channel, discord.Thread):
-        if channel.archived or channel.locked:
+        if channel.archived:
             return False
         parent = channel.parent
         if parent is None:

@@ -240,7 +240,7 @@ class TechNews(commands.Cog):
             return await ctx.send("Tech news auto-posting has been **disabled** in this server.")
 
         if not _can_post(guild.me, channel):
-            if isinstance(channel, discord.Thread) and (channel.archived or channel.locked):
+            if isinstance(channel, discord.Thread) and channel.archived:
                 return await ctx.send(
                     f"{channel.mention} is archived or locked. Please choose an active thread."
                 )
