@@ -242,7 +242,7 @@ class TechNews(commands.Cog):
         if not _can_post(guild.me, channel):
             if isinstance(channel, discord.Thread) and channel.archived:
                 return await ctx.send(
-                    f"{channel.mention} is archived or locked. Please choose an active thread."
+                    f"{channel.mention} is archived. Please choose an active thread."
                 )
             return await ctx.send(
                 f"I don't have permission to send messages or embed links in {channel.mention}."
