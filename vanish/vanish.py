@@ -62,7 +62,7 @@ class Vanish(commands.Cog):
         """No user data to delete."""
         pass
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.guild_only()
     @commands.bot_has_permissions(moderate_members=True)
     async def vanish(self, ctx: commands.Context):
