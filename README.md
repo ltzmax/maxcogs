@@ -49,6 +49,8 @@ To install any cog you want:
     - Let moderators lockdown a channel to prevent messages from being sent.
 - MessageGuard
     - A unified message moderation cog combining spoiler blocking, attachment restriction, and forwarded message deletion.
+- nba
+    - NBA information cog.
 - NekosBest
     - Sends random images from nekos.best + RolePlay Commands.
 - PlagueGame
