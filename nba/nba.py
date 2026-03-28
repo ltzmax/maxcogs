@@ -484,8 +484,8 @@ class NBA(commands.Cog):
             if pages:
                 await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
         except orjson.JSONDecodeError as e:
-            log.error("Failed to decode schedule: %s", e)
-            await ctx.send("Error decoding schedule data. Report to devs.")
+            log.error("Failed to fetch schedule: %s", e)
+            await ctx.send("Error fetching schedule. Try again later.")
 
     @schedule.autocomplete("team")
     async def schedule_autocomplete(
