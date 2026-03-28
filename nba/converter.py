@@ -134,33 +134,6 @@ team_emojis = {
     "Wizards": "<:washington_wizards:1337076493716815903>",
 }
 
-
-def parse_game_time_to_seconds(duration: str) -> float:
-    """
-    Parse a game clock string from the NBA API into total seconds.
-    """
-    if not duration:
-        return 0.0
-
-    match_pt = re.match(r"PT(?:(\d+)M)?(?:(\d+)(?:\.(\d+))?S)?", duration)
-    match_mmss = re.match(r"(\d+):(\d+)", duration)
-
-    if match_pt and any(match_pt.groups()):
-        minutes = int(match_pt.group(1) or 0)
-        seconds = int(match_pt.group(2) or 0)
-        milliseconds = int(match_pt.group(3) or 0) if match_pt.group(3) else 0
-    elif match_mmss:
-        minutes = int(match_mmss.group(1))
-        seconds = int(match_mmss.group(2))
-        milliseconds = 0
-    else:
-        log.error("Unexpected duration format: %s — defaulting to 0 seconds", duration)
-        return 0.0
-
-    minutes = min(minutes, 12)
-    return minutes * 60 + seconds + (milliseconds / 1000 if milliseconds else 0)
-
-
 def parse_duration(duration: str) -> str:
     """
     Parse a game clock string from the NBA API into a human-readable MM:SS string.
