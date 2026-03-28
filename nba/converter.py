@@ -134,6 +134,7 @@ team_emojis = {
     "Wizards": "<:washington_wizards:1337076493716815903>",
 }
 
+
 def parse_duration(duration: str) -> str:
     """
     Parse a game clock string from the NBA API into a human-readable MM:SS string.
