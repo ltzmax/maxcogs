@@ -28,13 +28,10 @@ from itertools import islice
 from typing import List, Optional
 
 import discord
-from red_commons.logging import getLogger
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import box, header, rich_markup
 
 from .converter import get_leaders_info, get_time_bounds, parse_duration, periods, team_emojis
-
-log = getLogger("red.maxcogs.nba.formatters")
 
 
 async def build_schedule_embeds(
