@@ -41,10 +41,24 @@ async def build_schedule_embeds(
 ) -> List[discord.Embed]:
     """Build paginated embeds for upcoming NBA schedule."""
     # NBA season typically runs from October to June, with the offseason in July, August, and September.
-    if (month := datetime.now().month) in (7, 8, 9):
+    now = datetime.now()
+    is_offseason = (
+        (now.month == 6 and now.day >= 21)
+        or now.month in (7, 8, 9)
+        or (now.month == 10 and now.day < 15)
+    )
+    if is_offseason:
+        year = now.year
+        offseason_start = int(
+            datetime(year, 6, 21, tzinfo=timezone.utc).timestamp()
+        )
+        offseason_end = int(
+            datetime(year, 10, 15, tzinfo=timezone.utc).timestamp()
+        )
+
         await ctx.send(
             "Season schedule is not available during the offseason.\n"
-            "Offseason typically runs from July to September.\n"
+            f"Offseason: <t:{offseason_start}:D> to <t:{offseason_end}:D>\n"
             "Check <https://www.nba.com/schedule> for updates."
         )
         return []
