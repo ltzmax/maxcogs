@@ -40,8 +40,17 @@ async def build_schedule_embeds(
     team: Optional[str],
 ) -> List[discord.Embed]:
     """Build paginated embeds for upcoming NBA schedule."""
+    # NBA season typically runs from October to June, with the offseason in July, August, and September.
+    if (month := datetime.now().month) in (7, 8, 9):
+        await ctx.send(
+            "Season schedule is not available during the offseason.\n"
+            "Offseason typically runs from July to September.\n"
+            "Check <https://www.nba.com/schedule> for updates."
+        )
+        return []
+
     if not games:
-        await ctx.send("No games found. Check <https://www.nba.com/schedule>.")
+        await ctx.send("No games found yet. Check <https://www.nba.com/schedule>.")
         return []
     pages = []
     for i in range(0, len(games), 6):
