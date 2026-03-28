@@ -73,7 +73,7 @@ class NBA(commands.Cog):
 
     __version__: Final[str] = "3.6.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://cogs.maxapp.tv/"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/nba/README.md"
 
     def __init__(self, bot):
         self.bot = bot
