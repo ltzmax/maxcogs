@@ -24,6 +24,7 @@ SOFTWARE.
 
 import logging
 import random
+from typing import Optional
 
 import discord
 from redbot.core import bank
@@ -32,13 +33,15 @@ log = logging.getLogger("red.maxcogs.honeycombs.view")
 
 
 class JoinButton(discord.ui.Button):
-    def __init__(self, label: str):
+    def __init__(self, label: str, guild_id: int):
         super().__init__(
-            custom_id="join_honeycombs", label=label, style=discord.ButtonStyle.blurple
+            custom_id=f"join_honeycombs:{guild_id}", label=label, style=discord.ButtonStyle.blurple
         )
 
     async def callback(self, interaction: discord.Interaction):
-        view: HoneycombView = self.view
+        if self.view is None or interaction.guild is None or interaction.message is None:
+            return
+        view: HoneycombView = self.view  # type: ignore[assignment]
         game_state = view.cog.get_game_state(view.guild)
         guild_config = await view.cog.get_guild_config(view.guild)
         currency_name = await bank.get_currency_name(interaction.guild)
@@ -97,6 +100,7 @@ class HoneycombView(discord.ui.LayoutView):
         self.cog = cog
         self.guild = guild
         self.player_count = 0
+        self.message: Optional[discord.Message] = None
 
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
         self.container.add_item(discord.ui.Separator())
@@ -105,7 +109,7 @@ class HoneycombView(discord.ui.LayoutView):
         self.game_details = discord.ui.TextDisplay("")
         self.container.add_item(self.game_details)
         self.container.add_item(discord.ui.Separator())
-        self.join_button = JoinButton(label="Enter The Game (0/456)")
+        self.join_button = JoinButton(label="Enter The Game (0/456)", guild_id=guild.id)
         self.container.add_item(discord.ui.ActionRow(self.join_button))
         self.container.add_item(discord.ui.Separator())
         self.add_item(self.container)
@@ -126,6 +130,8 @@ class HoneycombView(discord.ui.LayoutView):
         for child in self.walk_children():
             if isinstance(child, discord.ui.Button):
                 child.disabled = True
+        if self.message is None:
+            return
         try:
             await self.message.edit(view=self)
         except discord.HTTPException as e:
