@@ -29,6 +29,7 @@ from red_commons.logging import getLogger
 
 log = getLogger("red.maxcogs.messageguard.utils")
 
+
 # idk why i did this but it makes the code cleaner in some places so here we are
 def has_manage_messages(
     channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel],
@@ -64,7 +65,10 @@ def log_missing_permissions(
         guild.name,
         guild.id,
     )
+
+
 # again here we are, this is just to clean up the code a bit and make it more readable in some places.
+
 
 def is_forwarded_message(message: discord.Message) -> bool:
     reference = message.reference

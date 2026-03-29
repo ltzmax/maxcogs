@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import asyncio
 import re
 from asyncio import Lock
 from collections import defaultdict
 from typing import Any, Final
 
 import discord
-import asyncio
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -36,6 +36,14 @@ from redbot.core.bot import Red
 from .commands.forward import ForwardCommands
 from .commands.restrict import RestrictCommands
 from .commands.spoiler import SpoilerCommands
+from .container import (
+    FD_WARN_MESSAGE,
+    NS_DEFAULT_WARNING,
+    RP_DEFAULT_MSG,
+    RP_DEFAULT_TITLE,
+    RP_URL_REGEX,
+    SPOILER_REGEX,
+)
 from .utils import (
     can_moderate,
     has_allowed_role,
@@ -44,14 +52,6 @@ from .utils import (
     send_forward_warning,
     send_restrict_warning,
     send_spoiler_warning,
-)
-from .container import (
-    FD_WARN_MESSAGE,
-    NS_DEFAULT_WARNING,
-    RP_DEFAULT_MSG,
-    RP_DEFAULT_TITLE,
-    RP_URL_REGEX,
-    SPOILER_REGEX,
 )
 
 log = getLogger("red.maxcogs.messageguard")

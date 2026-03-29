@@ -30,9 +30,9 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_list
 
+from .commands.pokeinfo import PokeinfoCommands
 from .commands.tcgcard import TcgcardCommands
 from .commands.whosthatpokemon import WhosThatPokemonCommands
-from .commands.pokeinfo import PokeinfoCommands
 
 log = getLogger("red.maxcogs.whosthatpokemon")
 

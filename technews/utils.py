@@ -22,11 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import discord
 from typing import Union
+
+import discord
 
 # Type alias for supported destinations
 ChannelOrThread = Union[discord.TextChannel, discord.Thread]
+
+
 def _can_post(me: discord.Member, channel: ChannelOrThread) -> bool:
     """
     Check whether the bot can send messages and embed links in the given
