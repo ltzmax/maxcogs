@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Final
 import re
+from typing import Final
 
 # ForwardDeleter
 FD_WARN_MESSAGE: Final[str] = "You are not allowed to forward message(s)."

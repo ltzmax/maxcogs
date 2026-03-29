@@ -25,19 +25,17 @@ SOFTWARE.
 import asyncio
 import logging
 import random
-from datetime import datetime, timedelta
-from io import StringIO
-from typing import Any, Final, Optional
+from datetime import datetime, timedelta, timezone
+from io import BytesIO
+from typing import Any, Final, Optional, cast
 
 import aiohttp
 import discord
-from redbot.core import Config, bank, commands, errors
+from redbot.core import Config, bank, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import (
-    header,
     humanize_list,
     humanize_number,
-    hyperlink,
 )
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
@@ -46,20 +44,34 @@ from .view import HoneycombView
 
 log = logging.getLogger("red.maxcogs.honeycombs")
 
+MAGIC_BYTES: dict[bytes, str] = {
+    b"\xff\xd8\xff": "JPEG/JPG",
+    b"\x89PNG": "PNG",
+    b"GIF8": "GIF",
+    b"RIFF": "WEBP",
+}
+
+DEFAULT_SHAPE_ODDS: dict[str, int] = {
+    "circle": 20,
+    "triangle": 20,
+    "star": 20,
+    "umbrella": 8,
+}
+
 
 class GameState:
     def __init__(self, guild: discord.Guild):
         self.guild = guild
         self.active = False
-        self.players = {}
-        self.start_time = None
-        self.end_time = None
+        self.players: dict[int, dict[str, Any]] = {}
+        self.start_time: Optional[datetime] = None
+        self.end_time: Optional[datetime] = None
 
 
 class HoneyCombs(commands.Cog):
     """Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game."""
 
-    __version__: Final[str] = "2.1.0"
+    __version__: Final[str] = "2.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
@@ -69,12 +81,14 @@ class HoneyCombs(commands.Cog):
         self.cache = {"global": {}, "guilds": {}}
         self.game_states = {}
         self.locks = {}
+        self._game_tasks: dict[int, asyncio.Task] = {}
         self.session = aiohttp.ClientSession()
         default_guild = {
             "players": {},
             "game_active": False,
             "default_start_image": "https://i.maxapp.tv/4c76241E.png",
             "shapes": ["circle⭕️", "triangle△", "star⭐️", "umbrella☂️"],
+            "shape_odds": DEFAULT_SHAPE_ODDS,
             "mod_only_command": False,
             "minimum_players": 2,
             "default_minutes": 10,
@@ -97,6 +111,7 @@ class HoneyCombs(commands.Cog):
         return
 
     async def initialize_cache(self):
+        await self.bot.wait_until_ready()
         self.cache["global"] = await self.config.all()
         for guild in self.bot.guilds:
             self.cache["guilds"][guild.id] = await self.config.guild(guild).all()
@@ -126,9 +141,15 @@ class HoneyCombs(commands.Cog):
 
     async def cog_unload(self):
         await self.session.close()
-        for guild in self.bot.guilds:
-            await self.config.guild(guild).players.clear()
-            await self.config.guild(guild).game_active.set(False)
+        for guild_id, task in list(self._game_tasks.items()):
+            task.cancel()
+            game_state = self.game_states.get(guild_id)
+            if game_state and game_state.active:
+                guild = self.bot.get_guild(guild_id)
+                if guild:
+                    await self.config.guild(guild).players.clear()
+                    await self.config.guild(guild).game_active.set(False)
+        self._game_tasks.clear()
 
     async def run_game(self, ctx: commands.Context):
         game_state = self.get_game_state(ctx.guild)
@@ -140,13 +161,17 @@ class HoneyCombs(commands.Cog):
             return
 
         default_minutes = guild_config["default_minutes"]
-        game_state.end_time = datetime.now() + timedelta(minutes=default_minutes)
+        game_state.end_time = datetime.now(timezone.utc) + timedelta(minutes=default_minutes)
         end_timestamp = int(game_state.end_time.timestamp())
 
         embed = discord.Embed(
             title="Sugar Honeycombs Challenge",
             color=await ctx.embed_color(),
-            description=f"Let the game begin!\nThe bot will finish <t:{end_timestamp}:R> to decide whether you Pass or Eliminated.\nGood luck!",
+            description=(
+                f"Let the game begin!\n"
+                f"The bot will finish <t:{end_timestamp}:R> to decide whether you Pass or are Eliminated.\n"
+                f"Good luck!"
+            ),
         )
         embed.add_field(name="Players:", value=len(game_state.players))
         embed.set_footer(text="I would like to expend a heartfelt welcome to you all.")
@@ -157,6 +182,8 @@ class HoneyCombs(commands.Cog):
         winning_price = self.cache["global"]["winning_price"]
         losing_price = self.cache["global"]["losing_price"]
         currency_name = await bank.get_currency_name(ctx.guild)
+        guild_config = await self.get_guild_config(ctx.guild)
+        shape_odds = guild_config.get("shape_odds", dict(DEFAULT_SHAPE_ODDS))
 
         passed_players, failed_players = [], []
         error_messages = []
@@ -165,29 +192,66 @@ class HoneyCombs(commands.Cog):
             user = ctx.guild.get_member(data["user_id"])
             if user:
                 shape = data["shape"]
-                chance = 0.08 if shape == "umbrella☂️" else 0.2
+                shape_key = next((k for k in shape_odds if k in shape.lower()), None)
+                chance = shape_odds.get(shape_key, 20) / 100 if shape_key else 0.20
+                player_label = (
+                    f"Player {num} — {user.display_name} (ID: {user.id}) | Shape: {shape}"
+                )
+
                 if random.random() < chance:
-                    success, message = await safe_deposit(user, winning_price, currency_name)
-                    if success:
-                        passed_players.append(
-                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})"
-                        )
+                    if winning_price > 0:
+                        success, message = await safe_deposit(user, winning_price, currency_name)
+                        if not success:
+                            error_messages.append(message)
+                            passed_players.append(f"{player_label} — Deposit Failed")
+                        else:
+                            passed_players.append(player_label)
                     else:
-                        error_messages.append(message)
-                        passed_players.append(
-                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']}) - Deposit Failed"
+                        passed_players.append(player_label)
+                    try:
+                        dm_embed = discord.Embed(
+                            title="🎉 You Passed!",
+                            description=(
+                                "You successfully carved your shape in the Sugar Honeycombs Challenge!"
+                                + (
+                                    f"\n\nYou received **{humanize_number(winning_price)} {currency_name}**."
+                                    if winning_price > 0
+                                    else ""
+                                )
+                            ),
+                            color=discord.Color.green(),
                         )
+                        dm_embed.set_footer(text=f"Game was held in {ctx.guild.name}")
+                        await user.send(embed=dm_embed)
+                    except discord.HTTPException:
+                        pass
                 else:
-                    success, message = await safe_withdraw(user, losing_price, currency_name)
-                    if success:
-                        failed_players.append(
-                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']})"
-                        )
+                    if losing_price > 0:
+                        success, message = await safe_withdraw(user, losing_price, currency_name)
+                        if not success:
+                            error_messages.append(message)
+                            failed_players.append(f"{player_label} — Withdrawal Failed")
+                        else:
+                            failed_players.append(player_label)
                     else:
-                        error_messages.append(message)
-                        failed_players.append(
-                            f"Player {num}, Shape: {shape} - (User ID: {data['user_id']}) - Withdrawal Failed"
+                        failed_players.append(player_label)
+                    try:
+                        dm_embed = discord.Embed(
+                            title="💀 You were Eliminated.",
+                            description=(
+                                "Your shape broke during the Sugar Honeycombs Challenge."
+                                + (
+                                    f"\n\nYou lost **{humanize_number(losing_price)} {currency_name}**."
+                                    if losing_price > 0
+                                    else ""
+                                )
+                            ),
+                            color=discord.Color.red(),
                         )
+                        dm_embed.set_footer(text=f"Game was held in {ctx.guild.name}")
+                        await user.send(embed=dm_embed)
+                    except discord.HTTPException:
+                        pass
 
         passed_content = (
             "Passed Players:\n" + "\n".join(passed_players)
@@ -222,13 +286,12 @@ class HoneyCombs(commands.Cog):
                 value=f"{humanize_number(losing_price)} {currency_name}",
             )
         embed.set_footer(text="Thank you for playing!")
-        file = discord.File(StringIO(full_content), filename="honeycombs_results.txt")
+        file = discord.File(BytesIO(full_content.encode()), filename="honeycombs_results.txt")
         await ctx.send(embed=embed, file=file)
 
         game_state.players.clear()
         game_state.active = False
-        await self.update_guild_config(ctx.guild, "players", {})
-        await self.update_guild_config(ctx.guild, "game_active", False)
+        self._game_tasks.pop(ctx.guild.id, None)
 
     @commands.guild_only()
     @commands.hybrid_command()
@@ -252,7 +315,7 @@ class HoneyCombs(commands.Cog):
 
             if (
                 guild_config["mod_only_command"]
-                and not ctx.author.guild_permissions.manage_messages
+                and not cast(discord.Member, ctx.author).guild_permissions.manage_messages
             ):
                 return await ctx.send(
                     "This command is only available to moderators.",
@@ -260,24 +323,25 @@ class HoneyCombs(commands.Cog):
                 )
 
             game_state.active = True
-            game_state.start_time = datetime.now() + timedelta(minutes=2)
-            end_time = int(game_state.start_time.timestamp())
-            view = HoneycombView(self, ctx.guild)
+        game_state.start_time = datetime.now(timezone.utc) + timedelta(minutes=2)
+        end_time = int(game_state.start_time.timestamp())
+        view = HoneycombView(self, ctx.guild)
 
-            winning_price = self.cache["global"]["winning_price"]
-            losing_price = self.cache["global"]["losing_price"]
-            total_price = (
-                humanize_number(winning_price + losing_price)
-                if (winning_price + losing_price) != 0
-                else "Free"
-            )
-            currency_name = await bank.get_currency_name(ctx.guild)
-            minimum_players = guild_config["minimum_players"]
+        winning_price = self.cache["global"]["winning_price"]
+        losing_price = self.cache["global"]["losing_price"]
+        total_price = (
+            humanize_number(winning_price + losing_price)
+            if (winning_price + losing_price) != 0
+            else "Free"
+        )
+        currency_name = await bank.get_currency_name(ctx.guild)
+        minimum_players = guild_config["minimum_players"]
 
-            await view.setup(total_price, currency_name, minimum_players, end_time)
-            message = await ctx.send(view=view)
-            view.message = message
-            await self.wait_for_players(ctx, view)
+        await view.setup(total_price, currency_name, minimum_players, end_time)
+        message = await ctx.send(view=view)
+        view.message = message
+        task = self.bot.loop.create_task(self.wait_for_players(ctx, view))
+        self._game_tasks[ctx.guild.id] = task
 
     async def wait_for_players(self, ctx: commands.Context, view: HoneycombView):
         guild_config = await self.get_guild_config(ctx.guild)
@@ -291,8 +355,10 @@ class HoneyCombs(commands.Cog):
             )
             game_state.active = False
             game_state.players.clear()
+            self._game_tasks.pop(ctx.guild.id, None)
             return
 
+        view.stop()
         await view.on_timeout()
         await self.run_game(ctx)
 
@@ -305,16 +371,16 @@ class HoneyCombs(commands.Cog):
     @commands.cooldown(1, 60, commands.BucketType.guild)
     async def checklist(self, ctx: commands.Context):
         """
-        Check the list of players in current game.
+        Check the list of players in the current game.
 
-        This command will show the list of players who have joined the game along with their player numbers.
+        Shows all players who have joined along with their player numbers.
         """
         game_state = self.get_game_state(ctx.guild)
         if not game_state.players:
             return await ctx.send("No ongoing game found.")
 
-        player_list = [f"Player {player_number}" for player_number in game_state.players.keys()]
-        pages = [humanize_number(player_list[i : i + 10]) for i in range(0, len(player_list), 10)]
+        player_list = [f"Player {number}" for number in game_state.players.keys()]
+        pages = ["\n".join(player_list[i : i + 10]) for i in range(0, len(player_list), 10)]
         await SimpleMenu(
             pages,
             disable_after_timeout=True,
@@ -334,9 +400,12 @@ class HoneyCombs(commands.Cog):
             return await ctx.send("Game settings are already reset.")
 
         view = ConfirmView(ctx.author, disable_buttons=True)
-        message = await ctx.send("Are you sure you want to reset the game settings?", view=view)
+        await ctx.send("Are you sure you want to reset the game settings?", view=view)
         await view.wait()
         if view.result:
+            task = self._game_tasks.pop(ctx.guild.id, None)
+            if task:
+                task.cancel()
             game_state.players.clear()
             game_state.active = False
             default_guild = {
@@ -344,8 +413,9 @@ class HoneyCombs(commands.Cog):
                 "game_active": False,
                 "default_start_image": "https://i.maxapp.tv/4c76241E.png",
                 "shapes": ["circle⭕️", "triangle△", "star⭐️", "umbrella☂️"],
+                "shape_odds": DEFAULT_SHAPE_ODDS,
                 "mod_only_command": False,
-                "minimum_players": 5,
+                "minimum_players": 2,
                 "default_minutes": 10,
             }
             self.cache["guilds"][ctx.guild.id] = default_guild
@@ -354,8 +424,8 @@ class HoneyCombs(commands.Cog):
         else:
             await ctx.send("Game settings were not reset.")
 
-    @commands.admin()
     @honeycombset.group(name="setimage", aliases=["setimg"], invoke_without_command=True)
+    @commands.admin()
     async def setimage(self, ctx: commands.Context, *, image_url: Optional[str] = None):
         """
         Set the start image for the game.
@@ -370,28 +440,26 @@ class HoneyCombs(commands.Cog):
         elif image_url is None:
             return await ctx.send("You must provide a URL or attach an image.")
 
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.get(image_url) as r:
-                    if r.status != 200:
-                        return await ctx.send("Failed to set the start image. URL is invalid.")
-                    data = await r.read()
-            except aiohttp.ClientError as e:
-                return await ctx.send("Failed to set the start image. Client error.")
-            except asyncio.TimeoutError as e:
-                return await ctx.send("Failed to set the start image. Timeout error.")
+        try:
+            async with self.session.get(image_url, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                if r.status != 200:
+                    return await ctx.send("Failed to set the start image. URL is invalid.")
+                data = await r.read()
+        except aiohttp.ClientError:
+            return await ctx.send("Failed to set the start image. Client error.")
+        except asyncio.TimeoutError:
+            return await ctx.send("Failed to set the start image. Timeout error.")
 
-        image_formats = ["JPG", "JPEG", "PNG", "GIF", "WEBP"]
-        if not data or not any(data.startswith(bytes(f"{sig}", "utf-8")) for sig in image_formats):
+        if not data or not any(data.startswith(sig) for sig in MAGIC_BYTES):
             return await ctx.send(
-                f"Failed to set the start image. Only {humanize_list(image_formats)} format is supported."
+                f"Failed to set the start image. Only {humanize_list(list(MAGIC_BYTES.values()))} format is supported."
             )
 
         await self.update_guild_config(ctx.guild, "default_start_image", image_url)
         await ctx.send("The start image has been set.")
 
-    @commands.admin()
     @setimage.command(name="clear", aliases=["reset"])
+    @commands.admin()
     async def setimage_clear(self, ctx: commands.Context):
         """Reset the start image to default."""
         default_image = "https://i.maxapp.tv/4c76241E.png"
@@ -419,8 +487,8 @@ class HoneyCombs(commands.Cog):
         """
         Change the default minutes for when the game should end.
 
-        The default minutes is 10.
-        The maximum number of minutes is 720 (12 hours).
+        The default is 10 minutes.
+        The maximum is 720 minutes (12 hours).
         """
         await self.update_guild_config(ctx.guild, "default_minutes", default_minutes)
         await ctx.send(f"The default minutes has been set to {default_minutes} minutes.")
@@ -433,10 +501,40 @@ class HoneyCombs(commands.Cog):
         """
         Set the minimum number of players needed to start a game.
 
-        The default minimum number of players is 5.
+        The default minimum is 2 players.
         """
         await self.update_guild_config(ctx.guild, "minimum_players", minimum_players)
         await ctx.send(f"The minimum number of players has been set to {minimum_players}.")
+
+    @commands.admin()
+    @honeycombset.command(name="shapeodds")
+    async def shape_odds_cmd(
+        self,
+        ctx: commands.Context,
+        shape: str,
+        percentage: commands.Range[int, 1, 99],
+    ):
+        """
+        Set the pass-chance percentage for a specific shape.
+
+        Shape must be one of: circle, triangle, star, umbrella.
+        Percentage is 1–99 (e.g. 20 means a 20% chance of passing).
+
+        Default values:
+        - circle: 20%
+        - triangle: 20%
+        - star: 20%
+        - umbrella: 8%
+        """
+        shape = shape.lower()
+        valid_shapes = list(DEFAULT_SHAPE_ODDS.keys())
+        if shape not in valid_shapes:
+            return await ctx.send(f"Invalid shape. Must be one of: {humanize_list(valid_shapes)}.")
+        guild_config = await self.get_guild_config(ctx.guild)
+        odds = dict(guild_config.get("shape_odds", DEFAULT_SHAPE_ODDS))
+        odds[shape] = percentage
+        await self.update_guild_config(ctx.guild, "shape_odds", odds)
+        await ctx.send(f"Pass chance for **{shape}** has been set to **{percentage}%**.")
 
     @commands.is_owner()
     @honeycombset.command(name="winningprice")
@@ -503,18 +601,24 @@ class HoneyCombs(commands.Cog):
         )
         embed.add_field(
             name="Minimum Players",
-            value=guild_config.get("minimum_players", 5),
+            value=guild_config.get("minimum_players", 2),
             inline=False,
         )
         embed.add_field(
-            name="Default ongoing game minutes",
-            value=guild_config.get("default_minutes", 10),
+            name="Default Game Duration",
+            value=f"{guild_config.get('default_minutes', 10)} minutes",
+            inline=False,
+        )
+        shape_odds = guild_config.get("shape_odds", DEFAULT_SHAPE_ODDS)
+        odds_display = "\n".join(f"{shape}: {pct}%" for shape, pct in shape_odds.items())
+        embed.add_field(
+            name="Shape Pass Odds",
+            value=odds_display,
             inline=False,
         )
         start_image_url = guild_config.get("default_start_image", None)
-        if start_image_url:
-            start_image_value = f"[View Start Image]({start_image_url})"
-        else:
-            start_image_value = "Not set"
+        start_image_value = (
+            f"[View Start Image]({start_image_url})" if start_image_url else "Not set"
+        )
         embed.add_field(name="Start Image", value=start_image_value, inline=False)
         await ctx.send(embed=embed)
