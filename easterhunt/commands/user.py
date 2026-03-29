@@ -26,7 +26,7 @@ import asyncio
 import random
 import time
 from datetime import datetime, timedelta
-from typing import Dict, Final, Optional
+from typing import Optional
 
 import discord
 from red_commons.logging import getLogger
@@ -38,7 +38,6 @@ from ..achievements.achievements import achievements
 from ..utils import (
     calculate_hunt_probabilities,
     check_hunt_cooldown,
-    find_target_player,
     process_hunt_outcome,
     update_hunt_streak,
 )
@@ -97,7 +96,7 @@ class UserCommands(commands.Cog):
         end_time = int((datetime.now() + timedelta(minutes=1)).timestamp())
         await self.db.set_user_field(user.id, "active_hunt", True)
         await ctx.send(
-            f"You sets off on an Easter egg hunt! Searching the fields... 🐰🌾\ni will be back <t:{end_time}:R>.",
+            f"You set off on an Easter egg hunt! Searching the fields... 🐰🌾\ni will be back <t:{end_time}:R>.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
         )
 
@@ -120,16 +119,16 @@ class UserCommands(commands.Cog):
             ]
             weights = [adjusted_chances[outcome] for outcome in outcomes]
             result = random.choices(outcomes, weights=weights, k=1)[0]
-            if pity_counters.get("silver", 0) >= 50:
-                result = "silver"
-            elif pity_counters.get("gold", 0) >= 75:
-                result = "gold"
-            elif pity_counters.get("shiny", 0) >= 150:
-                result = "shiny"
+            if can_roll_mythical and pity_counters.get("mythical", 0) >= 500:
+                result = "mythical"
             elif can_roll_legendary and pity_counters.get("legendary", 0) >= 150:
                 result = "legendary"
-            elif can_roll_mythical and pity_counters.get("mythical", 0) >= 500:
-                result = "mythical"
+            elif pity_counters.get("shiny", 0) >= 150:
+                result = "shiny"
+            elif pity_counters.get("gold", 0) >= 75:
+                result = "gold"
+            elif pity_counters.get("silver", 0) >= 50:
+                result = "silver"
 
             embed = await process_hunt_outcome(
                 self.db,
@@ -182,11 +181,7 @@ class UserCommands(commands.Cog):
         for interval in intervals:
             current += interval * scale
             adjusted_intervals.append(current)
-        unique_events = (
-            random.sample(events * 2, num_events)
-            if len(events) < num_events
-            else random.sample(events, num_events)
-        )
+        unique_events = random.sample(events, num_events)
         prev_time = 0
         for i, interval in enumerate(adjusted_intervals):
             sleep_time = interval - prev_time
@@ -226,7 +221,7 @@ class UserCommands(commands.Cog):
 
         embed = discord.Embed(
             title=f"{user.display_name}'s Easter Hunt Progress 🐰",
-            color=await ctx.embed_colour(),
+            color=await ctx.embed_color(),
         )
         embed.add_field(name="🏃 Hunt Streak", value=str(streak), inline=False)
         embed.add_field(
@@ -250,17 +245,17 @@ class UserCommands(commands.Cog):
                 mention_author=False,
             )
 
-        shards = await self.db.get_user_field(ctx.author.id, "shards")
-        eggs = await self.db.get_eggs(ctx.author.id)
-        gems = await self.db.get_user_field(ctx.author.id, "gems")
+        shards = await self.db.get_user_field(member.id, "shards")
+        eggs = await self.db.get_eggs(member.id)
+        gems = await self.db.get_user_field(member.id, "gems")
 
         embed = discord.Embed(
-            title=f"{ctx.author.name}'s Easter Stash 🐰",
-            colour=await ctx.embed_colour(),
+            title=f"{member.name}'s Easter Stash 🐰",
+            color=await ctx.embed_color(),
             description="Your collected treasures from hunts, work, and more!",
         )
-        if ctx.author.display_avatar:
-            embed.set_thumbnail(url=ctx.author.display_avatar.url)
+        if member.display_avatar:
+            embed.set_thumbnail(url=member.display_avatar.url)
         embed.add_field(name="🪙 Egg Shards:", value=humanize_number(shards), inline=True)
         embed.add_field(name="💎 Hidden Gems:", value=humanize_number(gems), inline=True)
         egg_list = box(
@@ -296,34 +291,34 @@ class UserCommands(commands.Cog):
         user_achievements = await self.db.get_achievements(member.id)
         shards = await self.db.get_user_field(member.id, "shards")
         gems = await self.db.get_user_field(member.id, "gems")
+        if member == ctx.author:
+            for achievement in achievements:
+                if achievement["condition_type"] == "egg":
+                    condition = (
+                        eggs.get(achievement["condition_key"], 0) >= achievement["condition_value"]
+                    )
+                elif achievement["condition_type"] == "streak":
+                    streak = await self.db.get_user_field(member.id, "hunt_streak")
+                    condition = streak >= achievement["condition_value"]
+                elif achievement["condition_type"] == "gems":
+                    condition = gems >= achievement["condition_value"]
+                else:
+                    condition = False
 
-        for achievement in achievements:
-            if achievement["condition_type"] == "egg":
-                condition = (
-                    eggs.get(achievement["condition_key"], 0) >= achievement["condition_value"]
-                )
-            elif achievement["condition_type"] == "streak":
-                streak = await self.db.get_user_field(member.id, "hunt_streak")
-                condition = streak >= achievement["condition_value"]
-            elif achievement["condition_type"] == "gems":
-                condition = gems >= achievement["condition_value"]
-            else:
-                condition = False
-
-            if condition and not user_achievements.get(achievement["key"], False):
-                new_shards = shards + achievement["reward"]
-                await self.db.set_user_field(member.id, "shards", new_shards)
-                user_achievements[achievement["key"]] = True
-                await self.db.set_achievements(member.id, user_achievements)
-                await ctx.send(
-                    f"🎉 Congratulations {member.mention}! You've unlocked the **{achievement['name']}** achievement "
-                    f"and received {achievement['reward']} egg shards!"
-                )
-                shards = new_shards
+                if condition and not user_achievements.get(achievement["key"], False):
+                    new_shards = shards + achievement["reward"]
+                    await self.db.set_user_field(member.id, "shards", new_shards)
+                    user_achievements[achievement["key"]] = True
+                    await self.db.set_achievements(member.id, user_achievements)
+                    await ctx.send(
+                        f"🎉 Congratulations {member.mention}! You've unlocked the **{achievement['name']}** achievement "
+                        f"and received {achievement['reward']} egg shards!"
+                    )
+                    shards = new_shards
 
         embed = discord.Embed(
             title="Easter Hunt Achievements",
-            color=await ctx.embed_colour(),
+            color=await ctx.embed_color(),
             description="Complete these achievements to earn egg shards!",
         )
 
@@ -373,8 +368,7 @@ class UserCommands(commands.Cog):
             )
 
         shards = random.randint(5, 140)
-        # Rare chance for a gem in daily
-        if random.random() < 0.05:  # 5% chance
+        if random.random() < 0.05:
             gems = await self.db.get_user_field(user.id, "gems")
             await self.db.set_user_field(user.id, "gems", gems + 1)
             await ctx.send("You found a hidden gem in your daily gift! 💎")
@@ -464,7 +458,7 @@ class UserCommands(commands.Cog):
         await self.db.set_user_field(giver.id, "last_give", current_time)
         embed = discord.Embed(
             title="Egg Gift 🎁",
-            color=await ctx.embed_colour(),
+            color=await ctx.embed_color(),
             description=(
                 f"{giver.mention} has given {amount} {egg_type.capitalize()} Egg(s) to {member.mention}! 🥚\n"
                 f"{member.mention} now has {receiver_count + amount} {egg_type.capitalize()} Egg(s)."
@@ -497,11 +491,14 @@ class UserCommands(commands.Cog):
         new_shard_amount = current_shards - amount
 
         currency_name = await bank.get_currency_name(ctx.guild)
-        await self.db.set_user_field(ctx.author.id, "shards", new_shard_amount)
         try:
             await bank.deposit_credits(ctx.author, credit)
         except errors.BalanceTooHigh:
-            log.error("User's balance is too high to get any credits.")
+            return await ctx.send(
+                f"Your {currency_name} balance is too high to accept more credits! No shards were deducted.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        await self.db.set_user_field(ctx.author.id, "shards", new_shard_amount)
         await ctx.send(
             f"Successfully traded {humanize_number(amount)} shards for {humanize_number(credit)} {currency_name}!",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
@@ -577,7 +574,7 @@ class UserCommands(commands.Cog):
             return await ctx.send("Reset cancelled.")
         await self.db.delete_user_data(ctx.author.id)
         await ctx.send(
-            f"Your Easter hunt data has been reset!",
+            "Your Easter hunt data has been reset!",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
         )
 
@@ -664,6 +661,7 @@ class UserCommands(commands.Cog):
             work_ends = time.time() + 300
             await self.db.set_user_field(user.id, "active_work", True)
             await self.db.set_user_field(user.id, "last_work", work_ends)
+            await self.db.set_user_field(user.id, "active_job_type", job_type)
             await interaction.response.send_message(
                 f"{user.mention} starts working as a {job_type.replace('_', ' ').title()}! Shift begins... 🐰💼\nYou finish your shift <t:{int(work_ends)}:R>"
             )
@@ -673,109 +671,103 @@ class UserCommands(commands.Cog):
             )
         except discord.HTTPException as e:
             log.error(f"Error starting job for {user}: {e}")
-            await interaction.channel.send(
-                f"{user.mention}, something went wrong starting your shift! It has been cancelled."
-            )
+            try:
+                await interaction.channel.send(
+                    f"{user.mention}, something went wrong starting your shift! It has been cancelled."
+                )
+            except discord.HTTPException:
+                pass
             await self.db.set_user_field(user.id, "active_work", False)
             await self.db.set_user_field(user.id, "last_work", 0)
+            await self.db.set_user_field(user.id, "active_job_type", None)
             if user.id in self.active_tasks:
                 del self.active_tasks[user.id]
+
+    async def _execute_job_outcome(self, user_id: int, job_type: str, guild) -> str:
+        """Execute job outcome logic and return a result message string."""
+        if job_type == "stealer":
+            if random.random() < 0.3 and guild is not None:
+                target, stolen_egg_type = await self.db.find_target_player(user_id, guild)
+                if target and stolen_egg_type:
+                    target_count = await self.db.get_egg_count(target.id, stolen_egg_type)
+                    user_count = await self.db.get_egg_count(user_id, stolen_egg_type)
+                    await self.db.set_egg_count(
+                        target.id, stolen_egg_type, max(0, target_count - 1)
+                    )
+                    await self.db.set_egg_count(user_id, stolen_egg_type, user_count + 1)
+                    return f"sneaks back from stealing! You nabbed a **{stolen_egg_type.title()} Egg** from {target.name}! 🕵️"
+                else:
+                    return "couldn't find anyone to steal from! Better luck next shift."
+            else:
+                if random.random() < 0.6:
+                    egg_type = random.choice(["common", "silver"])
+                    user_count = await self.db.get_egg_count(user_id, egg_type)
+                    await self.db.set_egg_count(user_id, egg_type, user_count + 1)
+                    return f"nabbed a **{egg_type.title()} Egg** from a distracted bunny! 🐇"
+                else:
+                    return "got caught red-handed by an angry bunny! No eggs—better luck next shift! 🐰"
+
+        elif job_type == "store_clerk":
+            shards = random.randint(5, 25)
+            current_shards = await self.db.get_user_field(user_id, "shards")
+            await self.db.set_user_field(user_id, "shards", current_shards + shards)
+            return f"finished a shift at the Egg Emporium! Earned **{shards} Egg Shards**—nice hustle! 🏪"
+
+        elif job_type == "egg_giver":
+            shards = random.randint(3, 25)
+            current_shards = await self.db.get_user_field(user_id, "shards")
+            await self.db.set_user_field(user_id, "shards", current_shards + shards)
+            return f"hopped around giving out eggs! The bunnies loved it—earned **{shards} Egg Shards**! 🥚"
+
+        elif job_type == "egg_painter":
+            egg_type = random.choice(["common", "silver"])
+            amount = random.randint(1, 25) if egg_type == "common" else 1
+            user_count = await self.db.get_egg_count(user_id, egg_type)
+            await self.db.set_egg_count(user_id, egg_type, user_count + amount)
+            result = f"finished painting eggs! Created **{amount} {egg_type.title()} Egg(s)**! 🎨"
+            if random.random() < 0.1:
+                gems = await self.db.get_user_field(user_id, "gems")
+                await self.db.set_user_field(user_id, "gems", gems + 1)
+                result += " Also found a **hidden gem** while painting! 💎"
+            return result
+
+        elif job_type == "gem_miner":
+            if random.random() < 0.4:
+                gems = await self.db.get_user_field(user_id, "gems")
+                await self.db.set_user_field(user_id, "gems", gems + 1)
+                return "mined a **hidden gem**! 💎"
+            else:
+                if random.random() < 0.5:
+                    shards = random.randint(1, 25)
+                    current_shards = await self.db.get_user_field(user_id, "shards")
+                    await self.db.set_user_field(user_id, "shards", current_shards + shards)
+                    return f"found **{shards} shards** while mining."
+                else:
+                    return "dug around but found nothing this time. 🪨"
+
+        return "finished their shift."
 
     async def run_job(self, interaction, job_type, user, work_ends):
         try:
             await asyncio.sleep(300)
-            current_time = time.time()
-            if job_type == "stealer":
-                if random.random() < 0.3:
-                    target, stolen_egg_type = await find_target_player(
-                        self.db, user.id, interaction.guild
-                    )
-                    if target and stolen_egg_type:
-                        target_count = await self.db.get_egg_count(target.id, stolen_egg_type)
-                        user_count = await self.db.get_egg_count(user.id, stolen_egg_type)
-                        await self.db.set_egg_count(
-                            target.id, stolen_egg_type, max(0, target_count - 1)
-                        )
-                        await self.db.set_egg_count(user.id, stolen_egg_type, user_count + 1)
-
-                        await interaction.channel.send(
-                            f"{user.mention} sneaks back from stealing! You nabbed a {stolen_egg_type.title()} Egg from {target.name}!"
-                        )
-                        await interaction.channel.send(
-                            f"{target.name} lost a {stolen_egg_type.title()} Egg to {user.mention}!"
-                        )
-                    else:
-                        await interaction.channel.send(
-                            f"{user.mention} couldn’t find anyone to steal from! Better luck next shift!"
-                        )
-                else:
-                    if random.random() < 0.6:
-                        egg_type = random.choice(["common", "silver"])
-                        user_count = await self.db.get_egg_count(user.id, egg_type)
-                        await self.db.set_egg_count(user.id, egg_type, user_count + 1)
-                        await interaction.channel.send(
-                            f"{user.mention} sneaks back from stealing! You nabbed a {egg_type.title()} Egg from a distracted bunny!"
-                        )
-                    else:
-                        await interaction.channel.send(
-                            f"{user.mention} got caught red-handed by an angry bunny! No eggs for you—better luck next shift!"
-                        )
-            elif job_type == "store_clerk":
-                shards = random.randint(5, 25)
-                current_shards = await self.db.get_user_field(user.id, "shards")
-                await self.db.set_user_field(user.id, "shards", current_shards + shards)
-                await interaction.channel.send(
-                    f"{user.mention} finishes a shift at the Egg Emporium! Sold some eggs and earned {shards} Egg Shards—nice hustle!"
-                )
-            elif job_type == "egg_giver":
-                shards = random.randint(3, 25)
-                current_shards = await self.db.get_user_field(user.id, "shards")
-                await self.db.set_user_field(user.id, "shards", current_shards + shards)
-                await interaction.channel.send(
-                    f"{user.mention} hops around giving out Common Eggs! The bunnies loved it—you earned {shards} Egg Shards for your kindness!"
-                )
-            elif job_type == "egg_painter":
-                egg_type = random.choice(["common", "silver"])
-                amount = random.randint(1, 25) if egg_type == "common" else 1
-                user_count = await self.db.get_egg_count(user.id, egg_type)
-                await self.db.set_egg_count(user.id, egg_type, user_count + amount)
-                await interaction.channel.send(
-                    f"{user.mention} finishes painting eggs! You created {amount} {egg_type.title()} Egg(s)!"
-                )
-                if random.random() < 0.1:  # 10% chance for gem
-                    gems = await self.db.get_user_field(user.id, "gems")
-                    await self.db.set_user_field(user.id, "gems", gems + 1)
-                    await interaction.channel.send(
-                        f"{user.mention} found a hidden gem while painting! 💎"
-                    )
-            elif job_type == "gem_miner":
-                if random.random() < 0.4:  # 40% chance for gem
-                    gems = await self.db.get_user_field(user.id, "gems")
-                    await self.db.set_user_field(user.id, "gems", gems + 1)
-                    await interaction.channel.send(f"{user.mention} mined a hidden gem! 💎")
-                else:
-                    if random.random() < 0.5:
-                        shards = random.randint(1, 25)
-                        current_shards = await self.db.get_user_field(user.id, "shards")
-                        await self.db.set_user_field(user.id, "shards", current_shards + shards)
-                        await interaction.channel.send(
-                            f"{user.mention} found {shards} shards while mining."
-                        )
-                    else:
-                        await interaction.channel.send(
-                            f"{user.mention} dug around but found nothing this time."
-                        )
-
-            await self.db.set_user_field(user.id, "last_work", current_time)
+            result_message = await self._execute_job_outcome(user.id, job_type, interaction.guild)
+            try:
+                await interaction.channel.send(f"{user.mention} {result_message}")
+            except discord.HTTPException as e:
+                log.error(f"Failed to send job result message for {user}: {e}")
         except asyncio.CancelledError:
             pass
-        except discord.HTTPException as e:
-            log.error(f"Error in run_job for {user}: {e}")
-            await interaction.channel.send(
-                f"{user.mention}, something went wrong during your shift! It has been cancelled."
-            )
+        except Exception as e:
+            log.error(f"Unexpected error in run_job for {user}: {e}")
+            try:
+                await interaction.channel.send(
+                    f"{user.mention}, something went wrong during your shift! It has been cancelled."
+                )
+            except discord.HTTPException:
+                pass
         finally:
             await self.db.set_user_field(user.id, "active_work", False)
             await self.db.set_user_field(user.id, "last_work", 0)
+            await self.db.set_user_field(user.id, "active_job_type", None)
             if user.id in self.active_tasks:
                 del self.active_tasks[user.id]

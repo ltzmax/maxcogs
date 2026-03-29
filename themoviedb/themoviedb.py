@@ -479,7 +479,7 @@ class TheMovieDB(commands.Cog):
         embed = discord.Embed(
             title="TMDB API Key",
             description=msg,
-            colour=await ctx.embed_colour(),
+            colour=await ctx.embed_color(),
         )
         embed.set_footer(text="You can also set your API key by using the button.")
         await ctx.send(embed=embed, view=view)

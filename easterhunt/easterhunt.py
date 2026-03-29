@@ -27,11 +27,14 @@ import time
 from typing import Final
 
 import discord
+from red_commons.logging import getLogger
 from redbot.core import commands
 
 from .commands.owner import OwnerCommands
 from .commands.user import UserCommands
 from .db import Database
+
+log = getLogger("red.maxcogs.easterhunt")
 
 
 class EasterHunt(UserCommands, OwnerCommands, commands.Cog):
@@ -41,7 +44,7 @@ class EasterHunt(UserCommands, OwnerCommands, commands.Cog):
     It includes various commands for interacting with the game, managing progress, and viewing leaderboards.
     """
 
-    __version__: Final[str] = "2.0.0"
+    __version__: Final[str] = "2.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/easterhunt/README.md"
 
@@ -63,40 +66,56 @@ class EasterHunt(UserCommands, OwnerCommands, commands.Cog):
     async def cog_load(self):
         await self.db.initialize()
         current_time = time.time()
+
+        async with self.db.conn.cursor() as cursor:
+            await cursor.execute("UPDATE users SET active_hunt = 0 WHERE active_hunt = 1")
+            await self.db.conn.commit()
+
         stale_users = await self.db.get_stale_active_users()
         for user_id, last_work in stale_users:
             user = self.bot.get_user(user_id)
             if not user:
+                await self.db.set_user_field(user_id, "active_work", False)
+                await self.db.set_user_field(user_id, "last_work", 0)
+                await self.db.set_user_field(user_id, "active_job_type", None)
                 continue
             if last_work <= current_time:
-                await self.db.set_user_field(user_id, "active_work", 0)
-                await self.db.set_user_field(user_id, "last_work", 0)
+                job_type = await self.db.get_user_field(user_id, "active_job_type")
+                await self.resume_job(user, 0, job_type)
             else:
                 remaining_time = last_work - current_time
-                if remaining_time > 0:
-                    self.active_tasks[user_id] = self.bot.loop.create_task(
-                        self.resume_job(user, remaining_time)
-                    )
+                job_type = await self.db.get_user_field(user_id, "active_job_type")
+                self.active_tasks[user_id] = self.bot.loop.create_task(
+                    self.resume_job(user, remaining_time, job_type)
+                )
 
     async def cog_unload(self):
-        await self.db.close()
-        for user_id, task in self.active_tasks.items():
+        for user_id, task in list(self.active_tasks.items()):
             task.cancel()
             user = self.bot.get_user(user_id)
             if user:
                 await self.db.set_user_field(user_id, "active_work", False)
                 await self.db.set_user_field(user_id, "last_work", 0)
+                await self.db.set_user_field(user_id, "active_job_type", None)
         self.active_tasks.clear()
+        await self.db.close()
 
-    async def resume_job(self, user, remaining_time):
+    async def resume_job(self, user, remaining_time, job_type):
         try:
-            await asyncio.sleep(remaining_time)
-            current_time = time.time()
-            await self.db.set_user_field(user.id, "last_work", current_time)
+            if remaining_time > 0:
+                await asyncio.sleep(remaining_time)
+            result_message = await self._execute_job_outcome(user.id, job_type, guild=None)
+            try:
+                await user.send(
+                    f"🐰 Your shift as a **{job_type.replace('_', ' ').title()}** finished while the bot was restarting!\n{result_message}"
+                )
+            except discord.HTTPException:
+                pass
         except asyncio.CancelledError:
             pass
         finally:
             await self.db.set_user_field(user.id, "active_work", False)
             await self.db.set_user_field(user.id, "last_work", 0)
+            await self.db.set_user_field(user.id, "active_job_type", None)
             if user.id in self.active_tasks:
                 del self.active_tasks[user.id]

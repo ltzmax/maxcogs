@@ -23,9 +23,11 @@ SOFTWARE.
 """
 
 import json
+import random
 from typing import Dict, List, Optional, Tuple
 
 import aiosqlite
+import discord
 import orjson
 from redbot.core.data_manager import cog_data_path
 
@@ -39,6 +41,7 @@ class Database:
 
     async def initialize(self):
         self.conn = await aiosqlite.connect(self.db_path)
+        await self.conn.execute("PRAGMA foreign_keys = ON")
         await self.create_tables()
 
     async def close(self):
@@ -60,7 +63,8 @@ class Database:
                 hunt_streak INTEGER DEFAULT 0,
                 last_hunt_time REAL DEFAULT 0,
                 pity_counter_json TEXT DEFAULT '{}',
-                achievements_json TEXT DEFAULT '{}'
+                achievements_json TEXT DEFAULT '{}',
+                active_job_type TEXT DEFAULT NULL
             )""",
             """CREATE TABLE IF NOT EXISTS user_eggs (
                 user_id INTEGER,
@@ -77,6 +81,12 @@ class Database:
         async with self.conn.cursor() as cursor:
             for query in queries:
                 await cursor.execute(query)
+            try:
+                await cursor.execute(
+                    "ALTER TABLE users ADD COLUMN active_job_type TEXT DEFAULT NULL"
+                )
+            except Exception:
+                pass
             await self.conn.commit()
 
     async def ensure_user(self, user_id: int):
@@ -186,6 +196,7 @@ class Database:
 
     async def reset_all(self):
         async with self.conn.cursor() as cursor:
+            await cursor.execute("DELETE FROM user_eggs")
             await cursor.execute("DELETE FROM users")
             await cursor.execute("DELETE FROM egg_images")
         await self.conn.commit()
@@ -201,3 +212,34 @@ class Database:
                 ORDER BY total DESC
                 """)
             return await cursor.fetchall()
+
+    async def find_target_player(
+        self, user_id: int, guild
+    ) -> Tuple[Optional[discord.Member], Optional[str]]:
+        """Find a random guild member with eggs to steal from, excluding the requesting user."""
+        potential_targets = []
+        async with self.conn.cursor() as cursor:
+            await cursor.execute(
+                """
+                SELECT DISTINCT user_id
+                FROM user_eggs
+                WHERE user_id != ? AND count > 0
+                """,
+                (user_id,),
+            )
+            rows = await cursor.fetchall()
+            for (target_id,) in rows:
+                member = guild.get_member(target_id)
+                if member and not member.bot:
+                    eggs = await self.get_eggs(member.id)
+                    potential_targets.append((member, eggs))
+
+        if not potential_targets:
+            return None, None
+
+        target, target_eggs = random.choice(potential_targets)
+        available_egg_types = [egg_type for egg_type, count in target_eggs.items() if count > 0]
+        if not available_egg_types:
+            return None, None
+        egg_type = random.choice(available_egg_types)
+        return target, egg_type
