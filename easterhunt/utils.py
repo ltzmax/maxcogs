@@ -164,33 +164,3 @@ async def process_hunt_outcome(
     if image_url:
         embed.set_image(url=image_url)
     return embed
-
-
-async def find_target_player(db, user_id: int, guild) -> tuple[discord.Member | None, str | None]:
-    """Find a random player with eggs to steal from, excluding the user."""
-    potential_targets = []
-    async with db.conn.cursor() as cursor:
-        await cursor.execute(
-            """
-            SELECT DISTINCT user_id
-            FROM user_eggs
-            WHERE user_id != ? AND count > 0
-            """,
-            (user_id,),
-        )
-        rows = await cursor.fetchall()
-        for (target_id,) in rows:
-            member = guild.get_member(target_id)
-            if member and not member.bot:
-                eggs = await db.get_eggs(member.id)
-                potential_targets.append((member, eggs))
-
-    if not potential_targets:
-        return None, None
-
-    target, target_eggs = random.choice(potential_targets)
-    available_egg_types = [egg_type for egg_type, count in target_eggs.items() if count > 0]
-    if not available_egg_types:
-        return None, None
-    egg_type = random.choice(available_egg_types)
-    return target, egg_type

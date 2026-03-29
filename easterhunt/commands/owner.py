@@ -27,6 +27,8 @@ from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_number
 from redbot.core.utils.views import ConfirmView
 
+from ..achievements.achievements import achievements as achievement_list
+
 
 class OwnerCommands(commands.Cog):
     @commands.is_owner()
@@ -121,7 +123,7 @@ class OwnerCommands(commands.Cog):
             description=f"Are you sure you want to reset {user.mention}'s Easter hunt data? This will clear all their eggs, shards, gems, pity counters, and streaks. This action cannot be undone!",
             color=discord.Color.red(),
         )
-        msg = await ctx.send(
+        await ctx.send(
             embed=embed,
             view=view,
             reference=ctx.message.to_reference(fail_if_not_exists=False),
@@ -150,7 +152,7 @@ class OwnerCommands(commands.Cog):
             description=f"Are you sure you want to reset {user.mention}'s shifts?",
             color=discord.Color.red(),
         )
-        msg = await ctx.send(
+        await ctx.send(
             embed=embed,
             view=view,
             reference=ctx.message.to_reference(fail_if_not_exists=False),
@@ -165,6 +167,7 @@ class OwnerCommands(commands.Cog):
         await self.db.set_user_field(user.id, "active_hunt", False)
         await self.db.set_user_field(user.id, "active_work", False)
         await self.db.set_user_field(user.id, "last_work", 0)
+        await self.db.set_user_field(user.id, "active_job_type", None)
         await ctx.send(
             f"{user.mention}'s Easter hunt and work data has been reset by {ctx.author.mention}!"
         )
@@ -188,7 +191,7 @@ class OwnerCommands(commands.Cog):
             description="Are you sure you want to reset ALL Easter hunt data? This will clear all user data (eggs, shards, gems, pity counters, streaks) and global config (custom image URLs) for everyone. This action cannot be undone!",
             color=discord.Color.red(),
         )
-        msg = await ctx.send(embed=embed, view=view)
+        await ctx.send(embed=embed, view=view)
 
         await view.wait()
         if view.result is None:
@@ -209,10 +212,13 @@ class OwnerCommands(commands.Cog):
 
         Use the achievement key from [p]easterhunt achievements.
         """
+        valid_keys = {a["key"] for a in achievement_list}
+        if key not in valid_keys:
+            return await ctx.send(
+                f"Invalid achievement key: `{key}`\nValid keys: {', '.join(sorted(valid_keys))}"
+            )
         achievements = await self.db.get_achievements(user.id)
-        if key not in achievements:
-            return await ctx.send(f"Invalid achievement key: {key}")
         achievements[key] = value
         await self.db.set_achievements(user.id, achievements)
         status = "unlocked" if value else "locked"
-        await ctx.send(f"Set {user.name}'s {key} achievement to {status}.")
+        await ctx.send(f"Set {user.name}'s `{key}` achievement to {status}.")

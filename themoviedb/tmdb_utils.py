@@ -255,7 +255,7 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
 
     fields = {k: v for k, v in fields.items() if v}
     embed = discord.Embed(
-        title=title, url=url, description=description, colour=await ctx.embed_colour()
+        title=title, url=url, description=description, colour=await ctx.embed_color()
     )
 
     total_length = len(embed.title) + len(embed.description)
@@ -558,7 +558,7 @@ async def person_embed(ctx, query: str):
                 title=data.get("name", "Unknown"),
                 url=f"https://www.themoviedb.org/person/{person['id']}",
                 description=data.get("biography", "No biography available.")[:3048],
-                colour=await ctx.embed_colour(),
+                colour=await ctx.embed_color(),
             )
 
             fields = {
