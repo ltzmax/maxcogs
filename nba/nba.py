@@ -381,14 +381,9 @@ class NBA(commands.Cog):
             await ctx.send("Failed to parse news feed.")
             return None
 
-    async def load_application_emojis(self) -> None:
-        """Populate the team_emojis cache from the bot's application emojis (global, not per-guild)."""
-        try:
-            app_emojis = await self.bot.fetch_application_emojis()
-        except discord.HTTPException as e:
-            log.warning("Failed to fetch application emojis: %s", e)
-            return
-        by_name = {e.name: e for e in app_emojis}
+    def load_application_emojis(self) -> None:
+        """Populate the team_emojis cache from bot.emojis."""
+        by_name = {e.name: e for e in self.bot.emojis}
         loaded = 0
         for team_name, emoji_name in TEAM_EMOJI_NAMES.items():
             emoji = by_name.get(emoji_name)
@@ -402,7 +397,7 @@ class NBA(commands.Cog):
     @periodic_check.before_loop
     async def before_periodic_check(self):
         await self.bot.wait_until_ready()
-        await self.load_application_emojis()
+        self.load_application_emojis()
 
     async def cog_unload(self):
         self.periodic_check.cancel()
@@ -555,7 +550,7 @@ class NBA(commands.Cog):
                 log.error("Failed to upload emoji %s: %s", emoji_name, e)
                 failed += 1
 
-        await self.load_application_emojis()
+        self.load_application_emojis()
         await ctx.send(
             f"Emoji sync complete.\n"
             f"✅ Uploaded: **{uploaded}** | ⏭️ Skipped (already exist): **{skipped}** | ❌ Failed: **{failed}**\n"
