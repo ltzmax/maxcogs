@@ -17,6 +17,24 @@ Reset the channel and team settings.<br/>
  - Usage: `[p]nbaset reset`
  - Aliases: `clear`
 
+### [p]nbaset emojis
+
+Sync NBA team logos as application emojis (global, owner only).<br/>
+
+Uploads any missing team emojis to the bot's application emoji list,<br/>
+then refreshes the in-memory cache. Already-uploaded emojis are skipped.<br/>
+Team logo images are fetched from the NBA CDN.<br/>
+
+ - Usage: `[p]nbaset emojis`
+ - Restricted to: `BOT_OWNER`
+ - Cooldown: `1 per 900.0 seconds`
+
+### [p]nbaset settings
+
+View the channel and team settings.<br/>
+
+ - Usage: `[p]nbaset settings`
+
 ### [p]nbaset channel
 
 Set the channel to send NBA game updates to.<br/>
@@ -35,12 +53,6 @@ You can only set one channel and one team per server.<br/>
 - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trail blazers, warriors, wizards<br/>
 
  - Usage: `[p]nbaset channel <channel> <team>`
-
-### [p]nbaset settings
-
-View the channel and team settings.<br/>
-
- - Usage: `[p]nbaset settings`
 
 ## [p]nba (Hybrid Command)
 
@@ -100,4 +112,3 @@ Get the current NBA scoreboard.<br/>
  - Slash Usage: `/nba scoreboard [team=None]`
  - Aliases: `score and scores`
  - Cooldown: `1 per 3.0 seconds`
-
