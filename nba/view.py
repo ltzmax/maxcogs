@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
+
 import aiohttp
 import discord
 from red_commons.logging import getLogger
@@ -94,7 +96,11 @@ class GameMenu(discord.ui.View):
 
         options = [
             discord.SelectOption(
-                label=f"{embed.fields[0].name.replace(':', '')} vs {embed.fields[1].name.replace(':', '')}",
+                label=(
+                    re.sub(r"<:[^:]+:\d+>\s*", "", embed.fields[0].name).replace(":", "").strip()
+                    + " vs "
+                    + re.sub(r"<:[^:]+:\d+>\s*", "", embed.fields[1].name).replace(":", "").strip()
+                )[:100],
                 value=str(i),
             )
             for i, embed in enumerate(pages)

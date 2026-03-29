@@ -49,12 +49,8 @@ async def build_schedule_embeds(
     )
     if is_offseason:
         year = now.year
-        offseason_start = int(
-            datetime(year, 6, 21, tzinfo=timezone.utc).timestamp()
-        )
-        offseason_end = int(
-            datetime(year, 10, 15, tzinfo=timezone.utc).timestamp()
-        )
+        offseason_start = int(datetime(year, 6, 21, tzinfo=timezone.utc).timestamp())
+        offseason_end = int(datetime(year, 10, 15, tzinfo=timezone.utc).timestamp())
 
         await ctx.send(
             "Season schedule is not available during the offseason.\n"
@@ -144,8 +140,12 @@ async def build_scoreboard_embeds(
             ),
             color=await ctx.embed_color(),
         )
+        home_emoji = team_emojis.get(home_team, "")
+        away_emoji = team_emojis.get(away_team, "")
+        home_team_label = f"{home_emoji} {home_team}:" if home_emoji else f"{home_team}:"
+        away_team_label = f"{away_emoji} {away_team}:" if away_emoji else f"{away_team}:"
         embed.add_field(
-            name=f"{home_team}:",
+            name=home_team_label,
             value=rich_markup(
                 f"[bold red]Score:[/bold red] {home_score}\n"
                 f"[bold blue]Record:[/bold blue] {home_record}",
@@ -153,7 +153,7 @@ async def build_scoreboard_embeds(
             ),
         )
         embed.add_field(
-            name=f"{away_team}:",
+            name=away_team_label,
             value=rich_markup(
                 f"[bold red]Score:[/bold red] {away_score}\n"
                 f"[bold blue]Record:[/bold blue] {away_record}",
@@ -170,8 +170,6 @@ async def build_scoreboard_embeds(
         embed.add_field(name="Game Status:", value=game_status_value, inline=False)
 
         home_leader, away_leader = get_leaders_info(game)
-        home_emoji = team_emojis.get(home_team, "")
-        away_emoji = team_emojis.get(away_team, "")
         field_name_home = f"{home_emoji} Home Leader:" if home_emoji else "Home Leader:"
         field_name_away = f"{away_emoji} Away Leader:" if away_emoji else "Away Leader:"
 

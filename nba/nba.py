@@ -43,12 +43,14 @@ from redbot.core.utils.views import SimpleMenu
 from .converter import (
     ESPN_NBA_NEWS,
     SCHEDULE_URL,
+    TEAM_EMOJI_NAMES,
     TEAM_NAME_TO_API,
     TEAM_NAMES,
     TODAY_SCOREBOARD,
     get_games,
     parse_duration,
     periods,
+    team_emojis,
 )
 from .formatters import (
     build_news_embeds,
@@ -70,7 +72,7 @@ class NBA(commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.6.0"
+    __version__: Final[str] = "3.7.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/nba/README.md"
 
@@ -290,6 +292,15 @@ class NBA(commands.Cog):
                     game_clock,
                     game_id,
                 )
+                try:
+                    await channel.send(embed=embed)
+                except discord.HTTPException as e:
+                    log.error(
+                        "Failed to send score update for game %s in guild %s: %s",
+                        game_id,
+                        guild_id,
+                        e,
+                    )
 
     async def fetch_data(
         self, url: str, ctx: Optional[commands.Context] = None
@@ -370,9 +381,28 @@ class NBA(commands.Cog):
             await ctx.send("Failed to parse news feed.")
             return None
 
+    async def load_application_emojis(self) -> None:
+        """Populate the team_emojis cache from the bot's application emojis (global, not per-guild)."""
+        try:
+            app_emojis = await self.bot.fetch_application_emojis()
+        except discord.HTTPException as e:
+            log.warning("Failed to fetch application emojis: %s", e)
+            return
+        by_name = {e.name: e for e in app_emojis}
+        loaded = 0
+        for team_name, emoji_name in TEAM_EMOJI_NAMES.items():
+            emoji = by_name.get(emoji_name)
+            if emoji:
+                team_emojis[team_name] = f"<:{emoji.name}:{emoji.id}>"
+                loaded += 1
+            else:
+                team_emojis.pop(team_name, None)
+        log.info("Loaded %d/%d application emojis for NBA teams.", loaded, len(TEAM_EMOJI_NAMES))
+
     @periodic_check.before_loop
     async def before_periodic_check(self):
         await self.bot.wait_until_ready()
+        await self.load_application_emojis()
 
     async def cog_unload(self):
         self.periodic_check.cancel()
@@ -429,6 +459,107 @@ class NBA(commands.Cog):
             "Cleared channel and team settings.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
+        )
+
+    @nbaset.command(name="emojis")
+    @commands.is_owner()
+    @commands.cooldown(1, 900, commands.BucketType.guild)
+    async def nbaset_emojis_sync(self, ctx: commands.Context):
+        """
+        Sync NBA team logos as application emojis (global, owner only).
+
+        Uploads any missing team emojis to the bot's application emoji list,
+        then refreshes the in-memory cache. Already-uploaded emojis are skipped.
+        Team logo images are fetched from the NBA CDN.
+        """
+        NBA_LOGO_URL = "https://cdn.nba.com/logos/nba/{team_id}/global/L/logo.svg"
+        TEAM_IDS: dict[str, int] = {
+            "Heat": 1610612748,
+            "Bucks": 1610612749,
+            "Bulls": 1610612741,
+            "Cavaliers": 1610612739,
+            "Celtics": 1610612738,
+            "Clippers": 1610612746,
+            "Grizzlies": 1610612763,
+            "Hawks": 1610612737,
+            "Hornets": 1610612766,
+            "Jazz": 1610612762,
+            "Kings": 1610612758,
+            "Knicks": 1610612752,
+            "Lakers": 1610612747,
+            "Magic": 1610612753,
+            "Mavericks": 1610612742,
+            "Nets": 1610612751,
+            "Nuggets": 1610612743,
+            "Pacers": 1610612754,
+            "Pelicans": 1610612740,
+            "Pistons": 1610612765,
+            "Raptors": 1610612761,
+            "Rockets": 1610612745,
+            "76ers": 1610612755,
+            "Spurs": 1610612759,
+            "Suns": 1610612756,
+            "Thunder": 1610612760,
+            "Timberwolves": 1610612750,
+            "Trail Blazers": 1610612757,
+            "Warriors": 1610612744,
+            "Wizards": 1610612764,
+        }
+
+        await ctx.typing()
+        try:
+            existing = await self.bot.fetch_application_emojis()
+        except discord.HTTPException as e:
+            return await ctx.send(f"Failed to fetch existing application emojis: {e}")
+
+        existing_names = {e.name for e in existing}
+        uploaded, skipped, failed = 0, 0, 0
+
+        for team_name, emoji_name in TEAM_EMOJI_NAMES.items():
+            if emoji_name in existing_names:
+                skipped += 1
+                continue
+            team_id = TEAM_IDS.get(team_name)
+            if not team_id:
+                log.warning("No team ID for %s, skipping emoji upload.", team_name)
+                failed += 1
+                continue
+            url = NBA_LOGO_URL.format(team_id=team_id)
+            try:
+                async with self.session.get(url) as resp:
+                    if resp.status != 200:
+                        log.warning(
+                            "Failed to fetch logo for %s (status %s)", team_name, resp.status
+                        )
+                        failed += 1
+                        continue
+                    svg_bytes = await resp.read()
+                try:
+                    import cairosvg
+                except ImportError:
+                    return await ctx.send(
+                        "The `cairosvg` library is required to convert SVG to PNG. Please install it with `pip install cairosvg`."
+                    )
+                    failed += 1
+                    continue
+                try:
+                    png_bytes = cairosvg.svg2png(bytestring=svg_bytes)
+                except Exception as e:
+                    log.error("Failed to convert SVG to PNG for %s: %s", team_name, e)
+                    failed += 1
+                    continue
+                await self.bot.create_application_emoji(name=emoji_name, image=png_bytes)
+                uploaded += 1
+                log.info("Uploaded application emoji: %s", emoji_name)
+            except discord.HTTPException as e:
+                log.error("Failed to upload emoji %s: %s", emoji_name, e)
+                failed += 1
+
+        await self.load_application_emojis()
+        await ctx.send(
+            f"Emoji sync complete.\n"
+            f"✅ Uploaded: **{uploaded}** | ⏭️ Skipped (already exist): **{skipped}** | ❌ Failed: **{failed}**\n"
+            f"Cache now has **{len(team_emojis)}** emojis loaded."
         )
 
     @nbaset.command(name="settings")
