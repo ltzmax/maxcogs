@@ -466,7 +466,7 @@ class NBA(commands.Cog):
     @commands.cooldown(1, 900, commands.BucketType.guild)
     async def nbaset_emojis_sync(self, ctx: commands.Context):
         """
-        Sync NBA team logos as application emojis (global, owner only).
+        Sync NBA team logos as application emojis.
 
         Uploads any missing team emojis to the bot's application emoji list,
         then refreshes the in-memory cache. Already-uploaded emojis are skipped.
