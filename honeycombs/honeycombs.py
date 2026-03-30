@@ -434,29 +434,31 @@ class HoneyCombs(commands.Cog):
         You can set the image by providing a URL or by attaching an image/gif to the command.
         Only JPG / JPEG / PNG / GIF / WEBP format is supported.
         """
-        await ctx.typing()
-        if len(ctx.message.attachments) > 0:
-            image_url = ctx.message.attachments[0].url
-        elif image_url is None:
-            return await ctx.send("You must provide a URL or attach an image.")
+        async with ctx.typing():
+            if len(ctx.message.attachments) > 0:
+                image_url = ctx.message.attachments[0].url
+            elif image_url is None:
+                return await ctx.send("You must provide a URL or attach an image.")
 
-        try:
-            async with self.session.get(image_url, timeout=aiohttp.ClientTimeout(total=10)) as r:
-                if r.status != 200:
-                    return await ctx.send("Failed to set the start image. URL is invalid.")
-                data = await r.read()
-        except aiohttp.ClientError:
-            return await ctx.send("Failed to set the start image. Client error.")
-        except asyncio.TimeoutError:
-            return await ctx.send("Failed to set the start image. Timeout error.")
+            try:
+                async with self.session.get(
+                    image_url, timeout=aiohttp.ClientTimeout(total=10)
+                ) as r:
+                    if r.status != 200:
+                        return await ctx.send("Failed to set the start image. URL is invalid.")
+                    data = await r.read()
+            except aiohttp.ClientError:
+                return await ctx.send("Failed to set the start image. Client error.")
+            except asyncio.TimeoutError:
+                return await ctx.send("Failed to set the start image. Timeout error.")
 
-        if not data or not any(data.startswith(sig) for sig in MAGIC_BYTES):
-            return await ctx.send(
-                f"Failed to set the start image. Only {humanize_list(list(MAGIC_BYTES.values()))} format is supported."
-            )
+            if not data or not any(data.startswith(sig) for sig in MAGIC_BYTES):
+                return await ctx.send(
+                    f"Failed to set the start image. Only {humanize_list(list(MAGIC_BYTES.values()))} format is supported."
+                )
 
-        await self.update_guild_config(ctx.guild, "default_start_image", image_url)
-        await ctx.send("The start image has been set.")
+            await self.update_guild_config(ctx.guild, "default_start_image", image_url)
+            await ctx.send("The start image has been set.")
 
     @setimage.command(name="clear", aliases=["reset"])
     @commands.admin()

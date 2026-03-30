@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import asyncio
-import re
 import urllib.parse
 from datetime import datetime
 from typing import Any
@@ -32,7 +31,7 @@ import aiohttp
 import discord
 import orjson
 from red_commons.logging import getLogger
-from redbot.core.utils.chat_formatting import box, header, humanize_list, humanize_number
+from redbot.core.utils.chat_formatting import header, humanize_list, humanize_number
 from redbot.core.utils.views import SimpleMenu
 
 log = getLogger("red.maxcogs.themoviedb.tmdb_utils")
@@ -289,18 +288,18 @@ async def build_embed(ctx, data, item_id, index, results, item_type="movie"):
 
 async def search_and_display(ctx, query: str, media_type: str):
     """Search TMDB and display results with a paginated layout and selection buttons."""
-    await ctx.typing()
-    api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
-    if not api_key:
-        return await ctx.send("TMDB API key is missing.")
+    async with ctx.typing():
+        api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
+        if not api_key:
+            return await ctx.send("TMDB API key is missing.")
 
-    async with aiohttp.ClientSession() as session:
-        initial_data = await search_media(ctx, session, query, media_type, api_key=api_key)
-        if not await validate_results(ctx, initial_data, query):
-            return
+        async with aiohttp.ClientSession() as session:
+            initial_data = await search_media(ctx, session, query, media_type, api_key=api_key)
+            if not await validate_results(ctx, initial_data, query):
+                return
 
-        total_pages = min(initial_data.get("total_pages", 1), 20)
-        sem = asyncio.Semaphore(5)
+            total_pages = min(initial_data.get("total_pages", 1), 20)
+            sem = asyncio.Semaphore(5)
 
         async def fetch_page(page):
             async with sem:
@@ -530,19 +529,19 @@ async def search_and_display(ctx, query: str, media_type: str):
 
 async def person_embed(ctx, query: str):
     """Search and display person information from TMDB."""
-    await ctx.typing()
-    api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
-    if not api_key:
-        return await ctx.send("TMDB API key is missing.")
+    async with ctx.typing():
+        api_key = (await ctx.bot.get_shared_api_tokens("tmdb")).get("api_key")
+        if not api_key:
+            return await ctx.send("TMDB API key is missing.")
 
-    async with aiohttp.ClientSession() as session:
-        people_data = await search_media(ctx, session, query, "person", api_key=api_key)
-        if not await validate_results(ctx, people_data, query):
-            return
+        async with aiohttp.ClientSession() as session:
+            people_data = await search_media(ctx, session, query, "person", api_key=api_key)
+            if not await validate_results(ctx, people_data, query):
+                return
 
-        sorted_people = sorted(
-            people_data["results"], key=lambda x: x.get("popularity", 0), reverse=True
-        )
+            sorted_people = sorted(
+                people_data["results"], key=lambda x: x.get("popularity", 0), reverse=True
+            )
 
         async def fetch_person(person):
             return await get_media_data(ctx, session, person["id"], "person", api_key=api_key)

@@ -115,64 +115,66 @@ class History(commands.Cog):
         - `[p]history` - Events for today.
         - `[p]history 12 25` - Events for December 25.
         """
-        await ctx.typing()
-        user_tz: str = await self.config.user(ctx.author).timezone()
-        try:
-            tz = ZoneInfo(user_tz)
-        except ZoneInfoNotFoundError:
-            tz = ZoneInfo("UTC")
-            log.warning(
-                f"Invalid timezone '{user_tz}' for user {ctx.author.id}, falling back to UTC."
-            )
-
-        if (month is None) != (day is None):
-            return await ctx.send("Please provide both month and day, or neither.")
-
-        if month is None or day is None:
-            today = datetime.now(tz)
-            month = today.month
-            day = today.day
-            display_date: str = today.strftime("%B %d")
-        else:
+        async with ctx.typing():
+            user_tz: str = await self.config.user(ctx.author).timezone()
             try:
-                display_date = datetime(2000, month, day).strftime("%B %d")
-            except ValueError:
-                return await ctx.send("Invalid date. Please provide a real month (1-12) and day.")
+                tz = ZoneInfo(user_tz)
+            except ZoneInfoNotFoundError:
+                tz = ZoneInfo("UTC")
+                log.warning(
+                    f"Invalid timezone '{user_tz}' for user {ctx.author.id}, falling back to UTC."
+                )
 
-        month_str: str = f"{month:02d}"
-        day_str: str = f"{day:02d}"
+            if (month is None) != (day is None):
+                return await ctx.send("Please provide both month and day, or neither.")
 
-        try:
-            events: list[dict[str, Any]] = await fetch_events(self.session, month_str, day_str)
-        except ValueError as e:
-            log.error(
-                f"Failed to fetch events for {month_str}/{day_str}: {str(e)}",
-                exc_info=True,
-            )
-            return await ctx.send(
-                f"Failed to fetch events for {display_date}. Please try again later."
-            )
+            if month is None or day is None:
+                today = datetime.now(tz)
+                month = today.month
+                day = today.day
+                display_date: str = today.strftime("%B %d")
+            else:
+                try:
+                    display_date = datetime(2000, month, day).strftime("%B %d")
+                except ValueError:
+                    return await ctx.send(
+                        "Invalid date. Please provide a real month (1-12) and day."
+                    )
 
-        if not events:
-            return await ctx.send(f"No notable events found for {display_date}.")
+            month_str: str = f"{month:02d}"
+            day_str: str = f"{day:02d}"
 
-        pages: list[discord.Embed] = []
-        items_per_page: int = 10
-        for i in range(0, len(events), items_per_page):
-            chunk = events[i : i + items_per_page]
-            embed = discord.Embed(
-                title=f"On This Day: {display_date}", color=await ctx.embed_color()
-            )
-            for event in chunk:
-                year: str | int = event.get("year", "Unknown Year")
-                text: str = event.get("text", "No description available.")
-                display_year: str = format_year(year)
-                embed.add_field(name=display_year, value=text, inline=False)
-            current_page: int = i // items_per_page + 1
-            total_pages: int = (len(events) - 1) // items_per_page + 1
-            embed.set_footer(
-                text=f"Source: Wikipedia | Timezone: {user_tz} | Page {current_page}/{total_pages}",
-                icon_url=WIKIPEDIA_LOGO,
-            )
-            pages.append(embed)
-        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+            try:
+                events: list[dict[str, Any]] = await fetch_events(self.session, month_str, day_str)
+            except ValueError as e:
+                log.error(
+                    f"Failed to fetch events for {month_str}/{day_str}: {str(e)}",
+                    exc_info=True,
+                )
+                return await ctx.send(
+                    f"Failed to fetch events for {display_date}. Please try again later."
+                )
+
+            if not events:
+                return await ctx.send(f"No notable events found for {display_date}.")
+
+            pages: list[discord.Embed] = []
+            items_per_page: int = 10
+            for i in range(0, len(events), items_per_page):
+                chunk = events[i : i + items_per_page]
+                embed = discord.Embed(
+                    title=f"On This Day: {display_date}", color=await ctx.embed_color()
+                )
+                for event in chunk:
+                    year: str | int = event.get("year", "Unknown Year")
+                    text: str = event.get("text", "No description available.")
+                    display_year: str = format_year(year)
+                    embed.add_field(name=display_year, value=text, inline=False)
+                current_page: int = i // items_per_page + 1
+                total_pages: int = (len(events) - 1) // items_per_page + 1
+                embed.set_footer(
+                    text=f"Source: Wikipedia | Timezone: {user_tz} | Page {current_page}/{total_pages}",
+                    icon_url=WIKIPEDIA_LOGO,
+                )
+                pages.append(embed)
+            await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)

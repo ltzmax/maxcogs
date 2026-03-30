@@ -76,67 +76,67 @@ class WhosThatPokemonCommands:
         **Arguments:**
         - `[generation]` - Where you choose any generation from gen 1 to gen 9.
         """
-        await ctx.typing()
-        poke_id = generation or randint(1, 1010)
-        poke_id_str = f"{poke_id:>03}"
-        (species_data, pokemon_data), (hidden_temp, revealed_temp) = await asyncio.gather(
-            asyncio.gather(
-                fetch_data(self.session, f"{API_URL}/pokemon-species/{poke_id}"),
-                fetch_data(self.session, f"{API_URL}/pokemon/{poke_id}"),
-            ),
-            asyncio.gather(
-                generate_image(self, poke_id_str, hide=True),
-                generate_image(self, poke_id_str, hide=False),
-            ),
-        )
-
-        if not species_data or species_data.get("http_code"):
-            log.error("Failed to get species data: %s", species_data)
-            return await ctx.send("Failed to get species data from PokéAPI.")
-        if not pokemon_data or pokemon_data.get("http_code"):
-            log.error("Failed to get Pokémon data: %s", pokemon_data)
-            return await ctx.send("Failed to fetch Pokémon data.")
-        if hidden_temp is None or revealed_temp is None:
-            log.error("Failed to generate image for poke_id %s", poke_id)
-            return await ctx.send("Failed to generate whosthatpokemon card image.")
-
-        names_data = species_data.get("names", [{}])
-        eligible_names = [x["name"].lower() for x in names_data]
-        english_name = next(
-            (x["name"] for x in names_data if x["language"]["name"] == "en"),
-            "Unknown",
-        )
-
-        img_timeout = discord.utils.format_dt(
-            datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
-        )
-
-        view = WhosThatPokemonView(eligible_names)
-        hint_view = HintView(
-            {"species_data": species_data, "pokemon_data": pokemon_data},
-            english_name,
-        )
-        view.add_item(hint_view.hint_button)
-
-        view.message = await ctx.send(
-            f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}.\n"
-            "Use the hint button for help (one use only)!",
-            file=File(hidden_temp, "guessthatpokemon.png"),
-            view=view,
-        )
-
-        embed = discord.Embed(
-            title=":tada: You got it right! :tada:",
-            description=f"The Pokemon was... **{english_name}**.",
-            color=0x76EE00,
-        )
-        embed.set_image(url="attachment://whosthatpokemon.png")
-        embed.set_footer(text=f"Author: {ctx.author}", icon_url=ctx.author.display_avatar.url)
-
-        timed_out = await view.wait()
-        if timed_out:
-            return await ctx.send(
-                f"{ctx.author.mention} You took too long to answer.\n"
-                f"The Pokemon was... **{english_name}**."
+        async with ctx.typing():
+            poke_id = generation or randint(1, 1010)
+            poke_id_str = f"{poke_id:>03}"
+            (species_data, pokemon_data), (hidden_temp, revealed_temp) = await asyncio.gather(
+                asyncio.gather(
+                    fetch_data(self.session, f"{API_URL}/pokemon-species/{poke_id}"),
+                    fetch_data(self.session, f"{API_URL}/pokemon/{poke_id}"),
+                ),
+                asyncio.gather(
+                    generate_image(self, poke_id_str, hide=True),
+                    generate_image(self, poke_id_str, hide=False),
+                ),
             )
-        await ctx.send(file=File(revealed_temp, "whosthatpokemon.png"), embed=embed)
+
+            if not species_data or species_data.get("http_code"):
+                log.error("Failed to get species data: %s", species_data)
+                return await ctx.send("Failed to get species data from PokéAPI.")
+            if not pokemon_data or pokemon_data.get("http_code"):
+                log.error("Failed to get Pokémon data: %s", pokemon_data)
+                return await ctx.send("Failed to fetch Pokémon data.")
+            if hidden_temp is None or revealed_temp is None:
+                log.error("Failed to generate image for poke_id %s", poke_id)
+                return await ctx.send("Failed to generate whosthatpokemon card image.")
+
+            names_data = species_data.get("names", [{}])
+            eligible_names = [x["name"].lower() for x in names_data]
+            english_name = next(
+                (x["name"] for x in names_data if x["language"]["name"] == "en"),
+                "Unknown",
+            )
+
+            img_timeout = discord.utils.format_dt(
+                datetime.now(timezone.utc) + timedelta(seconds=30.0), "R"
+            )
+
+            view = WhosThatPokemonView(eligible_names)
+            hint_view = HintView(
+                {"species_data": species_data, "pokemon_data": pokemon_data},
+                english_name,
+            )
+            view.add_item(hint_view.hint_button)
+
+            view.message = await ctx.send(
+                f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}.\n"
+                "Use the hint button for help (one use only)!",
+                file=File(hidden_temp, "guessthatpokemon.png"),
+                view=view,
+            )
+
+            embed = discord.Embed(
+                title=":tada: You got it right! :tada:",
+                description=f"The Pokemon was... **{english_name}**.",
+                color=0x76EE00,
+            )
+            embed.set_image(url="attachment://whosthatpokemon.png")
+            embed.set_footer(text=f"Author: {ctx.author}", icon_url=ctx.author.display_avatar.url)
+
+            timed_out = await view.wait()
+            if timed_out:
+                return await ctx.send(
+                    f"{ctx.author.mention} You took too long to answer.\n"
+                    f"The Pokemon was... **{english_name}**."
+                )
+            await ctx.send(file=File(revealed_temp, "whosthatpokemon.png"), embed=embed)

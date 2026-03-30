@@ -48,18 +48,18 @@ class PokeinfoCommands:
         **Arguments:**
         - `<pokemon>` - The Pokémon to search for.
         """
-        await ctx.typing()
-        pokemon_data = await fetch_data(self.session, f"{API_URL}/pokemon/{pokemon.lower()}")
-        if not pokemon_data or pokemon_data.get("http_code"):
-            code = pokemon_data.get("http_code") if pokemon_data else None
-            if code == 404:
-                return await ctx.send(f"No Pokémon found for `{pokemon}`.")
-            return await ctx.send("Could not fetch Pokémon data. Please try again later.")
+        async with ctx.typing():
+            pokemon_data = await fetch_data(self.session, f"{API_URL}/pokemon/{pokemon.lower()}")
+            if not pokemon_data or pokemon_data.get("http_code"):
+                code = pokemon_data.get("http_code") if pokemon_data else None
+                if code == 404:
+                    return await ctx.send(f"No Pokémon found for `{pokemon}`.")
+                return await ctx.send("Could not fetch Pokémon data. Please try again later.")
 
-        view = PokemonView(ctx, self.session, pokemon_data)
-        try:
-            embed = await create_pokemon_embed(self.session, pokemon_data, "base")
-            view.message = await ctx.send(embed=embed, view=view)
-        except ValueError as e:
-            log.error("Error creating initial embed: %s", e, exc_info=True)
-            await ctx.send("Something went wrong building the Pokémon embed.")
+            view = PokemonView(ctx, self.session, pokemon_data)
+            try:
+                embed = await create_pokemon_embed(self.session, pokemon_data, "base")
+                view.message = await ctx.send(embed=embed, view=view)
+            except ValueError as e:
+                log.error("Error creating initial embed: %s", e, exc_info=True)
+                await ctx.send("Something went wrong building the Pokémon embed.")
