@@ -69,7 +69,7 @@ Check cooldowns for all heists.<br/>
  - Usage: `[p]heist cooldowns`
  - Slash Usage: `/heist cooldowns`
  - Aliases: `cooldown`
- 
+
 # [p]heistset
 Manage global heist settings.<br/>
  - Usage: `[p]heistset`
