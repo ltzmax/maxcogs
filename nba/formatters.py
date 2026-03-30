@@ -489,7 +489,9 @@ async def build_player_embeds(
     birthdate = (p.get("BIRTHDATE") or "")[:10] or "N/A"
     school = p.get("SCHOOL") or "N/A"
     experience = p.get("SEASON_EXP")
-    exp_str = f"{experience} yr{'s' if experience != 1 else ''}" if experience is not None else "Rookie"
+    exp_str = (
+        f"{experience} yr{'s' if experience != 1 else ''}" if experience is not None else "Rookie"
+    )
     draft_year = p.get("DRAFT_YEAR") or "Undrafted"
     draft_round = p.get("DRAFT_ROUND") or ""
     draft_number = p.get("DRAFT_NUMBER") or ""
@@ -614,15 +616,10 @@ async def build_roster_embeds(
             exp_str = f"{exp} yr{'s' if exp not in ('R', '1') else ''}" if exp != "R" else "Rookie"
             embed.add_field(
                 name=f"#{num} — **{name}**",
-                value=(
-                    f"Pos: {pos} · {height} · {weight} lbs\n"
-                    f"Age: {age} · Exp: {exp_str}"
-                ),
+                value=(f"Pos: {pos} · {height} · {weight} lbs\n" f"Age: {age} · Exp: {exp_str}"),
                 inline=True,
             )
-        embed.set_footer(
-            text=f"🏀 Provided by NBA.com | Page {page_idx + 1}/{total_pages}"
-        )
+        embed.set_footer(text=f"🏀 Provided by NBA.com | Page {page_idx + 1}/{total_pages}")
         pages.append(embed)
     return pages
 
