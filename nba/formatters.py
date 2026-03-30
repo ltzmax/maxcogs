@@ -253,7 +253,7 @@ def build_pregame_embed(
     embed = discord.Embed(
         title="🏀 Game Starting Soon!",
         description=(
-            f"**{home_label}** vs **{away_label}**\n" f"Starts <t:{game_ts}:R> at <t:{game_ts}:t>"
+            f"**{home_label}** vs **{away_label}**\nStarts <t:{game_ts}:R> at <t:{game_ts}:t>"
         ),
         color=0xEE6730,
     )
