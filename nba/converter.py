@@ -138,6 +138,55 @@ TEAM_EMOJI_NAMES: dict[str, str] = {
 # Maps team name → "<:emoji_name:emoji_id>" string ready for embed use.
 team_emojis: dict[str, str] = {}
 
+TEAM_NAME_TO_ID: dict[str, int] = {
+    "Heat": 1610612748,
+    "Bucks": 1610612749,
+    "Bulls": 1610612741,
+    "Cavaliers": 1610612739,
+    "Celtics": 1610612738,
+    "Clippers": 1610612746,
+    "Grizzlies": 1610612763,
+    "Hawks": 1610612737,
+    "Hornets": 1610612766,
+    "Jazz": 1610612762,
+    "Kings": 1610612758,
+    "Knicks": 1610612752,
+    "Lakers": 1610612747,
+    "Magic": 1610612753,
+    "Mavericks": 1610612742,
+    "Nets": 1610612751,
+    "Nuggets": 1610612743,
+    "Pacers": 1610612754,
+    "Pelicans": 1610612740,
+    "Pistons": 1610612765,
+    "Raptors": 1610612761,
+    "Rockets": 1610612745,
+    "76ers": 1610612755,
+    "Spurs": 1610612759,
+    "Suns": 1610612756,
+    "Thunder": 1610612760,
+    "Timberwolves": 1610612750,
+    "Trail Blazers": 1610612757,
+    "Warriors": 1610612744,
+    "Wizards": 1610612764,
+}
+
+STAT_CATEGORY_MAP: dict[str, str] = {
+    "pts": "PTS",
+    "reb": "REB",
+    "ast": "AST",
+    "stl": "STL",
+    "blk": "BLK",
+}
+
+STAT_CATEGORY_LABELS: dict[str, str] = {
+    "pts": "Points",
+    "reb": "Rebounds",
+    "ast": "Assists",
+    "stl": "Steals",
+    "blk": "Blocks",
+}
+
 
 def parse_duration(duration: str) -> str:
     """

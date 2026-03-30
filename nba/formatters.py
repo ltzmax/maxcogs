@@ -34,6 +34,15 @@ from redbot.core.utils.chat_formatting import box, header, rich_markup
 from .converter import get_leaders_info, get_time_bounds, parse_duration, periods, team_emojis
 
 
+def _parse_result_set(data: dict, name: str) -> list[dict]:
+    """Extract rows from a named result set in a nba_api get_dict() response."""
+    for rs in data.get("resultSets", []):
+        if rs.get("name") == name:
+            headers = rs.get("headers", [])
+            return [dict(zip(headers, row)) for row in rs.get("rowSet", [])]
+    return []
+
+
 async def build_schedule_embeds(
     ctx: commands.Context,
     games: List[dict],
@@ -106,6 +115,14 @@ async def build_scoreboard_embeds(
         return []
 
     pages = []
+    total_pages = len(
+        [
+            g
+            for g in games
+            if not team
+            or team.lower() in (g["homeTeam"]["teamName"] + g["awayTeam"]["teamName"]).lower()
+        ]
+    )
     for game in games:
         home_team = game["homeTeam"]["teamName"]
         away_team = game["awayTeam"]["teamName"]
@@ -187,14 +204,6 @@ async def build_scoreboard_embeds(
         if game.get("seriesGameNumber"):
             embed.add_field(name="Series Game Number:", value=game["seriesGameNumber"])
 
-        total_pages = len(
-            [
-                g
-                for g in games
-                if not team
-                or team.lower() in (g["homeTeam"]["teamName"] + g["awayTeam"]["teamName"]).lower()
-            ]
-        )
         embed.set_footer(text=(f"🏀Provided by NBA.com" f" | Page {len(pages) + 1}/{total_pages}"))
         pages.append(embed)
 
@@ -243,6 +252,7 @@ def build_pregame_embed(
     arena_city: str,
     arena_state: str,
     game_id: str,
+    broadcast_str: str = "",
 ) -> discord.Embed:
     """Build the pre-game notification embed sent 30 minutes before tip-off."""
     home_emoji = team_emojis.get(home_team, "")
@@ -258,6 +268,8 @@ def build_pregame_embed(
         color=0xEE6730,
     )
     embed.add_field(name="🏟️ Arena", value=location or "Unknown", inline=False)
+    if broadcast_str:
+        embed.add_field(name="📺 Broadcast", value=broadcast_str, inline=False)
     embed.set_footer(text="🏀 Pre-Game Alert | Provided by NBA.com")
     return embed
 
@@ -348,3 +360,327 @@ def build_score_update_embed(
     )
     embed.set_footer(text="🏀Provided by NBA.com")
     return embed
+
+
+async def build_standings_embeds(
+    ctx: commands.Context,
+    data: dict,
+    conference: Optional[str],
+) -> List[discord.Embed]:
+    """Build paginated embeds for NBA standings from LeagueStandingsV3."""
+    rows = _parse_result_set(data, "Standings")
+    if not rows:
+        await ctx.send("No standings data available right now.")
+        return []
+
+    color = await ctx.embed_color()
+    conf_filter = conference.lower() if conference else None
+
+    def _make_embed(teams: list, conf_name: str, page_num: int, total: int) -> discord.Embed:
+        embed = discord.Embed(
+            title=f"🏀 NBA Standings — {conf_name}ern Conference",
+            color=color,
+        )
+        for row in teams:
+            rank = row.get("PlayoffRank", "?")
+            city = row.get("TeamCity", "")
+            name = row.get("TeamName", "")
+            full_name = f"{city} {name}".strip()
+            clinch = row.get("ClinchIndicator") or ""
+            clinch_str = f" `{clinch}`" if clinch else ""
+            w = row.get("WINS", 0)
+            l = row.get("LOSSES", 0)
+            pct = row.get("WinPCT", 0.0)
+            gb = row.get("ConferenceGamesBack") or "—"
+            home = row.get("HOME", "?")
+            road = row.get("ROAD", "?")
+            l10 = row.get("L10", "?")
+            streak = row.get("strCurrentStreak", "?")
+            emoji = team_emojis.get(name, "")
+            prefix = f"{emoji} " if emoji else ""
+            embed.add_field(
+                name=f"`{rank:>2}.` {prefix}**{full_name}**{clinch_str}",
+                value=(
+                    f"**{w}‑{l}** ({pct:.3f}) · GB: {gb} · "
+                    f"Home: {home} · Road: {road} · L10: {l10} · *{streak}*"
+                ),
+                inline=False,
+            )
+        embed.set_footer(text=f"🏀 Provided by NBA.com | Page {page_num}/{total}")
+        return embed
+
+    east = [r for r in rows if r.get("Conference", "").lower() == "east"]
+    west = [r for r in rows if r.get("Conference", "").lower() == "west"]
+    pages = []
+    pairs = []
+    if conf_filter in (None, "east") and east:
+        pairs.append((east, "East"))
+    if conf_filter in (None, "west") and west:
+        pairs.append((west, "West"))
+    total = len(pairs)
+    for i, (teams, conf_name) in enumerate(pairs, start=1):
+        pages.append(_make_embed(teams, conf_name, i, total))
+    return pages
+
+
+async def build_leaders_embeds(
+    ctx: commands.Context,
+    data: dict,
+    category: str,
+    label: str,
+) -> List[discord.Embed]:
+    """Build paginated embeds for NBA stat leaders from LeagueDashPlayerStats."""
+    rows = _parse_result_set(data, "LeagueDashPlayerStats")
+    if not rows:
+        await ctx.send("No player stats data available right now.")
+        return []
+
+    rows.sort(key=lambda r: r.get(category, 0) or 0, reverse=True)
+    top = rows[:15]
+
+    color = await ctx.embed_color()
+    pages_data = [top[i : i + 5] for i in range(0, len(top), 5)]
+    pages = []
+    for page_idx, chunk in enumerate(pages_data):
+        embed = discord.Embed(
+            title=f"🏀 NBA League Leaders — {label} Per Game",
+            color=color,
+        )
+        for rank, row in enumerate(chunk, start=page_idx * 5 + 1):
+            player = row.get("PLAYER_NAME", "Unknown")
+            team = row.get("TEAM_ABBREVIATION", "?")
+            stat_val = row.get(category, 0) or 0
+            gp = row.get("GP", 0) or 0
+            embed.add_field(
+                name=f"`{rank:>2}.` **{player}** ({team})",
+                value=f"**{stat_val:.1f}** {label.lower()} per game · {gp} GP",
+                inline=False,
+            )
+        embed.set_footer(
+            text=f"🏀 Provided by NBA.com | Page {page_idx + 1}/{len(pages_data)} | Regular Season"
+        )
+        pages.append(embed)
+    return pages
+
+
+async def build_player_embeds(
+    ctx: commands.Context,
+    info_data: dict,
+    career_data: dict,
+    matched_name: str,
+) -> List[discord.Embed]:
+    """Build paginated embeds for a player's bio and career stats."""
+    color = await ctx.embed_color()
+    info_rows = _parse_result_set(info_data, "CommonPlayerInfo")
+    if not info_rows:
+        await ctx.send(f"No player info found for **{matched_name}**.")
+        return []
+
+    p = info_rows[0]
+    display_name = p.get("DISPLAY_FIRST_LAST") or matched_name
+    team_name = p.get("TEAM_NAME") or "Free Agent"
+    team_city = p.get("TEAM_CITY") or ""
+    full_team = f"{team_city} {team_name}".strip() if team_city else team_name
+    position = p.get("POSITION") or "N/A"
+    jersey = p.get("JERSEY") or "N/A"
+    height = p.get("HEIGHT") or "N/A"
+    weight = p.get("WEIGHT") or "N/A"
+    country = p.get("COUNTRY") or "N/A"
+    birthdate = (p.get("BIRTHDATE") or "")[:10] or "N/A"
+    school = p.get("SCHOOL") or "N/A"
+    experience = p.get("SEASON_EXP")
+    exp_str = f"{experience} yr{'s' if experience != 1 else ''}" if experience is not None else "Rookie"
+    draft_year = p.get("DRAFT_YEAR") or "Undrafted"
+    draft_round = p.get("DRAFT_ROUND") or ""
+    draft_number = p.get("DRAFT_NUMBER") or ""
+    draft_str = (
+        f"Round {draft_round}, Pick {draft_number} ({draft_year})"
+        if draft_round and draft_number and draft_year != "Undrafted"
+        else str(draft_year)
+    )
+    greatest_75 = p.get("GREATEST_75_FLAG") == "Y"
+    roster_status = p.get("ROSTERSTATUS") or "Inactive"
+
+    bio_embed = discord.Embed(
+        title=f"🏀 {display_name}",
+        color=color,
+    )
+    bio_embed.add_field(name="Team", value=full_team, inline=True)
+    bio_embed.add_field(name="Position", value=position, inline=True)
+    bio_embed.add_field(name="Jersey", value=f"#{jersey}", inline=True)
+    bio_embed.add_field(name="Height / Weight", value=f"{height} · {weight} lbs", inline=True)
+    bio_embed.add_field(name="Country", value=country, inline=True)
+    bio_embed.add_field(name="Experience", value=exp_str, inline=True)
+    bio_embed.add_field(name="Birthdate", value=birthdate, inline=True)
+    bio_embed.add_field(name="College / School", value=school, inline=True)
+    bio_embed.add_field(name="Draft", value=draft_str, inline=True)
+    bio_embed.add_field(name="Status", value=roster_status, inline=True)
+    if greatest_75:
+        bio_embed.add_field(name="🏆 NBA 75th Anniversary", value="Yes", inline=True)
+    bio_embed.set_footer(text="🏀 Provided by NBA.com | Page 1/2")
+    season_rows = _parse_result_set(career_data, "SeasonTotalsRegularSeason")
+    career_rows = _parse_result_set(career_data, "CareerTotalsRegularSeason")
+    stats_embed = discord.Embed(
+        title=f"🏀 {display_name} — Career Stats (Regular Season)",
+        color=color,
+    )
+    recent = sorted(season_rows, key=lambda r: r.get("SEASON_ID", ""), reverse=True)[:5]
+    for row in recent:
+        season = row.get("SEASON_ID", "?")
+        team_abb = row.get("TEAM_ABBREVIATION", "?")
+        gp = row.get("GP", 0)
+        pts = row.get("PTS", 0) or 0
+        reb = row.get("REB", 0) or 0
+        ast = row.get("AST", 0) or 0
+        stl = row.get("STL", 0) or 0
+        blk = row.get("BLK", 0) or 0
+        fg_pct = row.get("FG_PCT", 0.0) or 0.0
+        fg3_pct = row.get("FG3_PCT", 0.0) or 0.0
+        ft_pct = row.get("FT_PCT", 0.0) or 0.0
+        min_per_g = (row.get("MIN", 0) or 0) / gp if gp else 0
+        pts_per_g = pts / gp if gp else 0
+        reb_per_g = reb / gp if gp else 0
+        ast_per_g = ast / gp if gp else 0
+        stl_per_g = stl / gp if gp else 0
+        blk_per_g = blk / gp if gp else 0
+        stats_embed.add_field(
+            name=f"{season} — {team_abb} ({gp} GP)",
+            value=(
+                f"**{pts_per_g:.1f}** PTS · **{reb_per_g:.1f}** REB · **{ast_per_g:.1f}** AST · "
+                f"**{stl_per_g:.1f}** STL · **{blk_per_g:.1f}** BLK\n"
+                f"FG: {fg_pct:.1%} · 3P: {fg3_pct:.1%} · FT: {ft_pct:.1%} · "
+                f"{min_per_g:.1f} MPG"
+            ),
+            inline=False,
+        )
+
+    if career_rows:
+        c = career_rows[0]
+        c_gp = c.get("GP", 0) or 0
+        c_pts = (c.get("PTS", 0) or 0) / c_gp if c_gp else 0
+        c_reb = (c.get("REB", 0) or 0) / c_gp if c_gp else 0
+        c_ast = (c.get("AST", 0) or 0) / c_gp if c_gp else 0
+        c_stl = (c.get("STL", 0) or 0) / c_gp if c_gp else 0
+        c_blk = (c.get("BLK", 0) or 0) / c_gp if c_gp else 0
+        c_fg = c.get("FG_PCT", 0.0) or 0.0
+        c_fg3 = c.get("FG3_PCT", 0.0) or 0.0
+        c_ft = c.get("FT_PCT", 0.0) or 0.0
+        stats_embed.add_field(
+            name="📊 Career Averages",
+            value=(
+                f"**{c_pts:.1f}** PTS · **{c_reb:.1f}** REB · **{c_ast:.1f}** AST · "
+                f"**{c_stl:.1f}** STL · **{c_blk:.1f}** BLK\n"
+                f"FG: {c_fg:.1%} · 3P: {c_fg3:.1%} · FT: {c_ft:.1%} · {c_gp} GP"
+            ),
+            inline=False,
+        )
+
+    if not season_rows and not career_rows:
+        stats_embed.description = "No career stats available."
+    stats_embed.set_footer(text="🏀 Provided by NBA.com | Page 2/2 | Last 5 seasons shown")
+
+    return [bio_embed, stats_embed]
+
+
+async def build_roster_embeds(
+    ctx: commands.Context,
+    data: dict,
+    team_display_name: str,
+) -> List[discord.Embed]:
+    """Build paginated embeds for a team's current roster from CommonTeamRoster."""
+    rows = _parse_result_set(data, "CommonTeamRoster")
+    if not rows:
+        await ctx.send(f"No roster data found for **{team_display_name}**.")
+        return []
+
+    color = await ctx.embed_color()
+    per_page = 12
+    pages = []
+    total_pages = math.ceil(len(rows) / per_page)
+    for page_idx in range(total_pages):
+        chunk = rows[page_idx * per_page : (page_idx + 1) * per_page]
+        embed = discord.Embed(
+            title=f"🏀 {team_display_name} — Roster",
+            color=color,
+        )
+        for player in chunk:
+            name = player.get("PLAYER", "Unknown")
+            num = player.get("NUM") or "—"
+            pos = player.get("POSITION") or "—"
+            height = player.get("HEIGHT") or "—"
+            weight = player.get("WEIGHT") or "—"
+            age = player.get("AGE") or "—"
+            exp = player.get("EXP") or "R"
+            exp_str = f"{exp} yr{'s' if exp not in ('R', '1') else ''}" if exp != "R" else "Rookie"
+            embed.add_field(
+                name=f"#{num} — **{name}**",
+                value=(
+                    f"Pos: {pos} · {height} · {weight} lbs\n"
+                    f"Age: {age} · Exp: {exp_str}"
+                ),
+                inline=True,
+            )
+        embed.set_footer(
+            text=f"🏀 Provided by NBA.com | Page {page_idx + 1}/{total_pages}"
+        )
+        pages.append(embed)
+    return pages
+
+
+async def build_teamstats_embeds(
+    ctx: commands.Context,
+    data: dict,
+    team_display_name: str,
+    team_api_name: str,
+) -> List[discord.Embed]:
+    """Build an embed for a team's season averages from LeagueDashTeamStats."""
+    rows = _parse_result_set(data, "LeagueDashTeamStats")
+    team_row = next(
+        (r for r in rows if r.get("TEAM_NAME", "").lower() == team_api_name.lower()),
+        None,
+    )
+    if not team_row:
+        await ctx.send(f"No season stats found for **{team_display_name}**.")
+        return []
+
+    color = await ctx.embed_color()
+    gp = team_row.get("GP") or 0
+    w = team_row.get("W") or 0
+    l = team_row.get("L") or 0
+    w_pct = team_row.get("W_PCT") or 0.0
+    pts = team_row.get("PTS") or 0.0
+    reb = team_row.get("REB") or 0.0
+    ast = team_row.get("AST") or 0.0
+    stl = team_row.get("STL") or 0.0
+    blk = team_row.get("BLK") or 0.0
+    tov = team_row.get("TOV") or 0.0
+    fg_pct = team_row.get("FG_PCT") or 0.0
+    fg3_pct = team_row.get("FG3_PCT") or 0.0
+    ft_pct = team_row.get("FT_PCT") or 0.0
+    plus_minus = team_row.get("PLUS_MINUS") or 0.0
+    oreb = team_row.get("OREB") or 0.0
+    dreb = team_row.get("DREB") or 0.0
+    emoji = team_emojis.get(team_api_name, "")
+    title_prefix = f"{emoji} " if emoji else ""
+
+    embed = discord.Embed(
+        title=f"🏀 {title_prefix}{team_display_name} — Season Averages",
+        color=color,
+    )
+    embed.add_field(name="Record", value=f"**{w}‑{l}** ({w_pct:.3f}) · {gp} GP", inline=False)
+    embed.add_field(name="Points", value=f"**{pts:.1f}** PTS/G", inline=True)
+    embed.add_field(name="Rebounds", value=f"**{reb:.1f}** REB/G", inline=True)
+    embed.add_field(name="Assists", value=f"**{ast:.1f}** AST/G", inline=True)
+    embed.add_field(name="Steals", value=f"**{stl:.1f}** STL/G", inline=True)
+    embed.add_field(name="Blocks", value=f"**{blk:.1f}** BLK/G", inline=True)
+    embed.add_field(name="Turnovers", value=f"**{tov:.1f}** TOV/G", inline=True)
+    embed.add_field(name="Off. Reb.", value=f"**{oreb:.1f}** OREB/G", inline=True)
+    embed.add_field(name="Def. Reb.", value=f"**{dreb:.1f}** DREB/G", inline=True)
+    embed.add_field(name="+/−", value=f"**{plus_minus:+.1f}**", inline=True)
+    embed.add_field(
+        name="Shooting Splits",
+        value=f"FG: {fg_pct:.1%} · 3P: {fg3_pct:.1%} · FT: {ft_pct:.1%}",
+        inline=False,
+    )
+    embed.set_footer(text="🏀 Provided by NBA.com | Regular Season")
+    return [embed]
