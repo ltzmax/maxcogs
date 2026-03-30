@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import asyncio
 import math
 import sqlite3
 from datetime import datetime, timezone
-from itertools import islice
 from time import time
 from typing import Any, Dict, Final, List, Optional, Union
 
@@ -34,6 +34,7 @@ import discord
 import feedparser
 import orjson
 from discord.ext import tasks
+from nba_api.stats.endpoints import playoffpicture
 from red_commons.logging import getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.data_manager import cog_data_path
@@ -54,11 +55,13 @@ from .converter import (
 )
 from .formatters import (
     build_news_embeds,
+    build_playoff_embeds,
+    build_pregame_embed,
     build_schedule_embeds,
     build_score_update_embed,
     build_scoreboard_embeds,
 )
-from .view import GameMenu, PlayByPlay
+from .view import GameMenu, PlayByPlay, PreGameView
 
 log = getLogger("red.maxcogs.nba")
 
@@ -72,7 +75,7 @@ class NBA(commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.7.0"
+    __version__: Final[str] = "3.8.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/nba/README.md"
 
@@ -82,6 +85,7 @@ class NBA(commands.Cog):
         default_guild: Dict[str, Any] = {
             "channel": None,
             "team": None,
+            "pregame_role": None,
         }
         self.config.register_guild(**default_guild)
         self.session = aiohttp.ClientSession()
@@ -90,6 +94,7 @@ class NBA(commands.Cog):
         self.db_path = self.data_path / "game_scores.db"
         self.setup_database()
         self.finalized_games: set[str] = set()
+        self.notified_pregames: set[str] = set()
         self._load_finalized_from_db()
         self.last_reset_date = None
         self.schedule_cache = None
@@ -128,6 +133,12 @@ class NBA(commands.Cog):
                     finalized_date TEXT
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS notified_pregames (
+                    game_id TEXT PRIMARY KEY,
+                    notified_date TEXT
+                )
+            """)
             conn.commit()
 
     def _load_finalized_from_db(self):
@@ -139,7 +150,17 @@ class NBA(commands.Cog):
             )
             for row in cursor.fetchall():
                 self.finalized_games.add(row[0])
-        log.info("Loaded %d finalized games from DB for %s", len(self.finalized_games), today)
+            cursor.execute(
+                "SELECT game_id FROM notified_pregames WHERE notified_date = ?", (today,)
+            )
+            for row in cursor.fetchall():
+                self.notified_pregames.add(row[0])
+        log.info(
+            "Loaded %d finalized and %d pre-game notified games from DB for %s",
+            len(self.finalized_games),
+            len(self.notified_pregames),
+            today,
+        )
 
     def reset_finalized_games_if_needed(self):
         """Reset finalized_games if the date has changed and clean up old DB rows."""
@@ -155,7 +176,11 @@ class NBA(commands.Cog):
                     "DELETE FROM finalized_games WHERE finalized_date != ?", (yesterday,)
                 )
                 cursor.execute("DELETE FROM game_scores")
+                cursor.execute(
+                    "DELETE FROM notified_pregames WHERE notified_date != ?", (yesterday,)
+                )
                 conn.commit()
+            self.notified_pregames.clear()
             log.info("Cleaned up old game data from DB.")
 
     @tasks.loop(seconds=15)
@@ -176,6 +201,8 @@ class NBA(commands.Cog):
         except Exception as e:
             log.error("Failed to parse scoreboard JSON: %s", e)
             return
+
+        all_guild_configs = await self.config.all_guilds()
 
         for game in games:
             if not game:
@@ -208,7 +235,6 @@ class NBA(commands.Cog):
                     )
                     conn.commit()
                 self.finalized_games.add(game_id)
-                log.info("Game %s finalised and removed from tracking.", game_id)
                 continue
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
@@ -217,16 +243,6 @@ class NBA(commands.Cog):
                     (game_id,),
                 )
                 result = cursor.fetchone()
-
-            previous_home_score = result[0] if result else None
-            previous_away_score = result[1] if result else None
-            scores_changed = (
-                previous_home_score is not None
-                and previous_away_score is not None
-                and (home_score != previous_home_score or away_score != previous_away_score)
-            )
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
                 cursor.execute(
                     """
                     INSERT OR REPLACE INTO game_scores
@@ -245,6 +261,14 @@ class NBA(commands.Cog):
                 )
                 conn.commit()
 
+            previous_home_score = result[0] if result else None
+            previous_away_score = result[1] if result else None
+            scores_changed = (
+                previous_home_score is not None
+                and previous_away_score is not None
+                and (home_score != previous_home_score or away_score != previous_away_score)
+            )
+
             if not scores_changed:
                 continue
 
@@ -258,7 +282,6 @@ class NBA(commands.Cog):
             )
 
             # Notify all configured guilds
-            all_guild_configs = await self.config.all_guilds()
             for guild_id, guild_data in all_guild_configs.items():
                 channel_id = guild_data.get("channel")
                 team_name = guild_data.get("team")
@@ -302,6 +325,125 @@ class NBA(commands.Cog):
                         e,
                     )
 
+        await self._check_pregame_notifications()
+
+    async def _check_pregame_notifications(self) -> None:
+        """Send a pre-game embed ~30 minutes before tip-off for configured guilds."""
+        # Reuse cached schedule data to avoids re-fetching the ~2MB file on every 15s tick.
+        if self.schedule_cache and (time() - self.schedule_time) < self.cache_ttl:
+            raw = self.schedule_cache
+        else:
+            try:
+                async with self.session.get(SCHEDULE_URL) as resp:
+                    if resp.status != 200:
+                        return
+                    raw = await resp.read()
+                self.schedule_cache = raw
+                self.schedule_time = time()
+            except Exception:
+                return
+        try:
+            schedule = orjson.loads(raw)
+        except Exception:
+            return
+
+        now_ts = datetime.now(tz=timezone.utc).timestamp()
+        # around 30 minutes before start
+        # (29-31 min window to account for timing issues and ensure we catch it)
+        window_start = now_ts + (29 * 60)
+        window_end = now_ts + (31 * 60)
+
+        for date in schedule.get("leagueSchedule", {}).get("gameDates", []):
+            for game in date.get("games", []):
+                game_time_str = game.get("gameDateTimeUTC")
+                game_id = game.get("gameId") or game.get("gameGuid")
+                if not game_time_str or not game_id:
+                    continue
+                try:
+                    game_ts = int(
+                        datetime.strptime(game_time_str, "%Y-%m-%dT%H:%M:%SZ")
+                        .replace(tzinfo=timezone.utc)
+                        .timestamp()
+                    )
+                except ValueError:
+                    continue
+                if not (window_start <= game_ts <= window_end):
+                    continue
+                if game_id in self.notified_pregames:
+                    continue
+
+                home_team = game.get("homeTeam", {}).get("teamName", "Unknown")
+                away_team = game.get("awayTeam", {}).get("teamName", "Unknown")
+                arena = game.get("arenaName", "Unknown")
+                arena_city = game.get("arenaCity", "")
+                arena_state = game.get("arenaState", "")
+                broadcasters = []
+                for b in game.get("broadcasters", {}).get("nationalBroadcasters", []):
+                    name = b.get("broadcasterDisplay") or b.get("broadcasterAbbreviation")
+                    if name:
+                        broadcasters.append(name)
+                broadcast_str = ", ".join(broadcasters) if broadcasters else "Check local listings"
+
+                embed = build_pregame_embed(
+                    home_team=home_team,
+                    away_team=away_team,
+                    game_ts=game_ts,
+                    arena=arena,
+                    arena_city=arena_city,
+                    arena_state=arena_state,
+                    broadcast_str=broadcast_str,
+                    game_id=game_id,
+                )
+
+                today = datetime.now(tz=timezone.utc).date().isoformat()
+                with sqlite3.connect(self.db_path) as conn:
+                    conn.execute(
+                        "INSERT OR IGNORE INTO notified_pregames (game_id, notified_date) VALUES (?, ?)",
+                        (game_id, today),
+                    )
+                    conn.commit()
+                self.notified_pregames.add(game_id)
+
+                pregame_guild_configs = await self.config.all_guilds()
+                for guild_id, guild_data in pregame_guild_configs.items():
+                    channel_id = guild_data.get("channel")
+                    team_name = guild_data.get("team")
+                    role_id = guild_data.get("pregame_role")
+                    if not channel_id or not team_name:
+                        continue
+                    api_team_name = TEAM_NAME_TO_API.get(team_name.lower())
+                    if not api_team_name:
+                        continue
+                    if api_team_name not in (home_team, away_team):
+                        continue
+                    guild = self.bot.get_guild(guild_id)
+                    if not guild:
+                        continue
+                    channel = guild.get_channel_or_thread(channel_id)
+                    if not channel:
+                        continue
+                    if not (
+                        channel.permissions_for(guild.me).send_messages
+                        and channel.permissions_for(guild.me).embed_links
+                    ):
+                        continue
+                    role = guild.get_role(role_id) if role_id else None
+                    content = role.mention if role else None
+                    try:
+                        await channel.send(
+                            content=content,
+                            embed=embed,
+                            view=PreGameView(game_id),
+                            allowed_mentions=discord.AllowedMentions(roles=True),
+                        )
+                    except discord.HTTPException as e:
+                        log.error(
+                            "Failed to send pre-game embed for %s in guild %s: %s",
+                            game_id,
+                            guild_id,
+                            e,
+                        )
+
     async def fetch_data(
         self, url: str, ctx: Optional[commands.Context] = None
     ) -> Optional[bytes]:
@@ -316,8 +458,6 @@ class NBA(commands.Cog):
                 return await resp.read()
         except aiohttp.ClientError as e:
             log.error("Network error fetching %s: %s", url, e)
-            if ctx:
-                await ctx.send("Network error. Try again later.")
             return None
 
     async def get_cached_data(
@@ -334,28 +474,6 @@ class NBA(commands.Cog):
             setattr(self, f"{cache_key}_time", time())
         return data
 
-    async def fetch_schedule(self, ctx: commands.Context) -> Optional[dict]:
-        """Fetch and parse NBA schedule data."""
-        data = await self.get_cached_data(SCHEDULE_URL, ctx, "schedule")
-        if not data:
-            return None
-        try:
-            return orjson.loads(data)
-        except orjson.JSONDecodeError as e:
-            log.error("Failed to decode NBA schedule: %s", e)
-            await ctx.send("Error decoding schedule. Report to devs.")
-            return None
-
-    async def filter_games(self, schedule: dict, team: Optional[str]) -> List[dict]:
-        """Filter games by team if provided."""
-        games = get_games(schedule)
-        if not team:
-            return games
-        team = team.lower()
-        if team not in TEAM_NAMES:
-            raise ValueError("Invalid team name.")
-        return [g for g in games if team in (g["home_team"] + g["away_team"]).lower()]
-
     async def fetch_scoreboard(self, ctx: commands.Context) -> Optional[List[dict]]:
         """Fetch and parse NBA scoreboard data."""
         data = await self.get_cached_data(TODAY_SCOREBOARD, ctx, "scoreboard")
@@ -365,7 +483,6 @@ class NBA(commands.Cog):
             return orjson.loads(data).get("scoreboard", {}).get("games", [])
         except orjson.JSONDecodeError as e:
             log.error("Failed to decode scoreboard: %s", e)
-            await ctx.send("Error decoding scoreboard. Report to devs.")
             return None
 
     async def fetch_news(self, ctx: commands.Context) -> Optional[List[dict]]:
@@ -378,12 +495,16 @@ class NBA(commands.Cog):
             return feed.get("entries", [])
         except Exception as e:
             log.error("Failed to parse ESPN news: %s", e)
-            await ctx.send("Failed to parse news feed.")
             return None
 
-    def load_application_emojis(self) -> None:
-        """Populate the team_emojis cache from bot.emojis."""
-        by_name = {e.name: e for e in self.bot.emojis}
+    async def load_application_emojis(self) -> None:
+        """Populate the team_emojis cache from the bot's application emojis."""
+        try:
+            app_emojis = await self.bot.fetch_application_emojis()
+        except discord.HTTPException as e:
+            log.warning("Failed to fetch application emojis: %s", e)
+            return
+        by_name = {e.name: e for e in app_emojis}
         loaded = 0
         for team_name, emoji_name in TEAM_EMOJI_NAMES.items():
             emoji = by_name.get(emoji_name)
@@ -397,7 +518,9 @@ class NBA(commands.Cog):
     @periodic_check.before_loop
     async def before_periodic_check(self):
         await self.bot.wait_until_ready()
-        self.load_application_emojis()
+        # Wait a bit to ensure emojis are cached
+        await asyncio.sleep(2)
+        await self.load_application_emojis()
 
     async def cog_unload(self):
         self.periodic_check.cancel()
@@ -452,6 +575,50 @@ class NBA(commands.Cog):
         await self.config.guild(ctx.guild).clear()
         await ctx.send(
             "Cleared channel and team settings.",
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+            mention_author=False,
+        )
+
+    @nbaset.group(name="role")
+    async def nbaset_role(self, ctx: commands.Context):
+        """Manage the role pinged for pre-game notifications."""
+
+    @nbaset_role.command(name="set")
+    async def nbaset_role_set(self, ctx: commands.Context, role: discord.Role):
+        """Set a role to ping 30 minutes before game starts.
+
+        Please note that it will send update to the configured channel regardless if the role is set or not.
+
+        **Example:**
+        - `[p]nbaset role set @NBA` - pings @NBA before each game.
+        """
+        if role >= ctx.guild.me.top_role:
+            return await ctx.send(
+                "Please choose a role below the bot's top role to avoid permission issues.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
+        if role.is_default() or role.is_everyone:
+            return await ctx.send(
+                "Please choose a specific role to ping, not `@everyone` or `@here`.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
+        await self.config.guild(ctx.guild).pregame_role.set(role.id)
+        await ctx.send(
+            f"Pre-game ping role set to {role.mention}.",
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+            mention_author=False,
+        )
+
+    @nbaset_role.command(name="remove")
+    async def nbaset_role_remove(self, ctx: commands.Context):
+        """
+        Remove the pre-game ping role.
+        """
+        await self.config.guild(ctx.guild).pregame_role.set(None)
+        await ctx.send(
+            "Pre-game ping role removed.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
@@ -532,11 +699,11 @@ class NBA(commands.Cog):
                 try:
                     import cairosvg
                 except ImportError:
-                    return await ctx.send(
-                        "The `cairosvg` library is required to convert SVG to PNG. Please install it with `pip install cairosvg`."
+                    await ctx.send(
+                        "The `cairosvg` library is required to convert SVG to PNG. "
+                        "Please install it with `pip install cairosvg --break-system-packages`."
                     )
-                    failed += 1
-                    continue
+                    return
                 try:
                     png_bytes = cairosvg.svg2png(bytestring=svg_bytes)
                 except Exception as e:
@@ -550,7 +717,7 @@ class NBA(commands.Cog):
                 log.error("Failed to upload emoji %s: %s", emoji_name, e)
                 failed += 1
 
-        self.load_application_emojis()
+        await self.load_application_emojis()
         await ctx.send(
             f"Emoji sync complete.\n"
             f"✅ Uploaded: **{uploaded}** | ⏭️ Skipped (already exist): **{skipped}** | ❌ Failed: **{failed}**\n"
@@ -559,13 +726,17 @@ class NBA(commands.Cog):
 
     @nbaset.command(name="settings")
     async def nbaset_settings(self, ctx: commands.Context):
-        """View the channel and team settings."""
+        """View the current NBA settings."""
         all_data = await self.config.guild(ctx.guild).all()
         channel_id = all_data["channel"]
         channel = ctx.guild.get_channel(channel_id) if channel_id else None
         team = all_data["team"]
+        role_id = all_data.get("pregame_role")
+        role = ctx.guild.get_role(role_id) if role_id else None
         await ctx.send(
-            f"Channel: {channel.mention if channel else 'Not set'}\nTeam: {team or 'Not set'}",
+            f"Channel: {channel.mention if channel else 'Not set'}\n"
+            f"Team: {team or 'Not set'}\n"
+            f"Pre-game ping role: {role.mention if role else 'Not set'}",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
@@ -668,3 +839,38 @@ class NBA(commands.Cog):
     ) -> List[app_commands.Choice]:
         choices = [t for t in TEAM_NAMES if current.lower() in t.lower()]
         return [app_commands.Choice(name=t, value=t) for t in choices[:25]]
+
+    @nba.command(name="playoffs")
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def playoffs(self, ctx: commands.Context):
+        """Get the current NBA playoff bracket and series info.
+
+        Also shows Play-In tournament matchups when active.
+        """
+        await ctx.typing()
+        try:
+            _headers = {
+                "Host": "stats.nba.com",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "x-nba-stats-origin": "stats",
+                "x-nba-stats-token": "true",
+                "Referer": "https://www.nba.com/",
+                "Origin": "https://www.nba.com",
+                "Connection": "keep-alive",
+            }
+
+            def _fetch():
+                return playoffpicture.PlayoffPicture(timeout=30, headers=_headers).get_dict()
+
+            data = await asyncio.wait_for(asyncio.to_thread(_fetch), timeout=40)
+        except asyncio.TimeoutError:
+            return await ctx.send("NBA stats timed out. Try again in a moment.")
+        except Exception as e:
+            log.error("Failed to fetch playoff picture: %s", e)
+            return await ctx.send("Failed to fetch playoff data. Try again later.")
+        pages = await build_playoff_embeds(ctx, data)
+        if pages:
+            await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)

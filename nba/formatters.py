@@ -235,6 +235,90 @@ async def build_news_embeds(
     return pages
 
 
+def build_pregame_embed(
+    home_team: str,
+    away_team: str,
+    game_ts: int,
+    arena: str,
+    arena_city: str,
+    arena_state: str,
+    game_id: str,
+) -> discord.Embed:
+    """Build the pre-game notification embed sent 30 minutes before tip-off."""
+    home_emoji = team_emojis.get(home_team, "")
+    away_emoji = team_emojis.get(away_team, "")
+    home_label = f"{home_emoji} {home_team}" if home_emoji else home_team
+    away_label = f"{away_emoji} {away_team}" if away_emoji else away_team
+    location = ", ".join(filter(None, [arena, arena_city, arena_state]))
+    embed = discord.Embed(
+        title="🏀 Game Starting Soon!",
+        description=(
+            f"**{home_label}** vs **{away_label}**\n" f"Starts <t:{game_ts}:R> at <t:{game_ts}:t>"
+        ),
+        color=0xEE6730,
+    )
+    embed.add_field(name="🏟️ Arena", value=location or "Unknown", inline=False)
+    embed.set_footer(text="🏀 Pre-Game Alert | Provided by NBA.com")
+    return embed
+
+
+async def build_playoff_embeds(
+    ctx: commands.Context,
+    data: dict,
+) -> List[discord.Embed]:
+    """Build paginated embeds for the NBA playoff picture from nba_api PlayoffPicture."""
+    now = datetime.now()
+    is_not_playoffs = (
+        (now.month < 4)
+        or (now.month == 4 and now.day < 15)
+        or (now.month > 6)
+        or (now.month == 6 and now.day > 20)
+    )
+    if is_not_playoffs:
+        await ctx.send(
+            "Playoff picture is only available during the playoffs.\n"
+            "Check <https://www.nba.com/standings> for updates."
+        )
+        return []
+    result_sets = data.get("resultSets") or []
+    pages = []
+    for result_set in result_sets:
+        name = result_set.get("name", "")
+        if "PlayoffPicture" not in name:
+            continue
+        conf = "East" if "East" in name else "West"
+        headers = result_set["headers"]
+        rows = [dict(zip(headers, r)) for r in result_set.get("rowSet", [])]
+        per_page = 4
+        for i in range(0, len(rows), per_page):
+            chunk = rows[i : i + per_page]
+            embed = discord.Embed(
+                title=f"🏆 NBA Playoff Picture - {conf}ern Conference",
+                color=await ctx.embed_color(),
+            )
+            for series in chunk:
+                rank1 = series.get("RANK1", "?")
+                team1 = series.get("TEAM1_NAME") or series.get("TEAM1", "TBD")
+                rank2 = series.get("RANK2", "?")
+                team2 = series.get("TEAM2_NAME") or series.get("TEAM2", "TBD")
+                wins1 = series.get("TEAM1_WINS") or series.get("WINS1", 0)
+                wins2 = series.get("TEAM2_WINS") or series.get("WINS2", 0)
+                series_status = series.get("SERIES_TEXT") or f"{wins1}–{wins2}"
+                emoji1 = team_emojis.get(team1, "")
+                emoji2 = team_emojis.get(team2, "")
+                label1 = f"{emoji1} ({rank1}) {team1}" if emoji1 else f"({rank1}) {team1}"
+                label2 = f"{emoji2} ({rank2}) {team2}" if emoji2 else f"({rank2}) {team2}"
+                embed.add_field(
+                    name=f"{label1} vs {label2}",
+                    value=f"Series: **{series_status}**",
+                    inline=False,
+                )
+            total = math.ceil(len(rows) / per_page)
+            embed.set_footer(text=f"🏀 Provided by NBA.com | Page {i // per_page + 1}/{total}")
+            pages.append(embed)
+    return pages
+
+
 def build_score_update_embed(
     home_team_name: str,
     away_team_name: str,

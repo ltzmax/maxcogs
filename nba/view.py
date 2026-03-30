@@ -33,6 +33,29 @@ from .converter import PLAYBYPLAY
 log = getLogger("red.maxcogs.nba.view")
 
 
+class PreGameView(discord.ui.View):
+    """Persistent view with watch links for the pre-game notification."""
+
+    def __init__(self, game_id: str):
+        super().__init__(timeout=None)
+        self.add_item(
+            discord.ui.Button(
+                label="Watch on NBA.com",
+                emoji="🏀",
+                style=discord.ButtonStyle.link,
+                url=f"https://www.nba.com/game/{game_id}",
+            )
+        )
+        self.add_item(
+            discord.ui.Button(
+                label="NBA League Pass",
+                emoji="📺",
+                style=discord.ButtonStyle.link,
+                url="https://www.nba.com/leaguepass",
+            )
+        )
+
+
 class PlayByPlay(discord.ui.View):
     def __init__(self, game_id):
         super().__init__(timeout=None)
