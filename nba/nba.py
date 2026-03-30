@@ -364,12 +364,6 @@ class NBA(NBACommands, commands.Cog):
                 arena = game.get("arenaName", "Unknown")
                 arena_city = game.get("arenaCity", "")
                 arena_state = game.get("arenaState", "")
-                broadcasters = []
-                for b in game.get("broadcasters", {}).get("nationalBroadcasters", []):
-                    name = b.get("broadcasterDisplay") or b.get("broadcasterAbbreviation")
-                    if name:
-                        broadcasters.append(name)
-                broadcast_str = ", ".join(broadcasters) if broadcasters else "Check local listings"
 
                 embed = build_pregame_embed(
                     home_team=home_team,
@@ -378,7 +372,6 @@ class NBA(NBACommands, commands.Cog):
                     arena=arena,
                     arena_city=arena_city,
                     arena_state=arena_state,
-                    broadcast_str=broadcast_str,
                     game_id=game_id,
                 )
 

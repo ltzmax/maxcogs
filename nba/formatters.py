@@ -252,7 +252,6 @@ def build_pregame_embed(
     arena_city: str,
     arena_state: str,
     game_id: str,
-    broadcast_str: str = "",
 ) -> discord.Embed:
     """Build the pre-game notification embed sent 30 minutes before tip-off."""
     home_emoji = team_emojis.get(home_team, "")
@@ -268,8 +267,6 @@ def build_pregame_embed(
         color=0xEE6730,
     )
     embed.add_field(name="🏟️ Arena", value=location or "Unknown", inline=False)
-    if broadcast_str:
-        embed.add_field(name="📺 Broadcast", value=broadcast_str, inline=False)
     embed.set_footer(text="🏀 Pre-Game Alert | Provided by NBA.com")
     return embed
 
