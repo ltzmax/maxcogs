@@ -364,17 +364,19 @@ class NBA(NBACommands, commands.Cog):
                 arena = game.get("arenaName", "Unknown")
                 arena_city = game.get("arenaCity", "")
                 arena_state = game.get("arenaState", "")
-
-                embed = build_pregame_embed(
-                    home_team=home_team,
-                    away_team=away_team,
-                    game_ts=game_ts,
-                    arena=arena,
-                    arena_city=arena_city,
-                    arena_state=arena_state,
-                    game_id=game_id,
-                )
-
+                try:
+                    embed = build_pregame_embed(
+                        home_team=home_team,
+                        away_team=away_team,
+                        game_ts=game_ts,
+                        arena=arena,
+                        arena_city=arena_city,
+                        arena_state=arena_state,
+                        game_id=game_id,
+                    )
+                except TypeError as e:
+                    log.error("Error building pre-game embed for game %s: %s", game_id, e)
+                    continue
                 today = datetime.now(tz=timezone.utc).date().isoformat()
                 with sqlite3.connect(self.db_path) as conn:
                     conn.execute(
