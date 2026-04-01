@@ -49,22 +49,21 @@ class UnlockView(discord.ui.View):
         try:
             await self.message.edit(view=self)
         except discord.HTTPException as e:
-            logger.error(f"Failed to edit view on timeout: {e}")
+            logger.error("Failed to edit view on timeout: %s", e)
 
     async def unlock_button(self, interaction: discord.Interaction):
-        if interaction.user.id != self.ctx.author.id:
+        channel = interaction.channel
+        member = interaction.user
+        if not channel.permissions_for(member).manage_channels:
             return await interaction.response.send_message(
-                "You are not the author of this command.", ephemeral=True
+                "You need the **Manage Channels** permission to unlock this.", ephemeral=True
             )
         await interaction.response.defer(ephemeral=True)
-        target_role = self.ctx.guild.default_role
-        is_locked: bool
+        target_role = interaction.guild.default_role
         if self.is_thread:
-            is_locked = self.ctx.channel.locked
+            is_locked = channel.locked
         else:
-            overwrites = (
-                self.ctx.channel.overwrites_for(target_role) or discord.PermissionOverwrite()
-            )
+            overwrites = channel.overwrites_for(target_role)
             is_locked = overwrites.send_messages is False
         if not is_locked:
             await interaction.followup.send(
@@ -77,7 +76,6 @@ class UnlockView(discord.ui.View):
             item.disabled = True
         try:
             await interaction.message.edit(view=self)
-            if self.ctx.channel.id in self.ctx.cog.lock_views:
-                del self.ctx.cog.lock_views[self.ctx.channel.id]
+            self.ctx.cog.lock_views.pop(self.ctx.channel.id, None)
         except discord.HTTPException as e:
-            logger.error(f"Failed to edit message after unlock: {e}")
+            logger.error("Failed to edit message after unlock: %s", e)
