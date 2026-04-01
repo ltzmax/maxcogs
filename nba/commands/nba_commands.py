@@ -34,6 +34,7 @@ from redbot.core.utils.views import SimpleMenu
 
 from ..converter import (
     ESPN_NBA_NEWS,
+    NBA_STATS_HEADERS,
     SCHEDULE_URL,
     TEAM_EMOJI_NAMES,
     TEAM_NAMES,
@@ -375,20 +376,10 @@ class NBACommands:
         """
         await ctx.typing()
         try:
-            _headers = {
-                "Host": "stats.nba.com",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Language": "en-US,en;q=0.9",
-                "x-nba-stats-origin": "stats",
-                "x-nba-stats-token": "true",
-                "Referer": "https://www.nba.com/",
-                "Origin": "https://www.nba.com",
-                "Connection": "keep-alive",
-            }
-
             def _fetch():
-                return playoffpicture.PlayoffPicture(timeout=30, headers=_headers).get_dict()
+                return playoffpicture.PlayoffPicture(
+                    timeout=30, headers=NBA_STATS_HEADERS
+                ).get_dict()
 
             data = await asyncio.wait_for(asyncio.to_thread(_fetch), timeout=40)
         except asyncio.TimeoutError:

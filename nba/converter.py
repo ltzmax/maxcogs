@@ -138,6 +138,22 @@ TEAM_EMOJI_NAMES: dict[str, str] = {
 # Maps team name → "<:emoji_name:emoji_id>" string ready for embed use.
 team_emojis: dict[str, str] = {}
 
+NBA_STATS_HEADERS: dict[str, str] = {
+    "Host": "stats.nba.com",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "x-nba-stats-origin": "stats",
+    "x-nba-stats-token": "true",
+    "Referer": "https://www.nba.com/",
+    "Origin": "https://www.nba.com",
+    "Connection": "keep-alive",
+}
+
+
 
 def parse_duration(duration: str) -> str:
     """

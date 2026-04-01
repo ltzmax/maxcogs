@@ -61,7 +61,7 @@ class NBA(NBACommands, commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.9.0"
+    __version__: Final[str] = "3.10.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/nba/README.md"
 
@@ -340,6 +340,7 @@ class NBA(NBACommands, commands.Cog):
         window_start = now_ts + (29 * 60)
         window_end = now_ts + (31 * 60)
 
+        pregame_guild_configs = await self.config.all_guilds()
         for date in schedule.get("leagueSchedule", {}).get("gameDates", []):
             for game in date.get("games", []):
                 game_time_str = game.get("gameDateTimeUTC")
@@ -386,7 +387,6 @@ class NBA(NBACommands, commands.Cog):
                     conn.commit()
                 self.notified_pregames.add(game_id)
 
-                pregame_guild_configs = await self.config.all_guilds()
                 for guild_id, guild_data in pregame_guild_configs.items():
                     channel_id = guild_data.get("channel")
                     team_name = guild_data.get("team")
