@@ -60,7 +60,7 @@ class ShopView(discord.ui.View):
             try:
                 await self.message.edit(view=self)
             except discord.HTTPException as e:
-                log.error(f"Failed to update shop view on timeout: {e}")
+                log.error("Failed to update shop view on timeout: %s", e)
 
 
 class ShopSelect(discord.ui.Select):
@@ -70,16 +70,22 @@ class ShopSelect(discord.ui.Select):
             discord.SelectOption(
                 label=name.replace("_", " ").title(),
                 value=name,
-                description=f"Cost: {data['cost']:,}"
-                + (
-                    f" | Reduces loss by {data['reduction']*100:.1f}% for {data['duration_hours']}h"
-                    if data["type"] == "shield"
-                    else f" | Boosts {data['for_heist'].replace('_', ' ').title()} success by {data['boost']*100:.0f}% (consumable)"
+                description=(
+                    f"Cost: {data['cost']:,} | "
+                    + (
+                        f"Reduces loss by {data['reduction']*100:.1f}% (single use)"
+                        if data["type"] == "shield"
+                        else (
+                            f"Boosts {data['for_heist'].replace('_', ' ').title()} success by {data['boost']*100:.0f}% (single use)"
+                            if data["type"] == "tool"
+                            else f"Reduces risk by {data['risk_reduction']*100:.0f}% (single use)"
+                        )
+                    )
                 ),
                 emoji=emoji,
             )
             for name, (emoji, data) in ITEMS.items()
-            if data["type"] in ["shield", "tool"]
+            if data["type"] in ["shield", "tool", "consumable"]
             and "cost" in data  # Only include purchasable items to not break select menu.
         ]
         super().__init__(
@@ -89,7 +95,7 @@ class ShopSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         item_type = self.values[0]
         emoji, data = ITEMS[item_type]
-        cost = data["cost"]
+        cost = await self.cog.get_item_cost(item_type)
         balance = await bank.get_balance(interaction.user)
         currency_name = await bank.get_currency_name(interaction.guild)
         if balance < cost:
@@ -99,36 +105,21 @@ class ShopSelect(discord.ui.Select):
             )
             return
 
-        if data["type"] == "shield":
-            if await self.cog._has_active_shield(interaction.user):
-                await interaction.response.send_message(
-                    "You already have an active shield.", ephemeral=True
-                )
-                return
-            await bank.withdraw_credits(interaction.user, cost)
-            duration = datetime.timedelta(hours=data.get("duration_hours", 48))
-            end_time = (datetime.datetime.now(datetime.timezone.utc) + duration).timestamp()
-            await self.cog.config.user(interaction.user).shield.set(item_type)
-            await self.cog.config.user(interaction.user).shield_end.set(end_time)
-            await interaction.response.send_message(
-                f"Purchased {emoji} {item_type.replace('_', ' ').title()} for {cost:,} {currency_name}! Active for {data.get('duration_hours', 48)} hours.",
-                ephemeral=True,
-            )
-        elif data["type"] == "tool":
-            await bank.withdraw_credits(interaction.user, cost)
-            inventory = await self.cog.config.user(interaction.user).inventory()
-            inventory[item_type] = inventory.get(item_type, 0) + 1
-            await self.cog.config.user(interaction.user).inventory.set(inventory)
-            await interaction.response.send_message(
-                f"Purchased {emoji} {item_type.replace('_', ' ').title()} for {cost:,} {currency_name}! Added to inventory.",
-                ephemeral=True,
-            )
+        # All purchasable items go into inventory (shields, tools, consumables)
+        await bank.withdraw_credits(interaction.user, cost)
+        inventory = await self.cog.config.user(interaction.user).inventory()
+        inventory[item_type] = inventory.get(item_type, 0) + 1
+        await self.cog.config.user(interaction.user).inventory.set(inventory)
+        await interaction.response.send_message(
+            f"Purchased {emoji} {item_type.replace('_', ' ').title()} for {cost:,} {currency_name}! Added to inventory.",
+            ephemeral=True,
+        )
         for item in self.view.children:
             item.disabled = True
         try:
             await interaction.message.edit(view=self.view)
         except discord.HTTPException as e:
-            log.error(f"Failed to update shop view after purchase: {e}")
+            log.error("Failed to update shop view after purchase: %s", e)
 
 
 class HeistView(discord.ui.View):
@@ -170,7 +161,7 @@ class HeistView(discord.ui.View):
             try:
                 await self.message.edit(view=self)
             except discord.HTTPException as e:
-                log.error(f"Failed to update heist view on timeout: {e}")
+                log.error("Failed to update heist view on timeout: %s", e)
 
 
 class HeistSelect(discord.ui.Select):
@@ -250,6 +241,9 @@ class HeistSelect(discord.ui.Select):
             f"Started {heist_type.replace('_', ' ').title()}!", ephemeral=True
         )
 
+        if user.id in self.cog.pending_tasks:
+            log.warning("Duplicate heist task for user %s, cancelling old", user.id)
+            self.cog.pending_tasks[user.id].cancel()
         task = asyncio.create_task(
             schedule_resolve(
                 self.cog,
@@ -266,7 +260,9 @@ class HeistSelect(discord.ui.Select):
             await interaction.message.edit(view=self.view)
         except discord.HTTPException as e:
             log.error(
-                f"Failed to update heist view after heist start for interaction {interaction.id}: {e}"
+                "Failed to update heist view after heist start for interaction %s: %s",
+                interaction.id,
+                e,
             )
 
 

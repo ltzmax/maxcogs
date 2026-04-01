@@ -28,12 +28,15 @@ import random
 from typing import Final
 
 import discord
+from red_commons.logging import getLogger
 from redbot.core import Config, bank, commands
 from redbot.core.utils.views import ConfirmView
 
 from .handlers import resolve_heist, schedule_resolve
 from .utils import HEISTS, ITEMS, RECIPES
 from .views import HeistConfigView, HeistView, ItemPriceConfigView, ShopView
+
+log = getLogger("red.cogs.heist")
 
 
 class Heist(commands.Cog):
@@ -161,15 +164,29 @@ class Heist(commands.Cog):
                 now = datetime.datetime.now(datetime.timezone.utc).timestamp()
                 if now >= active["end_time"]:
                     user = self.bot.get_user(user_id)
-                    if user and active.get("channel_id"):
+                    if active.get("channel_id"):
                         channel = self.bot.get_channel(active["channel_id"])
                         if channel:
-                            await resolve_heist(self, user, active["type"], channel)
+                            if user:
+                                await resolve_heist(self, user, active["type"], channel)
+                            else:
+                                # User not cached yet; clear the stale active heist
+                                await self.config.user_from_id(user_id).active_heist.clear()
+                                log.warning(
+                                    "Could not resolve heist for uncached user %s on cog load",
+                                    user_id,
+                                )
                 else:
                     remaining = active["end_time"] - now
                     if active.get("channel_id"):
                         channel = self.bot.get_channel(active["channel_id"])
                         if channel:
+                            if user_id in self.pending_tasks:
+                                log.warning(
+                                    "Duplicate task for user %s on cog_load, cancelling old",
+                                    user_id,
+                                )
+                                self.pending_tasks[user_id].cancel()
                             task = asyncio.create_task(
                                 schedule_resolve(self, user_id, remaining, active["type"], channel)
                             )
@@ -279,6 +296,7 @@ class Heist(commands.Cog):
             "min_loss": defaults.get("min_loss", 0),
             "max_loss": defaults.get("max_loss", 0),
             "police_chance": custom.get("police_chance", defaults.get("police_chance", 0.0)),
+            "material_drop_chance": defaults.get("material_drop_chance", 0.0),
             "jail_time": datetime.timedelta(
                 seconds=custom.get(
                     "jail_time",
@@ -452,9 +470,33 @@ class Heist(commands.Cog):
         if warnings:
             await ctx.send("\n".join(warnings))
 
+        # Batch-read all heist settings in one config call instead of N calls
+        _raw_settings = await self.config.heist_settings()
         heist_settings = {}
         for name in HEISTS.keys():
-            heist_settings[name] = await self.get_heist_settings(name)
+            defaults = HEISTS[name]
+            custom = _raw_settings.get(name, {})
+            heist_settings[name] = {
+                "emoji": defaults.get("emoji", "❓"),
+                "risk": custom.get("risk", defaults.get("risk", 0.0)),
+                "min_reward": int(custom.get("min_reward", defaults.get("min_reward", 0))),
+                "max_reward": int(custom.get("max_reward", defaults.get("max_reward", 0))),
+                "cooldown": datetime.timedelta(
+                    seconds=custom.get("cooldown", defaults["cooldown"].total_seconds())
+                ),
+                "min_success": int(custom.get("min_success", defaults.get("min_success", 0))),
+                "max_success": int(custom.get("max_success", defaults.get("max_success", 100))),
+                "duration": datetime.timedelta(
+                    seconds=custom.get("duration", defaults["duration"].total_seconds())
+                ),
+                "min_loss": defaults.get("min_loss", 0),
+                "max_loss": defaults.get("max_loss", 0),
+                "police_chance": custom.get("police_chance", defaults.get("police_chance", 0.0)),
+                "material_drop_chance": defaults.get("material_drop_chance", 0.0),
+                "jail_time": datetime.timedelta(
+                    seconds=custom.get("jail_time", defaults["jail_time"].total_seconds())
+                ),
+            }
 
         view = HeistView(self, ctx, heist_settings)
         currency_name = await bank.get_currency_name(ctx.guild)
@@ -844,25 +886,32 @@ class Heist(commands.Cog):
             data = await self.get_heist_settings(name)
             custom = current_settings.get(name, {})
             defaults = HEISTS.get(name, {})
-            is_custom = {
-                param: param in custom
-                and (
-                    custom[param] != defaults.get(param, datetime.timedelta()).total_seconds()
-                    if param in ["cooldown", "duration", "jail_time"]
-                    else custom[param] != defaults.get(param, 0)
-                )
-                for param in [
-                    "risk",
-                    "min_reward",
-                    "max_reward",
-                    "cooldown",
-                    "min_success",
-                    "max_success",
-                    "duration",
-                    "police_chance",
-                    "jail_time",
-                ]
-            }
+            _timedelta_params = {"cooldown", "duration", "jail_time"}
+            is_custom = {}
+            for param in [
+                "risk",
+                "min_reward",
+                "max_reward",
+                "cooldown",
+                "min_success",
+                "max_success",
+                "duration",
+                "police_chance",
+                "jail_time",
+            ]:
+                if param not in custom:
+                    is_custom[param] = False
+                    continue
+                default_val = defaults.get(param)
+                if param in _timedelta_params:
+                    default_secs = (
+                        default_val.total_seconds()
+                        if isinstance(default_val, datetime.timedelta)
+                        else 0.0
+                    )
+                    is_custom[param] = custom[param] != default_secs
+                else:
+                    is_custom[param] = custom[param] != (default_val or 0)
             loot_item = name if name in ITEMS and ITEMS[name][1]["type"] == "loot" else None
             reward_text = (
                 f"{ITEMS[loot_item][1]['min_sell']:,}-{ITEMS[loot_item][1]['max_sell']:,} credits"

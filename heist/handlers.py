@@ -52,11 +52,14 @@ async def schedule_resolve(
         if user_id in cog.pending_tasks:
             del cog.pending_tasks[user_id]
     except asyncio.CancelledError:
-        log.info(f"Schedule resolve task cancelled for user {user_id} on heist {heist_type}")
+        log.info("Schedule resolve task cancelled for user %s on heist %s", user_id, heist_type)
         raise
     except Exception as e:
         log.error(
-            f"Error in schedule_resolve for user {user_id}, heist {heist_type}: {e}",
+            "Error in schedule_resolve for user %s, heist %s: %s",
+            user_id,
+            heist_type,
+            e,
             exc_info=True,
         )
 
@@ -68,12 +71,16 @@ async def resolve_heist(
     channel: discord.TextChannel,
     fallback_channel_id: int = None,
 ):
+    member = None
     try:
         data = await cog.get_heist_settings(heist_type)
         member = channel.guild.get_member(user.id)
         if not member:
             log.warning(
-                f"User {user.id} not found in guild {channel.guild.id} for heist {heist_type}"
+                "User %s not found in guild %s for heist %s",
+                user.id,
+                channel.guild.id,
+                heist_type,
             )
             return
 
@@ -255,16 +262,20 @@ async def resolve_heist(
         try:
             await channel.send(f"{member.mention}", embed=embed)
         except discord.Forbidden:
-            log.warning(f"Cannot send to {channel.id}")
+            log.warning("Cannot send to %s", channel.id)
             if fallback_channel_id:
                 fb = cog.bot.get_channel(fallback_channel_id)
                 if fb:
                     try:
                         await fb.send(f"{member.mention} {msg}")
                     except:
-                        log.warning(f"Fallback {fallback_channel_id} also failed")
+                        log.warning("Fallback %s also failed", fallback_channel_id)
 
     except Exception as e:
-        log.error(f"resolve_heist error for {user.id} - {heist_type}: {e}", exc_info=True)
+        log.error("resolve_heist error for %s - %s: %s", user.id, heist_type, e, exc_info=True)
     finally:
-        await cog.config.user(member).active_heist.clear()
+        # Only clear active_heist if member was successfully resolved
+        if member is not None:
+            await cog.config.user(member).active_heist.clear()
+        else:
+            await cog.config.user_from_id(user.id).active_heist.clear()
