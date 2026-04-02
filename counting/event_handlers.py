@@ -67,31 +67,32 @@ class EventHandlers:
                 user=message.author.mention,
                 goal=reached_goal,
             )
-            delete_after = (
-                settings["delete_after"] if settings.get("toggle_goal_delete", False) else None
+        except KeyError as e:
+            logger.error("Failed to format goal message in guild %s: %s", message.guild.id, e)
+            response = (
+                f"{message.author.mention} reached the goal of {reached_goal}! "
+                "But the goal message is misconfigured."
             )
+
+        delete_after = (
+            settings["delete_after"] if settings.get("toggle_goal_delete", False) else None
+        )
+        try:
             await send_message(
                 message.channel,
                 response,
                 delete_after=delete_after,
                 silent=settings["use_silent"],
             )
-            goals = settings.get("goals", [])
-            if reached_goal in goals:
-                goals = [g for g in goals if g != reached_goal]
-                await self.settings.update_guild(message.guild, "goals", goals)
-        except KeyError as e:
-            logger.error(f"Failed to format goal message in guild {message.guild.id}: {e}")
-            await send_message(
-                message.channel,
-                f"{message.author.mention} reached the goal of {reached_goal}! But the goal message is misconfigured.",
-                delete_after=(
-                    settings["delete_after"] if settings.get("toggle_goal_delete", False) else None
-                ),
-                silent=settings["use_silent"],
-            )
         except discord.HTTPException as e:
-            logger.error(f"Failed to send goal message in guild {message.guild.id}: {e}")
+            logger.error("Failed to send goal message in guild %s: %s", message.guild.id, e)
+            return
+
+        # Remove the reached goal from the list
+        goals = settings.get("goals", [])
+        if reached_goal in goals:
+            updated = [g for g in goals if g != reached_goal]
+            await self.settings.update_guild(message.guild, "goals", updated)
 
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot or not message.guild:
@@ -103,9 +104,10 @@ class EventHandlers:
             return
         perms = message.channel.permissions_for(message.guild.me)
         if not (perms.send_messages and perms.manage_messages):
-            logger.warning(f"Missing permissions in {message.channel.id}")
+            logger.warning("Missing permissions in %s", message.channel.id)
             return
 
+        # Account age check
         if settings["min_account_age"]:
             account_age = (datetime.now(timezone.utc) - message.author.created_at).days
             if account_age < settings["min_account_age"]:
@@ -116,79 +118,16 @@ class EventHandlers:
                 )
                 return
 
+        # Consecutive user check
         if settings["same_user_to_count"] and settings["last_user_id"] == message.author.id:
             await handle_invalid_count(message, settings["default_same_user_message"], settings)
             return
 
         expected_count = settings["count"] + 1
 
-        if message.content.isdigit():
-            message_count = int(message.content)
-            if message_count == expected_count:
-                await asyncio.gather(
-                    self.settings.update_guild(message.guild, "count", expected_count),
-                    self.settings.update_guild(message.guild, "last_user_id", message.author.id),
-                    self.settings.update_user(
-                        message.author,
-                        "count",
-                        (await self.settings.get_user_settings(message.author))["count"] + 1,
-                    ),
-                    self.settings.update_user(
-                        message.author,
-                        "last_count_timestamp",
-                        datetime.now(timezone.utc).isoformat(),
-                    ),
-                )
-
-                if settings["toggle_reactions"] and perms.add_reactions:
-                    await add_reaction(message, settings["default_reaction"])
-                goals = settings.get("goals", [])
-                legacy_goal = settings.get("goal", None)
-
-                cleaned_goals = []
-                if isinstance(goals, list):
-                    cleaned_goals = [int(g) for g in goals if isinstance(g, (int, float))]
-
-                if legacy_goal is not None:
-                    migrated = False
-                    if isinstance(legacy_goal, (int, float)) and legacy_goal not in cleaned_goals:
-                        cleaned_goals.append(int(legacy_goal))
-                        migrated = True
-                    elif isinstance(legacy_goal, list):
-                        for g in legacy_goal:
-                            if isinstance(g, (int, float)) and g not in cleaned_goals:
-                                cleaned_goals.append(int(g))
-                                migrated = True
-                    if migrated:
-                        cleaned_goals = sorted(set(cleaned_goals))
-                        await self.settings.update_guild(message.guild, "goals", cleaned_goals)
-                    await self.settings.update_guild(message.guild, "goal", None)
-
-                if cleaned_goals and expected_count in cleaned_goals:
-                    await self._handle_goal_reached(message, settings, expected_count)
-
-                if settings.get("toggle_progress") and cleaned_goals:
-                    next_goal = next((g for g in cleaned_goals if g > expected_count), None)
-                    if next_goal and expected_count % settings["progress_interval"] == 0:
-                        remaining = next_goal - expected_count
-                        try:
-                            response = settings["progress_message"].format(
-                                remaining=remaining, goal=next_goal
-                            )
-                        except KeyError:
-                            response = "Progress message misconfigured."
-                        delete_after = (
-                            settings["delete_after"]
-                            if settings.get("toggle_progress_delete", False)
-                            else None
-                        )
-                        await send_message(
-                            message.channel,
-                            response,
-                            delete_after=delete_after,
-                            silent=settings["use_silent"],
-                        )
-            elif settings["allow_ruin"]:
+        if not message.content.isdigit():
+            # Non-numeric message
+            if settings["allow_ruin"]:
                 await self._handle_count_ruin(
                     message.channel, message.guild, message.author, settings
                 )
@@ -199,13 +138,76 @@ class EventHandlers:
                 await handle_invalid_count(
                     message, response, settings, settings["toggle_next_number_message"]
                 )
-        elif settings["allow_ruin"]:
-            await self._handle_count_ruin(message.channel, message.guild, message.author, settings)
-        else:
-            response = settings["default_next_number_message"].format(next_count=expected_count)
-            await handle_invalid_count(
-                message, response, settings, settings["toggle_next_number_message"]
-            )
+            return
+
+        message_count = int(message.content)
+        if message_count != expected_count:
+            if settings["allow_ruin"]:
+                await self._handle_count_ruin(
+                    message.channel, message.guild, message.author, settings
+                )
+            else:
+                response = settings["default_next_number_message"].format(
+                    next_count=expected_count
+                )
+                await handle_invalid_count(
+                    message, response, settings, settings["toggle_next_number_message"]
+                )
+            return
+
+        # --- Correct count ---
+        now_iso = datetime.now(timezone.utc).isoformat()
+        user_settings = await self.settings.get_user_settings(message.author)
+        new_user_count = user_settings["count"] + 1
+
+        # Batch guild updates (2 keys → 1 config write)
+        await self.settings.update_guild_multi(
+            message.guild,
+            {
+                "count": expected_count,
+                "last_user_id": message.author.id,
+            },
+        )
+        # Batch user updates (2 keys → 1 config write)
+        await self.settings.update_user_multi(
+            message.author,
+            {
+                "count": new_user_count,
+                "last_count_timestamp": now_iso,
+            },
+        )
+
+        if settings["toggle_reactions"] and perms.add_reactions:
+            await add_reaction(message, settings["default_reaction"])
+
+        # Goals are already cleaned at startup (migrate_legacy_goals).
+        # Just read and use directly from settings cache.
+        goals = settings.get("goals", [])
+
+        if goals and expected_count in goals:
+            await self._handle_goal_reached(message, settings, expected_count)
+
+        if settings.get("toggle_progress") and goals:
+            next_goal = next((g for g in goals if g > expected_count), None)
+            if next_goal and expected_count % settings["progress_interval"] == 0:
+                remaining = next_goal - expected_count
+                try:
+                    response = settings["progress_message"].format(
+                        remaining=remaining, goal=next_goal
+                    )
+                except KeyError:
+                    response = "Progress message misconfigured."
+                delete_after = (
+                    settings["delete_after"]
+                    if settings.get("toggle_progress_delete", False)
+                    else None
+                )
+                await send_message(
+                    message.channel,
+                    response,
+                    delete_after=delete_after,
+                    silent=settings["use_silent"],
+                )
 
     async def _handle_count_ruin(
         self,
@@ -215,10 +217,8 @@ class EventHandlers:
         settings: dict[str, Any],
     ) -> None:
         old_count = settings["count"]
-        await asyncio.gather(
-            self.settings.update_guild(guild, "count", 0),
-            self.settings.update_guild(guild, "last_user_id", None),
-        )
+        # Batch both ruin resets into one config write
+        await self.settings.update_guild_multi(guild, {"count": 0, "last_user_id": None})
         if isinstance(author, discord.Member):
             await assign_ruin_role(self.settings.config, author, guild, settings)
         author_mention = getattr(author, "mention", f"<@{author.id}>")
@@ -236,6 +236,10 @@ class EventHandlers:
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
         if "content" not in payload.data:
             return
+        # Fix: read bot flag directly from payload data — avoids double get_user() call
+        # and correctly handles uncached bots
+        if payload.data.get("author", {}).get("bot", False):
+            return
         guild = self.bot.get_guild(payload.guild_id)
         if not guild:
             return
@@ -249,17 +253,17 @@ class EventHandlers:
             return
         perms = channel.permissions_for(guild.me)
         if not (perms.send_messages and perms.manage_messages):
-            logger.warning(f"Missing permissions in {channel.id}")
+            logger.warning("Missing permissions in %s", channel.id)
             return
 
         author_id = int(payload.data.get("author", {}).get("id", 0))
-        if not author_id or (self.bot.get_user(author_id) and self.bot.get_user(author_id).bot):
+        if not author_id:
             return
 
         try:
             await channel.delete_messages([discord.Object(id=payload.message_id)])
         except (discord.HTTPException, discord.Forbidden) as e:
-            logger.warning(f"Failed to delete edited message {payload.message_id}: {e}")
+            logger.warning("Failed to delete edited message %s: %s", payload.message_id, e)
             return
 
         if settings["allow_ruin"]:

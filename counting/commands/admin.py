@@ -36,6 +36,8 @@ from redbot.core import commands
 from redbot.core.utils import chat_formatting as cf
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
+from ..toggle_view import ToggleSetupView, _build_embed
+
 logger = getLogger("red.maxcogs.counting")
 
 
@@ -72,99 +74,19 @@ class AdminCommands(commands.Cog):
             msg += f"\nEnable counting with `{ctx.clean_prefix}countingset toggle enable`."
         await ctx.send(msg)
 
-    @countingset.group(name="toggle")
-    async def countingset_toggle(self, ctx: commands.Context) -> None:
-        """Manage toggle settings for counting features."""
+    @countingset.command(name="toggle")
+    @commands.bot_has_permissions(embed_links=True)
+    async def toggle_setup(self, ctx: commands.Context) -> None:
+        """
+        Interactive toggle setup panel.
 
-    @countingset_toggle.command(name="enable")
-    async def set_toggle(self, ctx: commands.Context) -> None:
-        """Toggle the counting game on or off."""
+        Shows all counting toggles with their current state.
+        Click any button to enable or disable that feature instantly.
+        """
         settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["toggle"]
-        await self.settings.update_guild(ctx.guild, "toggle", toggle)
-        msg = f"Counting is now {toggle and 'enabled' or 'disabled'}."
-        if toggle and not settings["channel"]:
-            msg += f"\nSet a channel with `{ctx.clean_prefix}countingset channel`."
-        await ctx.send(msg)
-
-    @countingset_toggle.command(name="deleteafter")
-    async def set_toggle_delete_after(self, ctx: commands.Context) -> None:
-        """Toggle delete-after time for invalid messages."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["toggle_delete_after"]
-        await self.settings.update_guild(ctx.guild, "toggle_delete_after", toggle)
-        await ctx.send(f"Delete-after time is now {toggle and 'enabled' or 'disabled'}.")
-
-    @countingset_toggle.command(name="silent")
-    async def set_silent(self, ctx: commands.Context) -> None:
-        """Toggle silent mode for bot messages."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        silent = not settings["use_silent"]
-        await self.settings.update_guild(ctx.guild, "use_silent", silent)
-        await ctx.send(f"Silent mode is now {silent and 'enabled' or 'disabled'}.")
-
-    @countingset_toggle.command(name="reactions")
-    async def set_reactions(self, ctx: commands.Context) -> None:
-        """Toggle reactions for correct counts."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["toggle_reactions"]
-        await self.settings.update_guild(ctx.guild, "toggle_reactions", toggle)
-        msg = f"Reactions are now {toggle and 'enabled' or 'disabled'}."
-        if toggle:
-            msg += "\nEnsure I have `add_reactions` permission in the counting channel."
-        await ctx.send(msg)
-
-    @countingset_toggle.command(name="sameuser")
-    async def set_sameuser(self, ctx: commands.Context) -> None:
-        """Toggle if the same user can count consecutively."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["same_user_to_count"]
-        await self.settings.update_guild(ctx.guild, "same_user_to_count", toggle)
-        await ctx.send(
-            f"Consecutive counting by the same user is now {toggle and 'disallowed' or 'allowed'}."
-        )
-
-    @countingset_toggle.command(name="ruincount")
-    async def set_ruincount(self, ctx: commands.Context) -> None:
-        """Toggle whether users can ruin the count."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["allow_ruin"]
-        await self.settings.update_guild(ctx.guild, "allow_ruin", toggle)
-        await ctx.send(f"Count ruining is now {toggle and 'enabled' or 'disabled'}.")
-
-    @countingset_toggle.command(name="message")
-    async def set_togglemessage(self, ctx: commands.Context, msg_type: str) -> None:
-        """Toggle visibility of edit or count messages."""
-        msg_type = msg_type.lower()
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        if msg_type == "edit":
-            toggle = not settings["toggle_edit_message"]
-            await self.settings.update_guild(ctx.guild, "toggle_edit_message", toggle)
-            await ctx.send(f"Edit message visibility is now {toggle and 'enabled' or 'disabled'}.")
-        elif msg_type == "count":
-            toggle = not settings["toggle_next_number_message"]
-            await self.settings.update_guild(ctx.guild, "toggle_next_number_message", toggle)
-            await ctx.send(
-                f"Next number message visibility is now {toggle and 'enabled' or 'disabled'}."
-            )
-        else:
-            await ctx.send("Invalid type. Use: edit, count.")
-
-    @countingset_toggle.command(name="progress")
-    async def set_toggle_progress(self, ctx: commands.Context) -> None:
-        """Toggle progress messages for the counting goal."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["toggle_progress"]
-        await self.settings.update_guild(ctx.guild, "toggle_progress", toggle)
-        await ctx.send(f"Progress messages are now {toggle and 'enabled' or 'disabled'}.")
-
-    @countingset_toggle.command(name="goaldelete")
-    async def set_toggle_progress_delete(self, ctx: commands.Context) -> None:
-        """Toggle whether the goal message is deleted after being sent."""
-        settings = await self.settings.get_guild_settings(ctx.guild)
-        toggle = not settings["toggle_goal_delete"]
-        await self.settings.update_guild(ctx.guild, "toggle_goal_delete", toggle)
-        await ctx.send(f"Goal message deletion is now {toggle and 'enabled' or 'disabled'}.")
+        embed = _build_embed(settings, await ctx.embed_color())
+        view = ToggleSetupView(ctx, self.settings, settings)
+        view.message = await ctx.send(embed=embed, view=view)
 
     @countingset.group(name="messages")
     async def countingset_messages(self, ctx: commands.Context) -> None:

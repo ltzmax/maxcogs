@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from typing import Optional
 
 import discord
 from redbot.core import commands
@@ -41,7 +40,7 @@ class UserCommands(commands.Cog):
 
     @counting.command(name="stats")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def stats(self, ctx: commands.Context, user: Optional[discord.Member] = None) -> None:
+    async def stats(self, ctx: commands.Context, user: discord.Member | None = None) -> None:
         """Show counting stats for a user."""
         user = user or ctx.author
         if user.bot:
@@ -77,12 +76,13 @@ class UserCommands(commands.Cog):
         """
         user_cache: dict = self.settings._user_cache
         entries = []
-        for member in ctx.guild.members:
-            if member.bot:
+        for user_id, data in user_cache.items():
+            if not data or data.get("count", 0) <= 0:
                 continue
-            data = user_cache.get(member.id)
-            if data and data.get("count", 0) > 0:
-                entries.append((member, data["count"]))
+            member = ctx.guild.get_member(user_id)
+            if member is None or member.bot:
+                continue
+            entries.append((member, data["count"]))
         if not entries:
             return await ctx.send("No one has counted yet in this server.")
         entries.sort(key=lambda x: x[1], reverse=True)

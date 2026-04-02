@@ -18,7 +18,7 @@
     "requirements": ["tabulate", "emoji>=2.0.0"],
     "min_python_version": [
         3,
-        9,
+        10,
         0
     ],
     "end_user_data_statement": "This cog does not store any End User Data.",

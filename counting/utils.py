@@ -42,16 +42,19 @@ async def send_message(
 ) -> discord.Message | None:
     """Send a message with error handling."""
     try:
-        send_kwargs = {"content": content, "silent": silent}
+        send_kwargs: dict[str, Any] = {"content": content, "silent": silent}
         if delete_after is not None:
             send_kwargs["delete_after"] = delete_after
         return await channel.send(**send_kwargs)
     except discord.Forbidden:
         logger.warning(
-            f"Missing send permissions in {channel.guild.name}#{channel.name} ({channel.id})"
+            "Missing send permissions in %s#%s (%s)",
+            channel.guild.name,
+            channel.name,
+            channel.id,
         )
     except discord.HTTPException as e:
-        logger.warning(f"Failed to send message in {channel.id}: {e}")
+        logger.warning("Failed to send message in %s: %s", channel.id, e)
     return None
 
 
@@ -60,25 +63,25 @@ async def delete_message(message: discord.Message) -> None:
     try:
         await message.delete()
     except discord.HTTPException as e:
-        logger.warning(f"Failed to delete message {message.id} in {message.channel.id}: {e}")
+        logger.warning("Failed to delete message %s in %s: %s", message.id, message.channel.id, e)
 
 
 async def add_reaction(message: discord.Message, reaction: str) -> None:
-    """Add a reaction with a delay."""
+    """Add a reaction with a small delay to avoid rate limits."""
     await asyncio.sleep(0.3)
     try:
         await message.add_reaction(reaction)
     except discord.HTTPException as e:
-        logger.warning(f"Failed to add reaction to {message.id} in {message.channel.id}: {e}")
+        logger.warning("Failed to add reaction to %s in %s: %s", message.id, message.channel.id, e)
 
 
 async def handle_invalid_count(
     message: discord.Message,
     response: str,
-    settings: dict[str, any],
+    settings: dict[str, Any],
     send_response: bool = True,
 ) -> None:
-    """Handle invalid counts by deleting and optionally responding."""
+    """Delete an invalid count message and optionally send a response."""
     await delete_message(message)
     if send_response:
         delete_after = (
@@ -105,17 +108,18 @@ async def assign_ruin_role(
 
     role = guild.get_role(ruin_role_id)
     if not role or role >= guild.me.top_role:
-        logger.warning(f"Cannot assign ruin role {ruin_role_id} in {guild.name} ({guild.id})")
+        logger.warning("Cannot assign ruin role %s in %s (%s)", ruin_role_id, guild.name, guild.id)
         return
 
     if any(r.id in excluded_role_ids for r in member.roles):
-        logger.warning(f"User {member.display_name} has excluded role(s) in {guild.name}")
+        logger.warning("User %s has excluded role(s) in %s", member.display_name, guild.name)
+        return
+
+    if not guild.me.guild_permissions.manage_roles:
+        logger.warning("Missing manage_roles permission in %s (%s)", guild.name, guild.id)
         return
 
     try:
-        if not guild.me.guild_permissions.manage_roles:
-            logger.warning(f"Missing manage_roles permission in {guild.name} ({guild.id})")
-            return
         await member.add_roles(role, reason="Ruined the count")
         if duration:
             expiry = datetime.now(timezone.utc) + timedelta(seconds=duration)
@@ -125,31 +129,47 @@ async def assign_ruin_role(
                     "expiry": expiry.timestamp(),
                 }
     except discord.Forbidden:
-        logger.warning(f"Missing permissions to assign role {role.name} in {guild.name}")
+        logger.warning("Missing permissions to assign role %s in %s", role.name, guild.name)
 
 
 async def remove_expired_roles(config: Config, guild: discord.Guild) -> None:
     """Remove expired temporary roles from users in a guild."""
     async with config.guild(guild).temp_roles() as temp_roles:
         to_remove = []
+        now_ts = datetime.now(timezone.utc).timestamp()
         for user_id, data in temp_roles.items():
-            if datetime.now(timezone.utc).timestamp() >= data["expiry"]:
-                member = guild.get_member(int(user_id))
-                role = guild.get_role(data["role_id"])
-                if member and role:
-                    try:
-                        await member.remove_roles(role, reason="Temporary ruin role expired")
-                    except discord.HTTPException as e:
-                        if e.status == 429:
-                            logger.warning(
-                                f"Rate limited removing role {role.name} for {member.id}. Retrying after {e.retry_after}s."
-                            )
-                            await asyncio.sleep(e.retry_after)
+            if now_ts < data["expiry"]:
+                continue
+            member = guild.get_member(int(user_id))
+            role = guild.get_role(data["role_id"])
+            if member and role:
+                try:
+                    await member.remove_roles(role, reason="Temporary ruin role expired")
+                except discord.HTTPException as e:
+                    if e.status == 429:
+                        retry_after = getattr(e, "retry_after", 1.0)
+                        logger.warning(
+                            "Rate limited removing role %s for %s. Retrying after %ss.",
+                            role.name,
+                            member.id,
+                            retry_after,
+                        )
+                        await asyncio.sleep(retry_after)
+                        try:
                             await member.remove_roles(role, reason="Temporary ruin role expired")
-                        elif isinstance(e, discord.Forbidden):
-                            logger.warning(f"Failed to remove role {role.name}: {e}")
-                        else:
-                            raise
-                to_remove.append(user_id)
+                        except discord.HTTPException as retry_err:
+                            logger.warning(
+                                "Retry failed removing role %s for %s: %s",
+                                role.name,
+                                member.id,
+                                retry_err,
+                            )
+                            continue  # Don't mark for removal; try again next tick
+                    elif isinstance(e, discord.Forbidden):
+                        logger.warning("Forbidden removing role %s: %s", role.name, e)
+                    else:
+                        logger.error("Unexpected error removing role %s: %s", role.name, e)
+                        continue  # Don't mark for removal to avoid silently losing the entry
+            to_remove.append(user_id)
         for user_id in to_remove:
             del temp_roles[user_id]
