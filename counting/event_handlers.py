@@ -155,12 +155,9 @@ class EventHandlers:
                 )
             return
 
-        # --- Correct count ---
         now_iso = datetime.now(timezone.utc).isoformat()
         user_settings = await self.settings.get_user_settings(message.author)
         new_user_count = user_settings["count"] + 1
-
-        # Batch guild updates (2 keys → 1 config write)
         await self.settings.update_guild_multi(
             message.guild,
             {
@@ -168,7 +165,6 @@ class EventHandlers:
                 "last_user_id": message.author.id,
             },
         )
-        # Batch user updates (2 keys → 1 config write)
         await self.settings.update_user_multi(
             message.author,
             {
@@ -180,10 +176,7 @@ class EventHandlers:
         if settings["toggle_reactions"] and perms.add_reactions:
             await add_reaction(message, settings["default_reaction"])
 
-        # Goals are already cleaned at startup (migrate_legacy_goals).
-        # Just read and use directly from settings cache.
         goals = settings.get("goals", [])
-
         if goals and expected_count in goals:
             await self._handle_goal_reached(message, settings, expected_count)
 
@@ -217,7 +210,6 @@ class EventHandlers:
         settings: dict[str, Any],
     ) -> None:
         old_count = settings["count"]
-        # Batch both ruin resets into one config write
         await self.settings.update_guild_multi(guild, {"count": 0, "last_user_id": None})
         if isinstance(author, discord.Member):
             await assign_ruin_role(self.settings.config, author, guild, settings)
@@ -236,8 +228,6 @@ class EventHandlers:
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent) -> None:
         if "content" not in payload.data:
             return
-        # Fix: read bot flag directly from payload data — avoids double get_user() call
-        # and correctly handles uncached bots
         if payload.data.get("author", {}).get("bot", False):
             return
         guild = self.bot.get_guild(payload.guild_id)
