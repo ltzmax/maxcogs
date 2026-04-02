@@ -158,87 +158,164 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
             log.error(f"Failed to update view after unignore: {e}")
 
 
-class StatsView(discord.ui.LayoutView):
-    """View for displaying AutoPublisher statistics."""
+def _build_metrics_panel(
+    weekly: int,
+    monthly: int,
+    yearly: int,
+    total: int,
+    owner_tz: "pytz.timezone",
+    last_count_time: str | None,
+    next_weekly_ts: int,
+    next_monthly_ts: int,
+    next_yearly_ts: int,
+) -> tuple[str, str]:
+    """
+    autopublisher stats bar chart and rates panel builder.
+    """
+    BAR_WIDTH = 20
+    FILL = "●"
+    EMPTY = "○"
+
+    def bar(val: int) -> str:
+        filled = min(round(val / 60), BAR_WIDTH)
+        return FILL * filled + EMPTY * (BAR_WIDTH - filled)
+
+    def rate(val: int, days: int) -> str:
+        return f"{val / days:.1f}" if days > 0 else "N/A"
+
+    from datetime import datetime, timezone as dt_timezone
+    import calendar
+
+    now = datetime.now(owner_tz)
+    days_in_month = calendar.monthrange(now.year, now.month)[1]
+    day_of_year = now.timetuple().tm_yday
+    week_day = now.weekday() + 1
+
+    weekly_avg = rate(weekly, 7)
+    monthly_avg = rate(monthly, days_in_month)
+    yearly_avg = rate(yearly, day_of_year)
+    daily_rate = yearly / day_of_year if day_of_year > 0 and yearly > 0 else 0
+    yearly_projected_max = max(daily_rate * 365, 1)
+
+    def yearly_bar(val: int) -> str:
+        filled = min(round((val / yearly_projected_max) * BAR_WIDTH), BAR_WIDTH)
+        return FILL * filled + EMPTY * (BAR_WIDTH - filled)
+
+    def total_bar(val: int) -> str:
+        filled = min(round((val / 100_000) * BAR_WIDTH), BAR_WIDTH)
+        return FILL * filled + EMPTY * (BAR_WIDTH - filled)
+
+    pct_weekly_of_monthly = f"{(weekly / monthly * 100):.1f}%" if monthly else "N/A"
+    pct_yearly_of_total = f"{(yearly  / total   * 100):.1f}%" if total else "N/A"
+
+    last_pub = "Never"
+    if last_count_time:
+        try:
+            dt = datetime.fromisoformat(last_count_time)
+            dt = dt.replace(tzinfo=dt_timezone.utc)
+            ts = int(dt.timestamp())
+            last_pub = f"<t:{ts}:R> (<t:{ts}:f>)"
+        except ValueError:
+            last_pub = "Invalid timestamp"
+
+    W = 44  # panel inner width
+
+    def row(label: str, val: int) -> str:
+        label_col = f"{label:<9}"
+        count_col = f"{humanize_number(val):>7}"
+        return f"{label_col} {bar(val)} {count_col}"
+
+    def kv(label: str, value: str) -> str:
+        return f"{label:<26}  {value}"
+
+    chart_lines = [
+        "AUTOPUBLISHER STATS ".center(W),
+        "",
+        row("Weekly", weekly),
+        row("Monthly", monthly),
+        f"{'Yearly':<9} {yearly_bar(yearly)} {humanize_number(yearly):>7}",
+        f"{'Total':<9} {total_bar(total)} {humanize_number(total):>7}",
+        "",
+        "RATES  (derived from current period totals)",
+        kv("Weekly avg / day", weekly_avg),
+        kv("Monthly avg / day", monthly_avg),
+        kv("Yearly avg / day", yearly_avg),
+        kv("Weekly % of monthly", pct_weekly_of_monthly),
+        kv("Yearly % of total", pct_yearly_of_total),
+    ]
+    chart_str = "\n".join(chart_lines)
+    schedule_lines = [
+        "**🗓️  Reset Schedule**",
+        f"Timezone `{owner_tz.zone}`",
+        f"Last published {last_pub}",
+        f"Next weekly reset <t:{next_weekly_ts}:R> (<t:{next_weekly_ts}:f>)",
+        f"Next monthly reset <t:{next_monthly_ts}:R> (<t:{next_monthly_ts}:f>)",
+        f"Next yearly reset <t:{next_yearly_ts}:R> (<t:{next_yearly_ts}:f>)",
+    ]
+    schedule_str = "\n".join(schedule_lines)
+    return chart_str, schedule_str
+
+
+class MetricsView(discord.ui.LayoutView):
+    """Metrics view for AutoPublisher."""
 
     def __init__(self, cog: commands.Cog) -> None:
         super().__init__(timeout=180)
-        self.cog: commands.Cog = cog
+        self.cog = cog
         self.ctx: commands.Context | None = None
         self.message: discord.Message | None = None
-        self.owner_tz: pytz.timezone | None = None
+        self.owner_tz: "pytz.timezone | None" = None
+
         self.refresh_button = discord.ui.Button(
             label="Refresh", style=discord.ButtonStyle.green, emoji="🔄"
         )
         self.refresh_button.callback = self.refresh_callback
-        self.close_button = discord.ui.Button(
-            label="Close", style=discord.ButtonStyle.red, emoji="✖️"
-        )
-        self.close_button.callback = self.close_callback
-        self._build_container("Never")
+        self._build_placeholder()
 
-    def _build_container(self, last_published: str) -> None:
-        """Build or rebuild the container with current components."""
+    def _build_placeholder(self) -> None:
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
-        self.container.add_item(discord.ui.TextDisplay("AutoPublisher Statistics"))
-        self.container.add_item(discord.ui.Separator())
-        self.container.add_item(discord.ui.TextDisplay(last_published))
-        self.container.add_item(discord.ui.Separator())
-        self.container.add_item(discord.ui.ActionRow(self.refresh_button, self.close_button))
+        self.container.add_item(discord.ui.TextDisplay("Loading metrics…"))
+        self.container.add_item(discord.ui.ActionRow(self.refresh_button))
         self.clear_items()
         self.add_item(self.container)
 
     async def start(self, ctx: commands.Context) -> None:
-        """Initialize the view with stats data."""
         self.ctx = ctx
         self.owner_tz = await get_owner_timezone(self.cog.config)
         await self._update_view()
 
     async def _update_view(self) -> None:
-        """Update the view with current stats."""
         data = await self.cog.config.all()
-        table_data = [
-            ["Weekly", humanize_number(data["published_weekly_count"])],
-            ["Monthly", humanize_number(data["published_monthly_count"])],
-            ["Yearly", humanize_number(data["published_yearly_count"])],
-            ["Total Published", humanize_number(data["published_count"])],
-        ]
-        table = tabulate(table_data, headers=["Period", "Count"], tablefmt="simple")
-        boxed_table = box(table, lang="prolog")
-        last_published = "Last Published: Never"
+        weekly = data.get("published_weekly_count", 0)
+        monthly = data.get("published_monthly_count", 0)
+        yearly = data.get("published_yearly_count", 0)
+        total = data.get("published_count", 0)
         last_count_time = data.get("last_count_time")
-        if last_count_time:
-            try:
-                last_count_dt = datetime.fromisoformat(last_count_time)
-                last_count_dt = last_count_dt.replace(tzinfo=pytz.UTC).astimezone(self.owner_tz)
-                last_published = f"Last Published: {discord.utils.format_dt(last_count_dt, 'R')}"
-            except ValueError:
-                last_published = "Last Published: Invalid timestamp"
 
         next_weekly_ts, next_monthly_ts, next_yearly_ts = get_next_reset_times(self.owner_tz)
-        reset_info = (
-            f"Timezone: `{self.owner_tz.zone}`\n"
-            f"{last_published}\n"
-            f"Next Weekly Reset: <t:{next_weekly_ts}:R> (<t:{next_weekly_ts}:f>)\n"
-            f"Next Monthly Reset: <t:{next_monthly_ts}:R> (<t:{next_monthly_ts}:f>)\n"
-            f"Next Yearly Reset: <t:{next_yearly_ts}:R> (<t:{next_yearly_ts}:f>)"
-        )
-        title = "Autopublisher Stats"
-        title_info = f"{header(title, 'medium')}"
 
+        chart_str, schedule_str = _build_metrics_panel(
+            weekly,
+            monthly,
+            yearly,
+            total,
+            self.owner_tz,
+            last_count_time,
+            next_weekly_ts,
+            next_monthly_ts,
+            next_yearly_ts,
+        )
+        panel_box = box(chart_str, lang="prolog")
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
-        self.container.add_item(discord.ui.TextDisplay(title_info))
+        self.container.add_item(discord.ui.TextDisplay(panel_box))
         self.container.add_item(discord.ui.Separator())
-        self.container.add_item(discord.ui.TextDisplay(boxed_table))
+        self.container.add_item(discord.ui.TextDisplay(schedule_str))
         self.container.add_item(discord.ui.Separator())
-        self.container.add_item(discord.ui.TextDisplay(reset_info))
-        self.container.add_item(discord.ui.Separator())
-        self.container.add_item(discord.ui.ActionRow(self.refresh_button, self.close_button))
+        self.container.add_item(discord.ui.ActionRow(self.refresh_button))
         self.clear_items()
         self.add_item(self.container)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """Check if the user is allowed to interact."""
         if interaction.user.id not in [self.ctx.author.id] + list(self.ctx.bot.owner_ids):
             await interaction.response.send_message(
                 "You are not allowed to use this interaction.", ephemeral=True
@@ -247,30 +324,16 @@ class StatsView(discord.ui.LayoutView):
         return True
 
     async def on_timeout(self) -> None:
-        """Handle view timeout."""
         self.refresh_button.disabled = True
-        self.close_button.disabled = True
         if self.message is None:
             return
         try:
             await self.message.edit(view=self)
         except discord.HTTPException as e:
-            log.error(f"Failed to update view on timeout: {e}")
+            log.error("Failed to update metrics view on timeout: %s", e)
 
     async def refresh_callback(self, interaction: discord.Interaction) -> None:
-        """Refresh the stats display."""
         await interaction.response.defer()
         await self._update_view()
         await self.message.edit(view=self)
         await interaction.followup.send("Stats refreshed!", ephemeral=True)
-
-    async def close_callback(self, interaction: discord.Interaction) -> None:
-        """Close the view."""
-        self.refresh_button.disabled = True
-        self.close_button.disabled = True
-        await interaction.response.defer()
-        await self.message.edit(view=self)
-        await interaction.followup.send(
-            "Stats view closed. Redo the command to refresh again.", ephemeral=True
-        )
-        self.stop()

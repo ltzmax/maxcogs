@@ -39,7 +39,7 @@ from .utils import (
     initialize_scheduler,
     schedule_resets,
 )
-from .view import IgnoredNewsChannelsView, StatsView
+from .view import IgnoredNewsChannelsView, MetricsView
 
 logger = getLogger("red.maxcogs.autopublisher")
 
@@ -47,7 +47,7 @@ logger = getLogger("red.maxcogs.autopublisher")
 class AutoPublisher(DashboardIntegration, commands.Cog):
     """Automatically publish messages in news channels."""
 
-    __version__: Final[str] = "3.4.0"
+    __version__: Final[str] = "3.5.0"
     __author__: Final[str] = "MAX, AAA3A"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/autopublisher/README.md"
 
@@ -182,7 +182,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
 
         This shows global stats across all servers in an interactive view.
         """
-        view = StatsView(self)
+        view = MetricsView(self)
         await view.start(ctx)
         view.message = await ctx.send(view=view)
 
