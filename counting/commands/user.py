@@ -121,7 +121,7 @@ class UserCommands(commands.Cog):
         await SimpleMenu(pages=pages, disable_after_timeout=True, timeout=120).start(ctx)
 
     @counting.command(name="resetme", with_app_command=False)
-    @commands.cooldown(1, 360, commands.BucketType.user)
+    @commands.cooldown(1, 460, commands.BucketType.user)
     async def resetme(self, ctx: commands.Context) -> None:
         """
         Reset your own counting stats.
