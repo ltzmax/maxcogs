@@ -319,6 +319,64 @@ async def build_playoff_embeds(
     return pages
 
 
+async def build_standings_embeds(
+    ctx: commands.Context,
+    data: dict,
+) -> List[discord.Embed]:
+    """Build West-then-East standings embeds from ESPN standings API."""
+    children = data.get("children", [])
+    if not children:
+        await ctx.send("No standings data available at the moment. Try again later.")
+        return []
+
+    pages = []
+    for group in reversed(children):
+        conf_name = group.get("name", "Unknown Conference")
+        entries = group.get("standings", {}).get("entries", [])
+        if not entries:
+            continue
+
+        def get_rank(entry):
+            for s in entry.get("stats", []):
+                if s.get("name") == "playoffSeed":
+                    return int(s.get("value", 99))
+            return 99
+
+        entries = sorted(entries, key=get_rank)
+        header = f"{'#':<3} {'Team':<14} {'W':<4} {'L':<4} {'PCT':<6} {'GB':<5} {'L10':<5} {'STK'}"
+        divider = "-" * len(header)
+        rows = [header, divider]
+
+        for entry in entries:
+            team = entry.get("team", {})
+            name = team.get("shortDisplayName") or team.get("displayName", "???")
+            stats = {
+                s["name"]: s.get("displayValue", s.get("value", ""))
+                for s in entry.get("stats", [])
+            }
+            rank = str(int(stats.get("playoffSeed", 0))) if stats.get("playoffSeed") else "?"
+            wins = str(stats.get("wins", "?"))
+            losses = str(stats.get("losses", "?"))
+            pct = str(stats.get("winPercent", "?"))
+            gb = str(stats.get("gamesBehind", "-"))
+            l10 = str(stats.get("last10", "-"))
+            streak = str(stats.get("streak", "-"))
+            rows.append(
+                f"{rank:<3} {name:<14} {wins:<4} {losses:<4} {pct:<6} {gb:<5} {l10:<5} {streak}"
+            )
+
+        table = box("\n".join(rows), lang="prolog")
+        embed = discord.Embed(
+            title=f"🏀 NBA Standings - {conf_name}",
+            description=table,
+            color=await ctx.embed_color(),
+        )
+        embed.set_footer(text="🏀 Provided by ESPN | Full standings at nba.com/standings")
+        pages.append(embed)
+
+    return pages
+
+
 def build_score_update_embed(
     home_team_name: str,
     away_team_name: str,

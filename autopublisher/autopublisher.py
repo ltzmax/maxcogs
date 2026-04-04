@@ -34,11 +34,7 @@ from redbot.core.utils.chat_formatting import humanize_list
 from redbot.core.utils.views import ConfirmView
 
 from .dashboard_integration import DashboardIntegration
-from .utils import (
-    increment_published_count,
-    initialize_scheduler,
-    schedule_resets,
-)
+from .utils import increment_published_count, initialize_scheduler, schedule_resets
 from .view import IgnoredNewsChannelsView, MetricsView
 
 logger = getLogger("red.maxcogs.autopublisher")

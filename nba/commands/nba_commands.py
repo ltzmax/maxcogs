@@ -33,7 +33,6 @@ from redbot.core import app_commands, commands
 from redbot.core.utils.views import SimpleMenu
 
 from ..converter import (
-    ESPN_NBA_NEWS,
     NBA_STATS_HEADERS,
     SCHEDULE_URL,
     TEAM_EMOJI_NAMES,
@@ -46,6 +45,7 @@ from ..formatters import (
     build_playoff_embeds,
     build_schedule_embeds,
     build_scoreboard_embeds,
+    build_standings_embeds,
 )
 from ..view import GameMenu
 
@@ -69,13 +69,15 @@ class NBACommands:
         team: str,
     ):
         """
-        Set the channel to send NBA game updates to.
+        Add or update a team channel for NBA game updates.
 
-        **Note:**
-        You can only set one channel and one team per server.
+        Each team can have its own channel. Run the command again with the same
+        team to update the channel. When two configured teams play each other,
+        only the home team's channel receives the notification.
 
         **Examples:**
-        - `[p]nbaset channel #nba heat` - it will send updates to #nba for the Miami Heat.
+        - `[p]nbaset channel #heat-updates heat`
+        - `[p]nbaset channel #sixers-updates sixers`
 
         **Arguments:**
         - `channel`: The channel to send NBA game updates to.
@@ -84,42 +86,85 @@ class NBACommands:
         **Valid Team Names:**
         - heat, bucks, bulls, cavaliers, celtics, clippers, grizzlies, hawks, hornets, jazz, kings, knicks, lakers, magic, mavericks, nets, nuggets, pacers, pelicans, pistons, raptors, rockets, sixers, spurs, suns, thunder, timberwolves, trail blazers, warriors, wizards
         """
-        if team.lower() not in TEAM_NAMES:
+        team = team.lower()
+        if team not in TEAM_NAMES:
             return await ctx.send(
                 "That is not a valid team name. Use one of: " + ", ".join(TEAM_NAMES),
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
             )
-        await self.config.guild(ctx.guild).channel.set(channel.id)
-        await self.config.guild(ctx.guild).team.set(team.lower())
+        team_channels = await self.config.guild(ctx.guild).team_channels()
+        team_channels[team] = {
+            "channel_id": channel.id,
+            "role_id": team_channels.get(team, {}).get("role_id"),
+        }
+        await self.config.guild(ctx.guild).team_channels.set(team_channels)
         await ctx.send(
-            f"Set channel to {channel.mention} and team to **{team.lower()}**.",
+            f"Set **{team}** updates to {channel.mention}.",
+            reference=ctx.message.to_reference(fail_if_not_exists=False),
+            mention_author=False,
+        )
+
+    @nbaset.command(name="remove")
+    async def nbaset_remove(self, ctx: commands.Context, team: str):
+        """
+        Remove a team from the NBA update list.
+
+        **Example:**
+        - `[p]nbaset remove heat`
+        """
+        team = team.lower()
+        if team not in TEAM_NAMES:
+            return await ctx.send(
+                "That is not a valid team name.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        team_channels = await self.config.guild(ctx.guild).team_channels()
+        if team not in team_channels:
+            return await ctx.send(
+                f"**{team}** is not configured.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        del team_channels[team]
+        await self.config.guild(ctx.guild).team_channels.set(team_channels)
+        await ctx.send(
+            f"Removed **{team}** from NBA updates.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
 
     @nbaset.command(name="reset", aliases=["clear"])
     async def nbaset_reset(self, ctx: commands.Context):
-        """Reset the channel and team settings."""
-        await self.config.guild(ctx.guild).clear()
+        """Reset all NBA update settings for this server."""
+        await self.config.guild(ctx.guild).team_channels.set({})
         await ctx.send(
-            "Cleared channel and team settings.",
+            "Cleared all team channel settings.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
 
     @nbaset.group(name="role")
     async def nbaset_role(self, ctx: commands.Context):
-        """Manage the role pinged for pre-game notifications."""
+        """Manage the role pinged for pre-game notifications per team."""
 
     @nbaset_role.command(name="set")
-    async def nbaset_role_set(self, ctx: commands.Context, role: discord.Role):
-        """Set a role to ping 30 minutes before game starts.
-
-        Please note that it will send update to the configured channel regardless if the role is set or not.
+    async def nbaset_role_set(self, ctx: commands.Context, team: str, role: discord.Role):
+        """Set a role to ping 30 minutes before a specific team's game starts.
 
         **Example:**
-        - `[p]nbaset role set @NBA` - pings @NBA before each game.
+        - `[p]nbaset role set heat @HeatFans`
         """
+        team = team.lower()
+        if team not in TEAM_NAMES:
+            return await ctx.send(
+                "That is not a valid team name.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        team_channels = await self.config.guild(ctx.guild).team_channels()
+        if team not in team_channels:
+            return await ctx.send(
+                f"**{team}** has no channel configured. Set one first with `{ctx.clean_prefix}nbaset channel`.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
         if role >= ctx.guild.me.top_role:
             return await ctx.send(
                 "Please choose a role below the bot's top role to avoid permission issues.",
@@ -132,19 +177,37 @@ class NBACommands:
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
                 mention_author=False,
             )
-        await self.config.guild(ctx.guild).pregame_role.set(role.id)
+        team_channels[team]["role_id"] = role.id
+        await self.config.guild(ctx.guild).team_channels.set(team_channels)
         await ctx.send(
-            f"Pre-game ping role set to {role.mention}.",
+            f"Pre-game ping role for **{team}** set to {role.mention}.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
 
     @nbaset_role.command(name="remove")
-    async def nbaset_role_remove(self, ctx: commands.Context):
-        """Remove the pre-game ping role."""
-        await self.config.guild(ctx.guild).pregame_role.set(None)
+    async def nbaset_role_remove(self, ctx: commands.Context, team: str):
+        """Remove the pre-game ping role for a specific team.
+
+        **Example:**
+        - `[p]nbaset role remove heat`
+        """
+        team = team.lower()
+        if team not in TEAM_NAMES:
+            return await ctx.send(
+                "That is not a valid team name.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        try:
+            await self.config.guild(ctx.guild).get_raw("team_channels", team)
+        except KeyError:
+            return await ctx.send(
+                f"**{team}** has no channel configured.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+            )
+        await self.config.guild(ctx.guild).set_raw("team_channels", team, "role_id", value=None)
         await ctx.send(
-            "Pre-game ping role removed.",
+            f"Pre-game ping role for **{team}** removed.",
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
@@ -251,18 +314,32 @@ class NBACommands:
         )
 
     @nbaset.command(name="settings")
+    @commands.bot_has_permissions(embed_links=True)
     async def nbaset_settings(self, ctx: commands.Context):
         """View the current NBA settings."""
-        all_data = await self.config.guild(ctx.guild).all()
-        channel_id = all_data["channel"]
-        channel = ctx.guild.get_channel(channel_id) if channel_id else None
-        team = all_data["team"]
-        role_id = all_data.get("pregame_role")
-        role = ctx.guild.get_role(role_id) if role_id else None
+        team_channels = await self.config.guild(ctx.guild).team_channels()
+        if not team_channels:
+            return await ctx.send(
+                f"No teams configured. Use `{ctx.clean_prefix}nbaset channel` to set one up.",
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
+        embed = discord.Embed(title="NBA Update Settings", color=await ctx.embed_color())
+        for team, entry in sorted(team_channels.items()):
+            channel_id = entry.get("channel_id")
+            role_id = entry.get("role_id")
+            channel = ctx.guild.get_channel_or_thread(channel_id) if channel_id else None
+            role = ctx.guild.get_role(role_id) if role_id else None
+            embed.add_field(
+                name=team.capitalize(),
+                value=(
+                    f"**Channel:** {channel.mention if channel else 'Not found'}\n"
+                    f"**Pre-game role:** {role.mention if role else 'Not set'}"
+                ),
+                inline=False,
+            )
         await ctx.send(
-            f"Channel: {channel.mention if channel else 'Not set'}\n"
-            f"Team: {team or 'Not set'}\n"
-            f"Pre-game ping role: {role.mention if role else 'Not set'}",
+            embed=embed,
             reference=ctx.message.to_reference(fail_if_not_exists=False),
             mention_author=False,
         )
@@ -388,5 +465,25 @@ class NBACommands:
             log.error("Failed to fetch playoff picture: %s", e)
             return await ctx.send("Failed to fetch playoff data. Try again later.")
         pages = await build_playoff_embeds(ctx, data)
+        if pages:
+            await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+
+    @nba.command(name="standings")
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.cooldown(1, 30, commands.BucketType.guild)
+    async def standings(self, ctx: commands.Context):
+        """Get the current NBA standings.
+
+        Shows West then East, sorted by conference rank.
+        Includes W, L, PCT, GB, last 10, and current streak.
+
+        **Note**:
+        - Data provided by ESPN. Full standings at https://www.nba.com/standings.
+        """
+        await ctx.typing()
+        data = await self.fetch_standings(ctx)
+        if not data:
+            return
+        pages = await build_standings_embeds(ctx, data)
         if pages:
             await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)

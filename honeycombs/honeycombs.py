@@ -33,10 +33,7 @@ import aiohttp
 import discord
 from redbot.core import Config, bank, commands
 from redbot.core.bot import Red
-from redbot.core.utils.chat_formatting import (
-    humanize_list,
-    humanize_number,
-)
+from redbot.core.utils.chat_formatting import humanize_list, humanize_number
 from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 from .bank_utils import safe_deposit, safe_withdraw

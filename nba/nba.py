@@ -40,6 +40,7 @@ from redbot.core.data_manager import cog_data_path
 from .commands.nba_commands import NBACommands
 from .converter import (
     ESPN_NBA_NEWS,
+    ESPN_NBA_STANDINGS,
     SCHEDULE_URL,
     TEAM_EMOJI_NAMES,
     TEAM_NAME_TO_API,
@@ -51,6 +52,9 @@ from .view import PreGameView
 
 log = getLogger("red.maxcogs.nba")
 
+# TODO to myself.
+# - Add a pre embed when game(s) are done playing for the day,
+# with a recap of the day's results (if we can get that data) and a lookahead at the next day's schedule.
 
 class NBA(NBACommands, commands.Cog):
     """
@@ -61,7 +65,7 @@ class NBA(NBACommands, commands.Cog):
     - Set the channel to send NBA game updates to.
     """
 
-    __version__: Final[str] = "3.10.0"
+    __version__: Final[str] = "4.0.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/nba/README.md"
 
@@ -69,6 +73,8 @@ class NBA(NBACommands, commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567891011)
         default_guild: Dict[str, Any] = {
+            "team_channels": {},
+            # Legacy keys kept only for migration - do not use in new code.
             "channel": None,
             "team": None,
             "pregame_role": None,
@@ -89,6 +95,42 @@ class NBA(NBACommands, commands.Cog):
         self.scoreboard_time = 0
         self.cache_ttl = 60
         self.periodic_check.start()
+
+    async def cog_load(self) -> None:
+        await self._migrate_legacy_config()
+
+    # to be removed in two months.
+    async def _migrate_legacy_config(self) -> None:
+        """
+        One time migration from the old single channel+team config to the new
+        """
+        all_guilds = await self.config.all_guilds()
+        migrated = 0
+        for guild_id, data in all_guilds.items():
+            old_channel = data.get("channel")
+            old_team = data.get("team")
+            if not old_channel or not old_team:
+                continue
+            old_role = data.get("pregame_role")
+            team_channels = dict(data.get("team_channels") or {})
+            if old_team not in team_channels:
+                team_channels[old_team] = {
+                    "channel_id": old_channel,
+                    "role_id": old_role,
+                }
+                await self.config.guild_from_id(guild_id).team_channels.set(team_channels)
+            await self.config.guild_from_id(guild_id).channel.set(None)
+            await self.config.guild_from_id(guild_id).team.set(None)
+            await self.config.guild_from_id(guild_id).pregame_role.set(None)
+            migrated += 1
+            log.info(
+                "Migrated legacy config for guild %s: team=%s channel=%s",
+                guild_id,
+                old_team,
+                old_channel,
+            )
+        if migrated:
+            log.info("Migration complete: %d guild(s) migrated to team_channels.", migrated)
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -270,29 +312,37 @@ class NBA(NBACommands, commands.Cog):
 
             # Notify all configured guilds
             for guild_id, guild_data in all_guild_configs.items():
-                channel_id = guild_data.get("channel")
-                team_name = guild_data.get("team")
-                if not channel_id or not team_name:
+                team_channels = guild_data.get("team_channels") or {}
+                if not team_channels:
                     continue
 
-                api_team_name = TEAM_NAME_TO_API.get(team_name.lower())
-                if not api_team_name:
-                    continue
-                if api_team_name not in (home_team_name, away_team_name):
+                # Resolve which team entries match this game.
+                home_entry = None
+                away_entry = None
+                for team_key, entry in team_channels.items():
+                    api_name = TEAM_NAME_TO_API.get(team_key.lower())
+                    if not api_name:
+                        continue
+                    if api_name == home_team_name:
+                        home_entry = entry
+                    elif api_name == away_team_name:
+                        away_entry = entry
+
+                # If both teams are configured, only notify via the home team's channel
+                # to avoid double posting when two tracked teams face each other.
+                if home_entry and away_entry:
+                    entries_to_notify = [home_entry]
+                elif home_entry:
+                    entries_to_notify = [home_entry]
+                elif away_entry:
+                    entries_to_notify = [away_entry]
+                else:
                     continue
 
                 guild = self.bot.get_guild(guild_id)
                 if not guild:
                     continue
-                channel = guild.get_channel_or_thread(channel_id)
-                if not channel:
-                    continue
-                if not (
-                    channel.permissions_for(guild.me).send_messages
-                    and channel.permissions_for(guild.me).embed_links
-                ):
-                    log.warning("Missing permissions for game %s in guild %s", game_id, guild_id)
-                    continue
+
                 embed = build_score_update_embed(
                     home_team_name,
                     away_team_name,
@@ -302,15 +352,33 @@ class NBA(NBACommands, commands.Cog):
                     game_clock,
                     game_id,
                 )
-                try:
-                    await channel.send(embed=embed)
-                except discord.HTTPException as e:
-                    log.error(
-                        "Failed to send score update for game %s in guild %s: %s",
-                        game_id,
-                        guild_id,
-                        e,
-                    )
+                for entry in entries_to_notify:
+                    channel_id = entry.get("channel_id")
+                    if not channel_id:
+                        continue
+                    channel = guild.get_channel_or_thread(channel_id)
+                    if not channel:
+                        continue
+                    if not (
+                        channel.permissions_for(guild.me).send_messages
+                        and channel.permissions_for(guild.me).embed_links
+                    ):
+                        log.warning(
+                            "Missing permissions for game %s in guild %s channel %s",
+                            game_id,
+                            guild_id,
+                            channel_id,
+                        )
+                        continue
+                    try:
+                        await channel.send(embed=embed)
+                    except discord.HTTPException as e:
+                        log.error(
+                            "Failed to send score update for game %s in guild %s: %s",
+                            game_id,
+                            guild_id,
+                            e,
+                        )
 
         await self._check_pregame_notifications()
 
@@ -388,43 +456,64 @@ class NBA(NBACommands, commands.Cog):
                 self.notified_pregames.add(game_id)
 
                 for guild_id, guild_data in pregame_guild_configs.items():
-                    channel_id = guild_data.get("channel")
-                    team_name = guild_data.get("team")
-                    role_id = guild_data.get("pregame_role")
-                    if not channel_id or not team_name:
+                    team_channels = guild_data.get("team_channels") or {}
+                    if not team_channels:
                         continue
-                    api_team_name = TEAM_NAME_TO_API.get(team_name.lower())
-                    if not api_team_name:
+
+                    # Same home-team-wins deduplication as the score update task.
+                    home_entry = None
+                    away_entry = None
+                    for team_key, entry in team_channels.items():
+                        api_name = TEAM_NAME_TO_API.get(team_key.lower())
+                        if not api_name:
+                            continue
+                        if api_name == home_team:
+                            home_entry = entry
+                        elif api_name == away_team:
+                            away_entry = entry
+
+                    if home_entry and away_entry:
+                        entries_to_notify = [home_entry]
+                    elif home_entry:
+                        entries_to_notify = [home_entry]
+                    elif away_entry:
+                        entries_to_notify = [away_entry]
+                    else:
                         continue
-                    if api_team_name not in (home_team, away_team):
-                        continue
+
                     guild = self.bot.get_guild(guild_id)
                     if not guild:
                         continue
-                    channel = guild.get_channel_or_thread(channel_id)
-                    if not channel:
-                        continue
-                    if not (
-                        channel.permissions_for(guild.me).send_messages
-                        and channel.permissions_for(guild.me).embed_links
-                    ):
-                        continue
-                    role = guild.get_role(role_id) if role_id else None
-                    content = role.mention if role else None
-                    try:
-                        await channel.send(
-                            content=content,
-                            embed=embed,
-                            view=PreGameView(game_id),
-                            allowed_mentions=discord.AllowedMentions(roles=True),
-                        )
-                    except discord.HTTPException as e:
-                        log.error(
-                            "Failed to send pre-game embed for %s in guild %s: %s",
-                            game_id,
-                            guild_id,
-                            e,
-                        )
+
+                    for entry in entries_to_notify:
+                        channel_id = entry.get("channel_id")
+                        role_id = entry.get("role_id")
+                        if not channel_id:
+                            continue
+                        channel = guild.get_channel_or_thread(channel_id)
+                        if not channel:
+                            continue
+                        if not (
+                            channel.permissions_for(guild.me).send_messages
+                            and channel.permissions_for(guild.me).embed_links
+                        ):
+                            continue
+                        role = guild.get_role(role_id) if role_id else None
+                        mention = role.mention if role else None
+                        try:
+                            await channel.send(
+                                content=mention,
+                                embed=embed,
+                                view=PreGameView(game_id),
+                                allowed_mentions=discord.AllowedMentions(roles=True),
+                            )
+                        except discord.HTTPException as e:
+                            log.error(
+                                "Failed to send pre-game embed for %s in guild %s: %s",
+                                game_id,
+                                guild_id,
+                                e,
+                            )
 
     async def fetch_data(
         self, url: str, ctx: Optional[commands.Context] = None
@@ -477,6 +566,17 @@ class NBA(NBACommands, commands.Cog):
             return feed.get("entries", [])
         except Exception as e:
             log.error("Failed to parse ESPN news: %s", e)
+            return None
+
+    async def fetch_standings(self, ctx: commands.Context) -> Optional[dict]:
+        """Fetch NBA standings from ESPN public API."""
+        data = await self.fetch_data(ESPN_NBA_STANDINGS, ctx)
+        if not data:
+            return None
+        try:
+            return orjson.loads(data)
+        except orjson.JSONDecodeError as e:
+            log.error("Failed to decode standings: %s", e)
             return None
 
     async def load_application_emojis(self) -> None:

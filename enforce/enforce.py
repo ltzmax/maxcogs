@@ -306,7 +306,9 @@ class Enforce(commands.Cog):
         total = len(all_users)
         member_count = len(self.bot.users)
         accepted = sum(1 for u in all_users.values() if u.get("accepted_tos", False))
-        await ctx.send(f"{accepted} of {humanize_number(member_count)} users have accepted the ToS.")
+        await ctx.send(
+            f"{accepted} of {humanize_number(member_count)} users have accepted the ToS."
+        )
 
     @tosconfig.command(name="checkuser")
     async def check_user(self, ctx: commands.Context, user: discord.User | None = None) -> None:

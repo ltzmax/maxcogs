@@ -183,8 +183,9 @@ def _build_metrics_panel(
     def rate(val: int, days: int) -> str:
         return f"{val / days:.1f}" if days > 0 else "N/A"
 
-    from datetime import datetime, timezone as dt_timezone
     import calendar
+    from datetime import datetime
+    from datetime import timezone as dt_timezone
 
     now = datetime.now(owner_tz)
     days_in_month = calendar.monthrange(now.year, now.month)[1]
