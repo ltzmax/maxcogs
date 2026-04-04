@@ -151,6 +151,26 @@ class RestrictCommands:
         await self._update_cache(ctx.guild, "rp_send_in_channel", new_value)
         await ctx.send(f"Channel warning messages {'enabled' if new_value else 'disabled'}.")
 
+    @restrictposts.command(name="setlog")
+    async def rp_setlog(self, ctx: commands.Context, channel: discord.TextChannel = None) -> None:
+        """Set or clear the log channel for RestrictPosts deletions."""
+        channel_id = channel.id if channel else None
+        await self._update_cache(ctx.guild, "rp_log_channel", channel_id)
+        if channel:
+            await ctx.send(f"RestrictPosts log channel set to {channel.mention}.")
+        else:
+            await ctx.send("RestrictPosts log channel cleared.")
+
+    @restrictposts.command(name="togglelog")
+    async def rp_togglelog(self, ctx: commands.Context) -> None:
+        """Toggle logging of deleted restricted-channel messages."""
+        cfg = self._get_cache(ctx.guild.id)
+        if not cfg.get("rp_log_channel"):
+            return await ctx.send("Set a log channel first with `restrictposts setlog`.")
+        new_value = not cfg.get("rp_log_enabled", False)
+        await self._update_cache(ctx.guild, "rp_log_enabled", new_value)
+        await ctx.send(f"RestrictPosts logging {'enabled' if new_value else 'disabled'}.")
+
     @restrictposts.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
     async def rp_settings(self, ctx: commands.Context) -> None:
@@ -194,5 +214,16 @@ class RestrictCommands:
         embed.add_field(
             name="Default Title", value=cfg.get("rp_default_title", RP_DEFAULT_TITLE), inline=False
         )
+        log_channel = ctx.guild.get_channel(cfg.get("rp_log_channel") or 0)
         embed.add_field(name="Warning Message", value=warn_msg, inline=False)
+        embed.add_field(
+            name="Logging",
+            value="Enabled" if cfg.get("rp_log_enabled") else "Disabled",
+            inline=False,
+        )
+        embed.add_field(
+            name="Log Channel",
+            value=log_channel.mention if log_channel else "Not set",
+            inline=False,
+        )
         await ctx.send(embed=embed)

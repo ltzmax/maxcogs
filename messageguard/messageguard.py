@@ -50,6 +50,7 @@ from .utils import (
     is_forwarded_message,
     log_missing_permissions,
     send_forward_warning,
+    send_log,
     send_restrict_warning,
     send_spoiler_warning,
 )
@@ -65,7 +66,7 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
     - RestrictPosts: restricts channels to attachments and links only
     """
 
-    __version__: Final[str] = "1.1.0"
+    __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/messageguard/README.md"
 
@@ -79,6 +80,8 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
             "fd_allowed_roles": [],
             "fd_warn_enabled": False,
             "fd_warn_message": FD_WARN_MESSAGE,
+            "fd_log_enabled": False,
+            "fd_log_channel": None,
         }
         default_guild_spoiler = {
             "ns_enabled": False,
@@ -86,6 +89,8 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
             "ns_spoiler_warn_message": NS_DEFAULT_WARNING,
             "ns_timeout": 10,
             "ns_use_embed": False,
+            "ns_log_enabled": False,
+            "ns_log_channel": None,
         }
         default_guild_restrict = {
             "rp_channel_ids": [],
@@ -96,6 +101,8 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
             "rp_toggle_embed": False,
             "rp_mentionable": False,
             "rp_autothread": False,
+            "rp_log_enabled": False,
+            "rp_log_channel": None,
         }
         self.config.register_guild(
             **default_guild_forward,
@@ -176,6 +183,13 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
                         await send_forward_warning(
                             message, cfg.get("fd_warn_message", FD_WARN_MESSAGE)
                         )
+                    if cfg.get("fd_log_enabled") and cfg.get("fd_log_channel"):
+                        await send_log(
+                            message,
+                            "ForwardDeleter",
+                            await self.bot.get_embed_color(channel),
+                            cfg["fd_log_channel"],
+                        )
                 except (discord.Forbidden, discord.NotFound, discord.HTTPException) as e:
                     log.error(
                         "[ForwardDeleter] Failed to delete message %s in %s (%s): %s",
@@ -203,6 +217,13 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
                                 await self.bot.get_embed_color(channel),
                             )
                         await message.delete()
+                        if cfg.get("ns_log_enabled") and cfg.get("ns_log_channel"):
+                            await send_log(
+                                message,
+                                "NoSpoiler",
+                                await self.bot.get_embed_color(channel),
+                                cfg["ns_log_channel"],
+                            )
                     except (discord.Forbidden, discord.NotFound, discord.HTTPException) as e:
                         log.error(
                             "[NoSpoiler] Failed to delete message %s in %s (%s): %s",
@@ -237,6 +258,13 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
                             cfg.get("rp_delete_after", 10),
                             cfg.get("rp_toggle_embed", False),
                             cfg.get("rp_mentionable", False),
+                        )
+                    if cfg.get("rp_log_enabled") and cfg.get("rp_log_channel"):
+                        await send_log(
+                            message,
+                            "RestrictPosts",
+                            await self.bot.get_embed_color(channel),
+                            cfg["rp_log_channel"],
                         )
                 except discord.Forbidden:
                     log.error(
@@ -293,6 +321,13 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
                                     await self.bot.get_embed_color(channel),
                                 )
                             await message.delete()
+                            if cfg.get("ns_log_enabled") and cfg.get("ns_log_channel"):
+                                await send_log(
+                                    message,
+                                    "NoSpoiler",
+                                    await self.bot.get_embed_color(channel),
+                                    cfg["ns_log_channel"],
+                                )
                         except (discord.Forbidden, discord.NotFound, discord.HTTPException) as e:
                             log.error(
                                 "[NoSpoiler] Edit handler failed for %s: %s", payload.message_id, e
@@ -326,6 +361,13 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
                             cfg.get("rp_delete_after", 10),
                             cfg.get("rp_toggle_embed", False),
                             cfg.get("rp_mentionable", False),
+                        )
+                    if cfg.get("rp_log_enabled") and cfg.get("rp_log_channel"):
+                        await send_log(
+                            message,
+                            "RestrictPosts",
+                            await self.bot.get_embed_color(channel),
+                            cfg["rp_log_channel"],
                         )
                 except discord.Forbidden:
                     log.error(

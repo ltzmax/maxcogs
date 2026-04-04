@@ -116,6 +116,85 @@ async def send_spoiler_warning(
         )
 
 
+async def send_log(
+    message: discord.Message,
+    feature: str,
+    color: discord.Color,
+    log_channel_id: int,
+) -> None:
+    """Send a log message to the specified log channel."""
+    guild = message.guild
+    if not guild:
+        return
+    log_channel = guild.get_channel(log_channel_id)
+    if not log_channel or not isinstance(log_channel, discord.TextChannel):
+        return
+    me = guild.me
+    if not log_channel.permissions_for(me).send_messages:
+        log.warning(
+            "[%s] Missing send_messages in log channel %s (%s)",
+            feature,
+            log_channel,
+            guild.id,
+        )
+        return
+    if not log_channel.permissions_for(me).embed_links:
+        log.warning(
+            "[%s] Missing embed_links in log channel %s (%s)",
+            feature,
+            log_channel,
+            guild.id,
+        )
+        return
+    content = message.content or "*No text content*"
+    if len(content) > 4096:
+        content = content[:4093] + "..."
+
+    embed = discord.Embed(
+        title=f"[{feature}] Message Deleted",
+        description=content,
+        color=color,
+        timestamp=message.created_at,
+    )
+    embed.set_author(
+        name=f"{message.author} ({message.author.id})",
+        icon_url=message.author.display_avatar.url,
+    )
+    embed.add_field(name="Channel", value=message.channel.mention, inline=True)
+    embed.add_field(name="Author", value=message.author.mention, inline=True)
+    embed.add_field(name="Jump URL", value=f"[Jump to message]({message.jump_url})", inline=True)
+    if message.attachments:
+        attachment_urls = [a.url for a in message.attachments]
+        current_field: list[str] = []
+        field_index = 1
+        for url in attachment_urls:
+            test = "\n".join(current_field + [url])
+            if len(test) > 1024:
+                embed.add_field(
+                    name=f"Attachments (Part {field_index})",
+                    value="\n".join(current_field),
+                    inline=False,
+                )
+                field_index += 1
+                current_field = [url]
+            else:
+                current_field.append(url)
+        if current_field:
+            name = "Attachments" if field_index == 1 else f"Attachments (Part {field_index})"
+            embed.add_field(name=name, value="\n".join(current_field), inline=False)
+
+    try:
+        await log_channel.send(embed=embed)
+    except discord.HTTPException as e:
+        log.error(
+            "[%s] Failed to send log to %s (%s): %s",
+            feature,
+            log_channel,
+            guild.id,
+            e,
+        )
+
+
 async def send_restrict_warning(
     message: discord.Message,
     warning_message: str,

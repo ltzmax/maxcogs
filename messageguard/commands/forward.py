@@ -143,6 +143,26 @@ class ForwardCommands:
             parts.append(f"Not in list: {', '.join(missing)}")
         await ctx.send("\n".join(parts) or "No changes made.")
 
+    @forwarddeleter.command(name="setlog")
+    async def fd_setlog(self, ctx: commands.Context, channel: discord.TextChannel = None) -> None:
+        """Set or clear the log channel for ForwardDeleter deletions."""
+        channel_id = channel.id if channel else None
+        await self._update_cache(ctx.guild, "fd_log_channel", channel_id)
+        if channel:
+            await ctx.send(f"ForwardDeleter log channel set to {channel.mention}.")
+        else:
+            await ctx.send("ForwardDeleter log channel cleared.")
+
+    @forwarddeleter.command(name="togglelog")
+    async def fd_togglelog(self, ctx: commands.Context) -> None:
+        """Toggle logging of deleted forwarded messages."""
+        cfg = self._get_cache(ctx.guild.id)
+        if not cfg.get("fd_log_channel"):
+            return await ctx.send("Set a log channel first with `forwarddeleter setlog`.")
+        new_value = not cfg.get("fd_log_enabled", False)
+        await self._update_cache(ctx.guild, "fd_log_enabled", new_value)
+        await ctx.send(f"ForwardDeleter logging {'enabled' if new_value else 'disabled'}.")
+
     @forwarddeleter.command(name="settings")
     async def fd_settings(self, ctx: commands.Context) -> None:
         """Display Forward Deleter settings."""
@@ -172,11 +192,18 @@ class ForwardCommands:
         )
 
         base_embed = discord.Embed(title="Forward Deleter Settings", color=await ctx.embed_color())
+        log_channel = ctx.guild.get_channel(cfg.get("fd_log_channel") or 0)
         base_embed.add_field(
             name="Status", value="Enabled" if cfg.get("fd_enabled") else "Disabled"
         )
         base_embed.add_field(
             name="Warn Users", value="Enabled" if cfg.get("fd_warn_enabled") else "Disabled"
+        )
+        base_embed.add_field(
+            name="Logging", value="Enabled" if cfg.get("fd_log_enabled") else "Disabled"
+        )
+        base_embed.add_field(
+            name="Log Channel", value=log_channel.mention if log_channel else "Not set"
         )
 
         max_pages = max(len(channel_pages), len(role_pages))

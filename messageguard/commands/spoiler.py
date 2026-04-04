@@ -81,6 +81,26 @@ class SpoilerCommands:
         await self._update_cache(ctx.guild, "ns_spoiler_warn_message", new_message)
         await ctx.send("Spoiler warning message has been " + ("set." if message else "reset."))
 
+    @nospoiler.command(name="setlog")
+    async def ns_setlog(self, ctx: commands.Context, channel: discord.TextChannel = None) -> None:
+        """Set or clear the log channel for NoSpoiler deletions."""
+        channel_id = channel.id if channel else None
+        await self._update_cache(ctx.guild, "ns_log_channel", channel_id)
+        if channel:
+            await ctx.send(f"NoSpoiler log channel set to {channel.mention}.")
+        else:
+            await ctx.send("NoSpoiler log channel cleared.")
+
+    @nospoiler.command(name="togglelog")
+    async def ns_togglelog(self, ctx: commands.Context) -> None:
+        """Toggle logging of deleted spoiler messages."""
+        cfg = self._get_cache(ctx.guild.id)
+        if not cfg.get("ns_log_channel"):
+            return await ctx.send("Set a log channel first with `nospoiler setlog`.")
+        new_value = not cfg.get("ns_log_enabled", False)
+        await self._update_cache(ctx.guild, "ns_log_enabled", new_value)
+        await ctx.send(f"NoSpoiler logging {'enabled' if new_value else 'disabled'}.")
+
     @nospoiler.command(name="settings", aliases=["view", "views"])
     async def ns_settings(self, ctx: commands.Context) -> None:
         """Display current spoiler filter settings."""
@@ -91,11 +111,14 @@ class SpoilerCommands:
         )
         title = "NoSpoiler Settings"
         header_text = header(title, "medium")
+        log_channel = ctx.guild.get_channel(cfg.get("ns_log_channel") or 0)
         await ctx.send(
             f"{header_text}\n"
             f"- **Enabled**: {cfg.get('ns_enabled', False)}\n"
             f"- **Spoiler Warning**: {cfg.get('ns_spoiler_warn', False)}\n"
             f"- **Use Embed**: {cfg.get('ns_use_embed', False)}\n"
             f"- **Delete After**: {cfg.get('ns_timeout', 10)} seconds\n"
+            f"- **Logging**: {cfg.get('ns_log_enabled', False)}\n"
+            f"- **Log Channel**: {log_channel.mention if log_channel else 'Not set'}\n"
             f"- **Spoiler Warning Message**:\n{spoiler_warning_message}"
         )
