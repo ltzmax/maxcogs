@@ -119,6 +119,7 @@ class Enforce(commands.Cog):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             await asyncio.sleep(300)
+            # Only remove entries for users that have now accepted preserve active cooldowns.
             to_remove = []
             for uid in list(self.tos_prompt_antispam.keys()):
                 try:
@@ -294,6 +295,23 @@ class Enforce(commands.Cog):
             await ctx.send("ToS acceptance reset for all users.")
         else:
             await ctx.send("Reset cancelled.")
+
+    @tosconfig.command(name="checkuser")
+    async def check_user(self, ctx: commands.Context, user: discord.User | None = None) -> None:
+        """Check when a user accepted the ToS."""
+        target = user or ctx.author
+        user_cfg = await self.config.user(target).all()
+        accepted = user_cfg.get("accepted_tos", False)
+        accepted_at = user_cfg.get("accepted_at")
+
+        if not accepted:
+            return await ctx.send(f"{target} ({target.id}) has not accepted the ToS yet.")
+
+        if accepted_at:
+            timestamp = f"<t:{accepted_at}:F> (<t:{accepted_at}:R>)"
+        else:
+            timestamp = "Unknown (accepted before timestamp tracking was added)"
+        await ctx.send(f"{target} ({target.id}) accepted the ToS on {timestamp}.")
 
     @tosconfig.command(name="showsettings")
     @commands.bot_has_permissions(embed_links=True)
