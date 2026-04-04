@@ -100,7 +100,7 @@ class Enforce(commands.Cog):
 
         user_id = ctx.author.id
         if user_id not in self.tos_prompt_antispam:
-            self.tos_prompt_antispam[user_id] = AntiSpam([(timedelta(seconds=60), 2)])
+            self.tos_prompt_antispam[user_id] = AntiSpam([(timedelta(seconds=60), 4)])
 
         antispam = self.tos_prompt_antispam[user_id]
         if antispam.spammy:
