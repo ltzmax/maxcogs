@@ -140,7 +140,8 @@ class Enforce(commands.Cog):
         except KeyError as e:
             log.error(
                 "prompt_description is missing placeholder %s falling back to raw text. "
-                "Use {tos_url} and {privacy_url} in your description.", e,
+                "Use {tos_url} and {privacy_url} in your description.",
+                e,
             )
             description = raw_desc
         footer = await self.config.prompt_footer()
@@ -150,7 +151,9 @@ class Enforce(commands.Cog):
             if not perm_check.send_messages or not perm_check.embed_links:
                 log.warning(
                     "Cannot send ToS prompt in %s#%s (%s) - missing permissions",
-                    ctx.guild.name, ctx.channel.name, ctx.channel.id,
+                    ctx.guild.name,
+                    ctx.channel.name,
+                    ctx.channel.id,
                 )
                 return
         else:
@@ -296,9 +299,17 @@ class Enforce(commands.Cog):
         else:
             await ctx.send("Reset cancelled.")
 
+    @tosconfig.command(name="acceptedcount")
+    async def accepted_count(self, ctx: commands.Context) -> None:
+        """Show how many users have accepted the ToS."""
+        all_users = await self.config.all_users()
+        total = len(all_users)
+        accepted = sum(1 for u in all_users.values() if u.get("accepted_tos", False))
+        await ctx.send(f"{accepted}/{total} users have accepted the ToS.")
+
     @tosconfig.command(name="checkuser")
     async def check_user(self, ctx: commands.Context, user: discord.User | None = None) -> None:
-        """Check when a user accepted the ToS."""
+        """Check when a user accepted the ToS, or whether they have at all."""
         target = user or ctx.author
         user_cfg = await self.config.user(target).all()
         accepted = user_cfg.get("accepted_tos", False)
