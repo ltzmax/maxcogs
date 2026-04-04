@@ -112,7 +112,7 @@ class UserCommands(commands.Cog):
                 numalign="left",
             )
             embed = discord.Embed(
-                title=f"🏆 Counting Leaderboard — {ctx.guild.name}",
+                title=f"🏆 Counting Global Leaderboard",
                 description=box(table, lang="prolog"),
                 color=await ctx.embed_color(),
             )
