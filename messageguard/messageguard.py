@@ -65,7 +65,7 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
     - RestrictPosts: restricts channels to attachments and links only
     """
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/messageguard/README.md"
 

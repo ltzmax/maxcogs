@@ -59,15 +59,15 @@ class ForwardCommands:
         """Set a custom warning message for deleted forwarded messages."""
         if len(message) > 2000:
             return await ctx.send("Warning message must be 2000 characters or less.")
+        view = ConfirmView(ctx.author, disable_buttons=True)
         embed = discord.Embed(
             title="Preview Warning Message",
             description=f"This is how the warning message will appear:\n{message}",
             color=await ctx.embed_color(),
         )
-        view = ConfirmView(ctx.author)
         msg = await ctx.send(embed=embed, view=view)
         await view.wait()
-        if view.value:
+        if view.result:
             await self._update_cache(ctx.guild, "fd_warn_message", message)
             await msg.edit(content="Warning message updated.", embed=None, view=None)
         else:
