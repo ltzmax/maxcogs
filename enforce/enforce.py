@@ -31,7 +31,7 @@ from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.antispam import AntiSpam
-from redbot.core.utils.chat_formatting import header
+from redbot.core.utils.chat_formatting import header, humanize_number
 from redbot.core.utils.views import ConfirmView
 
 from .views import AcceptView
@@ -304,8 +304,9 @@ class Enforce(commands.Cog):
         """Show how many users have accepted the ToS."""
         all_users = await self.config.all_users()
         total = len(all_users)
+        member_count = len(self.bot.users)
         accepted = sum(1 for u in all_users.values() if u.get("accepted_tos", False))
-        await ctx.send(f"{accepted}/{total} users have accepted the ToS.")
+        await ctx.send(f"{accepted} of {humanize_number(member_count)} users have accepted the ToS.")
 
     @tosconfig.command(name="checkuser")
     async def check_user(self, ctx: commands.Context, user: discord.User | None = None) -> None:
