@@ -64,8 +64,11 @@ class Enforce(commands.Cog):
         )
         self.config.register_user(accepted_tos=False, accepted_at=None)
         self.tos_prompt_antispam = {}
+        self._cleanup_task = None
         self.bot.add_check(self.tos_global_check)
-        self._cleanup_task = self.bot.loop.create_task(self._cleanup_antispam())
+
+    async def cog_load(self) -> None:
+        self._cleanup_task = asyncio.create_task(self._cleanup_antispam())
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """Thanks Sinbad!"""
@@ -76,9 +79,10 @@ class Enforce(commands.Cog):
         """Delete stored data for a user."""
         await self.config.user_from_id(user_id).clear()
 
-    def cog_unload(self):
+    async def cog_unload(self) -> None:
         self.bot.remove_check(self.tos_global_check)
-        self._cleanup_task.cancel()
+        if self._cleanup_task:
+            self._cleanup_task.cancel()
 
     async def tos_global_check(self, ctx: commands.Context) -> bool:
         if ctx.author.bot:
@@ -96,40 +100,56 @@ class Enforce(commands.Cog):
 
         user_id = ctx.author.id
         if user_id not in self.tos_prompt_antispam:
-            self.tos_prompt_antispam[user_id] = AntiSpam([(timedelta(seconds=60), 1)])
+            self.tos_prompt_antispam[user_id] = AntiSpam([(timedelta(seconds=60), 2)])
 
         antispam = self.tos_prompt_antispam[user_id]
-        antispam.stamp()
         if antispam.spammy:
-            log.info(f"Skipping ToS prompt for {user_id} - antispam triggered")
+            log.info("Skipping ToS prompt for %s - antispam triggered", user_id)
             return False
 
+        antispam.stamp()
         try:
             await self.send_tos_prompt(ctx)
         except (discord.Forbidden, discord.HTTPException) as e:
-            log.warning(f"Failed to send ToS prompt to {ctx.author.id}: {e}")
+            log.warning("Failed to send ToS prompt to %s: %s", ctx.author.id, e)
         return False
 
-    async def _cleanup_antispam(self):
-        """Periodically remove stale antispam entries."""
+    async def _cleanup_antispam(self) -> None:
+        """Periodically remove antispam entries for users who have since accepted ToS."""
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             await asyncio.sleep(300)
-            self.tos_prompt_antispam.clear()
+            to_remove = []
+            for uid in list(self.tos_prompt_antispam.keys()):
+                try:
+                    if await self.config.user_from_id(uid).accepted_tos():
+                        to_remove.append(uid)
+                except Exception:
+                    pass
+            for uid in to_remove:
+                self.tos_prompt_antispam.pop(uid, None)
 
     async def send_tos_prompt(self, ctx: commands.Context):
         tos_url = await self.config.tos_url()
         privacy_url = await self.config.privacy_url()
         title = await self.config.prompt_title()
         raw_desc = await self.config.prompt_description()
-        description = raw_desc.format(tos_url=tos_url, privacy_url=privacy_url)
+        try:
+            description = raw_desc.format(tos_url=tos_url, privacy_url=privacy_url)
+        except KeyError as e:
+            log.error(
+                "prompt_description is missing placeholder %s — falling back to raw text. "
+                "Use {tos_url} and {privacy_url} in your description.", e,
+            )
+            description = raw_desc
         footer = await self.config.prompt_footer()
 
         if ctx.guild:
             perm_check = ctx.channel.permissions_for(ctx.guild.me)
             if not perm_check.send_messages or not perm_check.embed_links:
                 log.warning(
-                    f"Cannot send ToS prompt in {ctx.guild.name}#{ctx.channel.name} ({ctx.channel.id}) - missing permissions"
+                    "Cannot send ToS prompt in %s#%s (%s) - missing permissions",
+                    ctx.guild.name, ctx.channel.name, ctx.channel.id,
                 )
                 return
         else:
@@ -226,7 +246,9 @@ class Enforce(commands.Cog):
         """Reset all ToS settings to default."""
         view = ConfirmView(ctx.author, disable_buttons=True)
         view.message = await ctx.send(
-            "Are you sure you want to reset all ToS settings to default?", view=view
+            "Are you sure you want to reset all ToS settings to default?\n"
+            "⚠️ This will also reset the ToS and Privacy Policy URLs and **disable enforcement**.",
+            view=view,
         )
         await view.wait()
         if view.result:
@@ -291,6 +313,12 @@ class Enforce(commands.Cog):
         embed.add_field(name="ToS URL", value=tos_url, inline=False)
         embed.add_field(name="Privacy Policy URL", value=privacy_url, inline=False)
         embed.add_field(name="Prompt Title", value=title, inline=False)
-        embed.add_field(name="Prompt Description", value=description, inline=False)
+        try:
+            resolved_desc = description.format(tos_url=tos_url, privacy_url=privacy_url)
+        except KeyError:
+            resolved_desc = description
+        if len(resolved_desc) > 1024:
+            resolved_desc = resolved_desc[:1021] + "..."
+        embed.add_field(name="Prompt Description", value=resolved_desc, inline=False)
         embed.add_field(name="Prompt Footer", value=footer, inline=False)
         await ctx.send(embed=embed)

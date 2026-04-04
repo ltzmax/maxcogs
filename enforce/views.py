@@ -51,7 +51,7 @@ class AcceptView(discord.ui.View):
             await self.original_message.edit(view=self)
             log.debug("View timed out - buttons disabled on original message")
         except (discord.NotFound, discord.HTTPException) as e:
-            log.info(f"Could not edit message on timeout: {type(e).__name__} - {e}")
+            log.info("Could not edit message on timeout: %s - %s", type(e).__name__, e)
 
     @discord.ui.button(label="Accept Terms", style=discord.ButtonStyle.green, emoji="✅")
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -81,5 +81,5 @@ class AcceptView(discord.ui.View):
             else:
                 await interaction.response.edit_message(embed=accepted_embed, view=self)
         except (discord.NotFound, discord.HTTPException) as e:
-            log.info(f"Could not edit message on accept: {type(e).__name__} - {e}")
+            log.info("Could not edit message on accept: %s - %s", type(e).__name__, e)
             await interaction.response.send_message(embed=accepted_embed, ephemeral=True)
