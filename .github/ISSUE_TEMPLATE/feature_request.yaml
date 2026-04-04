@@ -32,6 +32,7 @@ body:
         - plaguegame
         - pokemon
         - redupdate
+        - slashhelpmenu
         - themoviedb
         - vanish
     validations:

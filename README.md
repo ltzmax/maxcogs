@@ -59,6 +59,8 @@ To install any cog you want:
     - This is pokemon related stuff cog.
 - RedUpdate
     - Update your bot to latest dev/stable changes.
+- SlashHelpMenu
+    - A simple help menu that shows all available slash commands grouped by their cog names.
 - TechNews
     - Auto posts new articles from Wccftech to a specified channel in your server.
 - TheMovieDB
