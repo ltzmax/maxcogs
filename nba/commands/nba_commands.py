@@ -171,7 +171,7 @@ class NBACommands:
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
                 mention_author=False,
             )
-        if role.is_default() or role.is_everyone:
+        if role.is_default():
             return await ctx.send(
                 "Please choose a specific role to ping, not `@everyone` or `@here`.",
                 reference=ctx.message.to_reference(fail_if_not_exists=False),
