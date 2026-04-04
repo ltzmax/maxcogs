@@ -138,7 +138,7 @@ class Enforce(commands.Cog):
             description = raw_desc.format(tos_url=tos_url, privacy_url=privacy_url)
         except KeyError as e:
             log.error(
-                "prompt_description is missing placeholder %s — falling back to raw text. "
+                "prompt_description is missing placeholder %s falling back to raw text. "
                 "Use {tos_url} and {privacy_url} in your description.", e,
             )
             description = raw_desc
