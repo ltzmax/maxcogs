@@ -56,6 +56,7 @@ log = getLogger("red.maxcogs.nba")
 # - Add a pre embed when game(s) are done playing for the day,
 # with a recap of the day's results (if we can get that data) and a lookahead at the next day's schedule.
 
+
 class NBA(NBACommands, commands.Cog):
     """
     NBA information cog.
