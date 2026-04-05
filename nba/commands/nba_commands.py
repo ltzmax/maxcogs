@@ -453,6 +453,7 @@ class NBACommands:
         """
         await ctx.typing()
         try:
+
             def _fetch():
                 return playoffpicture.PlayoffPicture(
                     timeout=30, headers=NBA_STATS_HEADERS

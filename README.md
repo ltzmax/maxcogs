@@ -24,7 +24,7 @@ To install any cog you want:
 [p]cog install maxcogs <cog name you want>
 ```
 ---------------------------------------------------------------
-## Cogs on this repo: 
+## Cogs on this repo:
 - Autopublisher
     - Automatically publish messages in news channels
 - Counting
