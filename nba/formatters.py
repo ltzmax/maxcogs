@@ -25,7 +25,7 @@ SOFTWARE.
 import math
 from datetime import datetime, timezone
 from itertools import islice
-from typing import List, Optional
+from typing import Optional
 
 import discord
 from redbot.core import commands
@@ -36,9 +36,9 @@ from .converter import get_leaders_info, get_time_bounds, parse_duration, period
 
 async def build_schedule_embeds(
     ctx: commands.Context,
-    games: List[dict],
+    games: list[dict],
     team: Optional[str],
-) -> List[discord.Embed]:
+) -> list[discord.Embed]:
     """Build paginated embeds for upcoming NBA schedule."""
     # NBA season typically runs from October to June, with the offseason in July, August, and September.
     now = datetime.now()
@@ -71,9 +71,7 @@ async def build_schedule_embeds(
         )
         for game in islice(games, i, i + 6):
             arena_info = game.get("arena", "Unknown")
-            city_info = (
-                f"{game.get('arena_city', 'Unknown')}, " f"{game.get('arenastate', 'Unknown')}"
-            )
+            city_info = f"{game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}"
             embed.add_field(
                 name=f"{game['home_team']} vs {game['away_team']}",
                 value=(
@@ -85,7 +83,7 @@ async def build_schedule_embeds(
                 inline=False,
             )
         embed.set_footer(
-            text=(f"Page {i // 6 + 1}/{math.ceil(len(games) / 6)}" " | 🏀Provided by NBA.com")
+            text=(f"Page {i // 6 + 1}/{math.ceil(len(games) / 6)} | 🏀Provided by NBA.com")
         )
         pages.append(embed)
     return pages
@@ -93,9 +91,9 @@ async def build_schedule_embeds(
 
 async def build_scoreboard_embeds(
     ctx: commands.Context,
-    games: List[dict],
+    games: list[dict],
     team: Optional[str],
-) -> List[discord.Embed]:
+) -> list[discord.Embed]:
     """Build detailed paginated embeds for scoreboard."""
     if not games:
         start, end = get_time_bounds()
@@ -195,7 +193,7 @@ async def build_scoreboard_embeds(
                 or team.lower() in (g["homeTeam"]["teamName"] + g["awayTeam"]["teamName"]).lower()
             ]
         )
-        embed.set_footer(text=(f"🏀Provided by NBA.com" f" | Page {len(pages) + 1}/{total_pages}"))
+        embed.set_footer(text=(f"🏀Provided by NBA.com | Page {len(pages) + 1}/{total_pages}"))
         pages.append(embed)
 
     if not pages and team:
@@ -205,8 +203,8 @@ async def build_scoreboard_embeds(
 
 async def build_news_embeds(
     ctx: commands.Context,
-    news: List[dict],
-) -> List[discord.Embed]:
+    news: list[dict],
+) -> list[discord.Embed]:
     """Build paginated embeds for news."""
     if not news:
         await ctx.send("No news found from ESPN.")
@@ -229,7 +227,7 @@ async def build_news_embeds(
             color=await ctx.embed_color(),
         )
         embed.set_footer(
-            text=(f"🏀Provided by ESPN" f" | Page {i // 5 + 1}/{math.ceil(len(news) / 5)}")
+            text=(f"🏀Provided by ESPN | Page {i // 5 + 1}/{math.ceil(len(news) / 5)}")
         )
         pages.append(embed)
     return pages
@@ -265,7 +263,7 @@ def build_pregame_embed(
 async def build_playoff_embeds(
     ctx: commands.Context,
     data: dict,
-) -> List[discord.Embed]:
+) -> list[discord.Embed]:
     """Build paginated embeds for the NBA playoff picture from nba_api PlayoffPicture."""
     now = datetime.now()
     is_not_playoffs = (
@@ -322,7 +320,7 @@ async def build_playoff_embeds(
 async def build_standings_embeds(
     ctx: commands.Context,
     data: dict,
-) -> List[discord.Embed]:
+) -> list[discord.Embed]:
     """Build West-then-East standings embeds from ESPN standings API."""
     children = data.get("children", [])
     if not children:

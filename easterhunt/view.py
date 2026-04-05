@@ -26,6 +26,7 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core.utils.chat_formatting import header
 
+
 log = getLogger("red.maxcogs.easterhunt.view")
 
 

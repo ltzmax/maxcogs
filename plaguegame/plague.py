@@ -24,8 +24,10 @@ SOFTWARE.
 """
 
 import asyncio
+import contextlib
 import random
 from collections import Counter
+from typing import Optional
 
 import discord
 from redbot.core import Config, app_commands, bank, commands
@@ -36,6 +38,7 @@ from redbot.core.utils.predicates import ReactionPredicate
 from redbot.core.utils.views import ConfirmView
 
 from .converters import Curable, FuzzyHuman, Infectable, hundred_int
+
 
 hn = humanize_number
 
@@ -122,11 +125,6 @@ class Plague(commands.Cog):
     async def cog_unload(self):
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
-    def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad!"""
-        pre = super().format_help_for_context(ctx)
-        return f"{pre}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
-
     async def red_delete_data_for_user(self, *, requester: str, user_id: int):
         await self.config.user_from_id(user_id).clear()
 
@@ -136,10 +134,7 @@ class Plague(commands.Cog):
         userState = data["gameState"]
 
         notifications = data["notifications"]
-        if notifications:
-            notifications = "Enabled"
-        else:
-            notifications = "Disabled"
+        notifications = "Enabled" if notifications else "Disabled"
 
         if userRole == GameRole.DOCTOR:
             thumbnail = "https://max.shx.gg/6GJ6zTXmI.png"
@@ -212,7 +207,7 @@ class Plague(commands.Cog):
     async def plaguenotify(self, ctx):
         """Enable/Disable Plague Game notifications."""
         notifications = await self.config.user(ctx.author).notifications()
-        if notifications != False:
+        if notifications:
             await self.config.user(ctx.author).notifications.set(False)
             message = "You will no longer be sent Plague Game notifications."
         else:
@@ -286,7 +281,7 @@ class Plague(commands.Cog):
         """Settings for the Plague game."""
 
     @plagueset.command()
-    async def name(self, ctx, *, name: str = None):
+    async def name(self, ctx, *, name: Optional[str] = None):
         """Set's the plague's name. Leave blank to show the current name."""
         plagueName = await self.config.plagueName()
         if not name:
@@ -597,10 +592,8 @@ class Plague(commands.Cog):
 
         embed = discord.Embed(title=title, description=description)
         embed.set_footer(text=f"Use `{prefixes[-1]}plaguenotify` to disable these notifications.")
-        try:
+        with contextlib.suppress(discord.Forbidden):
             await user.send(embed=embed)
-        except discord.Forbidden:
-            pass
 
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):

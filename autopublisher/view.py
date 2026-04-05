@@ -29,10 +29,10 @@ import discord
 import pytz
 from red_commons.logging import getLogger
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import box, header, humanize_number
-from tabulate import tabulate
+from redbot.core.utils.chat_formatting import box, humanize_number
 
 from .utils import get_next_reset_times, get_owner_timezone
+
 
 log = getLogger("red.maxcogs.autopublisher.view")
 
@@ -91,7 +91,7 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Check if the user is allowed to interact."""
-        if interaction.user.id not in [self.ctx.author.id] + list(self.ctx.bot.owner_ids):
+        if interaction.user.id not in [self.ctx.author.id, *list(self.ctx.bot.owner_ids)]:
             await interaction.response.send_message(
                 "You are not allowed to use this interaction.", ephemeral=True
             )
@@ -184,13 +184,12 @@ def _build_metrics_panel(
         return f"{val / days:.1f}" if days > 0 else "N/A"
 
     import calendar
-    from datetime import datetime
     from datetime import timezone as dt_timezone
 
     now = datetime.now(owner_tz)
     days_in_month = calendar.monthrange(now.year, now.month)[1]
     day_of_year = now.timetuple().tm_yday
-    week_day = now.weekday() + 1
+    now.weekday() + 1
 
     weekly_avg = rate(weekly, 7)
     monthly_avg = rate(monthly, days_in_month)
@@ -207,7 +206,7 @@ def _build_metrics_panel(
         return FILL * filled + EMPTY * (BAR_WIDTH - filled)
 
     pct_weekly_of_monthly = f"{(weekly / monthly * 100):.1f}%" if monthly else "N/A"
-    pct_yearly_of_total = f"{(yearly  / total   * 100):.1f}%" if total else "N/A"
+    pct_yearly_of_total = f"{(yearly / total * 100):.1f}%" if total else "N/A"
 
     last_pub = "Never"
     if last_count_time:
@@ -265,7 +264,7 @@ class MetricsView(discord.ui.LayoutView):
         self.cog = cog
         self.ctx: commands.Context | None = None
         self.message: discord.Message | None = None
-        self.owner_tz: "pytz.timezone | None" = None
+        self.owner_tz: pytz.timezone | None = None
 
         self.refresh_button = discord.ui.Button(
             label="Refresh", style=discord.ButtonStyle.green, emoji="🔄"
@@ -317,7 +316,7 @@ class MetricsView(discord.ui.LayoutView):
         self.add_item(self.container)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id not in [self.ctx.author.id] + list(self.ctx.bot.owner_ids):
+        if interaction.user.id not in [self.ctx.author.id, *list(self.ctx.bot.owner_ids)]:
             await interaction.response.send_message(
                 "You are not allowed to use this interaction.", ephemeral=True
             )

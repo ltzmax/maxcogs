@@ -30,6 +30,7 @@ from red_commons.logging import getLogger
 
 from .converter import PLAYBYPLAY
 
+
 log = getLogger("red.maxcogs.nba.view")
 
 
@@ -65,14 +66,13 @@ class PlayByPlay(discord.ui.View):
     async def view_play_by_play(self, interaction: discord.Interaction, button: discord.ui.Button):
         url = f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{self.game_id}.json"
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    if response.status != 200:
-                        return await interaction.response.send_message(
-                            f"Failed to fetch play-by-play data (status {response.status}).",
-                            ephemeral=True,
-                        )
-                    play_by_play_data = await response.json()
+            async with aiohttp.ClientSession() as session, session.get(url) as response:
+                if response.status != 200:
+                    return await interaction.response.send_message(
+                        f"Failed to fetch play-by-play data (status {response.status}).",
+                        ephemeral=True,
+                    )
+                play_by_play_data = await response.json()
         except aiohttp.ClientError as e:
             log.error("Network error fetching play-by-play for game %s: %s", self.game_id, e)
             return await interaction.response.send_message(

@@ -37,6 +37,7 @@ from redbot.core.bot import Red
 from .utils import ChannelOrThread, _can_post
 from .views import NewsLayout
 
+
 log = getLogger("red.maxcogs.technews")
 
 

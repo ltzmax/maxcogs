@@ -28,6 +28,7 @@ from datetime import datetime, timezone
 import pytz
 from red_commons.logging import getLogger
 
+
 log = getLogger("red.maxcogs.nba.converter")
 
 TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"

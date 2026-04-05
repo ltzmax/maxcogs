@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import contextlib
 import json
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import aiosqlite
 import discord
@@ -81,12 +82,10 @@ class Database:
         async with self.conn.cursor() as cursor:
             for query in queries:
                 await cursor.execute(query)
-            try:
+            with contextlib.suppress(Exception):
                 await cursor.execute(
                     "ALTER TABLE users ADD COLUMN active_job_type TEXT DEFAULT NULL"
                 )
-            except Exception:
-                pass
             await self.conn.commit()
 
     async def ensure_user(self, user_id: int):
@@ -112,7 +111,7 @@ class Database:
             )
         await self.conn.commit()
 
-    async def get_eggs(self, user_id: int) -> Dict[str, int]:
+    async def get_eggs(self, user_id: int) -> dict[str, int]:
         await self.ensure_user(user_id)
         async with self.conn.cursor() as cursor:
             await cursor.execute(
@@ -148,21 +147,21 @@ class Database:
             )
         await self.conn.commit()
 
-    async def get_pity_counters(self, user_id: int) -> Dict[str, int]:
+    async def get_pity_counters(self, user_id: int) -> dict[str, int]:
         json_str = await self.get_user_field(user_id, "pity_counter_json")
         return orjson.loads(json_str)
 
-    async def set_pity_counters(self, user_id: int, data: Dict[str, int]):
+    async def set_pity_counters(self, user_id: int, data: dict[str, int]):
         await self.set_user_field(user_id, "pity_counter_json", json.dumps(data))
 
-    async def get_achievements(self, user_id: int) -> Dict[str, bool]:
+    async def get_achievements(self, user_id: int) -> dict[str, bool]:
         json_str = await self.get_user_field(user_id, "achievements_json")
         return orjson.loads(json_str)
 
-    async def set_achievements(self, user_id: int, data: Dict[str, bool]):
+    async def set_achievements(self, user_id: int, data: dict[str, bool]):
         await self.set_user_field(user_id, "achievements_json", json.dumps(data))
 
-    async def get_egg_images(self) -> Dict[str, str]:
+    async def get_egg_images(self) -> dict[str, str]:
         async with self.conn.cursor() as cursor:
             await cursor.execute("SELECT egg_type, image_url FROM egg_images")
             rows = await cursor.fetchall()
@@ -184,7 +183,7 @@ class Database:
             await cursor.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
         await self.conn.commit()
 
-    async def get_stale_active_users(self) -> List[Tuple[int, float]]:
+    async def get_stale_active_users(self) -> list[tuple[int, float]]:
         async with self.conn.cursor() as cursor:
             await cursor.execute("SELECT user_id, last_work FROM users WHERE active_work = 1")
             return await cursor.fetchall()
@@ -201,21 +200,23 @@ class Database:
             await cursor.execute("DELETE FROM egg_images")
         await self.conn.commit()
 
-    async def get_leaderboard_data(self) -> List[Tuple[int, int]]:
+    async def get_leaderboard_data(self) -> list[tuple[int, int]]:
         async with self.conn.cursor() as cursor:
-            await cursor.execute("""
+            await cursor.execute(
+                """
                 SELECT user_id, SUM(count) as total
                 FROM user_eggs
                 WHERE egg_type IN ('common', 'silver', 'gold')
                 GROUP BY user_id
                 HAVING total > 0
                 ORDER BY total DESC
-                """)
+                """
+            )
             return await cursor.fetchall()
 
     async def find_target_player(
         self, user_id: int, guild
-    ) -> Tuple[Optional[discord.Member], Optional[str]]:
+    ) -> tuple[Optional[discord.Member], Optional[str]]:
         """Find a random guild member with eggs to steal from, excluding the requesting user."""
         potential_targets = []
         async with self.conn.cursor() as cursor:

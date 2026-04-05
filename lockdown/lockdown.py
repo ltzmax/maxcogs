@@ -23,13 +23,14 @@ SOFTWARE.
 """
 
 import re
-from typing import Any, Final, Optional, Tuple, Union
+from typing import Any, Final, Optional
 
 import discord
 from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
 
 from .view import UnlockView
+
 
 logger = getLogger("red.maxcogs.lockdown")
 
@@ -153,7 +154,7 @@ class Lockdown(commands.Cog):
         reason: Optional[str],
         role: Optional[discord.Role],
         guild: discord.Guild,
-    ) -> Tuple[Optional[str], Optional[discord.Role]]:
+    ) -> tuple[Optional[str], Optional[discord.Role]]:
         if reason and role is None:
             mentions = re.findall(r"<@&(\d+)>", reason)
             if mentions:

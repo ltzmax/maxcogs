@@ -28,7 +28,7 @@ import logging
 import re
 import typing
 from datetime import datetime, timezone
-from typing import Final, List, Optional
+from typing import Final, Optional
 from urllib.parse import urlparse
 
 import aiohttp
@@ -41,6 +41,7 @@ from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import escape, pagify
 
 from .converters import ExplicitNone
+
 
 log = logging.getLogger("red.maxcogs.github")
 
@@ -69,7 +70,7 @@ class GitHub(commands.Cog):
     """
 
     __version__: Final[str] = "1.0.1"
-    __author__: Final[List[str]] = ["MAX", "Obi-Wan3"]
+    __author__: Final[list[str]] = ["MAX", "Obi-Wan3"]
     __docs__: Final[str] = "https://cogs.maxapp.tv/"
 
     def __init__(self, bot):
@@ -523,7 +524,7 @@ class GitHub(commands.Cog):
         if not feeds_string:
             return await ctx.send("No GitHub RSS feeds have been set up in this server yet.")
 
-        embeds: typing.List[discord.Embed] = []
+        embeds: list[discord.Embed] = []
         for page in pagify(feeds_string, delims=["\n\n"]):
             embeds.append(discord.Embed(description=page, color=await ctx.embed_color()))
 
@@ -536,13 +537,11 @@ class GitHub(commands.Cog):
         """View the server settings for GitHub."""
         settings = await self.config.guild(ctx.guild).all()
 
-        if channel := settings["channel"]:
-            if not (channel := ctx.guild.get_channel(channel)):
-                channel = None
+        channel_id = settings["channel"]
+        channel = ctx.guild.get_channel(channel_id) if channel_id else None
 
-        if role := settings["role"]:
-            if not (role := ctx.guild.get_role(role)):
-                role = None
+        role_id = settings["role"]
+        role = ctx.guild.get_role(role_id) if role_id else None
 
         return await ctx.send(
             embed=discord.Embed(
@@ -585,7 +584,7 @@ class GitHub(commands.Cog):
         ctx: commands.Context,
         entries: typing.Optional[int],
         url: str,
-        branch: str = None,
+        branch: Optional[str] = None,
     ):
         """Test out fetching a GitHub repository url."""
 
@@ -644,7 +643,6 @@ class GitHub(commands.Cog):
 
         # Set user config
         async with self.config.member(ctx.author).feeds() as feeds:
-
             # Checks
             if name in feeds:
                 return await ctx.send("There is already a feed with that name!")
@@ -744,7 +742,7 @@ class GitHub(commands.Cog):
                 f"No feeds found. Try adding one with `{ctx.clean_prefix}github add`!"
             )
 
-        embeds: typing.List[discord.Embed] = []
+        embeds: list[discord.Embed] = []
         for page in pagify(feeds_string):
             embeds.append(discord.Embed(description=page, color=await ctx.embed_color()))
 
@@ -755,7 +753,6 @@ class GitHub(commands.Cog):
     async def _do_rss_check(self, guild_to_check: Optional[int] = None) -> None:
         # Loop through each guild
         for guild_id, guild_config in (await self.config.all_guilds()).items():
-
             # Check for single guild
             if guild_to_check and guild_id != guild_to_check:
                 continue
@@ -778,7 +775,6 @@ class GitHub(commands.Cog):
             async for member_id, member_data in AsyncIter(
                 (await self.config.all_members(guild)).items(), steps=100
             ):
-
                 # Loop through each feed
                 for name, feed in member_data["feeds"].items():
                     try:
@@ -799,16 +795,14 @@ class GitHub(commands.Cog):
                             timestamp=guild_config["timestamp"],
                             short=guild_config["short"],
                         ):
-
                             # Get channel (guild vs feed override)
                             ch = channel
-                            if feed["channel"]:
-                                if not (
-                                    (ch := guild.get_channel(feed["channel"]))
-                                    and ch.permissions_for(guild.me).send_messages
-                                    and ch.permissions_for(guild.me).embed_links
-                                ):
-                                    ch = None
+                            if feed["channel"] and not (
+                                (ch := guild.get_channel(feed["channel"]))
+                                and ch.permissions_for(guild.me).send_messages
+                                and ch.permissions_for(guild.me).embed_links
+                            ):
+                                ch = None
 
                             # Send feed embed
                             if ch:

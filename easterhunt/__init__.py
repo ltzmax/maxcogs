@@ -3,6 +3,7 @@ from redbot.core.utils import get_end_user_data_statement
 
 from .easterhunt import EasterHunt
 
+
 __red_end_user_data_statement__ = get_end_user_data_statement(__file__)
 
 

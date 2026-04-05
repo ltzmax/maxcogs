@@ -32,6 +32,7 @@ from redbot.core.utils.views import ConfirmView
 
 from .view import ForkURLView, RestartButton
 
+
 log = getLogger("red.maxcogs.redupdate")
 _STABLE_PACKAGE: Final[str] = "Red-DiscordBot"
 _DEV_PACKAGE: Final[str] = (

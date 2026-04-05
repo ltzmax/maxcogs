@@ -36,6 +36,7 @@ from ..converters import Generation
 from ..image import generate_image
 from ..views import HintView, WhosThatPokemonView
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.commands.whosthatpokemon")
 
 

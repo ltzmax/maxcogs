@@ -26,6 +26,7 @@ from typing import Union
 
 import discord
 
+
 # Type alias for supported destinations
 ChannelOrThread = Union[discord.TextChannel, discord.Thread]
 

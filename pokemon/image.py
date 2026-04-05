@@ -32,6 +32,7 @@ from PIL import Image
 from red_commons.logging import getLogger
 from redbot.core.data_manager import bundled_data_path
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.image")
 _DEFAULT_TIMEOUT = aiohttp.ClientTimeout(total=15)
 

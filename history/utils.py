@@ -28,6 +28,7 @@ import aiohttp
 import orjson
 from red_commons.logging import getLogger
 
+
 log = getLogger("red.maxcogs.history.utils")
 DEFAULT_ERA_NOTATION = "BC"
 _CIRCA_PREFIXES: tuple[str, ...] = ("circa", "c.", "ca.", "approximately")
@@ -73,11 +74,13 @@ def format_year(year: int | str | None) -> str:
         return (
             f"c. {formatted_year}"
             if is_circa
-            else formatted_year if year_int != 0 else "Unknown Year"
+            else formatted_year
+            if year_int != 0
+            else "Unknown Year"
         )
 
     except (ValueError, TypeError) as e:
-        log.error(f"Failed to format year '{year}': {str(e)}")
+        log.error(f"Failed to format year '{year}': {e!s}")
         return "Unknown Year"
 
 
@@ -96,7 +99,7 @@ async def fetch_events(
                 return data.get("events", [])
             except orjson.JSONDecodeError as e:
                 log.error(f"Failed to decode API response for {month}/{day}: {e}")
-                raise ValueError("Error processing history data from Wikimedia.")
+                raise ValueError("Error processing history data from Wikimedia.") from e
     except aiohttp.ClientError as e:
         log.error(f"Network error fetching events for {month}/{day}: {e}", exc_info=True)
         raise ValueError(f"Network error while fetching history data: {e}") from e

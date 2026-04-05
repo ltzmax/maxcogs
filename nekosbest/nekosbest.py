@@ -23,18 +23,19 @@ SOFTWARE.
 """
 
 import logging
-from typing import Any, Dict, Final, Literal, Optional
+from typing import Any, Final, Literal, Optional
 
 import aiohttp
 import discord
 import orjson
-from redbot.core import Config, app_commands, commands
+from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_number
 from redbot.core.utils.views import ConfirmView
 
 from .core import ACTIONS, ICON, NEKOS
 from .view import ImageButtonView
+
 
 log = logging.getLogger("red.maxcogs.nekosbest")
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
@@ -68,21 +69,21 @@ class NekosBest(commands.Cog):
     async def red_get_data_for_user(self, *, user_id: int):
         return
 
-    async def _api_call(self, ctx: commands.Context, endpoint: str) -> Optional[Dict[str, Any]]:
+    async def _api_call(self, ctx: commands.Context, endpoint: str) -> Optional[dict[str, Any]]:
         async with self.session.get(NEKOS + endpoint) as response:
             if response.status != 200:
                 log.error(
-                    "Something went wrong while trying to contact API. " "Status code: %s",
+                    "Something went wrong while trying to contact API. Status code: %s",
                     response.status,
                 )
                 return await ctx.send(
-                    "Something went wrong while trying to contact API. " "Please try again later.",
+                    "Something went wrong while trying to contact API. Please try again later.",
                 )
             data = await response.read()
             return orjson.loads(data)
 
     async def imgembedgen(
-        self, ctx: commands.Context, response: Dict[str, Any], category: str
+        self, ctx: commands.Context, response: dict[str, Any], category: str
     ) -> None:
         data = response["results"][0]
         artist = data["artist_name"]
@@ -143,7 +144,7 @@ class NekosBest(commands.Cog):
             ),
         )
         emb.set_image(url=url["results"][0]["url"])
-        emb.set_footer(text=f"Powered by nekos.best", icon_url=ICON)
+        emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
         await ctx.send(embed=emb)
 
     # -------- image Commands ------->

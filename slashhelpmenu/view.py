@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import contextlib
+
 import discord
 
 
@@ -57,8 +59,6 @@ class HelpView(discord.ui.View):
         self._update_buttons()
         try:
             await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
-        except (discord.NotFound, discord.InteractionResponded):
-            pass
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.blurple)
     async def next_button(
@@ -68,8 +68,6 @@ class HelpView(discord.ui.View):
         self._update_buttons()
         try:
             await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
-        except (discord.NotFound, discord.InteractionResponded):
-            pass
 
     @discord.ui.button(label="Close", style=discord.ButtonStyle.red)
     async def close_button(

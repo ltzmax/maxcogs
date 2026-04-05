@@ -31,6 +31,7 @@ from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
 from redbot.core.utils.views import SetApiView
 
+
 logger = getLogger("red.maxcogs.currency")
 
 _CURRENCY_ALIASES: dict[str, str] = {
@@ -183,7 +184,7 @@ class Currency(commands.Cog):
         except ValueError as e:
             logger.error(f"Conversion error: {e}", exc_info=True)
             await interaction.followup.send(
-                f"Failed to fetch exchange rate data. Please try again later.",
+                "Failed to fetch exchange rate data. Please try again later.",
                 ephemeral=True,
             )
         except discord.HTTPException as e:

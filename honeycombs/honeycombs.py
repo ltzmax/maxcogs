@@ -39,6 +39,7 @@ from redbot.core.utils.views import ConfirmView, SimpleMenu
 from .bank_utils import safe_deposit, safe_withdraw
 from .view import HoneycombView
 
+
 log = logging.getLogger("red.maxcogs.honeycombs")
 
 MAGIC_BYTES: dict[bytes, str] = {
@@ -376,7 +377,7 @@ class HoneyCombs(commands.Cog):
         if not game_state.players:
             return await ctx.send("No ongoing game found.")
 
-        player_list = [f"Player {number}" for number in game_state.players.keys()]
+        player_list = [f"Player {number}" for number in game_state.players]
         pages = ["\n".join(player_list[i : i + 10]) for i in range(0, len(player_list), 10)]
         await SimpleMenu(
             pages,

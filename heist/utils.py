@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import datetime
-from typing import Dict
 
 
 def fmt(s: str) -> str:
@@ -31,7 +30,7 @@ def fmt(s: str) -> str:
     return s.replace("_", " ").title()
 
 
-ITEMS: Dict[str, tuple] = {
+ITEMS: dict[str, tuple] = {
     "wooden_shield": (
         "🛡️",
         {"type": "shield", "cost": 3000, "reduction": 0.03, "duration_hours": 24},
@@ -185,7 +184,7 @@ ITEMS: Dict[str, tuple] = {
     ),
 }
 
-RECIPES: Dict[str, dict] = {
+RECIPES: dict[str, dict] = {
     "reinforced_wooden_shield": {
         "materials": {"scrap_metal": 5},
         "result": "reinforced_wooden_shield",
@@ -273,7 +272,7 @@ RECIPES: Dict[str, dict] = {
     },
 }
 
-HEISTS: Dict[str, dict] = {
+HEISTS: dict[str, dict] = {
     "pocket_steal": {
         "emoji": "🕶️",
         "risk": 0.01,

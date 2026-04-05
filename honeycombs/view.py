@@ -29,6 +29,7 @@ from typing import Optional
 import discord
 from redbot.core import bank
 
+
 log = logging.getLogger("red.maxcogs.honeycombs.view")
 
 

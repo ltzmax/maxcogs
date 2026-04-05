@@ -24,8 +24,7 @@ SOFTWARE.
 
 import asyncio
 import datetime
-from operator import itemgetter
-from typing import Dict, Final, List, Optional
+from typing import Final, Optional
 
 import aiohttp
 import discord
@@ -34,6 +33,7 @@ from discord.ext import tasks
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
 
 logger = getLogger("red.maxcogs.earthquake")
 
@@ -73,7 +73,7 @@ class Earthquake(commands.Cog):
         """No user data to delete."""
         pass
 
-    async def get_guild_settings(self) -> Dict[int, Dict]:
+    async def get_guild_settings(self) -> dict[int, dict]:
         """Cache guild settings to reduce config calls."""
         return {guild.id: await self.config.guild(guild).all() for guild in self.bot.guilds}
 
@@ -85,7 +85,7 @@ class Earthquake(commands.Cog):
             f"Retrying USGS fetch (attempt {retry_state.attempt_number})"
         ),
     )
-    async def fetch_earthquakes(self, min_magnitude: float = 1.0) -> List[Dict]:
+    async def fetch_earthquakes(self, min_magnitude: float = 1.0) -> list[dict]:
         # Validate min_magnitude
         try:
             min_magnitude = float(min_magnitude)
@@ -172,7 +172,7 @@ class Earthquake(commands.Cog):
                     magnitude = earthquake["properties"].get("mag")
                     if magnitude is None or magnitude < min_magnitude:
                         continue
-                    send_time = datetime.datetime.now(datetime.timezone.utc)
+                    datetime.datetime.now(datetime.timezone.utc)
                     await self.post_earthquake(guild, channel, earthquake)
 
         except asyncio.CancelledError:
@@ -274,23 +274,20 @@ class Earthquake(commands.Cog):
         )
 
         sent = False
-        if use_webhook:
-            if channel.permissions_for(guild.me).manage_webhooks:
-                wh = await self.get_or_create_webhook(channel)
-                if wh:
-                    try:
-                        await wh.send(
-                            content=content,
-                            embed=embed,
-                            username=self.bot.user.name,
-                            avatar_url=(
-                                str(self.bot.user.avatar) if self.bot.user.avatar else None
-                            ),
-                            allowed_mentions=discord.AllowedMentions(roles=True),
-                        )
-                        sent = True
-                    except (discord.Forbidden, discord.HTTPException) as e:
-                        logger.error(f"Failed to send via webhook in {guild.name}: {e}")
+        if use_webhook and channel.permissions_for(guild.me).manage_webhooks:
+            wh = await self.get_or_create_webhook(channel)
+            if wh:
+                try:
+                    await wh.send(
+                        content=content,
+                        embed=embed,
+                        username=self.bot.user.name,
+                        avatar_url=(str(self.bot.user.avatar) if self.bot.user.avatar else None),
+                        allowed_mentions=discord.AllowedMentions(roles=True),
+                    )
+                    sent = True
+                except (discord.Forbidden, discord.HTTPException) as e:
+                    logger.error(f"Failed to send via webhook in {guild.name}: {e}")
 
         if not sent:
             if (
@@ -411,7 +408,7 @@ class Earthquake(commands.Cog):
         )
 
     @earthquakeset.command(name="safety")
-    async def set_safety_message(self, ctx: commands.Context, *, message: str = None):
+    async def set_safety_message(self, ctx: commands.Context, *, message: Optional[str] = None):
         """Set or clear a custom safety message for alerts."""
         if message:
             if message and len(message) > 1024:

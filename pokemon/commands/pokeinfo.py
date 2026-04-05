@@ -29,6 +29,7 @@ from ..api import API_URL, fetch_data
 from ..formatters import create_pokemon_embed
 from ..views import PokemonView
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.commands.pokeinfo")
 
 

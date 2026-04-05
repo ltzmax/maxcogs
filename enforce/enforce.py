@@ -36,6 +36,7 @@ from redbot.core.utils.views import ConfirmView
 
 from .views import AcceptView
 
+
 log = getLogger("red.maxcogs.tosenforcer")
 
 
@@ -303,7 +304,7 @@ class Enforce(commands.Cog):
     async def accepted_count(self, ctx: commands.Context) -> None:
         """Show how many users have accepted the ToS."""
         all_users = await self.config.all_users()
-        total = len(all_users)
+        len(all_users)
         member_count = len(self.bot.users)
         accepted = sum(1 for u in all_users.values() if u.get("accepted_tos", False))
         await ctx.send(

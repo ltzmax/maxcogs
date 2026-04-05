@@ -35,6 +35,7 @@ from redbot.core.utils.menus import SimpleMenu
 
 from .utils import fetch_events, format_year
 
+
 log = getLogger("red.maxcogs.history")
 WIKIPEDIA_LOGO = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
 
@@ -146,7 +147,7 @@ class History(commands.Cog):
             events: list[dict[str, Any]] = await fetch_events(self.session, month_str, day_str)
         except ValueError as e:
             log.error(
-                f"Failed to fetch events for {month_str}/{day_str}: {str(e)}",
+                f"Failed to fetch events for {month_str}/{day_str}: {e!s}",
                 exc_info=True,
             )
             return await ctx.send(

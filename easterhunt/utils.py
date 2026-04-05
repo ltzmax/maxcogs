@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import random
-from typing import Dict, Tuple
 
 import discord
 
@@ -54,7 +53,7 @@ async def update_hunt_streak(db, user_id: int, current_time: float) -> int:
 
 async def calculate_hunt_probabilities(
     db, user_id: int, current_streak: int
-) -> Tuple[Dict[str, int], Dict[str, int], bool, bool]:
+) -> tuple[dict[str, int], dict[str, int], bool, bool]:
     """Calculate adjusted probabilities with pity and streak bonuses."""
     pity_counters = await db.get_pity_counters(user_id)
     eggs = await db.get_eggs(user_id)
@@ -112,7 +111,7 @@ async def process_hunt_outcome(
     db,
     user_id: int,
     result: str,
-    pity_counters: Dict[str, int],
+    pity_counters: dict[str, int],
     can_roll_legendary: bool,
     can_roll_mythical: bool,
 ) -> discord.Embed:

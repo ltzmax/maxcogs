@@ -29,6 +29,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 
+
 logger = getLogger("red.maxcogs.autopublisher.utils")
 
 

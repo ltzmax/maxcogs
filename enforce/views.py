@@ -26,6 +26,7 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import Config
 
+
 log = getLogger("red.maxcogs.enforce.views")
 
 

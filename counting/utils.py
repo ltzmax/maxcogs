@@ -30,6 +30,7 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import Config
 
+
 logger = getLogger("red.maxcogs.counting.utils")
 
 

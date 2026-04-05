@@ -27,6 +27,7 @@ from typing import Union
 import discord
 from red_commons.logging import getLogger
 
+
 log = getLogger("red.maxcogs.messageguard.utils")
 
 
@@ -168,7 +169,7 @@ async def send_log(
         current_field: list[str] = []
         field_index = 1
         for url in attachment_urls:
-            test = "\n".join(current_field + [url])
+            test = "\n".join([*current_field, url])
             if len(test) > 1024:
                 embed.add_field(
                     name=f"Attachments (Part {field_index})",

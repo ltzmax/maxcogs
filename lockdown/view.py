@@ -26,6 +26,7 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import commands
 
+
 logger = getLogger("red.maxcogs.lockdown.view")
 
 
