@@ -57,7 +57,7 @@ class HelpView(discord.ui.View):
     ) -> None:
         self.current_page -= 1
         self._update_buttons()
-        try:
+        with contextlib.suppress(discord.NotFound, discord.InteractionResponded):
             await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.blurple)
@@ -66,7 +66,7 @@ class HelpView(discord.ui.View):
     ) -> None:
         self.current_page += 1
         self._update_buttons()
-        try:
+        with contextlib.suppress(discord.NotFound, discord.InteractionResponded):
             await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
 
     @discord.ui.button(label="Close", style=discord.ButtonStyle.red)
@@ -76,10 +76,8 @@ class HelpView(discord.ui.View):
         for item in self.children:
             item.disabled = True  # type: ignore[union-attr]
         self.stop()
-        try:
+        with contextlib.suppress(discord.NotFound, discord.InteractionResponded):
             await interaction.response.edit_message(view=self)
-        except (discord.NotFound, discord.InteractionResponded):
-            pass
 
     async def on_timeout(self) -> None:
         for item in self.children:
