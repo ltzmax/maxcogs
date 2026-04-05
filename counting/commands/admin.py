@@ -71,7 +71,7 @@ class AdminCommands(commands.Cog):
         await self.settings.update_guild(ctx.guild, "channel", channel.id)
         msg = f"Counting channel set to {channel.mention}."
         if not (await self.settings.get_guild_settings(ctx.guild))["toggle"]:
-            msg += f"\nEnable counting with `{ctx.clean_prefix}countingset toggle enable`."
+            msg += f"\nEnable counting with `{ctx.clean_prefix}countingset toggle`."
         await ctx.send(msg)
 
     @countingset.command(name="toggle")
