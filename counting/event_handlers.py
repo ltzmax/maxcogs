@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import asyncio
 from datetime import datetime, timezone
 from typing import Any
 
@@ -38,6 +37,7 @@ from .utils import (
     remove_expired_roles,
     send_message,
 )
+
 
 logger = getLogger("red.maxcogs.counting.event_handlers")
 

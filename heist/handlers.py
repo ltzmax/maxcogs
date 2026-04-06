@@ -24,15 +24,15 @@ SOFTWARE.
 
 import asyncio
 import datetime
-import logging
 import random
+from typing import Optional
 
 import discord
 from red_commons.logging import getLogger
 from redbot.core import bank, errors
-from redbot.core.utils.views import ConfirmView
 
-from .utils import HEISTS, ITEMS, fmt
+from .utils import ITEMS, fmt
+
 
 log = getLogger("red.cogs.heist.handlers")
 
@@ -69,7 +69,7 @@ async def resolve_heist(
     user: discord.User,
     heist_type: str,
     channel: discord.TextChannel,
-    fallback_channel_id: int = None,
+    fallback_channel_id: Optional[int] = None,
 ):
     member = None
     try:
@@ -180,7 +180,7 @@ async def resolve_heist(
                 msg_parts.append("Failed — but your shield prevented any loss.")
 
         if used_tool:
-            msg_parts.append(f"(Used {fmt(used_tool)} → +{tool_boost*100:.0f}% success chance)")
+            msg_parts.append(f"(Used {fmt(used_tool)} → +{tool_boost * 100:.0f}% success chance)")
 
         heat += 1
         await user_config.heat.set(heat)
@@ -268,7 +268,7 @@ async def resolve_heist(
                 if fb:
                     try:
                         await fb.send(f"{member.mention} {msg}")
-                    except:
+                    except Exception:
                         log.warning("Fallback %s also failed", fallback_channel_id)
 
     except Exception as e:

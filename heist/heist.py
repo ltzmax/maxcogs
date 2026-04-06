@@ -25,7 +25,7 @@ SOFTWARE.
 import asyncio
 import datetime
 import random
-from typing import Final
+from typing import Final, Optional
 
 import discord
 from red_commons.logging import getLogger
@@ -35,6 +35,7 @@ from redbot.core.utils.views import ConfirmView
 from .handlers import resolve_heist, schedule_resolve
 from .utils import HEISTS, ITEMS, RECIPES
 from .views import HeistConfigView, HeistView, ItemPriceConfigView, ShopView
+
 
 log = getLogger("red.cogs.heist")
 
@@ -133,7 +134,9 @@ class Heist(commands.Cog):
                 del inventory[item_name]
             await self.config.user(member).inventory.set(inventory)
 
-    async def _has_active_heist(self, user: discord.Member, channel_id: int = None) -> bool:
+    async def _has_active_heist(
+        self, user: discord.Member, channel_id: Optional[int] = None
+    ) -> bool:
         active = await self.config.user(user).active_heist()
         if not active:
             return False
@@ -432,11 +435,11 @@ class Heist(commands.Cog):
             cost = await self.get_item_cost(name)
             effect = ""
             if data["type"] == "shield":
-                effect = f"Reduces loss by {data['reduction']*100:.1f}% (single use)"
+                effect = f"Reduces loss by {data['reduction'] * 100:.1f}% (single use)"
             elif data["type"] == "tool":
-                effect = f"Boosts success by {data['boost']*100:.0f}% for {data['for_heist'].replace('_', ' ').title()} (single use)"
+                effect = f"Boosts success by {data['boost'] * 100:.0f}% for {data['for_heist'].replace('_', ' ').title()} (single use)"
             elif data["type"] == "consumable":
-                effect = f"Reduces risk by {data['risk_reduction']*100:.0f}% (single use)"
+                effect = f"Reduces risk by {data['risk_reduction'] * 100:.0f}% (single use)"
             embed.add_field(
                 name=f"{emoji} {name.replace('_', ' ').title()}",
                 value=f"**Cost**: {cost:,} {currency_name}\n**Effect**: {effect}",
@@ -473,7 +476,7 @@ class Heist(commands.Cog):
         # Batch-read all heist settings in one config call instead of N calls
         _raw_settings = await self.config.heist_settings()
         heist_settings = {}
-        for name in HEISTS.keys():
+        for name in HEISTS:
             defaults = HEISTS[name]
             custom = _raw_settings.get(name, {})
             heist_settings[name] = {
@@ -523,7 +526,7 @@ class Heist(commands.Cog):
                 name=f"{data['emoji']} {name.replace('_', ' ').title()}",
                 value=(
                     f"**Reward**: {min_reward:,}-{max_reward:,} {currency_name}\n"
-                    f"**Risk**: {data['risk']*100:.0f}%\n"
+                    f"**Risk**: {data['risk'] * 100:.0f}%\n"
                     f"**Cooldown**: {cooldown_display}\n"
                     f"**Success**: {data['min_success']}-{data['max_success']}%\n"
                     f"**Duration**: {int(data['duration'].total_seconds() // 60)} min"
@@ -570,15 +573,15 @@ class Heist(commands.Cog):
             desc = ""
             is_equipped = False
             if data["type"] == "tool":
-                desc = f"Boosts {data['for_heist'].replace('_', ' ').title()} success by {data['boost']*100:.0f}% (single use)"
+                desc = f"Boosts {data['for_heist'].replace('_', ' ').title()} success by {data['boost'] * 100:.0f}% (single use)"
                 if equipped["tool"] == item:
                     is_equipped = True
             elif data["type"] == "shield":
-                desc = f"Reduces loss by {data['reduction']*100:.1f}% (single use)"
+                desc = f"Reduces loss by {data['reduction'] * 100:.1f}% (single use)"
                 if equipped["shield"] == item:
                     is_equipped = True
             elif data["type"] == "consumable":
-                desc = f"Reduces risk by {data['risk_reduction']*100:.0f}% (single use)"
+                desc = f"Reduces risk by {data['risk_reduction'] * 100:.0f}% (single use)"
                 if equipped["consumable"] == item:
                     is_equipped = True
             elif data["type"] == "loot":
@@ -676,7 +679,7 @@ class Heist(commands.Cog):
             if count > 0:
                 emoji, data = ITEMS[equipped_shield]
                 return await ctx.send(
-                    f"Active {emoji} {equipped_shield.replace('_', ' ').title()} shield: Reduces loss by {data['reduction']*100:.1f}% (single use). You have {count}."
+                    f"Active {emoji} {equipped_shield.replace('_', ' ').title()} shield: Reduces loss by {data['reduction'] * 100:.1f}% (single use). You have {count}."
                 )
         await ctx.send("No active shield.")
 
@@ -792,7 +795,7 @@ class Heist(commands.Cog):
         view.message = message
 
     @heistset.command(name="reset")
-    async def heistset_reset(self, ctx: commands.Context, heist_type: str = None):
+    async def heistset_reset(self, ctx: commands.Context, heist_type: Optional[str] = None):
         """Reset heist settings to default values.
 
         If no heist_type is provided, resets all heists.
@@ -837,7 +840,7 @@ class Heist(commands.Cog):
                 await ctx.send("Reset all heist settings to defaults.")
 
     @heistset.command(name="resetprice")
-    async def heistset_resetprice(self, ctx: commands.Context, item_name: str = None):
+    async def heistset_resetprice(self, ctx: commands.Context, item_name: Optional[str] = None):
         """Reset item prices to default values.
 
         If no item_name is provided, resets all item prices.
@@ -864,7 +867,7 @@ class Heist(commands.Cog):
 
     @heistset.command(name="show")
     @commands.bot_has_permissions(embed_links=True)
-    async def heistset_show(self, ctx: commands.Context, heist_type: str = None):
+    async def heistset_show(self, ctx: commands.Context, heist_type: Optional[str] = None):
         """Show current settings for a heist or all heists.
 
         Parameters:
@@ -920,11 +923,11 @@ class Heist(commands.Cog):
             )
             field_value = (
                 f"Reward: {reward_text}\n"
-                f"Risk: {data['risk']*100:.0f}%{' ⭐' if is_custom['risk'] else ''}\n"
+                f"Risk: {data['risk'] * 100:.0f}%{' ⭐' if is_custom['risk'] else ''}\n"
                 f"Success: {data['min_success']}-{data['max_success']}%{' ⭐' if is_custom['min_success'] or is_custom['max_success'] else ''}\n"
                 f"Cooldown: {data['cooldown'].total_seconds() / 3600:.1f}h{' ⭐' if is_custom['cooldown'] else ''}\n"
                 f"Duration: {int(data['duration'].total_seconds() // 60)} min{' ⭐' if is_custom['duration'] else ''}\n"
-                f"Police Chance: {data['police_chance']*100:.0f}%{' ⭐' if is_custom['police_chance'] else ''}\n"
+                f"Police Chance: {data['police_chance'] * 100:.0f}%{' ⭐' if is_custom['police_chance'] else ''}\n"
                 f"Jail Time: {data['jail_time'].total_seconds() / 3600:.1f}h{' ⭐' if is_custom['jail_time'] else ''}\n"
                 f"Loss: {data['min_loss']:,}-{data['max_loss']:,} credits"
             )
@@ -937,7 +940,7 @@ class Heist(commands.Cog):
 
     @heistset.command(name="showprices")
     @commands.bot_has_permissions(embed_links=True)
-    async def heistset_showprices(self, ctx: commands.Context, item_name: str = None):
+    async def heistset_showprices(self, ctx: commands.Context, item_name: Optional[str] = None):
         """Show current prices for an item or all shop items.
 
         Parameters:

@@ -33,6 +33,7 @@ from redbot.core.bot import Red
 
 from .view import HelpView
 
+
 log = logging.getLogger("red.maxcogs.slashhelpmenu")
 
 _TITLE = "Available Slash Commands"
@@ -249,7 +250,7 @@ class SlashHelpMenu(commands.Cog):
                 if len(joined) > 1024:
                     current_chunk: list[str] = []
                     for mention in mentions:
-                        candidate = " ".join(current_chunk + [mention])
+                        candidate = " ".join([*current_chunk, mention])
                         if len(candidate) > 1024:
                             field_parts.append(" ".join(current_chunk))
                             current_chunk = [mention]

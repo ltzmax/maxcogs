@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import asyncio
-import re
 from asyncio import Lock
 from collections import defaultdict
 from typing import Any, Final
@@ -54,6 +53,7 @@ from .utils import (
     send_restrict_warning,
     send_spoiler_warning,
 )
+
 
 log = getLogger("red.maxcogs.messageguard")
 
@@ -303,35 +303,37 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
         if cfg.get("ns_enabled") and "content" in payload.data:
             author_id = int(payload.data.get("author", {}).get("id", 0))
             author = guild.get_member(author_id) or self.bot.get_user(author_id)
-            if author and not author.bot and not await self.bot.is_automod_immune(author):
-                if SPOILER_REGEX.search(payload.data.get("content", "")):
-                    if can_moderate(channel, guild.me):
-                        try:
-                            message = discord.Message(
-                                state=channel._state,
-                                channel=channel,
-                                data=payload.data,
-                            )
-                            if cfg.get("ns_spoiler_warn"):
-                                await send_spoiler_warning(
-                                    message,
-                                    cfg.get("ns_spoiler_warn_message", NS_DEFAULT_WARNING),
-                                    cfg.get("ns_timeout", 10),
-                                    cfg.get("ns_use_embed", False),
-                                    await self.bot.get_embed_color(channel),
-                                )
-                            await message.delete()
-                            if cfg.get("ns_log_enabled") and cfg.get("ns_log_channel"):
-                                await send_log(
-                                    message,
-                                    "NoSpoiler",
-                                    await self.bot.get_embed_color(channel),
-                                    cfg["ns_log_channel"],
-                                )
-                        except (discord.Forbidden, discord.NotFound, discord.HTTPException) as e:
-                            log.error(
-                                "[NoSpoiler] Edit handler failed for %s: %s", payload.message_id, e
-                            )
+            if (
+                author
+                and not author.bot
+                and not await self.bot.is_automod_immune(author)
+                and SPOILER_REGEX.search(payload.data.get("content", ""))
+                and can_moderate(channel, guild.me)
+            ):
+                try:
+                    message = discord.Message(
+                        state=channel._state,
+                        channel=channel,
+                        data=payload.data,
+                    )
+                    if cfg.get("ns_spoiler_warn"):
+                        await send_spoiler_warning(
+                            message,
+                            cfg.get("ns_spoiler_warn_message", NS_DEFAULT_WARNING),
+                            cfg.get("ns_timeout", 10),
+                            cfg.get("ns_use_embed", False),
+                            await self.bot.get_embed_color(channel),
+                        )
+                    await message.delete()
+                    if cfg.get("ns_log_enabled") and cfg.get("ns_log_channel"):
+                        await send_log(
+                            message,
+                            "NoSpoiler",
+                            await self.bot.get_embed_color(channel),
+                            cfg["ns_log_channel"],
+                        )
+                except (discord.Forbidden, discord.NotFound, discord.HTTPException) as e:
+                    log.error("[NoSpoiler] Edit handler failed for %s: %s", payload.message_id, e)
 
         rp_channels = cfg.get("rp_channel_ids", [])
         if rp_channels and payload.channel_id in rp_channels:

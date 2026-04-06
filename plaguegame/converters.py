@@ -34,8 +34,8 @@ from unidecode import unidecode
 def hundred_int(arg: str):
     try:
         ret = int(arg)
-    except ValueError:
-        raise BadArgument(f"{inline(arg)} is not an integer.")
+    except ValueError as err:
+        raise BadArgument(f"{inline(arg)} is not an integer.") from err
     if ret < 1 or ret > 100:
         raise BadArgument(f"{inline(arg)} must be an integer between 1 and 100.")
     return ret
@@ -50,7 +50,7 @@ class FuzzyMember(MemberConverter):
     async def convert(self, ctx: commands.Context, argument: str) -> discord.Role:
         try:
             member = await super().convert(ctx, argument)
-        except BadArgument:
+        except BadArgument as err:
             guild = ctx.guild
             result = [
                 (m[2], m[1])
@@ -62,7 +62,9 @@ class FuzzyMember(MemberConverter):
                 )
             ]
             if not result:
-                raise BadArgument(f'Member "{argument}" not found.' if self.response else None)
+                raise BadArgument(
+                    f'Member "{argument}" not found.' if self.response else None
+                ) from err
 
             sorted_result = sorted(result, key=lambda r: r[1], reverse=True)
             member = sorted_result[0][0]
@@ -89,9 +91,9 @@ class Infectable(FuzzyHuman):
                 f"**{member.name}** is already infected with {game_data['plagueName']}."
             )
         elif data["gameRole"] == "Doctor":
-            raise BadArgument(f"You cannot infect a Doctor!")
+            raise BadArgument("You cannot infect a Doctor!")
         elif data["gameRole"] == "God":
-            raise BadArgument(f"Don't mess with God.")
+            raise BadArgument("Don't mess with God.")
         return member
 
 
@@ -104,7 +106,7 @@ class Curable(FuzzyHuman):
         if data["gameState"] == "healthy":
             raise BadArgument(f"**{member.name}** is already healthy.")
         elif data["gameRole"] == "Plaguebearer":
-            raise BadArgument(f"You cannot cure a Plaguebearer!")
+            raise BadArgument("You cannot cure a Plaguebearer!")
         elif data["gameRole"] == "God":
-            raise BadArgument(f"Don't mess with God.")
+            raise BadArgument("Don't mess with God.")
         return member

@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import asyncio
+import contextlib
 import random
 import time
 from datetime import datetime, timedelta
@@ -42,6 +43,7 @@ from ..utils import (
     update_hunt_streak,
 )
 from ..view import EasterWork
+
 
 log = getLogger("red.maxcogs.easterhunt")
 
@@ -105,9 +107,12 @@ class UserCommands(commands.Cog):
             event_task = asyncio.create_task(self.send_hunt_events(ctx.channel, user))
             await asyncio.sleep(60)
             current_streak = await update_hunt_streak(self.db, user.id, current_time)
-            adjusted_chances, pity_counters, can_roll_legendary, can_roll_mythical = (
-                await calculate_hunt_probabilities(self.db, user.id, current_streak)
-            )
+            (
+                adjusted_chances,
+                pity_counters,
+                can_roll_legendary,
+                can_roll_mythical,
+            ) = await calculate_hunt_probabilities(self.db, user.id, current_streak)
             outcomes = [
                 "nothing",
                 "common",
@@ -561,7 +566,7 @@ class UserCommands(commands.Cog):
             description="Are you sure you want to reset your Easter hunt data? This will clear all your eggs, shards, gems, pity counters, and streaks. This action cannot be undone!",
             color=discord.Color.red(),
         )
-        msg = await ctx.send(
+        _msg = await ctx.send(
             embed=embed,
             view=view,
             reference=ctx.message.to_reference(fail_if_not_exists=False),
@@ -671,12 +676,10 @@ class UserCommands(commands.Cog):
             )
         except discord.HTTPException as e:
             log.error(f"Error starting job for {user}: {e}")
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await interaction.channel.send(
                     f"{user.mention}, something went wrong starting your shift! It has been cancelled."
                 )
-            except discord.HTTPException:
-                pass
             await self.db.set_user_field(user.id, "active_work", False)
             await self.db.set_user_field(user.id, "last_work", 0)
             await self.db.set_user_field(user.id, "active_job_type", None)
@@ -759,12 +762,10 @@ class UserCommands(commands.Cog):
             pass
         except Exception as e:
             log.error(f"Unexpected error in run_job for {user}: {e}")
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await interaction.channel.send(
                     f"{user.mention}, something went wrong during your shift! It has been cancelled."
                 )
-            except discord.HTTPException:
-                pass
         finally:
             await self.db.set_user_field(user.id, "active_work", False)
             await self.db.set_user_field(user.id, "last_work", 0)

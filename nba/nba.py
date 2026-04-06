@@ -26,7 +26,7 @@ import asyncio
 import sqlite3
 from datetime import datetime, timezone
 from time import time
-from typing import Any, Dict, Final, List, Optional
+from typing import Any, Final, Optional
 
 import aiohttp
 import discord
@@ -49,6 +49,7 @@ from .converter import (
 )
 from .formatters import build_pregame_embed, build_score_update_embed
 from .view import PreGameView
+
 
 log = getLogger("red.maxcogs.nba")
 
@@ -73,7 +74,7 @@ class NBA(NBACommands, commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567891011)
-        default_guild: Dict[str, Any] = {
+        default_guild: dict[str, Any] = {
             "team_channels": {},
             # Legacy keys kept only for migration - do not use in new code.
             "channel": None,
@@ -331,9 +332,7 @@ class NBA(NBACommands, commands.Cog):
 
                 # If both teams are configured, only notify via the home team's channel
                 # to avoid double posting when two tracked teams face each other.
-                if home_entry and away_entry:
-                    entries_to_notify = [home_entry]
-                elif home_entry:
+                if (home_entry and away_entry) or home_entry:
                     entries_to_notify = [home_entry]
                 elif away_entry:
                     entries_to_notify = [away_entry]
@@ -473,9 +472,7 @@ class NBA(NBACommands, commands.Cog):
                         elif api_name == away_team:
                             away_entry = entry
 
-                    if home_entry and away_entry:
-                        entries_to_notify = [home_entry]
-                    elif home_entry:
+                    if (home_entry and away_entry) or home_entry:
                         entries_to_notify = [home_entry]
                     elif away_entry:
                         entries_to_notify = [away_entry]
@@ -546,7 +543,7 @@ class NBA(NBACommands, commands.Cog):
             setattr(self, f"{cache_key}_time", time())
         return data
 
-    async def fetch_scoreboard(self, ctx: commands.Context) -> Optional[List[dict]]:
+    async def fetch_scoreboard(self, ctx: commands.Context) -> Optional[list[dict]]:
         """Fetch and parse NBA scoreboard data."""
         data = await self.get_cached_data(TODAY_SCOREBOARD, ctx, "scoreboard")
         if not data:
@@ -557,7 +554,7 @@ class NBA(NBACommands, commands.Cog):
             log.error("Failed to decode scoreboard: %s", e)
             return None
 
-    async def fetch_news(self, ctx: commands.Context) -> Optional[List[dict]]:
+    async def fetch_news(self, ctx: commands.Context) -> Optional[list[dict]]:
         """Fetch and parse NBA news feed."""
         data = await self.fetch_data(ESPN_NBA_NEWS, ctx)
         if not data:

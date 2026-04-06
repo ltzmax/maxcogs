@@ -28,6 +28,7 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import commands
 
+
 log = getLogger("red.maxcogs.counting.toggle_view")
 TOGGLES: list[tuple[str, str]] = [
     ("toggle", "Counting"),
@@ -61,7 +62,6 @@ def _build_embed(settings: dict[str, Any], color: discord.Color) -> discord.Embe
 
 
 class ToggleSetupView(discord.ui.View):
-
     def __init__(
         self,
         ctx: commands.Context,
@@ -89,7 +89,7 @@ class ToggleSetupView(discord.ui.View):
 
     def _make_callback(self, config_key: str):
         async def callback(interaction: discord.Interaction) -> None:
-            if interaction.user.id not in [self.ctx.author.id] + list(self.ctx.bot.owner_ids):
+            if interaction.user.id not in [self.ctx.author.id, *list(self.ctx.bot.owner_ids)]:
                 return await interaction.response.send_message(
                     "You are not allowed to use this.", ephemeral=True
                 )

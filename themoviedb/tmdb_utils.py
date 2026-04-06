@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import asyncio
-import re
 import urllib.parse
 from datetime import datetime
 from typing import Any
@@ -32,8 +31,9 @@ import aiohttp
 import discord
 import orjson
 from red_commons.logging import getLogger
-from redbot.core.utils.chat_formatting import box, header, humanize_list, humanize_number
+from redbot.core.utils.chat_formatting import header, humanize_list, humanize_number
 from redbot.core.utils.views import SimpleMenu
+
 
 log = getLogger("red.maxcogs.themoviedb.tmdb_utils")
 BASE_MEDIA = "https://api.themoviedb.org/3/search"

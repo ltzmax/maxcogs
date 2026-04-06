@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import asyncio
+import contextlib
 import datetime
 
 import discord
@@ -32,6 +33,7 @@ from redbot.core.utils.views import ConfirmView
 
 from .handlers import schedule_resolve
 from .utils import HEISTS, ITEMS
+
 
 log = getLogger("red.cogs.heist.views")
 
@@ -45,7 +47,7 @@ class ShopView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Check if the user is allowed to interact."""
-        if interaction.user.id not in [self.ctx.author.id] + list(self.ctx.bot.owner_ids):
+        if interaction.user.id not in [self.ctx.author.id, *list(self.ctx.bot.owner_ids)]:
             await interaction.response.send_message(
                 "You are not allowed to use this interaction.", ephemeral=True
             )
@@ -73,12 +75,12 @@ class ShopSelect(discord.ui.Select):
                 description=(
                     f"Cost: {data['cost']:,} | "
                     + (
-                        f"Reduces loss by {data['reduction']*100:.1f}% (single use)"
+                        f"Reduces loss by {data['reduction'] * 100:.1f}% (single use)"
                         if data["type"] == "shield"
                         else (
-                            f"Boosts {data['for_heist'].replace('_', ' ').title()} success by {data['boost']*100:.0f}% (single use)"
+                            f"Boosts {data['for_heist'].replace('_', ' ').title()} success by {data['boost'] * 100:.0f}% (single use)"
                             if data["type"] == "tool"
-                            else f"Reduces risk by {data['risk_reduction']*100:.0f}% (single use)"
+                            else f"Reduces risk by {data['risk_reduction'] * 100:.0f}% (single use)"
                         )
                     )
                 ),
@@ -94,7 +96,7 @@ class ShopSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         item_type = self.values[0]
-        emoji, data = ITEMS[item_type]
+        emoji, _data = ITEMS[item_type]
         cost = await self.cog.get_item_cost(item_type)
         balance = await bank.get_balance(interaction.user)
         currency_name = await bank.get_currency_name(interaction.guild)
@@ -146,7 +148,7 @@ class HeistView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Check if the user is allowed to interact."""
-        if interaction.user.id not in [self.ctx.author.id] + list(self.cog.bot.owner_ids):
+        if interaction.user.id not in [self.ctx.author.id, *list(self.cog.bot.owner_ids)]:
             await interaction.response.send_message(
                 "You are not allowed to use this interaction.", ephemeral=True
             )
@@ -276,7 +278,7 @@ class HeistConfigView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Check if the user is allowed to interact."""
-        if interaction.user.id not in [self.ctx.author.id] + list(self.cog.bot.owner_ids):
+        if interaction.user.id not in [self.ctx.author.id, *list(self.cog.bot.owner_ids)]:
             await interaction.response.send_message(
                 "You are not authorized to use this.", ephemeral=True
             )
@@ -287,10 +289,8 @@ class HeistConfigView(discord.ui.View):
         for item in self.children:
             item.disabled = True
         if self.message:
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
-            except discord.HTTPException:
-                pass
 
 
 class HeistConfigButton(discord.ui.Button):
@@ -431,7 +431,7 @@ class ItemPriceConfigView(discord.ui.View):
         self.add_item(ItemPriceConfigButton(cog))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id not in [self.ctx.author.id] + list(self.cog.bot.owner_ids):
+        if interaction.user.id not in [self.ctx.author.id, *list(self.cog.bot.owner_ids)]:
             await interaction.response.send_message(
                 "You are not authorized to use this.", ephemeral=True
             )
@@ -442,10 +442,8 @@ class ItemPriceConfigView(discord.ui.View):
         for item in self.children:
             item.disabled = True
         if self.message:
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
-            except discord.HTTPException:
-                pass
 
 
 class ItemPriceConfigButton(discord.ui.Button):

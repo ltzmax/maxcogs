@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import contextlib
 import re
 
 import discord
 from red_commons.logging import getLogger
-from redbot.core import Config
+
 
 log = getLogger("red.maxcogs.redupdate.view")
 GITHUB = re.compile(r"^(git\+ssh://git@github\.com|git\+https://github\.com)")
@@ -57,13 +58,11 @@ class ForkURLView(discord.ui.View):
         for item in self.children:
             item: discord.ui.Item
             item.disabled = True
-        try:
+        with contextlib.suppress(discord.HTTPException):
             await self.message.edit(view=self)
-        except discord.HTTPException:
-            pass
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not interaction.user.id == self.ctx.author.id:
+        if interaction.user.id != self.ctx.author.id:
             await interaction.response.send_message(
                 "You are not the author of this command.", ephemeral=True
             )
@@ -83,7 +82,7 @@ class ForkURLView(discord.ui.View):
         url = modal.forkurl.value
         if not url or not GITHUB.match(url):
             await interaction.followup.send(
-                f"This is not a valid url for your fork.\nCheck `redset whatlink` for more information.",
+                "This is not a valid url for your fork.\nCheck `redset whatlink` for more information.",
                 ephemeral=True,
             )
             return
@@ -136,7 +135,7 @@ class RestartButton(discord.ui.View):
             pass
 
     async def interaction_check(self, interaction: discord.Interaction):
-        if not interaction.user.id == self.ctx.author.id:
+        if interaction.user.id != self.ctx.author.id:
             await interaction.response.send_message(
                 "You are not the author of this command.", ephemeral=True
             )
@@ -155,5 +154,5 @@ class RestartButton(discord.ui.View):
         try:
             await self.bot.shutdown(restart=True)
         except Exception as e:
-            await interaction.channel.send(f"Error restarting bot: {str(e)}")
+            await interaction.channel.send(f"Error restarting bot: {e!s}")
             log.error("Error restarting bot: %s", e, exc_info=True)

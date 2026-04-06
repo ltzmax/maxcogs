@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import asyncio
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import discord
 import orjson
@@ -48,6 +48,7 @@ from ..formatters import (
     build_standings_embeds,
 )
 from ..view import GameMenu
+
 
 log = getLogger("red.maxcogs.nba")
 
@@ -389,7 +390,7 @@ class NBACommands:
     @schedule.autocomplete("team")
     async def schedule_autocomplete(
         self, interaction: discord.Interaction, current: str
-    ) -> List[app_commands.Choice]:
+    ) -> list[app_commands.Choice]:
         choices = [t for t in TEAM_NAMES if current.lower() in t.lower()]
         return [app_commands.Choice(name=t, value=t) for t in choices[:25]]
 
@@ -439,7 +440,7 @@ class NBACommands:
     @scoreboard.autocomplete("team")
     async def scoreboard_autocomplete(
         self, interaction: discord.Interaction, current: str
-    ) -> List[app_commands.Choice]:
+    ) -> list[app_commands.Choice]:
         choices = [t for t in TEAM_NAMES if current.lower() in t.lower()]
         return [app_commands.Choice(name=t, value=t) for t in choices[:25]]
 

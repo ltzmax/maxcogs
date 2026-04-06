@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import asyncio
+import contextlib
 import time
 from typing import Final
 
@@ -33,6 +34,7 @@ from redbot.core import commands
 from .commands.owner import OwnerCommands
 from .commands.user import UserCommands
 from .db import Database
+
 
 log = getLogger("red.maxcogs.easterhunt")
 
@@ -105,12 +107,10 @@ class EasterHunt(UserCommands, OwnerCommands, commands.Cog):
             if remaining_time > 0:
                 await asyncio.sleep(remaining_time)
             result_message = await self._execute_job_outcome(user.id, job_type, guild=None)
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await user.send(
                     f"🐰 Your shift as a **{job_type.replace('_', ' ').title()}** finished while the bot was restarting!\n{result_message}"
                 )
-            except discord.HTTPException:
-                pass
         except asyncio.CancelledError:
             pass
         finally:

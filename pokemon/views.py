@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import contextlib
 import random
-from typing import Any, List
+from typing import Any
 
 import aiohttp
 import discord
@@ -31,6 +32,7 @@ from red_commons.logging import getLogger
 from redbot.core import commands
 
 from .formatters import create_pokemon_embed
+
 
 log = getLogger("red.maxcogs.whosthatpokemon.views")
 
@@ -50,7 +52,7 @@ class WhosThatPokemonModal(discord.ui.Modal, title="Whos That Pokémon?"):
 
 
 class WhosThatPokemonView(discord.ui.View):
-    def __init__(self, eligible_names: List[Any]) -> None:
+    def __init__(self, eligible_names: list[Any]) -> None:
         self.eligible_names = eligible_names
         self.winner = None
         self.message = None
@@ -61,10 +63,8 @@ class WhosThatPokemonView(discord.ui.View):
             item: discord.ui.Item
             item.disabled = True
         if self.message:
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
-            except discord.HTTPException:
-                pass
 
     @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
     async def guess_the_pokemon(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -79,19 +79,15 @@ class WhosThatPokemonView(discord.ui.View):
             button.style = discord.ButtonStyle.success
             if self.message:
                 await self.message.edit(view=self)
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await interaction.followup.send(
                     f"{interaction.user.mention} Guessed the Pokémon correctly!",
                 )
-            except discord.HTTPException:
-                pass
         else:
-            try:
+            with contextlib.suppress(discord.HTTPException):
                 await interaction.followup.send(
                     f"{interaction.user.mention}, Wrong Pokémon name!",
                 )
-            except discord.HTTPException:
-                pass
 
 
 class HintView(discord.ui.View):
@@ -127,9 +123,9 @@ class HintView(discord.ui.View):
 
         characteristics = []
         if height := pokemon_data.get("height"):
-            characteristics.append(f"Height: {height/10:.1f}m")
+            characteristics.append(f"Height: {height / 10:.1f}m")
         if weight := pokemon_data.get("weight"):
-            characteristics.append(f"Weight: {weight/10:.1f}kg")
+            characteristics.append(f"Weight: {weight / 10:.1f}kg")
         if characteristics:
             hints.append(random.choice(characteristics))
 
@@ -202,10 +198,8 @@ class PokemonView(discord.ui.View):
         for item in self.children:
             item.disabled = True
         if self.message:
-            try:
+            with contextlib.suppress(discord.NotFound):
                 await self.message.edit(view=self)
-            except discord.NotFound:
-                pass
 
     async def update_embed(self, interaction: discord.Interaction) -> None:
         try:
@@ -225,8 +219,6 @@ class PokemonView(discord.ui.View):
         for item in self.children:
             item.disabled = True
         if self.message:
-            try:
+            with contextlib.suppress(discord.NotFound):
                 await self.message.edit(view=self)
-            except discord.NotFound:
-                pass
         self.stop()

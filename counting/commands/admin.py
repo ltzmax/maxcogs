@@ -38,6 +38,7 @@ from redbot.core.utils.views import ConfirmView, SimpleMenu
 
 from ..toggle_view import ToggleSetupView, _build_embed
 
+
 logger = getLogger("red.maxcogs.counting")
 
 

@@ -25,10 +25,10 @@ SOFTWARE.
 import datetime
 from typing import Final
 
-import discord
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.commands.converter import parse_timedelta
+
 
 log = getLogger("red.maxcogs.vanish")
 

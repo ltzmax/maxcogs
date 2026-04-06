@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 import discord
 import pytz
@@ -51,7 +51,7 @@ class DashboardIntegration:
         dashboard_cog.rpc.third_parties_handler.add_third_party(self)
 
     @dashboard_page(name="stats", description="View AutoPublisher statistics", is_owner=True)
-    async def dashboard_stats(self, user: discord.User, **kwargs) -> Dict[str, Any]:
+    async def dashboard_stats(self, user: discord.User, **kwargs) -> dict[str, Any]:
         """Dashboard page to display AutoPublisher stats."""
         owner_tz = await get_owner_timezone(self.config)
         data = await self.config.all()

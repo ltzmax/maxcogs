@@ -1,0 +1,36 @@
+[tool.ruff]
+line-length = 99
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "RUF006", # asyncio dangling task (too noisy for cogs)
+    "RUF001", # ambiguous Unicode characters
+    "RUF002", # ambiguous Unicode characters
+    "RUF003" # ambiguous Unicode characters
+]
+fixable = ["ALL"]
+extend-unsafe-fixes = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["maxcogs"]
+force-single-line = false
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

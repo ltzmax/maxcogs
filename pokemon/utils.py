@@ -23,15 +23,15 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 from io import BytesIO
-from typing import Dict, Optional
+from typing import Optional
 
 import aiohttp
 import discord
 from PIL import Image
 from red_commons.logging import getLogger
 from redbot.core.data_manager import bundled_data_path
+
 
 log = getLogger("red.maxcogs.whosthatpokemon.utils")
 
@@ -125,8 +125,8 @@ def _format_stats(stats: list[dict]) -> str:
 def _format_height_weight(height: int, weight: int) -> tuple[str, str]:
     """Format height and weight in metric and imperial units."""
     return (
-        f"{height/10:.1f}m ({height*3.28084/10:.2f}ft)",
-        f"{weight/10:.1f}kg ({weight*2.20462/10:.2f}lbs)",
+        f"{height / 10:.1f}m ({height * 3.28084 / 10:.2f}ft)",
+        f"{weight / 10:.1f}kg ({weight * 2.20462 / 10:.2f}lbs)",
     )
 
 
@@ -160,7 +160,7 @@ def _truncate_description(text: str) -> str:
 
 
 async def create_pokemon_embed(
-    session: aiohttp.ClientSession, pokemon_data: Dict, section: str = "base"
+    session: aiohttp.ClientSession, pokemon_data: dict, section: str = "base"
 ) -> discord.Embed:
     """
     Create a Discord embed for Pokémon data based on the specified section.

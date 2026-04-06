@@ -26,6 +26,7 @@ import discord
 from redbot.core import bank
 from redbot.core.errors import BankError
 
+
 # Tried to make stuff shorter in honeycombs.py but somehow made it longer, so this file got kinda pointless
 # But i already had writen stuff so there's no point removing right away... i'll do someday when im less lazy.
 
@@ -40,7 +41,7 @@ async def safe_withdraw(user: discord.Member, amount: int, currency_name: str) -
         currency_name: The name of the currency for error messaging.
 
     Returns:
-        Tuple[bool, str]: (success, message)
+        tuple[bool, str]: (success, message)
         - success: True if withdrawal succeeded, False otherwise.
         - message: A message describing the outcome (success or error).
     """
@@ -61,7 +62,7 @@ async def safe_withdraw(user: discord.Member, amount: int, currency_name: str) -
     except BankError as e:
         return (
             False,
-            f"Failed to withdraw {amount} {currency_name} from {user.mention}: {str(e)}",
+            f"Failed to withdraw {amount} {currency_name} from {user.mention}: {e!s}",
         )
 
 
@@ -75,7 +76,7 @@ async def safe_deposit(user: discord.Member, amount: int, currency_name: str) ->
         currency_name: The name of the currency for error messaging.
 
     Returns:
-        Tuple[bool, str]: (success, message)
+        tuple[bool, str]: (success, message)
         - success: True if deposit succeeded, False otherwise.
         - message: A message describing the outcome (success or error).
     """
@@ -89,5 +90,5 @@ async def safe_deposit(user: discord.Member, amount: int, currency_name: str) ->
     except BankError as e:
         return (
             False,
-            f"Failed to deposit {amount} {currency_name} to {user.mention}: {str(e)}",
+            f"Failed to deposit {amount} {currency_name} to {user.mention}: {e!s}",
         )

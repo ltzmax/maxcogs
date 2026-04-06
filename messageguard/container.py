@@ -25,6 +25,7 @@ SOFTWARE.
 import re
 from typing import Final
 
+
 # ForwardDeleter
 FD_WARN_MESSAGE: Final[str] = "You are not allowed to forward message(s)."
 # NoSpoiler

@@ -31,6 +31,7 @@ from redbot.core import app_commands, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.views import SimpleMenu
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.commands.tcgcard")
 
 _TCG_FIELDS = (

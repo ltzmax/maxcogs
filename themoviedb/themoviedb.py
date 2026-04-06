@@ -38,6 +38,7 @@ from redbot.core.utils.views import SetApiView, SimpleMenu
 
 from .tmdb_utils import PREDEFINED_CHANNELS, fetch_tmdb, person_embed, search_and_display
 
+
 logger = getLogger("red.maxcogs.themoviedb")
 
 

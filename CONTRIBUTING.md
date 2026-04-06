@@ -20,25 +20,21 @@ All contributions must be your own original work. If i suspect a contribution wa
 
 ## Guidelines for Submitting PRs
 Always use the following:
-- Black
-- isort
+- Ruff
 
-## How to Use Black
-- First, install Black:
+## How to Use Ruff
+- First, install Ruff:
 ```bash
-pip install black
+pip install ruff
 ```
-- Then run
+- Then run the linter (fixes imports, style, and common issues automatically):
 ```bash
-black --line-length 99 <source_file_or_directory>
+ruff check --fix <source_file_or_directory>
+```
+- Then run the formatter:
+```bash
+ruff format <source_file_or_directory>
 ```
 
-## How to use isort?
-- First you will have to install it
-```bash
-[p]pip install isort
-```
-- Then run
-```bash
-isort <source_file_or_directory>
+Both commands must be run before submitting a PR. Ruff is configured in `pyproject.toml` at the root of the repo — no extra flags needed beyond what's shown above.
 ```
