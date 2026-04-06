@@ -43,6 +43,7 @@ class Earthquake(commands.Cog):
 
     __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/earthquake/README.md"
 
     def __init__(self, bot):
         self.bot = bot
@@ -65,9 +66,11 @@ class Earthquake(commands.Cog):
         self.earthquake_check.start()
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
-        """Thanks Sinbad!"""
+        """
+        Thanks Sinbad!
+        """
         base = super().format_help_for_context(ctx)
-        return f"{base}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}"
+        return f"{base}\n\nAuthor: {self.__author__}\nCog Version: {self.__version__}\nDocs: {self.__docs__}"
 
     async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
         """No user data to delete."""
