@@ -43,9 +43,9 @@ log = getLogger("red.maxcogs.tosenforcer")
 class Enforce(commands.Cog):
     """Requires users to accept ToS and privacy policy before using any bot commands."""
 
-    __version__: Final[str] = "0.0.1c"
+    __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/enforce/README.md"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/#enforce"
 
     def __init__(self, bot: Red):
         self.bot = bot

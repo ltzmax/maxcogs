@@ -46,7 +46,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
 
     __version__: Final[str] = "3.5.0"
     __author__: Final[str] = "MAX, AAA3A"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/autopublisher/README.md"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/#autopublisher"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

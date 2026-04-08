@@ -60,7 +60,7 @@ class Currency(commands.Cog):
 
     __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/currency/README.md"
+    __docs__: Final[str] = "https://cogs.maxcogs.tv/#currency"
 
     def __init__(self, bot):
         self.bot = bot

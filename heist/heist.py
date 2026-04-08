@@ -45,7 +45,7 @@ class Heist(commands.Cog):
 
     __version__: Final[str] = "1.0.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/heist/README.md"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/#heist"
 
     def __init__(self, bot):
         self.bot = bot

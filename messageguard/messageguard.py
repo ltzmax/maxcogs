@@ -68,7 +68,7 @@ class MessageGuard(ForwardCommands, SpoilerCommands, RestrictCommands, commands.
 
     __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/messageguard/README.md"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/#messageguard"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

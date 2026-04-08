@@ -45,7 +45,7 @@ class RedUpdate(commands.Cog):
 
     __author__: Final[str] = "MAX, kuro"
     __version__: Final[str] = "1.10.0"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/redupdate/README.md"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/#redupdate"
 
     def __init__(self, bot):
         self.bot = bot

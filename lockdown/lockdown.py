@@ -42,7 +42,7 @@ class Lockdown(commands.Cog):
 
     __version__: Final[str] = "1.7.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/tree/master/lockdown/README.md"
+    __docs__: Final[str] = "https://cogs.maxapp.tv/#lockdown"
 
     def __init__(self, bot):
         self.bot = bot
