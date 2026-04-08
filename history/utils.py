@@ -44,7 +44,7 @@ def format_year(year: int | str | None) -> str:
         str: Formatted year (e.g., "2025", "c. 500 BC", "Unknown Year") or "Unknown Year" if invalid.
     """
     if year is None or not isinstance(year, (int, str)):
-        log.warning(f"Invalid year type received: {type(year)}")
+        log.warning("Invalid year type received: %s", type(year))
         return "Unknown Year"
 
     try:
@@ -67,7 +67,7 @@ def format_year(year: int | str | None) -> str:
                 if year_int != -1
                 else f"1 {DEFAULT_ERA_NOTATION}"
             )
-        elif year_int > 0 and year_int < 1000:
+        elif 0 < year_int < 1000:
             formatted_year = f"{year_int} AD"
         else:
             formatted_year = str(year_int)
@@ -80,26 +80,30 @@ def format_year(year: int | str | None) -> str:
         )
 
     except (ValueError, TypeError) as e:
-        log.error(f"Failed to format year '{year}': {e!s}")
+        log.error("Failed to format year '%s': %s", year, str(e))
         return "Unknown Year"
 
 
 async def fetch_events(
     session: aiohttp.ClientSession, month: str, day: str
 ) -> list[dict[str, Any]]:
-    """Fetch historical events from Wikimedia API."""
-    url = f"https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/{month}/{day}"
+    """Fetch historical events from muffinlabs API."""
+    url = f"https://history.muffinlabs.com/date/{month}/{day}"
     try:
         async with session.get(url) as response:
             if response.status != 200:
-                log.warning(f"API request failed with status {response.status} for {month}/{day}")
+                log.warning("API request failed with status %s for %s/%s", response.status, month, day)
                 raise ValueError(f"Failed to fetch history data! (Status: {response.status})")
             try:
                 data = orjson.loads(await response.read())
-                return data.get("events", [])
+                events = data.get("data", {}).get("Events", [])
+                return [
+                    {"year": e.get("year"), "text": e.get("text", "No description available.")}
+                    for e in events
+                ]
             except orjson.JSONDecodeError as e:
-                log.error(f"Failed to decode API response for {month}/{day}: {e}")
-                raise ValueError("Error processing history data from Wikimedia.") from e
+                log.error("Failed to decode API response for %s/%s: %s", month, day, e)
+                raise ValueError("Error processing history data from muffinlabs.") from e
     except aiohttp.ClientError as e:
-        log.error(f"Network error fetching events for {month}/{day}: {e}", exc_info=True)
+        log.error("Network error fetching events for %s/%s: %s", month, day, str(e), exc_info=True)
         raise ValueError(f"Network error while fetching history data: {e}") from e

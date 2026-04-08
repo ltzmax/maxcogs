@@ -37,8 +37,6 @@ from .utils import fetch_events, format_year
 
 
 log = getLogger("red.maxcogs.history")
-WIKIPEDIA_LOGO = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
-
 
 class History(commands.Cog):
     """A cog to display historical events for a given day in your timezone."""
@@ -172,8 +170,7 @@ class History(commands.Cog):
             current_page: int = i // items_per_page + 1
             total_pages: int = (len(events) - 1) // items_per_page + 1
             embed.set_footer(
-                text=f"Source: Wikipedia | Timezone: {user_tz} | Page {current_page}/{total_pages}",
-                icon_url=WIKIPEDIA_LOGO,
+                text=f"Source: muffinlabs | Timezone: {user_tz} | Page {current_page}/{total_pages}",
             )
             pages.append(embed)
         await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
