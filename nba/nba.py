@@ -48,7 +48,7 @@ from .converter import (
     team_emojis,
 )
 from .formatters import build_pregame_embed, build_score_update_embed
-from .view import PreGameView
+from .view import PlayByPlay, PreGameView
 
 
 log = getLogger("red.maxcogs.nba")
@@ -371,7 +371,7 @@ class NBA(NBACommands, commands.Cog):
                         )
                         continue
                     try:
-                        await channel.send(embed=embed)
+                        await channel.send(embed=embed, view=PlayByPlay(game_id))
                     except discord.HTTPException as e:
                         log.error(
                             "Failed to send score update for game %s in guild %s: %s",
@@ -498,6 +498,12 @@ class NBA(NBACommands, commands.Cog):
                             continue
                         role = guild.get_role(role_id) if role_id else None
                         mention = role.mention if role else None
+                        log.warning(
+                            "Sending pregame for game %s, role %s, mention %s",
+                            game_id,
+                            role_id,
+                            mention,
+                        )
                         try:
                             await channel.send(
                                 content=mention,
