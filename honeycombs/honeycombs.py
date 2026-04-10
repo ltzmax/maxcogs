@@ -84,7 +84,7 @@ class HoneyCombs(commands.Cog):
         default_guild = {
             "players": {},
             "game_active": False,
-            "default_start_image": "https://i.maxapp.tv/4c76241E.png",
+            "default_start_image": "http://i.maxapp.tv/uploads/1e407c05cd3ea967c174.png",
             "shapes": ["circle⭕️", "triangle△", "star⭐️", "umbrella☂️"],
             "shape_odds": DEFAULT_SHAPE_ODDS,
             "mod_only_command": False,

@@ -51,8 +51,8 @@ class Enforce(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=9842069111, force_registration=True)
         self.config.register_global(
-            tos_url="https://i.maxapp.tv/d6761E.png",
-            privacy_url="https://i.maxapp.tv/75771F.png",
+            tos_url="http://i.maxapp.tv/uploads/9bfc8d2692f24641f392.png",
+            privacy_url="http://i.maxapp.tv/uploads/9bfc8d2692f24641f392.png",
             tos_enforcement_enabled=False,
             prompt_title="Terms of Service Required",
             prompt_description=(
