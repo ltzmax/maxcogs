@@ -25,8 +25,7 @@ SOFTWARE.
 from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
 
-from ..api import API_URL, fetch_data
-from ..formatters import create_pokemon_embed
+from ..api import fetch_data, API_URL
 from ..views import PokemonView
 
 
@@ -34,7 +33,7 @@ log = getLogger("red.maxcogs.whosthatpokemon.commands.pokeinfo")
 
 
 class PokeinfoCommands:
-    """pokeinfo command — mixed into the main Pokemon cog."""
+    """pokeinfo command mixed into the main Pokemon cog."""
 
     @commands.hybrid_command()
     @commands.bot_has_permissions(embed_links=True)
@@ -53,14 +52,18 @@ class PokeinfoCommands:
         pokemon_data = await fetch_data(self.session, f"{API_URL}/pokemon/{pokemon.lower()}")
         if not pokemon_data or pokemon_data.get("http_code"):
             code = pokemon_data.get("http_code") if pokemon_data else None
-            if code == 404:
-                return await ctx.send(f"No Pokémon found for `{pokemon}`.")
-            return await ctx.send("Could not fetch Pokémon data. Please try again later.")
+            match code:
+                case 404:
+                    return await ctx.send(f"No Pokémon found for `{pokemon}`.")
+                case _:
+                    return await ctx.send(
+                        "Could not fetch Pokémon data. Please try again later."
+                    )
 
-        view = PokemonView(ctx, self.session, pokemon_data)
+        accent = await ctx.embed_color()
+        view = PokemonView(ctx, self.session, pokemon_data, accent_colour=accent)
         try:
-            embed = await create_pokemon_embed(self.session, pokemon_data, "base")
-            view.message = await ctx.send(embed=embed, view=view)
+            await view.send_initial(ctx)
         except ValueError as e:
-            log.error("Error creating initial embed: %s", e, exc_info=True)
-            await ctx.send("Something went wrong building the Pokémon embed.")
+            log.error("Error creating initial Pokémon view: %s", e, exc_info=True)
+            await ctx.send("Something went wrong building the Pokémon view.")

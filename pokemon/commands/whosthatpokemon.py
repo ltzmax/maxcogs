@@ -34,14 +34,14 @@ from redbot.core import app_commands, commands
 from ..api import API_URL, fetch_data
 from ..converters import Generation
 from ..image import generate_image
-from ..views import HintView, WhosThatPokemonView
+from ..views import HintButton, WhosThatPokemonView
 
 
 log = getLogger("red.maxcogs.whosthatpokemon.commands.whosthatpokemon")
 
 
 class WhosThatPokemonCommands:
-    """whosthatpokemon command — mixed into the main Pokemon cog."""
+    """whosthatpokemon command mixed into the main Pokemon cog."""
 
     @commands.hybrid_command(aliases=["wtp"])
     @app_commands.describe(generation="Optionally choose generation from gen1 to gen9.")
@@ -113,11 +113,11 @@ class WhosThatPokemonCommands:
         )
 
         view = WhosThatPokemonView(eligible_names)
-        hint_view = HintView(
+        hint_button = HintButton(
             {"species_data": species_data, "pokemon_data": pokemon_data},
             english_name,
         )
-        view.add_item(hint_view.hint_button)
+        view.add_item(hint_button)
 
         view.message = await ctx.send(
             f"**Who's that Pokémon?**\nI need a valid answer at most {img_timeout}.\n"

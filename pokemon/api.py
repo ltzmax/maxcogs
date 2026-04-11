@@ -40,10 +40,18 @@ async def fetch_data(session: aiohttp.ClientSession, url: str) -> dict | None:
     """
     try:
         async with session.get(url, timeout=_DEFAULT_TIMEOUT) as response:
-            if response.status != 200:
-                log.error("Failed to get data from %s — status %s", url, response.status)
-                return {"http_code": response.status}
-            return await response.json()
+            match response.status:
+                case 200:
+                    return await response.json()
+                case 404:
+                    log.error("Resource not found: %s", url)
+                    return {"http_code": 404}
+                case 408:
+                    log.error("Request timed out: %s", url)
+                    return {"http_code": 408}
+                case _:
+                    log.error("Failed to get data from %s status %s", url, response.status)
+                    return {"http_code": response.status}
     except aiohttp.ServerTimeoutError:
         log.error("Timed out fetching %s", url)
         return {"http_code": 408}

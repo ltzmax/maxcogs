@@ -24,12 +24,11 @@ SOFTWARE.
 
 import asyncio
 
-import discord
 import orjson
 from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
-from redbot.core.utils.chat_formatting import box
-from redbot.core.utils.views import SimpleMenu
+
+from ..views import TcgCardView
 
 
 log = getLogger("red.maxcogs.whosthatpokemon.commands.tcgcard")
@@ -41,8 +40,83 @@ _TCG_FIELDS = (
 )
 
 
+def _build_card_text(data: dict) -> str:
+    """Build a plain-text summary of a TCG card's details."""
+    lines = []
+
+    lines.append(f"**Supertype:** {data.get('supertype', 'N/A')}")
+    subtypes = ", ".join(data.get("subtypes", [])) or "N/A"
+    lines.append(f"**Subtypes:** {subtypes}")
+    types = ", ".join(data.get("types", [])) or "N/A"
+    lines.append(f"**Types:** {types}")
+    lines.append(f"**Evolves From:** {data.get('evolvesFrom', 'None')}")
+    evolves_to = ", ".join(data.get("evolvesTo", [])) or "None"
+    lines.append(f"**Evolves To:** {evolves_to}")
+    lines.append(f"**Rarity:** {data.get('rarity', 'Common')}")
+    lines.append(f"**Artist:** {data.get('artist', 'N/A')}")
+    lines.append(f"**Regulation Mark:** {data.get('regulationMark', 'N/A')}")
+    lines.append(f"**Card Number:** {data.get('number', 'N/A')}")
+    lines.append(f"**Set:** {data['set']['name']}")
+    nat_dex = ", ".join(map(str, data.get("nationalPokedexNumbers", []))) or "N/A"
+    lines.append(f"**National Pokédex:** {nat_dex}")
+    legalities = data.get("legalities", {})
+    legal_str = (
+        ", ".join(k.capitalize() for k, v in legalities.items() if v == "Legal") or "None"
+    )
+    lines.append(f"**Legalities:** {legal_str}")
+
+    abilities = data.get("abilities", [])
+    if abilities:
+        lines.append("")
+        lines.append("**Abilities:**")
+        for ability in abilities:
+            lines.append(f"• {ability.get('name', 'N/A')} ({ability.get('type', 'N/A')})")
+            if text := ability.get("text"):
+                lines.append(f"  {text}")
+
+    attacks = data.get("attacks", [])
+    if attacks:
+        lines.append("")
+        lines.append("**Attacks:**")
+        for attack in attacks:
+            cost = " ".join(attack.get("cost", []))
+            converted = attack.get("convertedEnergyCost", 0)
+            damage = attack.get("damage", "N/A")
+            lines.append(
+                f"• {attack.get('name', 'N/A')} - Cost: {cost} ({converted}) - Damage: {damage}"
+            )
+            if text := attack.get("text"):
+                lines.append(f"  {text}")
+
+    weaknesses = data.get("weaknesses", [])
+    resistances = data.get("resistances", [])
+    retreat_cost = data.get("retreatCost", [])
+    converted_retreat = data.get("convertedRetreatCost", 0)
+
+    wr_lines = []
+    if weaknesses:
+        wr_lines.append(
+            f"**Weakness:** {weaknesses[0].get('type', 'N/A')} ({weaknesses[0].get('value', 'N/A')})"
+        )
+    if resistances:
+        wr_lines.append(
+            f"**Resistance:** {resistances[0].get('type', 'N/A')} ({resistances[0].get('value', 'N/A')})"
+        )
+    retreat_symbols = "🌟" * len(retreat_cost) if retreat_cost else "None"
+    wr_lines.append(f"**Retreat Cost:** {retreat_symbols} ({converted_retreat})")
+    if wr_lines:
+        lines.append("")
+        lines.extend(wr_lines)
+
+    if flavor := data.get("flavorText"):
+        lines.append("")
+        lines.append(f"**Flavor Text:** *{flavor}*")
+
+    return "\n".join(lines)
+
+
 class TcgcardCommands:
-    """tcgcard command — mixed into the main Pokemon cog."""
+    """tcgcard command mixed into the main Pokemon cog."""
 
     @commands.hybrid_command()
     @app_commands.describe(query="The Pokémon you want to search a card for.")
@@ -63,10 +137,12 @@ class TcgcardCommands:
         base_url = f"https://api.pokemontcg.io/v2/cards?q=name:{query}&select={_TCG_FIELDS}"
         try:
             async with self.session.get(base_url, headers=headers) as response:
-                if response.status != 200:
-                    log.error("Failed to fetch TCG data — status %s", response.status)
-                    return await ctx.send(f"https://http.cat/{response.status}")
-                output = orjson.loads(await response.read())
+                match response.status:
+                    case 200:
+                        output = orjson.loads(await response.read())
+                    case _:
+                        log.error("Failed to fetch TCG data status %s", response.status)
+                        return await ctx.send(f"https://http.cat/{response.status}")
         except asyncio.TimeoutError:
             log.error("Timed out fetching TCG data.")
             return await ctx.send("Operation timed out.")
@@ -74,110 +150,6 @@ class TcgcardCommands:
         if not output["data"]:
             return await ctx.send("There are no results for that search.")
 
-        pages = []
-        for i, data in enumerate(output["data"], 1):
-            embed = discord.Embed(colour=discord.Color.from_rgb(255, 215, 0))
-            card_name = data["name"]
-            hp = data.get("hp", "N/A")
-            embed.title = f"{card_name} - HP: {hp}"
-
-            basic_info = []
-            basic_info.append(f"{'Supertype:':<18}{data.get('supertype', 'N/A')}")
-            subtypes_str = ", ".join(data.get("subtypes", [])) or "N/A"
-            basic_info.append(f"{'Subtypes:':<18}{subtypes_str}")
-            types_str = ", ".join(data.get("types", [])) or "N/A"
-            basic_info.append(f"{'Types:':<18}{types_str}")
-            basic_info.append(f"{'Evolves From:':<18}{data.get('evolvesFrom', 'None')}")
-            evolves_to_str = ", ".join(data.get("evolvesTo", [])) or "None"
-            basic_info.append(f"{'Evolves To:':<18}{evolves_to_str}")
-            basic_info.append(f"{'Rarity:':<18}{data.get('rarity', 'Common')}")
-            basic_info.append(f"{'Artist:':<18}{data.get('artist', 'N/A')}")
-            basic_info.append(f"{'Regulation Mark:':<18}{data.get('regulationMark', 'N/A')}")
-            basic_info.append(f"{'Card Number:':<18}{data.get('number', 'N/A')}")
-            basic_info.append(f"{'Set:':<18}{data['set']['name']}")
-            nat_dex_str = ", ".join(map(str, data.get("nationalPokedexNumbers", []))) or "N/A"
-            basic_info.append(f"{'National Pokedex:':<18}{nat_dex_str}")
-            legalities = data.get("legalities", {})
-            legal_str = (
-                ", ".join(k.capitalize() for k, v in legalities.items() if v == "Legal") or "None"
-            )
-            basic_info.append(f"{'Legalities:':<18}{legal_str}")
-            embed.add_field(
-                name="Card Info", value=box("\n".join(basic_info), lang="yaml"), inline=False
-            )
-            abilities = data.get("abilities", [])
-            if abilities:
-                abilities_str = []
-                for ability in abilities:
-                    ability_name = ability.get("name", "N/A")
-                    ability_type = ability.get("type", "N/A")
-                    ability_text = ability.get("text", "")
-                    abilities_str.append(f"{'Name:':<18}{ability_name}")
-                    abilities_str.append(f"{'Type:':<18}{ability_type}")
-                    if ability_text:
-                        abilities_str.append(f"{'Text:':<18}{ability_text}")
-                    abilities_str.append("")
-                embed.add_field(
-                    name="Abilities",
-                    value=box("\n".join(abilities_str[:-1]), lang="yaml"),
-                    inline=False,
-                )
-
-            attacks = data.get("attacks", [])
-            if attacks:
-                attacks_str = []
-                for attack in attacks:
-                    attack_name = attack.get("name", "N/A")
-                    cost = attack.get("cost", [])
-                    damage = attack.get("damage", "N/A")
-                    attack_text = attack.get("text", "")
-                    converted_cost = attack.get("convertedEnergyCost", 0)
-                    attacks_str.append(f"{'Name:':<18}{attack_name}")
-                    attacks_str.append(f"{'Cost:':<18}{' '.join(cost)} ({converted_cost})")
-                    attacks_str.append(f"{'Damage:':<18}{damage}")
-                    if attack_text:
-                        attacks_str.append(f"{'Text:':<18}{attack_text}")
-                    attacks_str.append("")
-                embed.add_field(
-                    name="Attacks",
-                    value=box("\n".join(attacks_str[:-1]), lang="yaml"),
-                    inline=False,
-                )
-
-            # Weaknesses / Resistances / Retreat
-            wr_info = []
-            weaknesses = data.get("weaknesses", [])
-            if weaknesses:
-                wr_info.append(
-                    f"{'Weakness:':<18}{weaknesses[0].get('type', 'N/A')} ({weaknesses[0].get('value', 'N/A')})"
-                )
-            resistances = data.get("resistances", [])
-            if resistances:
-                wr_info.append(
-                    f"{'Resistance:':<18}{resistances[0].get('type', 'N/A')} ({resistances[0].get('value', 'N/A')})"
-                )
-            retreat_cost = data.get("retreatCost", [])
-            converted_retreat = data.get("convertedRetreatCost", 0)
-            retreat_symbols = "🌟" * len(retreat_cost) if retreat_cost else "None"
-            wr_info.append(f"{'Retreat Cost:':<18}{retreat_symbols} ({converted_retreat})")
-            if wr_info:
-                embed.add_field(
-                    name="Weaknesses / Resistances / Retreat",
-                    value=box("\n".join(wr_info), lang="yaml"),
-                    inline=False,
-                )
-
-            flavor_text = data.get("flavorText", "")
-            if flavor_text:
-                embed.add_field(
-                    name="Flavor Text", value=box(flavor_text, lang="yaml"), inline=False
-                )
-
-            embed.set_thumbnail(url=str(data["set"]["images"]["logo"]))
-            embed.set_image(url=str(data["images"]["large"]))
-            embed.set_footer(
-                text=f"Page {i} of {len(output['data'])} • Powered by Pokémon TCG API!"
-            )
-            pages.append(embed)
-
-        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+        accent = await ctx.embed_color()
+        view = TcgCardView(ctx, output["data"], _build_card_text, accent)
+        view.message = await ctx.send(view=view)
