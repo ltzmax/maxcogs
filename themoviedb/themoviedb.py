@@ -36,8 +36,7 @@ from red_commons.logging import getLogger
 from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
-from .tmdb_utils import PREDEFINED_CHANNELS, fetch_tmdb, person_embed, search_and_display
-
+from .tmdb_utils import PREDEFINED_CHANNELS, fetch_tmdb, search_and_display
 
 logger = getLogger("red.maxcogs.themoviedb")
 
@@ -48,7 +47,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "2.6.0"
+    __version__ = "2.7.0"
     __docs__ = "https://cogs.maxapp.tv/#themoviedb"
 
     def __init__(self, bot):
@@ -75,7 +74,7 @@ class TheMovieDB(commands.Cog):
                     await asyncio.wait_for(self.session.close(), timeout=5.0)
                     logger.info(f"Session closed successfully: {self.session.closed}")
                 except asyncio.TimeoutError:
-                    logger.warning("Session close timed out—forcing shutdown.")
+                    logger.warning("Session close timed out forcing shutdown.")
                 except Exception as e:
                     logger.error(f"Error closing session: {e}", exc_info=True)
             else:
@@ -613,26 +612,3 @@ class TheMovieDB(commands.Cog):
             )
             for result in sorted_results[:25]
         ]
-
-    @commands.hybrid_command()
-    @app_commands.describe(query="The person you want to search for.")
-    @commands.bot_has_permissions(embed_links=True)
-    async def person(self, ctx: commands.Context, *, query: str):
-        """Search for a person.
-
-        You can write the full name of the person to get more accurate results.
-
-        **Examples:**
-        - `[p]person arthur`
-        - `[p]person johnny depp`
-
-        **Arguments:**
-        - `<query>` - The person you want to search for.
-        """
-        token = await ctx.bot.get_shared_api_tokens("tmdb")
-        if token.get("api_key") is None:
-            return await ctx.send(
-                "The bot owner has not set up the API key for TheMovieDB. "
-                "Please ask them to set it up."
-            )
-        await person_embed(ctx, query)
