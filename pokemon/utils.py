@@ -33,16 +33,34 @@ SOFTWARE.
 # but all logic should be sourced from the modules above.
 
 from .api import fetch_data as fetch_data
-from .formatters import ( 
+from .formatters import (
     MAX_DESCRIPTION_LENGTH as MAX_DESCRIPTION_LENGTH,
+)
+from .formatters import (
     _format_abilities as _format_abilities,
+)
+from .formatters import (
     _format_game_indices as _format_game_indices,
+)
+from .formatters import (
     _format_height_weight as _format_height_weight,
+)
+from .formatters import (
     _format_list as _format_list,
+)
+from .formatters import (
     _format_stats as _format_stats,
+)
+from .formatters import (
     _format_types as _format_types,
+)
+from .formatters import (
     _get_official_artwork as _get_official_artwork,
+)
+from .formatters import (
     _truncate_description as _truncate_description,
+)
+from .formatters import (
     create_pokemon_embed as create_pokemon_embed,
 )
 from .image import generate_image as generate_image

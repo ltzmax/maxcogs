@@ -30,6 +30,7 @@ from redbot.core import app_commands, commands
 
 from ..views import TcgCardView
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.commands.tcgcard")
 
 _TCG_FIELDS = (

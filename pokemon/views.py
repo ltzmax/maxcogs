@@ -32,10 +32,10 @@ from redbot.core import commands
 
 from .formatters import (
     PokemonSection,
-    _get_official_artwork,
     build_locations_text,
     build_section_text,
 )
+
 
 log = getLogger("red.maxcogs.whosthatpokemon.views")
 

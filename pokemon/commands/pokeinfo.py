@@ -28,6 +28,7 @@ from redbot.core import app_commands, commands
 from ..api import API_URL, fetch_data
 from ..views import PokemonView
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.commands.pokeinfo")
 
 

@@ -25,6 +25,7 @@ SOFTWARE.
 import aiohttp
 from red_commons.logging import getLogger
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.api")
 API_URL = "https://pokeapi.co/api/v2"
 _DEFAULT_TIMEOUT = aiohttp.ClientTimeout(total=15)

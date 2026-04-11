@@ -30,6 +30,7 @@ from red_commons.logging import getLogger
 
 from .api import API_URL, fetch_data
 
+
 log = getLogger("red.maxcogs.whosthatpokemon.formatters")
 
 MAX_DESCRIPTION_LENGTH = 4000
