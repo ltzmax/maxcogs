@@ -101,7 +101,9 @@ class Earthquake(commands.Cog):
         async with self.session.get(url, timeout=10) as response:
             if response.status != 200:
                 logger.error(
-                    "USGS API returned %s: %s", response.status, await response.text(),
+                    "USGS API returned %s: %s",
+                    response.status,
+                    await response.text(),
                     exc_info=True,
                 )
                 return []
@@ -455,7 +457,9 @@ class Earthquake(commands.Cog):
             )
         else:
             await self.config.guild(ctx.guild).country_filter.set(None)
-            await ctx.send("Country filter cleared. You will now receive global earthquake alerts.")
+            await ctx.send(
+                "Country filter cleared. You will now receive global earthquake alerts."
+            )
 
     @earthquakeset.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
@@ -488,7 +492,9 @@ class Earthquake(commands.Cog):
         )
         embed.add_field(
             name="Country Filter",
-            value=settings["country_filter"] if settings["country_filter"] else "Global (no filter)",
+            value=settings["country_filter"]
+            if settings["country_filter"]
+            else "Global (no filter)",
             inline=False,
         )
         embed.add_field(name="Safety Message", value=settings["safety_message"], inline=False)
