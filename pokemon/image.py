@@ -37,9 +37,6 @@ _DEFAULT_TIMEOUT = aiohttp.ClientTimeout(total=15)
 
 
 def _build_image(template_path: str, raw_data: bytes, hide: bool) -> BytesIO:
-    """
-    CPU-bound PIL compositing — always run via run_in_executor, never directly.
-    """
     base_image = Image.open(template_path).convert("RGBA")
     bg_width, bg_height = base_image.size
 
