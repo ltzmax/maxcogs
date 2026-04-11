@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import asyncio
-from typing import Optional, Union
 
 import discord
 import orjson
@@ -66,7 +65,7 @@ class NBACommands:
     async def nbaset_channel(
         self,
         ctx: commands.Context,
-        channel: Union[discord.TextChannel, discord.Thread],
+        channel: discord.TextChannel | discord.Thread,
         team: str,
     ):
         """
@@ -354,7 +353,7 @@ class NBACommands:
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     @app_commands.describe(team="The team name to filter the schedule for, e.g., 'heat'.")
-    async def schedule(self, ctx: commands.Context, *, team: Optional[str] = None):
+    async def schedule(self, ctx: commands.Context, *, team: str | None = None):
         """Get the current NBA schedule for next game.
 
         **Arguments:**
@@ -411,7 +410,7 @@ class NBACommands:
     @commands.bot_has_permissions(embed_links=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     @app_commands.describe(team="The NBA team to get the scoreboard for.")
-    async def scoreboard(self, ctx: commands.Context, team: Optional[str] = None):
+    async def scoreboard(self, ctx: commands.Context, team: str | None = None):
         """Get the current NBA scoreboard.
 
         - Scoreboard updates everyday between 12:00 PM ET and 1:00 PM ET.

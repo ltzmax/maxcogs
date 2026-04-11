@@ -27,7 +27,7 @@ import logging
 import random
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
-from typing import Any, Final, Optional, cast
+from typing import Any, Final, cast
 
 import aiohttp
 import discord
@@ -62,8 +62,8 @@ class GameState:
         self.guild = guild
         self.active = False
         self.players: dict[int, dict[str, Any]] = {}
-        self.start_time: Optional[datetime] = None
-        self.end_time: Optional[datetime] = None
+        self.start_time: datetime | None = None
+        self.end_time: datetime | None = None
 
 
 class HoneyCombs(commands.Cog):
@@ -424,7 +424,7 @@ class HoneyCombs(commands.Cog):
 
     @honeycombset.group(name="setimage", aliases=["setimg"], invoke_without_command=True)
     @commands.admin()
-    async def setimage(self, ctx: commands.Context, *, image_url: Optional[str] = None):
+    async def setimage(self, ctx: commands.Context, *, image_url: str | None = None):
         """
         Set the start image for the game.
 
@@ -466,7 +466,7 @@ class HoneyCombs(commands.Cog):
 
     @commands.admin()
     @honeycombset.command(name="modonly")
-    async def mod_only(self, ctx: commands.Context, state: Optional[bool] = None):
+    async def mod_only(self, ctx: commands.Context, state: bool | None = None):
         """
         Set whether only moderators can start the game.
 

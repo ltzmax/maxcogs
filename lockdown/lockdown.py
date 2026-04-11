@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import re
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import discord
 from red_commons.logging import getLogger
@@ -61,8 +61,8 @@ class Lockdown(commands.Cog):
         self,
         ctx: commands.Context,
         action: str,
-        reason: Optional[str] = None,
-        role: Optional[discord.Role] = None,
+        reason: str | None = None,
+        role: discord.Role | None = None,
     ) -> None:
         is_thread = isinstance(ctx.channel, discord.Thread)
         is_lock = action == "lock"
@@ -151,10 +151,10 @@ class Lockdown(commands.Cog):
 
     async def _parse_reason_and_role(
         self,
-        reason: Optional[str],
-        role: Optional[discord.Role],
+        reason: str | None,
+        role: discord.Role | None,
         guild: discord.Guild,
-    ) -> tuple[Optional[str], Optional[discord.Role]]:
+    ) -> tuple[str | None, discord.Role | None]:
         if reason and role is None:
             mentions = re.findall(r"<@&(\d+)>", reason)
             if mentions:
@@ -180,8 +180,8 @@ class Lockdown(commands.Cog):
         self,
         ctx: commands.Context,
         *,
-        reason: Optional[str] = None,
-        role: Optional[discord.Role] = None,
+        reason: str | None = None,
+        role: discord.Role | None = None,
     ):
         """
         Lock a channel or thread for a specific role or everyone.
@@ -212,8 +212,8 @@ class Lockdown(commands.Cog):
         self,
         ctx: commands.Context,
         *,
-        reason: Optional[str] = None,
-        role: Optional[discord.Role] = None,
+        reason: str | None = None,
+        role: discord.Role | None = None,
     ):
         """
         Unlock a channel or thread for a specific role or everyone.
@@ -238,7 +238,7 @@ class Lockdown(commands.Cog):
         """Manage thread(s) with [botname]."""
 
     @thread.command()
-    async def close(self, ctx: commands.Context, *, reason: Optional[str] = None):
+    async def close(self, ctx: commands.Context, *, reason: str | None = None):
         """Close and archive a thread post."""
         if not isinstance(ctx.channel, discord.Thread):
             return await ctx.send("❌ This channel is not a thread.")

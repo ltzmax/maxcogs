@@ -24,7 +24,7 @@ SOFTWARE.
 
 import asyncio
 import datetime
-from typing import Final, Optional
+from typing import Final
 
 import aiohttp
 import discord
@@ -186,7 +186,7 @@ class Earthquake(commands.Cog):
 
     async def get_or_create_webhook(
         self, channel: discord.TextChannel
-    ) -> Optional[discord.Webhook]:
+    ) -> discord.Webhook | None:
         """Get or create a webhook for earthquake alerts in the channel."""
         our_name = "Earthquake Alert Webhook"
         try:
@@ -358,7 +358,7 @@ class Earthquake(commands.Cog):
         await ctx.send(f"Webhook usage for earthquake alerts has been {status}.")
 
     @earthquakeset.command(name="channel")
-    async def set_channel(self, ctx: commands.Context, channel: Optional[discord.TextChannel]):
+    async def set_channel(self, ctx: commands.Context, channel: discord.TextChannel | None):
         """Set or clear the channel for earthquake alerts."""
         if channel:
             if (
@@ -376,7 +376,7 @@ class Earthquake(commands.Cog):
 
     @earthquakeset.command(name="role")
     @commands.bot_has_permissions(manage_roles=True)
-    async def set_role(self, ctx: commands.Context, role: Optional[discord.Role]):
+    async def set_role(self, ctx: commands.Context, role: discord.Role | None):
         """Set or clear the role to ping for earthquake alerts."""
         if role:
             if role >= ctx.guild.me.top_role:
@@ -411,7 +411,7 @@ class Earthquake(commands.Cog):
         )
 
     @earthquakeset.command(name="safety")
-    async def set_safety_message(self, ctx: commands.Context, *, message: Optional[str] = None):
+    async def set_safety_message(self, ctx: commands.Context, *, message: str | None = None):
         """Set or clear a custom safety message for alerts."""
         if message:
             if message and len(message) > 1024:

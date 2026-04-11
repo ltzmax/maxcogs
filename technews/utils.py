@@ -22,14 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union
-
 import discord
 
 
-# Type alias for supported destinations
-ChannelOrThread = Union[discord.TextChannel, discord.Thread]
-
+ChannelOrThread = discord.TextChannel | discord.Thread
 
 def _can_post(me: discord.Member, channel: ChannelOrThread) -> bool:
     """

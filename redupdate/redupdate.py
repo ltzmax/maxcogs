@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Final, Literal, Optional
+from typing import Final, Literal
 
 import discord
 from red_commons.logging import getLogger
@@ -172,7 +172,7 @@ class RedUpdate(commands.Cog):
     @commands.is_owner()
     @commands.command(usage="[version]")
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    async def updatered(self, ctx: commands.Context, version: Optional[Literal["dev"]]):
+    async def updatered(self, ctx: commands.Context, version: Literal["dev"] | None):
         """
         Update [botname] to latest changes.
 

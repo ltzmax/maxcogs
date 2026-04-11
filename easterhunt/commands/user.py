@@ -27,7 +27,6 @@ import contextlib
 import random
 import time
 from datetime import datetime, timedelta
-from typing import Optional
 
 import discord
 from red_commons.logging import getLogger
@@ -238,7 +237,7 @@ class UserCommands(commands.Cog):
 
     @easterhunt.command(aliases=["inv", "view", "views"])
     @commands.bot_has_permissions(embed_links=True)
-    async def inventory(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+    async def inventory(self, ctx: commands.Context, member: discord.Member | None = None):
         """Check your Easter haul!"""
         if not member:
             member = ctx.author
@@ -280,7 +279,7 @@ class UserCommands(commands.Cog):
 
     @easterhunt.command(aliases=["achievement"])
     @commands.bot_has_permissions(embed_links=True)
-    async def achievements(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+    async def achievements(self, ctx: commands.Context, member: discord.Member | None = None):
         """
         Check if you've completed any Easter Hunt!
 

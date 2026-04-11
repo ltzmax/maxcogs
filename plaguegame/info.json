@@ -6,5 +6,11 @@
     "description" : "Plague game with a doctor and plaguebearer.",
     "requirements": ["unidecode", "rapidfuzz"],
     "tags" : ["fun", "plague"],
+    "min_python_version": [
+        3,
+        10,
+        0
+    ],
+    "min_bot_version": "3.5.24",
     "end_user_data_statement": "This cog stores data on users based off their interactions within the game. Examples of such data are their 'health state' (healthy or infected) or their 'game role' (user, doctor, plaguebearer)."
 }

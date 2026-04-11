@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from datetime import datetime
-from typing import Any, Final, Optional
+from typing import Any, Final
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import aiohttp
@@ -101,8 +101,8 @@ class History(commands.Cog):
     async def history(
         self,
         ctx: commands.Context,
-        month: Optional[int] = None,
-        day: Optional[int] = None,
+        month: int | None = None,
+        day: int | None = None,
     ) -> None:
         """
         View historical events that happened on this day or a specified date.

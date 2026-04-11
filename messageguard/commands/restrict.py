@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Optional
 
 import discord
 from redbot.core import commands
@@ -81,7 +80,7 @@ class RestrictCommands:
 
     @restrictposts.command(name="mentionable")
     async def rp_mentionable(
-        self, ctx: commands.Context, mentionable: Optional[bool] = None
+        self, ctx: commands.Context, mentionable: bool | None = None
     ) -> None:
         """Toggle or set whether the warning message mentions the user."""
         cfg = self._get_cache(ctx.guild.id)
@@ -104,7 +103,7 @@ class RestrictCommands:
             await ctx.send(f"Delete-after set to {seconds} seconds.")
 
     @restrictposts.command(name="message")
-    async def rp_message(self, ctx: commands.Context, *, message: Optional[str] = None) -> None:
+    async def rp_message(self, ctx: commands.Context, *, message: str | None = None) -> None:
         """Set or reset the custom warning message for deleted messages."""
         if message:
             message = message.strip() or RP_DEFAULT_MSG
@@ -120,7 +119,7 @@ class RestrictCommands:
         )
 
     @restrictposts.command(name="defaulttitle")
-    async def rp_defaulttitle(self, ctx: commands.Context, *, title: Optional[str] = None) -> None:
+    async def rp_defaulttitle(self, ctx: commands.Context, *, title: str | None = None) -> None:
         """Set or reset the default title for the warning embed."""
         if title:
             title = title.strip() or RP_DEFAULT_TITLE

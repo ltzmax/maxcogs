@@ -25,7 +25,6 @@ SOFTWARE.
 import asyncio
 import datetime
 import random
-from typing import Optional
 
 import discord
 from red_commons.logging import getLogger
@@ -69,7 +68,7 @@ async def resolve_heist(
     user: discord.User,
     heist_type: str,
     channel: discord.TextChannel,
-    fallback_channel_id: Optional[int] = None,
+    fallback_channel_id: int | None = None,
 ):
     member = None
     try:

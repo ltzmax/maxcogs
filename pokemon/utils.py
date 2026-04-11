@@ -24,7 +24,6 @@ SOFTWARE.
 
 import asyncio
 from io import BytesIO
-from typing import Optional
 
 import aiohttp
 import discord
@@ -63,7 +62,7 @@ async def fetch_data(session: aiohttp.ClientSession, url: str) -> dict | None:
         return None
 
 
-async def generate_image(cog, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
+async def generate_image(cog, poke_id: str, *, hide: bool) -> BytesIO | None:
     base_image = Image.open(bundled_data_path(cog) / "template.webp").convert("RGBA")
     bg_width, bg_height = base_image.size
     base_url = f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"

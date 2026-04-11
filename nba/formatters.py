@@ -25,7 +25,6 @@ SOFTWARE.
 import math
 from datetime import datetime, timezone
 from itertools import islice
-from typing import Optional
 
 import discord
 from redbot.core import commands
@@ -37,7 +36,7 @@ from .converter import get_leaders_info, get_time_bounds, parse_duration, period
 async def build_schedule_embeds(
     ctx: commands.Context,
     games: list[dict],
-    team: Optional[str],
+    team: str | None,
 ) -> list[discord.Embed]:
     """Build paginated embeds for upcoming NBA schedule."""
     # NBA season typically runs from October to June, with the offseason in July, August, and September.
@@ -92,7 +91,7 @@ async def build_schedule_embeds(
 async def build_scoreboard_embeds(
     ctx: commands.Context,
     games: list[dict],
-    team: Optional[str],
+    team: str | None,
 ) -> list[discord.Embed]:
     """Build detailed paginated embeds for scoreboard."""
     if not games:
@@ -286,7 +285,7 @@ async def build_playoff_embeds(
             continue
         conf = "East" if "East" in name else "West"
         headers = result_set["headers"]
-        rows = [dict(zip(headers, r)) for r in result_set.get("rowSet", [])]
+        rows = [dict(zip(headers, r, strict=False)) for r in result_set.get("rowSet", [])]
         per_page = 4
         for i in range(0, len(rows), per_page):
             chunk = rows[i : i + per_page]

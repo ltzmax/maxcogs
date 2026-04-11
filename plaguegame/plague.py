@@ -27,7 +27,6 @@ import asyncio
 import contextlib
 import random
 from collections import Counter
-from typing import Optional
 
 import discord
 from redbot.core import Config, app_commands, bank, commands
@@ -281,7 +280,7 @@ class Plague(commands.Cog):
         """Settings for the Plague game."""
 
     @plagueset.command()
-    async def name(self, ctx, *, name: Optional[str] = None):
+    async def name(self, ctx, *, name: str | None = None):
         """Set's the plague's name. Leave blank to show the current name."""
         plagueName = await self.config.plagueName()
         if not name:

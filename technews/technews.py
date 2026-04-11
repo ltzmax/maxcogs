@@ -24,7 +24,7 @@ SOFTWARE.
 
 import asyncio
 from datetime import datetime
-from typing import Final, Union
+from typing import Final
 
 import discord
 import feedparser
@@ -220,7 +220,7 @@ class TechNews(commands.Cog):
     async def set_channel(
         self,
         ctx: commands.Context,
-        channel: Union[discord.TextChannel, discord.Thread] = None,
+        channel: discord.TextChannel | discord.Thread = None,
     ):
         """Set or clear the channel or thread for tech news in this server.
 

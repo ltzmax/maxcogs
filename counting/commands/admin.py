@@ -25,7 +25,6 @@ SOFTWARE.
 import asyncio
 import re
 from enum import Enum
-from typing import Optional
 
 import discord
 import emoji
@@ -58,7 +57,7 @@ class AdminCommands(commands.Cog):
 
     @countingset.command(name="channel")
     async def set_channel(
-        self, ctx: commands.Context, channel: Optional[discord.TextChannel] = None
+        self, ctx: commands.Context, channel: discord.TextChannel | None = None
     ) -> None:
         """Set or clear the counting channel."""
         if not channel:
@@ -181,8 +180,8 @@ class AdminCommands(commands.Cog):
     async def set_ruinrole(
         self,
         ctx: commands.Context,
-        role: Optional[discord.Role] = None,
-        duration: Optional[str] = None,
+        role: discord.Role | None = None,
+        duration: str | None = None,
     ) -> None:
         """
         Set or clear the role assigned for ruining the count, with an optional temporary duration.

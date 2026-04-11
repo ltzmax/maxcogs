@@ -7,7 +7,7 @@
     "description": "Count from 1 to infinity! with some customizable settings.",
     "short": "Count from 1 to infinity! with some customizable settings.",
     "hidden": false,
-    "min_bot_version": "3.5.13",
+    "min_bot_version": "3.5.24",
     "tags": [
         "counting",
         "count"

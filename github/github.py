@@ -26,9 +26,8 @@ SOFTWARE.
 import asyncio
 import logging
 import re
-import typing
 from datetime import datetime, timezone
-from typing import Final, Optional
+from typing import Final
 from urllib.parse import urlparse
 
 import aiohttp
@@ -93,7 +92,7 @@ class GitHub(commands.Cog):
         self.config.register_guild(**default_guild)
         self.config.register_member(**default_member)
 
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
 
         self._github_rss.start()
 
@@ -240,7 +239,7 @@ class GitHub(commands.Cog):
 
         return user, repo, branch, token
 
-    def _parse_url_input(self, url: str, branch: Optional[str]) -> Optional[dict]:
+    def _parse_url_input(self, url: str, branch: str | None) -> dict | None:
         user, repo, parsed_branch, token = self._parse_url(url)
         if not user or not repo:
             return None
@@ -361,7 +360,7 @@ class GitHub(commands.Cog):
     async def _set_color(
         self,
         ctx: commands.Context,
-        hex_color: typing.Union[discord.Color, ExplicitNone],
+        hex_color: discord.Color | ExplicitNone,
     ):
         """Set the GitHub RSS feed embed color for the server (enter "None" to reset)."""
         await self.config.guild(ctx.guild).color.set(
@@ -582,9 +581,9 @@ class GitHub(commands.Cog):
     async def _get(
         self,
         ctx: commands.Context,
-        entries: typing.Optional[int],
+        entries: int | None,
         url: str,
-        branch: Optional[str] = None,
+        branch: str | None = None,
     ):
         """Test out fetching a GitHub repository url."""
 
@@ -609,7 +608,7 @@ class GitHub(commands.Cog):
         )
 
     @_github.command(name="add")
-    async def _add(self, ctx: commands.Context, name: str, url: str, branch: Optional[str] = None):
+    async def _add(self, ctx: commands.Context, name: str, url: str, branch: str | None = None):
         """
         Add a GitHub RSS feed to the server.
 
@@ -750,7 +749,7 @@ class GitHub(commands.Cog):
         for embed in embeds:
             await ctx.send(embed=embed)
 
-    async def _do_rss_check(self, guild_to_check: Optional[int] = None) -> None:
+    async def _do_rss_check(self, guild_to_check: int | None = None) -> None:
         # Loop through each guild
         for guild_id, guild_config in (await self.config.all_guilds()).items():
             # Check for single guild

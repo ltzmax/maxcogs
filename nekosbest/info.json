@@ -7,7 +7,7 @@
     "description": "Random Nekos.best images + RolePlay Commands.",
     "short": "Random Nekos.best images + RolePlay Commands.",
     "hidden": false,
-    "min_bot_version": "3.5.0",
+    "min_bot_version": "3.5.24",
     "tags": [
         "images",
         "waifu",
@@ -22,8 +22,8 @@
     "requirements": ["orjson"],
     "min_python_version": [
         3,
-        8,
-        5
+        10,
+        0
     ],
     "end_user_data_statement": "This cog stores Discord IDs for the count of each actions from any roleplay commands used. No privately informations is stored about users.",
     "type": "COG"

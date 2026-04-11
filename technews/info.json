@@ -23,7 +23,7 @@
     "requirements": ["feedparser", "beautifulsoup4"],
     "min_python_version": [
         3,
-        9,
+        10,
         0
     ],
     "end_user_data_statement": "This cog does not store any End User Data.",

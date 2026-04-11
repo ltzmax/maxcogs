@@ -24,7 +24,6 @@ SOFTWARE.
 
 import logging
 import random
-from typing import Optional
 
 import discord
 from redbot.core import bank
@@ -101,7 +100,7 @@ class HoneycombView(discord.ui.LayoutView):
         self.cog = cog
         self.guild = guild
         self.player_count = 0
-        self.message: Optional[discord.Message] = None
+        self.message: discord.Message | None = None
 
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
         self.container.add_item(discord.ui.Separator())

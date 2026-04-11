@@ -25,7 +25,7 @@ SOFTWARE.
 import asyncio
 import datetime
 import random
-from typing import Final, Optional
+from typing import Final
 
 import discord
 from red_commons.logging import getLogger
@@ -135,7 +135,7 @@ class Heist(commands.Cog):
             await self.config.user(member).inventory.set(inventory)
 
     async def _has_active_heist(
-        self, user: discord.Member, channel_id: Optional[int] = None
+        self, user: discord.Member, channel_id: int | None = None
     ) -> bool:
         active = await self.config.user(user).active_heist()
         if not active:
@@ -795,7 +795,7 @@ class Heist(commands.Cog):
         view.message = message
 
     @heistset.command(name="reset")
-    async def heistset_reset(self, ctx: commands.Context, heist_type: Optional[str] = None):
+    async def heistset_reset(self, ctx: commands.Context, heist_type: str | None = None):
         """Reset heist settings to default values.
 
         If no heist_type is provided, resets all heists.
@@ -840,7 +840,7 @@ class Heist(commands.Cog):
                 await ctx.send("Reset all heist settings to defaults.")
 
     @heistset.command(name="resetprice")
-    async def heistset_resetprice(self, ctx: commands.Context, item_name: Optional[str] = None):
+    async def heistset_resetprice(self, ctx: commands.Context, item_name: str | None = None):
         """Reset item prices to default values.
 
         If no item_name is provided, resets all item prices.
@@ -867,7 +867,7 @@ class Heist(commands.Cog):
 
     @heistset.command(name="show")
     @commands.bot_has_permissions(embed_links=True)
-    async def heistset_show(self, ctx: commands.Context, heist_type: Optional[str] = None):
+    async def heistset_show(self, ctx: commands.Context, heist_type: str | None = None):
         """Show current settings for a heist or all heists.
 
         Parameters:
@@ -940,7 +940,7 @@ class Heist(commands.Cog):
 
     @heistset.command(name="showprices")
     @commands.bot_has_permissions(embed_links=True)
-    async def heistset_showprices(self, ctx: commands.Context, item_name: Optional[str] = None):
+    async def heistset_showprices(self, ctx: commands.Context, item_name: str | None = None):
         """Show current prices for an item or all shop items.
 
         Parameters:

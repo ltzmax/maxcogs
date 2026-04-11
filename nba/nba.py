@@ -26,7 +26,7 @@ import asyncio
 import sqlite3
 from datetime import datetime, timezone
 from time import time
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import aiohttp
 import discord
@@ -520,8 +520,8 @@ class NBA(NBACommands, commands.Cog):
                             )
 
     async def fetch_data(
-        self, url: str, ctx: Optional[commands.Context] = None
-    ) -> Optional[bytes]:
+        self, url: str, ctx: commands.Context | None = None
+    ) -> bytes | None:
         """Fetch data from a URL using the shared session with error handling."""
         try:
             async with self.session.get(url) as resp:
@@ -537,7 +537,7 @@ class NBA(NBACommands, commands.Cog):
 
     async def get_cached_data(
         self, url: str, ctx: commands.Context, cache_key: str
-    ) -> Optional[bytes]:
+    ) -> bytes | None:
         """Fetch or return cached data with TTL."""
         cache = getattr(self, f"{cache_key}_cache")
         cache_time = getattr(self, f"{cache_key}_time")
@@ -549,7 +549,7 @@ class NBA(NBACommands, commands.Cog):
             setattr(self, f"{cache_key}_time", time())
         return data
 
-    async def fetch_scoreboard(self, ctx: commands.Context) -> Optional[list[dict]]:
+    async def fetch_scoreboard(self, ctx: commands.Context) -> list[dict] | None:
         """Fetch and parse NBA scoreboard data."""
         data = await self.get_cached_data(TODAY_SCOREBOARD, ctx, "scoreboard")
         if not data:
@@ -560,7 +560,7 @@ class NBA(NBACommands, commands.Cog):
             log.error("Failed to decode scoreboard: %s", e)
             return None
 
-    async def fetch_news(self, ctx: commands.Context) -> Optional[list[dict]]:
+    async def fetch_news(self, ctx: commands.Context) -> list[dict] | None:
         """Fetch and parse NBA news feed."""
         data = await self.fetch_data(ESPN_NBA_NEWS, ctx)
         if not data:
@@ -572,7 +572,7 @@ class NBA(NBACommands, commands.Cog):
             log.error("Failed to parse ESPN news: %s", e)
             return None
 
-    async def fetch_standings(self, ctx: commands.Context) -> Optional[dict]:
+    async def fetch_standings(self, ctx: commands.Context) -> dict | None:
         """Fetch NBA standings from ESPN public API."""
         data = await self.fetch_data(ESPN_NBA_STANDINGS, ctx)
         if not data:

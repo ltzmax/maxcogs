@@ -25,7 +25,6 @@ SOFTWARE.
 import asyncio
 from functools import partial
 from io import BytesIO
-from typing import Optional
 
 import aiohttp
 from PIL import Image
@@ -73,7 +72,7 @@ def _build_image(template_path: str, raw_data: bytes, hide: bool) -> BytesIO:
         poke_image_resized.close()
 
 
-async def generate_image(cog, poke_id: str, *, hide: bool) -> Optional[BytesIO]:
+async def generate_image(cog, poke_id: str, *, hide: bool) -> BytesIO | None:
     """Fetch the Pokémon sprite and composite it onto the template image."""
     base_url = f"https://assets.pokemon.com/assets/cms2/img/pokedex/full/{poke_id}.png"
     try:

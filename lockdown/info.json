@@ -7,7 +7,7 @@
     "description": "Let moderators lockdown a channel to prevent messages from being sent.",
     "short": "Let moderators lockdown a channel to prevent messages from being sent.",
     "hidden": false,
-    "min_bot_version": "3.5.5",
+    "min_bot_version": "3.5.24",
     "tags": [
         "lockdown",
         "unlock",
@@ -19,7 +19,7 @@
     "requirements": [],
     "min_python_version": [
         3,
-        9,
+        10,
         0
     ],
     "end_user_data_statement": "This cog does not store any End User Data.",

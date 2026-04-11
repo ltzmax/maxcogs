@@ -25,7 +25,6 @@ SOFTWARE.
 import contextlib
 import json
 import random
-from typing import Optional
 
 import aiosqlite
 import discord
@@ -167,7 +166,7 @@ class Database:
             rows = await cursor.fetchall()
             return {row[0]: row[1] for row in rows if row[1] is not None}
 
-    async def set_egg_image(self, egg_type: str, url: Optional[str]):
+    async def set_egg_image(self, egg_type: str, url: str | None):
         async with self.conn.cursor() as cursor:
             if url is None:
                 await cursor.execute("DELETE FROM egg_images WHERE egg_type = ?", (egg_type,))
@@ -216,7 +215,7 @@ class Database:
 
     async def find_target_player(
         self, user_id: int, guild
-    ) -> tuple[Optional[discord.Member], Optional[str]]:
+    ) -> tuple[discord.Member | None, str | None]:
         """Find a random guild member with eggs to steal from, excluding the requesting user."""
         potential_targets = []
         async with self.conn.cursor() as cursor:

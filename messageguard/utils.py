@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union
 
 import discord
 from red_commons.logging import getLogger
@@ -33,21 +32,21 @@ log = getLogger("red.maxcogs.messageguard.utils")
 
 # idk why i did this but it makes the code cleaner in some places so here we are
 def has_manage_messages(
-    channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel],
+    channel: discord.TextChannel | discord.Thread | discord.ForumChannel,
     me: discord.Member,
 ) -> bool:
     return channel.permissions_for(me).manage_messages
 
 
 def has_send_messages(
-    channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel],
+    channel: discord.TextChannel | discord.Thread | discord.ForumChannel,
     me: discord.Member,
 ) -> bool:
     return channel.permissions_for(me).send_messages
 
 
 def can_moderate(
-    channel: Union[discord.TextChannel, discord.Thread, discord.ForumChannel],
+    channel: discord.TextChannel | discord.Thread | discord.ForumChannel,
     me: discord.Member,
 ) -> bool:
     perms = channel.permissions_for(me)
@@ -55,7 +54,7 @@ def can_moderate(
 
 
 def log_missing_permissions(
-    channel: Union[discord.TextChannel, discord.Thread],
+    channel: discord.TextChannel | discord.Thread,
     guild: discord.Guild,
     feature: str,
 ) -> None:

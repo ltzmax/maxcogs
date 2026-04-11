@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Optional
 
 import discord
 from redbot.core import commands
@@ -51,7 +50,7 @@ class SpoilerCommands:
         await ctx.send(f"Spoiler filter is now {'enabled' if new_value else 'disabled'}.")
 
     @nospoiler.command(name="togglewarnmsg")
-    async def ns_togglewarnmsg(self, ctx: commands.Context, toggle: Optional[bool] = None) -> None:
+    async def ns_togglewarnmsg(self, ctx: commands.Context, toggle: bool | None = None) -> None:
         """Toggle the spoiler warning message on or off."""
         cfg = self._get_cache(ctx.guild.id)
         new_value = toggle if toggle is not None else not cfg.get("ns_spoiler_warn", False)
@@ -59,7 +58,7 @@ class SpoilerCommands:
         await ctx.send(f"Spoiler warning message is now {'enabled' if new_value else 'disabled'}.")
 
     @nospoiler.command(name="useembed")
-    async def ns_useembed(self, ctx: commands.Context, toggle: Optional[bool] = None) -> None:
+    async def ns_useembed(self, ctx: commands.Context, toggle: bool | None = None) -> None:
         """Toggle whether the spoiler warning uses an embed."""
         cfg = self._get_cache(ctx.guild.id)
         new_value = toggle if toggle is not None else not cfg.get("ns_use_embed", False)
@@ -75,7 +74,7 @@ class SpoilerCommands:
         await ctx.send(f"Spoiler warning timeout set to {seconds} seconds.")
 
     @nospoiler.command(name="message")
-    async def ns_message(self, ctx: commands.Context, *, message: Optional[str] = None) -> None:
+    async def ns_message(self, ctx: commands.Context, *, message: str | None = None) -> None:
         """Set or reset the custom spoiler warning message."""
         new_message = message or NS_DEFAULT_WARNING
         await self._update_cache(ctx.guild, "ns_spoiler_warn_message", new_message)

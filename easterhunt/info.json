@@ -7,7 +7,7 @@
     "description": "Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements.",
     "short": "Easter hunt cog that provides a fun Easter-themed game where users can hunt for eggs, work for egg shards, give eggs to others or steal, and earn achievements.",
     "hidden": false,
-    "min_bot_version": "3.5.21",
+    "min_bot_version": "3.5.24",
     "tags": [
         "easter",
         "hunting",

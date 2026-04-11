@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 import logging
-from typing import Any, Final, Literal, Optional
+from typing import Any, Final, Literal
 
 import aiohttp
 import discord
@@ -69,7 +69,7 @@ class NekosBest(commands.Cog):
     async def red_get_data_for_user(self, *, user_id: int):
         return
 
-    async def _api_call(self, ctx: commands.Context, endpoint: str) -> Optional[dict[str, Any]]:
+    async def _api_call(self, ctx: commands.Context, endpoint: str) -> dict[str, Any] | None:
         async with self.session.get(NEKOS + endpoint) as response:
             if response.status != 200:
                 log.error(

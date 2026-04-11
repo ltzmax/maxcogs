@@ -7,7 +7,7 @@
     "description": "Posts live worldwide earthquake updates from USGS to a designated channel.",
     "short": "Posts live worldwide earthquake updates from USGS to a designated channel.",
     "hidden": false,
-    "min_bot_version": "3.5.13",
+    "min_bot_version": "3.5.24",
     "tags": [
         "Earthquake",
         "USGS",
@@ -21,7 +21,7 @@
     "requirements": ["tenacity"],
     "min_python_version": [
         3,
-        9,
+        10,
         0
     ],
     "end_user_data_statement": "This cog does not store any End User Data.",

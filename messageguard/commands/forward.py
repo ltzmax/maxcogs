@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union
 
 import discord
 from redbot.core import commands
@@ -99,7 +98,7 @@ class ForwardCommands:
     async def fd_allow(
         self,
         ctx: commands.Context,
-        *channels: Union[discord.TextChannel, discord.Thread],
+        *channels: discord.TextChannel | discord.Thread,
     ) -> None:
         """Add channels or threads where forwarding is allowed."""
         allowed = self._get_cache(ctx.guild.id).get("fd_allowed_channels", set())
@@ -123,7 +122,7 @@ class ForwardCommands:
     async def fd_disallow(
         self,
         ctx: commands.Context,
-        *channels: Union[discord.TextChannel, discord.Thread],
+        *channels: discord.TextChannel | discord.Thread,
     ) -> None:
         """Remove channels or threads from the forwarding allowed list."""
         allowed = self._get_cache(ctx.guild.id).get("fd_allowed_channels", set())
