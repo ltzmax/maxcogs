@@ -29,8 +29,6 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core.utils.chat_formatting import humanize_list, humanize_number
 
-from .tmdb_utils import get_media_data
-
 log = getLogger("red.maxcogs.themoviedb.views")
 
 TMDB_BASE_IMAGE = "https://image.tmdb.org/t/p"
@@ -340,6 +338,7 @@ class MediaButton(discord.ui.Button["MediaPaginator"]):
         self.index = index
 
     async def callback(self, interaction: discord.Interaction) -> None:
+        from .tmdb_utils import get_media_data
         try:
             data = await get_media_data(
                 self.paginator.ctx,
