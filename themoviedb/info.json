@@ -7,7 +7,7 @@
     "description": "Search for informations of movies and TV shows from themoviedb.org.",
     "short": "Search for informations of movies and TV shows from themoviedb.org.",
     "hidden": false,
-    "min_bot_version": "3.5.21",
+    "min_bot_version": "3.5.24",
     "tags": [
         "movies",
         "movie",
@@ -21,7 +21,7 @@
     "requirements": [],
     "min_python_version": [
         3,
-        9,
+        11,
         0
     ],
     "end_user_data_statement": "This cog does not store any End User Data.",

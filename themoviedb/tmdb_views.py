@@ -23,15 +23,27 @@ SOFTWARE.
 """
 
 from datetime import datetime
+from enum import StrEnum
 
 import aiohttp
 import discord
 from red_commons.logging import getLogger
 from redbot.core.utils.chat_formatting import humanize_list, humanize_number
 
+
 log = getLogger("red.maxcogs.themoviedb.views")
 
 TMDB_BASE_IMAGE = "https://image.tmdb.org/t/p"
+
+
+class MediaType(StrEnum):
+    MOVIE = "movie"
+    TV = "tv"
+
+
+class NavDirection(StrEnum):
+    PREV = "prev"
+    NEXT = "next"
 
 
 def _parse_date(date_str: str) -> str | None:
@@ -45,29 +57,28 @@ def _parse_date(date_str: str) -> str | None:
         return None
 
 
-def _build_detail_fields(data: dict, item_type: str) -> dict:
+def _build_detail_fields(data: dict, item_type: MediaType) -> dict:
     """Build the fields dict for a movie or TV detail view."""
-    is_movie = item_type == "movie"
+    match item_type:
+        case MediaType.MOVIE:
+            release = _parse_date(data.get("release_date", ""))
+            dates = {"Release Date": release} if release else {}
+        case MediaType.TV:
+            first = _parse_date(data.get("first_air_date", ""))
+            last = _parse_date(data.get("last_air_date", ""))
+            next_ep = _parse_date((data.get("next_episode_to_air") or {}).get("air_date", ""))
+            dates = {}
+            if first:
+                dates["First Air Date"] = first
+            if last:
+                dates["Last Air Date"] = last
+            if next_ep:
+                dates["Next Episode Air Date"] = next_ep
+        case _:
+            dates = {}
 
-    # Dates
-    if is_movie:
-        release = _parse_date(data.get("release_date", ""))
-        dates = {"Release Date": release} if release else {}
-    else:
-        first = _parse_date(data.get("first_air_date", ""))
-        last = _parse_date(data.get("last_air_date", ""))
-        next_ep = _parse_date((data.get("next_episode_to_air") or {}).get("air_date", ""))
-        dates = {}
-        if first:
-            dates["First Air Date"] = first
-        if last:
-            dates["Last Air Date"] = last
-        if next_ep:
-            dates["Next Episode Air Date"] = next_ep
-
-    # Episode/season info (TV only)
     episode_info = {}
-    if not is_movie:
+    if item_type == MediaType.TV:
         n_seasons = data.get("number_of_seasons")
         n_episodes = data.get("number_of_episodes")
         if n_seasons:
@@ -75,21 +86,17 @@ def _build_detail_fields(data: dict, item_type: str) -> dict:
         if n_episodes:
             episode_info["Number of Episodes"] = n_episodes
 
-    # Runtime (movie only)
     runtime = {}
-    if is_movie and data.get("runtime"):
+    if item_type == MediaType.MOVIE and data.get("runtime"):
         runtime["Runtime"] = f"{data['runtime']} minutes"
 
-    # Status
     status = {"Status": data.get("status")} if data.get("status") else {}
 
-    # Genres
     genres = [g["name"] for g in data.get("genres", [])]
     genre_field = {}
     if genres:
         genre_field[f"{'Genre' if len(genres) == 1 else 'Genres'}"] = humanize_list(genres)
 
-    # Production
     companies = [c["name"] for c in data.get("production_companies", [])]
     countries = [c["name"] for c in data.get("production_countries", [])]
     languages = [la["name"] for la in data.get("spoken_languages", [])]
@@ -107,16 +114,14 @@ def _build_detail_fields(data: dict, item_type: str) -> dict:
             humanize_list(languages)
         )
 
-    # Ratings
     ratings = {
         "Popularity": humanize_number(data.get("popularity", 0)),
         "Vote Average": data.get("vote_average"),
         "Vote Count": humanize_number(data.get("vote_count", 0)),
     }
 
-    # Movie specific extras
     movie_extras = {}
-    if is_movie:
+    if item_type == MediaType.MOVIE:
         if data.get("budget"):
             movie_extras["Budget"] = f"${humanize_number(data['budget'])}"
         if data.get("revenue"):
@@ -126,14 +131,15 @@ def _build_detail_fields(data: dict, item_type: str) -> dict:
             movie_extras["Belongs to Collection"] = collection
         movie_extras["Adult"] = "Yes" if data.get("adult") else "No"
 
-    # Original titles
     originals = {}
-    if is_movie and data.get("original_title") and data["original_title"] != data.get("title"):
-        originals["Original Title"] = data["original_title"]
-    if not is_movie and data.get("original_name") and data["original_name"] != data.get("name"):
-        originals["Original Name"] = data["original_name"]
+    match item_type:
+        case MediaType.MOVIE:
+            if data.get("original_title") and data["original_title"] != data.get("title"):
+                originals["Original Title"] = data["original_title"]
+        case MediaType.TV:
+            if data.get("original_name") and data["original_name"] != data.get("name"):
+                originals["Original Name"] = data["original_name"]
 
-    # Misc
     misc = {}
     if data.get("tagline"):
         misc["Tagline"] = data["tagline"]
@@ -158,12 +164,23 @@ def _build_detail_fields(data: dict, item_type: str) -> dict:
 def build_detail_view(
     data: dict,
     item_id: int,
-    item_type: str,
+    item_type: MediaType,
     accent_colour: discord.Colour,
 ) -> "DetailView":
     """Build a Components v2 detail view for a movie or TV show."""
     url = f"https://www.themoviedb.org/{item_type}/{item_id}"
-    title = data.get("title" if item_type == "movie" else "name", "No title available.")[:256]
+
+    match item_type:
+        case MediaType.MOVIE:
+            title = data.get("title", "No title available.")[:256]
+            emoji = "🎥"
+        case MediaType.TV:
+            title = data.get("name", "No title available.")[:256]
+            emoji = "📺"
+        case _:
+            title = data.get("title", data.get("name", "No title available."))[:256]
+            emoji = "🎬"
+
     description = data.get("overview", "No description available.")[:1048]
     poster_path = data.get("poster_path")
     thumbnail_url = f"{TMDB_BASE_IMAGE}/w500{poster_path}" if poster_path else None
@@ -201,7 +218,7 @@ def build_detail_view(
                 style=discord.ButtonStyle.link,
                 label=title[:80],
                 url=url,
-                emoji="📺" if item_type == "tv" else "🎥",
+                emoji=emoji,
             ),
         )
     )
@@ -224,7 +241,7 @@ class MediaPaginator(discord.ui.View):
         self,
         ctx,
         filtered_results: list,
-        media_type: str,
+        media_type: MediaType,
         api_key: str,
         session: aiohttp.ClientSession,
         accent_colour: discord.Colour,
@@ -242,8 +259,14 @@ class MediaPaginator(discord.ui.View):
         self.message = None
         self._add_buttons()
 
-    def _sort_results(self, results: list, media_type: str) -> list:
-        date_key = "release_date" if media_type == "movie" else "first_air_date"
+    def _sort_results(self, results: list, media_type: MediaType) -> list:
+        match media_type:
+            case MediaType.MOVIE:
+                date_key = "release_date"
+            case MediaType.TV:
+                date_key = "first_air_date"
+            case _:
+                date_key = "release_date"
 
         def get_date(item):
             date_str = item.get(date_key, "0000-00-00")
@@ -255,13 +278,16 @@ class MediaPaginator(discord.ui.View):
         return sorted(results, key=get_date, reverse=True)
 
     def _get_label(self, result: dict, index: int) -> str:
-        key_map = {
-            "movie": {"title": "title", "date": "release_date"},
-            "tv": {"title": "name", "date": "first_air_date"},
-        }
-        keys = key_map[self.media_type]
-        title = result.get(keys["title"], "Unknown")
-        date = result.get(keys["date"], "N/A")[:4]
+        match self.media_type:
+            case MediaType.MOVIE:
+                title = result.get("title", "Unknown")
+                date = result.get("release_date", "N/A")[:4]
+            case MediaType.TV:
+                title = result.get("name", "Unknown")
+                date = result.get("first_air_date", "N/A")[:4]
+            case _:
+                title = result.get("title", result.get("name", "Unknown"))
+                date = "N/A"
         popularity = round(result.get("popularity", 0), 1)
         return f"{index + 1}. {title} ({date}) ★ {popularity}"
 
@@ -272,18 +298,16 @@ class MediaPaginator(discord.ui.View):
         end_idx = min((self.current_page + 1) * self.items_per_page, len(self.filtered_results))
         for i in range(start_idx, end_idx):
             self.add_item(MediaButton(paginator=self, index=i))
-
         if self.current_page > 0:
-            self.add_item(NavButton(paginator=self, direction="prev"))
+            self.add_item(NavButton(paginator=self, direction=NavDirection.PREV))
         if end_idx < len(self.filtered_results):
-            self.add_item(NavButton(paginator=self, direction="next"))
+            self.add_item(NavButton(paginator=self, direction=NavDirection.NEXT))
 
     def build_embed(self) -> discord.Embed:
         """Build the search results embed for the current page."""
         start_idx = self.current_page * self.items_per_page
         end_idx = min((self.current_page + 1) * self.items_per_page, len(self.filtered_results))
         total_pages = -(-len(self.filtered_results) // self.items_per_page)
-
         embed = discord.Embed(
             title="Search Results",
             description="\n".join(
@@ -320,7 +344,7 @@ class MediaPaginator(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.ctx.author:
             await interaction.response.send_message(
-                "Only %s can use this menu." % self.ctx.author.mention, ephemeral=True
+                f"Only {self.ctx.author.mention} can use this menu.", ephemeral=True
             )
             return False
         return True
@@ -329,16 +353,14 @@ class MediaPaginator(discord.ui.View):
 class MediaButton(discord.ui.Button["MediaPaginator"]):
     """Button to select a search result by its list number."""
 
-    def __init__(self, paginator: "MediaPaginator", index: int):
-        super().__init__(
-            label=str(index + 1),
-            style=discord.ButtonStyle.primary,
-        )
+    def __init__(self, paginator: MediaPaginator, index: int):
+        super().__init__(label=str(index + 1), style=discord.ButtonStyle.primary)
         self.paginator = paginator
         self.index = index
 
     async def callback(self, interaction: discord.Interaction) -> None:
         from .tmdb_utils import get_media_data
+
         try:
             data = await get_media_data(
                 self.paginator.ctx,
@@ -386,12 +408,13 @@ class MediaButton(discord.ui.Button["MediaPaginator"]):
 class NavButton(discord.ui.Button["MediaPaginator"]):
     """Previous/Next page navigation button."""
 
-    def __init__(self, paginator: "MediaPaginator", direction: str):
-        super().__init__(
-            label="Previous" if direction == "prev" else "Next",
-            emoji="◀️" if direction == "prev" else "▶️",
-            style=discord.ButtonStyle.secondary,
-        )
+    def __init__(self, paginator: MediaPaginator, direction: NavDirection):
+        match direction:
+            case NavDirection.PREV:
+                label, emoji = "Previous", "◀️"
+            case NavDirection.NEXT:
+                label, emoji = "Next", "▶️"
+        super().__init__(label=label, emoji=emoji, style=discord.ButtonStyle.secondary)
         self.paginator = paginator
         self.direction = direction
 
@@ -399,10 +422,11 @@ class NavButton(discord.ui.Button["MediaPaginator"]):
         try:
             start_idx = self.paginator.current_page * self.paginator.items_per_page
             end_idx = start_idx + self.paginator.items_per_page
-            if self.direction == "prev" and self.paginator.current_page > 0:
-                self.paginator.current_page -= 1
-            elif self.direction == "next" and end_idx < len(self.paginator.filtered_results):
-                self.paginator.current_page += 1
+            match self.direction:
+                case NavDirection.PREV if self.paginator.current_page > 0:
+                    self.paginator.current_page -= 1
+                case NavDirection.NEXT if end_idx < len(self.paginator.filtered_results):
+                    self.paginator.current_page += 1
             self.paginator._add_buttons()
             await interaction.response.edit_message(
                 embed=self.paginator.build_embed(), view=self.paginator

@@ -37,6 +37,8 @@ from redbot.core import Config, app_commands, commands
 from redbot.core.utils.views import SetApiView, SimpleMenu
 
 from .tmdb_utils import PREDEFINED_CHANNELS, fetch_tmdb, search_and_display
+from .tmdb_views import MediaType
+
 
 logger = getLogger("red.maxcogs.themoviedb")
 
@@ -47,7 +49,7 @@ class TheMovieDB(commands.Cog):
     """
 
     __author__ = "MAX"
-    __version__ = "2.7.0"
+    __version__ = "2.8.0"
     __docs__ = "https://cogs.maxapp.tv/#themoviedb"
 
     def __init__(self, bot):
@@ -505,7 +507,7 @@ class TheMovieDB(commands.Cog):
                 "The bot owner has not set up the API key for TheMovieDB. "
                 "Please ask them to set it up."
             )
-        await search_and_display(ctx, query, "movie")
+        await search_and_display(ctx, query, MediaType.MOVIE)
 
     @movie.autocomplete("query")
     async def movie_autocomplete(
@@ -568,7 +570,7 @@ class TheMovieDB(commands.Cog):
                 "The bot owner has not set up the API key for TheMovieDB. "
                 "Please ask them to set it up."
             )
-        await search_and_display(ctx, query, "tv")
+        await search_and_display(ctx, query, MediaType.TV)
 
     @tvshow.autocomplete("query")
     async def tvshow_autocomplete(
