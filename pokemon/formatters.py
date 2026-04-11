@@ -30,7 +30,6 @@ from red_commons.logging import getLogger
 
 from .api import API_URL, fetch_data
 
-
 log = getLogger("red.maxcogs.whosthatpokemon.formatters")
 
 MAX_DESCRIPTION_LENGTH = 4000
@@ -196,10 +195,7 @@ async def build_locations_text(session: aiohttp.ClientSession, pokemon_data: dic
         versions = []
         for detail in location.get("version_details", []):
             version_name = (
-                detail.get("version", {})
-                .get("name", "Unknown Version")
-                .replace("-", " ")
-                .title()
+                detail.get("version", {}).get("name", "Unknown Version").replace("-", " ").title()
             )
             chance = detail.get("encounter_details", [{}])[0].get("chance", "Unknown")
             versions.append(f"{version_name}: {chance}%")

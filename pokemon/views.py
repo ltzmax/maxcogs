@@ -37,7 +37,6 @@ from .formatters import (
     build_section_text,
 )
 
-
 log = getLogger("red.maxcogs.whosthatpokemon.views")
 
 POKEAPI_FOOTER = "Powered by PokéAPI"
@@ -74,9 +73,7 @@ class WhosThatPokemonView(discord.ui.View):
                 await self.message.edit(view=self)
 
     @discord.ui.button(label="Guess The Pokémon", style=discord.ButtonStyle.blurple)
-    async def guess_the_pokemon(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def guess_the_pokemon(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = WhosThatPokemonModal()
         await interaction.response.send_modal(modal)
         await modal.wait()
@@ -316,6 +313,7 @@ class PokemonView(discord.ui.LayoutView):
 
 # ── TCG Card Views ────────────────────────────────────────────────────────────
 
+
 class _GoToPageModal(discord.ui.Modal, title="Go to Page"):
     page: discord.ui.TextInput = discord.ui.TextInput(
         label="Page Number",
@@ -367,7 +365,8 @@ class _NavBtn(discord.ui.Button):
             case "next":
                 label, emoji = "Next", "▶️"
         super().__init__(
-            label=label, emoji=emoji,
+            label=label,
+            emoji=emoji,
             style=discord.ButtonStyle.secondary,
             disabled=disabled,
         )

@@ -25,9 +25,8 @@ SOFTWARE.
 from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
 
-from ..api import fetch_data, API_URL
+from ..api import API_URL, fetch_data
 from ..views import PokemonView
-
 
 log = getLogger("red.maxcogs.whosthatpokemon.commands.pokeinfo")
 
@@ -56,9 +55,7 @@ class PokeinfoCommands:
                 case 404:
                     return await ctx.send(f"No Pokémon found for `{pokemon}`.")
                 case _:
-                    return await ctx.send(
-                        "Could not fetch Pokémon data. Please try again later."
-                    )
+                    return await ctx.send("Could not fetch Pokémon data. Please try again later.")
 
         accent = await ctx.embed_color()
         view = PokemonView(ctx, self.session, pokemon_data, accent_colour=accent)

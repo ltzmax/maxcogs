@@ -30,7 +30,6 @@ from redbot.core import app_commands, commands
 
 from ..views import TcgCardView
 
-
 log = getLogger("red.maxcogs.whosthatpokemon.commands.tcgcard")
 
 _TCG_FIELDS = (
@@ -60,9 +59,7 @@ def _build_card_text(data: dict) -> str:
     nat_dex = ", ".join(map(str, data.get("nationalPokedexNumbers", []))) or "N/A"
     lines.append(f"**National Pokédex:** {nat_dex}")
     legalities = data.get("legalities", {})
-    legal_str = (
-        ", ".join(k.capitalize() for k, v in legalities.items() if v == "Legal") or "None"
-    )
+    legal_str = ", ".join(k.capitalize() for k, v in legalities.items() if v == "Legal") or "None"
     lines.append(f"**Legalities:** {legal_str}")
 
     abilities = data.get("abilities", [])

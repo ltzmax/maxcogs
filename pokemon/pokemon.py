@@ -34,7 +34,6 @@ from .commands.pokeinfo import PokeinfoCommands
 from .commands.tcgcard import TcgcardCommands
 from .commands.whosthatpokemon import WhosThatPokemonCommands
 
-
 log = getLogger("red.maxcogs.whosthatpokemon")
 
 

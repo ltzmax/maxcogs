@@ -26,7 +26,6 @@ from random import randint
 
 from redbot.core import commands
 
-
 _GEN_RANGES: dict[str, tuple[int, int]] = {
     "gen1": (1, 151),
     "gen2": (152, 251),
