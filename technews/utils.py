@@ -27,6 +27,7 @@ import discord
 
 ChannelOrThread = discord.TextChannel | discord.Thread
 
+
 def _can_post(me: discord.Member, channel: ChannelOrThread) -> bool:
     """
     Check whether the bot can send messages and embed links in the given

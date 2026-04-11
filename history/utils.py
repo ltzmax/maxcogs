@@ -92,7 +92,9 @@ async def fetch_events(
     try:
         async with session.get(url) as response:
             if response.status != 200:
-                log.warning("API request failed with status %s for %s/%s", response.status, month, day)
+                log.warning(
+                    "API request failed with status %s for %s/%s", response.status, month, day
+                )
                 raise ValueError(f"Failed to fetch history data! (Status: {response.status})")
             try:
                 data = orjson.loads(await response.read())

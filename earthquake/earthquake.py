@@ -184,9 +184,7 @@ class Earthquake(commands.Cog):
         except (discord.Forbidden, discord.HTTPException) as e:
             logger.error(f"Error in earthquake_check: {e}", exc_info=True)
 
-    async def get_or_create_webhook(
-        self, channel: discord.TextChannel
-    ) -> discord.Webhook | None:
+    async def get_or_create_webhook(self, channel: discord.TextChannel) -> discord.Webhook | None:
         """Get or create a webhook for earthquake alerts in the channel."""
         our_name = "Earthquake Alert Webhook"
         try:

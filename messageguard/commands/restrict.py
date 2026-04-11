@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 import discord
 from redbot.core import commands
 
@@ -79,9 +78,7 @@ class RestrictCommands:
         await ctx.send(f"Auto-threading {'enabled' if new_value else 'disabled'}.")
 
     @restrictposts.command(name="mentionable")
-    async def rp_mentionable(
-        self, ctx: commands.Context, mentionable: bool | None = None
-    ) -> None:
+    async def rp_mentionable(self, ctx: commands.Context, mentionable: bool | None = None) -> None:
         """Toggle or set whether the warning message mentions the user."""
         cfg = self._get_cache(ctx.guild.id)
         new_value = (

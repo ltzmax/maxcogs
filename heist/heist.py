@@ -134,9 +134,7 @@ class Heist(commands.Cog):
                 del inventory[item_name]
             await self.config.user(member).inventory.set(inventory)
 
-    async def _has_active_heist(
-        self, user: discord.Member, channel_id: int | None = None
-    ) -> bool:
+    async def _has_active_heist(self, user: discord.Member, channel_id: int | None = None) -> bool:
         active = await self.config.user(user).active_heist()
         if not active:
             return False

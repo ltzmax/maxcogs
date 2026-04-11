@@ -38,6 +38,7 @@ from .utils import fetch_events, format_year
 
 log = getLogger("red.maxcogs.history")
 
+
 class History(commands.Cog):
     """A cog to display historical events for a given day in your timezone."""
 

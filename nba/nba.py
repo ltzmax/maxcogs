@@ -519,9 +519,7 @@ class NBA(NBACommands, commands.Cog):
                                 e,
                             )
 
-    async def fetch_data(
-        self, url: str, ctx: commands.Context | None = None
-    ) -> bytes | None:
+    async def fetch_data(self, url: str, ctx: commands.Context | None = None) -> bytes | None:
         """Fetch data from a URL using the shared session with error handling."""
         try:
             async with self.session.get(url) as resp:
