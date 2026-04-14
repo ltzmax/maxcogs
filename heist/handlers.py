@@ -42,6 +42,7 @@ from .meta import (
     _FLAVOUR_SUCCESS,
     _FLAVOUR_TOOL,
 )
+from .events import get_event_multiplier
 from .utils import ITEMS, fmt
 
 
@@ -140,6 +141,7 @@ async def resolve_heist(
         material_heat = await user_config.material_heat()
         debt = await user_config.debt()
         tax_agreed = active.get("tax_agreed", False)
+        event_multiplier, event_ends_at = await get_event_multiplier(cog.config)
 
         tool_boost = 0.0
         used_tool = None
@@ -176,12 +178,17 @@ async def resolve_heist(
                 await user_config.inventory.set(inventory)
                 msg_parts.append(f"You stole a **{fmt(loot_item)}** from the {fmt(heist_type)}.")
             else:
-                reward = random.randint(data["min_reward"], data["max_reward"])
+                base_reward = random.randint(data["min_reward"], data["max_reward"])
+                reward = base_reward * event_multiplier
                 try:
                     await bank.deposit_credits(member, reward)
-                    msg_parts.append(
-                        f"**+{reward:,} {currency_name}** added to your bank balance."
-                    )
+                    if event_multiplier > 1:
+                        msg_parts.append(
+                            f"**+{reward:,} {currency_name}** added to your balance. "
+                            f"🎉 {event_multiplier}x event! (base: {base_reward:,})"
+                        )
+                    else:
+                        msg_parts.append(f"**+{reward:,} {currency_name}** added to your balance.")
                 except errors.BalanceTooHigh:
                     msg_parts.append(
                         f"You would have gained {reward:,} {currency_name}, "
@@ -352,13 +359,15 @@ async def resolve_crew_heist(
     try:
         data = await cog.get_heist_settings(heist_type)
         currency_name = await bank.get_currency_name(channel.guild)
+        event_multiplier, event_ends_at = await get_event_multiplier(cog.config)
         base_success = random.randint(data["min_success"], data["max_success"])
         success_chance = base_success / 100
         success = random.random() < success_chance
 
         total_reward = 0
         if success:
-            total_reward = random.randint(data["min_reward"], data["max_reward"])
+            base_total = random.randint(data["min_reward"], data["max_reward"])
+            total_reward = base_total * event_multiplier
         total_loss = random.randint(data["min_loss"], data["max_loss"]) if not success else 0
 
         per_member_reward = total_reward // len(members) if success else 0
@@ -496,12 +505,13 @@ async def resolve_crew_heist(
 
         if success:
             components.append(discord.ui.Separator())
-            components.append(
-                discord.ui.TextDisplay(
-                    f"**Total haul:** {total_reward:,} {currency_name} split {len(members)} ways\n"
-                    f"**Per member:** ~{per_member_reward:,} {currency_name}"
-                )
+            haul_text = (
+                f"**Total haul:** {total_reward:,} {currency_name} split {len(members)} ways\n"
+                f"**Per member:** ~{per_member_reward:,} {currency_name}"
             )
+            if event_multiplier > 1:
+                haul_text += f"\n-# 🎉 {event_multiplier}x event active!"
+            components.append(discord.ui.TextDisplay(haul_text))
         else:
             components.append(discord.ui.Separator())
             components.append(

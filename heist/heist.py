@@ -87,6 +87,8 @@ class Heist(UserCommands, OwnerCommands, commands.Cog):
             "item_settings": {
                 name: {"cost": data["cost"]} for name, (_, data) in ITEMS.items() if "cost" in data
             },
+            "event_multiplier": 1,
+            "event_ends_at": None,
         }
         self.config.register_user(**default_user)
         self.config.register_global(**default_global)
@@ -261,7 +263,7 @@ class Heist(UserCommands, OwnerCommands, commands.Cog):
         await self.config.user(jailed_user).material_heat.set(0)
         await view.message.edit(
             view=_simple_view(
-                f"{ctx.author.mention} paid **{total_bail:,}** {currency_name} — "
+                f"{ctx.author.mention} paid **{total_bail:,}** {currency_name} - "
                 f"{'you are' if is_self else f'{jailed_user.display_name} is'} free!"
             )
         )

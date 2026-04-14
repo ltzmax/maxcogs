@@ -27,6 +27,7 @@ import datetime
 import discord
 from redbot.core import commands
 
+from ..events import EventView, get_event_multiplier
 from ..utils import HEISTS, ITEMS, fmt
 from ..views import HeistConfigView, ItemPriceConfigView
 
@@ -223,6 +224,48 @@ class OwnerCommands:
                 inline=True,
             )
         await ctx.send(embed=embed)
+
+    @heistset.group(name="event")
+    async def heistset_event(self, ctx):
+        """Manage heist reward events."""
+
+    @heistset_event.command(name="start")
+    async def heistset_event_start(
+        self, ctx: commands.Context, multiplier: int, duration: int
+    ):
+        """Start a reward event.
+
+        **Arguments**
+        - `<multiplier>` Reward multiplier (2–5).
+        - `<duration>` Duration in minutes.
+        """
+        if not 2 <= multiplier <= 5:
+            return await ctx.send("Multiplier must be between 2 and 5.")
+        if duration < 1:
+            return await ctx.send("Duration must be at least 1 minute.")
+        ends_at = (
+            datetime.datetime.now(datetime.timezone.utc)
+            + datetime.timedelta(minutes=duration)
+        ).timestamp()
+        await self.config.event_multiplier.set(multiplier)
+        await self.config.event_ends_at.set(ends_at)
+        end_ts = int(ends_at)
+        await ctx.send(
+            f"🎉 **{multiplier}x reward event** started! Ends <t:{end_ts}:R> (<t:{end_ts}:f>)."
+        )
+
+    @heistset_event.command(name="stop")
+    async def heistset_event_stop(self, ctx: commands.Context):
+        """Stop the current reward event."""
+        await self.config.event_multiplier.set(1)
+        await self.config.event_ends_at.set(None)
+        await ctx.send("Event stopped.")
+
+    @heistset_event.command(name="status")
+    async def heistset_event_status(self, ctx: commands.Context):
+        """Show current event status."""
+        view = await EventView.create(self, ctx)
+        view.message = await ctx.send(view=view)
 
     @heistset.command(name="showprices")
     @commands.bot_has_permissions(embed_links=True)
