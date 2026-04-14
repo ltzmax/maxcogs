@@ -48,6 +48,7 @@ async def get_event_multiplier(config) -> tuple[int, float | None]:
         return 1, None
     return await config.event_multiplier(), ends_at
 
+
 class _StartEventModal(discord.ui.Modal, title="Start Heist Event"):
     multiplier: discord.ui.TextInput = discord.ui.TextInput(
         label="Multiplier (2–5)",
@@ -85,8 +86,7 @@ class _StartEventModal(discord.ui.Modal, title="Start Heist Event"):
             )
 
         ends_at = (
-            datetime.datetime.now(datetime.timezone.utc)
-            + datetime.timedelta(minutes=mins)
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=mins)
         ).timestamp()
 
         await self.event_view.cog.config.event_multiplier.set(mult)
@@ -171,11 +171,13 @@ class EventView(discord.ui.LayoutView):
             _StartEventBtn(self, disabled=disabled or active),
             _StopEventBtn(self, disabled=disabled or not active),
         )
-        self.add_item(discord.ui.Container(
-            discord.ui.TextDisplay(status),
-            discord.ui.Separator(),
-            action_row,
-        ))
+        self.add_item(
+            discord.ui.Container(
+                discord.ui.TextDisplay(status),
+                discord.ui.Separator(),
+                action_row,
+            )
+        )
 
     @classmethod
     async def create(cls, cog, ctx) -> "EventView":

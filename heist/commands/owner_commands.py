@@ -27,7 +27,7 @@ import datetime
 import discord
 from redbot.core import commands
 
-from ..events import EventView, get_event_multiplier
+from ..events import EventView
 from ..utils import HEISTS, ITEMS, fmt
 from ..views import HeistConfigView, ItemPriceConfigView
 
@@ -230,9 +230,7 @@ class OwnerCommands:
         """Manage heist reward events."""
 
     @heistset_event.command(name="start")
-    async def heistset_event_start(
-        self, ctx: commands.Context, multiplier: int, duration: int
-    ):
+    async def heistset_event_start(self, ctx: commands.Context, multiplier: int, duration: int):
         """Start a reward event.
 
         **Arguments**
@@ -244,8 +242,7 @@ class OwnerCommands:
         if duration < 1:
             return await ctx.send("Duration must be at least 1 minute.")
         ends_at = (
-            datetime.datetime.now(datetime.timezone.utc)
-            + datetime.timedelta(minutes=duration)
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=duration)
         ).timestamp()
         await self.config.event_multiplier.set(multiplier)
         await self.config.event_ends_at.set(ends_at)

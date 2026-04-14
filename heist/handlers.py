@@ -31,6 +31,7 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import bank, errors
 
+from .events import get_event_multiplier
 from .meta import (
     _CREW_FLAVOUR_CAUGHT,
     _CREW_FLAVOUR_FAIL,
@@ -42,7 +43,6 @@ from .meta import (
     _FLAVOUR_SUCCESS,
     _FLAVOUR_TOOL,
 )
-from .events import get_event_multiplier
 from .utils import ITEMS, fmt
 
 
@@ -141,7 +141,7 @@ async def resolve_heist(
         material_heat = await user_config.material_heat()
         debt = await user_config.debt()
         tax_agreed = active.get("tax_agreed", False)
-        event_multiplier, event_ends_at = await get_event_multiplier(cog.config)
+        event_multiplier, _event_ends_at = await get_event_multiplier(cog.config)
 
         tool_boost = 0.0
         used_tool = None
@@ -359,7 +359,7 @@ async def resolve_crew_heist(
     try:
         data = await cog.get_heist_settings(heist_type)
         currency_name = await bank.get_currency_name(channel.guild)
-        event_multiplier, event_ends_at = await get_event_multiplier(cog.config)
+        event_multiplier, _event_ends_at = await get_event_multiplier(cog.config)
         base_success = random.randint(data["min_success"], data["max_success"])
         success_chance = base_success / 100
         success = random.random() < success_chance
