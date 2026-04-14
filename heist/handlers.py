@@ -23,6 +23,7 @@ SOFTWARE.
 """
 
 import asyncio
+import contextlib
 import datetime
 import random
 
@@ -30,10 +31,57 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import bank, errors
 
+from .meta import (
+    _CREW_FLAVOUR_CAUGHT,
+    _CREW_FLAVOUR_FAIL,
+    _CREW_FLAVOUR_SUCCESS,
+    _FLAVOUR_CAUGHT,
+    _FLAVOUR_FAIL,
+    _FLAVOUR_MATERIAL,
+    _FLAVOUR_SHIELD,
+    _FLAVOUR_SUCCESS,
+    _FLAVOUR_TOOL,
+)
 from .utils import ITEMS, fmt
 
 
 log = getLogger("red.cogs.heist.handlers")
+
+
+def _build_result_view(
+    heist_type: str,
+    heist_emoji: str,
+    member_mention: str,
+    success: bool,
+    caught: bool,
+    msg_parts: list[str],
+    colour: int,
+) -> discord.ui.LayoutView:
+    """Components v2 LayoutView for a heist result."""
+    if caught:
+        narrative = random.choice(_FLAVOUR_CAUGHT)
+    elif success:
+        narrative = random.choice(_FLAVOUR_SUCCESS)
+    else:
+        narrative = random.choice(_FLAVOUR_FAIL)
+
+    status = "✅ Success" if success else "❌ Failed"
+    if caught:
+        status += " - 🚨 Caught"
+
+    header = f"## {heist_emoji} {fmt(heist_type)} - {status}\n{member_mention}\n*{narrative}*"
+
+    components: list = [
+        discord.ui.TextDisplay(header),
+    ]
+
+    if msg_parts:
+        components.append(discord.ui.Separator())
+        components.append(discord.ui.TextDisplay("\n".join(msg_parts)))
+
+    view = discord.ui.LayoutView(timeout=None)
+    view.add_item(discord.ui.Container(*components, accent_colour=discord.Colour(colour)))
+    return view
 
 
 async def schedule_resolve(
@@ -88,7 +136,7 @@ async def resolve_heist(
         inventory = await user_config.inventory()
         equipped = await user_config.equipped()
         active = await user_config.active_heist()
-        heat = await user_config.heat()
+        heat = await cog._get_effective_heat(member)
         material_heat = await user_config.material_heat()
         debt = await user_config.debt()
         tax_agreed = active.get("tax_agreed", False)
@@ -126,20 +174,18 @@ async def resolve_heist(
             if loot_item:
                 inventory[loot_item] = inventory.get(loot_item, 0) + 1
                 await user_config.inventory.set(inventory)
-                msg_parts.append(
-                    f"Success! You stole a {fmt(loot_item)} from the {fmt(heist_type)}."
-                )
+                msg_parts.append(f"You stole a **{fmt(loot_item)}** from the {fmt(heist_type)}.")
             else:
                 reward = random.randint(data["min_reward"], data["max_reward"])
                 try:
                     await bank.deposit_credits(member, reward)
                     msg_parts.append(
-                        f"Success! You gained {reward:,} {currency_name} from the {fmt(heist_type)}."
+                        f"**+{reward:,} {currency_name}** added to your bank balance."
                     )
                 except errors.BalanceTooHigh:
                     msg_parts.append(
-                        f"Success! You would have gained {reward:,} {currency_name}, "
-                        "but your balance is too high."
+                        f"You would have gained {reward:,} {currency_name}, "
+                        "but your balance is already at the maximum."
                     )
                     reward = 0
         else:
@@ -153,6 +199,7 @@ async def resolve_heist(
                 if inventory[equipped_shield] == 0:
                     inventory.pop(equipped_shield, None)
                 await user_config.inventory.set(inventory)
+                msg_parts.append(random.choice(_FLAVOUR_SHIELD))
 
             loss = int(loss * (1 - reduction))
 
@@ -160,30 +207,35 @@ async def resolve_heist(
             if loss > 0:
                 if balance >= loss:
                     await bank.withdraw_credits(member, loss)
-                    msg_parts.append(f"Failed! You lost {loss:,} {currency_name}.")
+                    msg_parts.append(
+                        f"**−{loss:,} {currency_name}** deducted from your bank balance."
+                    )
                 else:
                     debt_to_add = loss
                     tax = 0
                     if tax_agreed:
                         tax = int(loss * 0.2)
                         debt_to_add += tax
-
                     new_debt = debt + debt_to_add
                     await user_config.debt.set(new_debt)
-                    msg = f"Failed! You owe {debt_to_add:,} {currency_name} in debt"
+                    debt_msg = f"**{debt_to_add:,} {currency_name}** added to your debt"
                     if tax > 0:
-                        msg += f" (incl. {tax:,} tax)"
-                    msg += "."
-                    msg_parts.append(msg)
+                        debt_msg += f" (incl. {tax:,} tax)"
+                    debt_msg += f". Total debt: **{new_debt:,}**."
+                    msg_parts.append(debt_msg)
             else:
-                msg_parts.append("Failed — but your shield prevented any loss.")
+                msg_parts.append("Your shield absorbed everything. No losses this time.")
 
         if used_tool:
-            msg_parts.append(f"(Used {fmt(used_tool)} → +{tool_boost * 100:.0f}% success chance)")
+            msg_parts.append(
+                f"{random.choice(_FLAVOUR_TOOL)}\n"
+                f"-# {fmt(used_tool)} used (+{tool_boost * 100:.0f}% success boost)"
+            )
 
         heat += 1
+        now_ts = datetime.datetime.now(datetime.timezone.utc).timestamp()
         await user_config.heat.set(heat)
-
+        await user_config.heat_last_set.set(now_ts)
         material_heat += 1
         await user_config.material_heat.set(material_heat)
 
@@ -191,13 +243,17 @@ async def resolve_heist(
         adjusted_chance = min(material_drop_chance + (material_heat * 0.04), 0.9)
         if random.random() < adjusted_chance:
             await user_config.material_heat.set(0)
-            materials = [k for k, v in ITEMS.items() if v[1].get("type") == "material"]
+            materials = data.get("material_tiers") or [
+                k for k, v in ITEMS.items() if v[1].get("type") == "material"
+            ]
             if materials:
                 dropped = random.choice(materials)
                 qty = random.randint(1, 3) if success else random.randint(1, 2)
                 inventory[dropped] = inventory.get(dropped, 0) + qty
                 await user_config.inventory.set(inventory)
-                msg_parts.append(f"Found {qty}× {fmt(dropped)} material!")
+                msg_parts.append(
+                    f"{random.choice(_FLAVOUR_MATERIAL)}\n-# Found {qty}× {fmt(dropped)}"
+                )
 
         caught = False
         base_police_chance = data["police_chance"]
@@ -213,8 +269,6 @@ async def resolve_heist(
                 {"end_time": end_time.timestamp(), "bail_amount": bail_amount}
             )
 
-            msg_parts.append("But you got **caught** by the police!")
-
             if success:
                 if loot_item:
                     current = inventory.get(loot_item, 0)
@@ -222,10 +276,10 @@ async def resolve_heist(
                         inventory[loot_item] = current - 1
                         if inventory[loot_item] <= 0:
                             inventory.pop(loot_item, None)
-                        msg_parts.append(f"Lost the stolen {fmt(loot_item)}.")
+                        msg_parts.append(f"Police confiscated the **{fmt(loot_item)}**.")
                 elif reward > 0:
                     await bank.withdraw_credits(member, reward)
-                    msg_parts.append(f"Lost the gained {reward:,} {currency_name}.")
+                    msg_parts.append(f"Police seized **{reward:,} {currency_name}** from you.")
             else:
                 loot_items = [
                     k for k in inventory if ITEMS.get(k, (None, {}))[1].get("type") == "loot"
@@ -237,7 +291,7 @@ async def resolve_heist(
                         inventory[item] = current - 1
                         if inventory[item] <= 0:
                             inventory.pop(item, None)
-                        msg_parts.append(f"Police confiscated your {fmt(item)}.")
+                        msg_parts.append(f"Police confiscated your **{fmt(item)}**.")
 
             await user_config.inventory.set(inventory)
 
@@ -245,36 +299,232 @@ async def resolve_heist(
             total_bail = bail_amount + tax
             end_ts = int(end_time.timestamp())
             msg_parts.append(
-                f"In jail until <t:{end_ts}:f> (<t:{end_ts}:R>). "
+                f"**In jail** until <t:{end_ts}:f> (<t:{end_ts}:R>).\n"
                 f"Bail: {bail_amount:,} + {tax:,} tax = **{total_bail:,}** {currency_name}."
             )
 
-        msg = "\n".join(msg_parts).strip()
-        color = 0xFF0000 if caught else 0xA020F0
+        if caught:
+            colour = 0xFF0000
+        elif success:
+            colour = 0xA020F0
+        else:
+            colour = 0xFF6600
 
-        embed = discord.Embed(
-            title="Heist Result",
-            description=msg,
-            color=color,
+        heist_emoji = data.get("emoji", "🎭")
+        result_view = _build_result_view(
+            heist_type=heist_type,
+            heist_emoji=heist_emoji,
+            member_mention=member.mention,
+            success=success,
+            caught=caught,
+            msg_parts=msg_parts,
+            colour=colour,
         )
 
         try:
-            await channel.send(f"{member.mention}", embed=embed)
+            await channel.send(view=result_view)
         except discord.Forbidden:
             log.warning("Cannot send to %s", channel.id)
             if fallback_channel_id:
                 fb = cog.bot.get_channel(fallback_channel_id)
                 if fb:
                     try:
-                        await fb.send(f"{member.mention} {msg}")
+                        await fb.send(view=result_view)
                     except Exception:
                         log.warning("Fallback %s also failed", fallback_channel_id)
 
     except Exception as e:
         log.error("resolve_heist error for %s - %s: %s", user.id, heist_type, e, exc_info=True)
     finally:
-        # Only clear active_heist if member was successfully resolved
         if member is not None:
             await cog.config.user(member).active_heist.clear()
         else:
             await cog.config.user_from_id(user.id).active_heist.clear()
+
+
+async def resolve_crew_heist(
+    cog,
+    members: list,
+    heist_type: str,
+    channel,
+):
+    """Resolve a crew heist for all members and send a combined result."""
+    try:
+        data = await cog.get_heist_settings(heist_type)
+        currency_name = await bank.get_currency_name(channel.guild)
+        base_success = random.randint(data["min_success"], data["max_success"])
+        success_chance = base_success / 100
+        success = random.random() < success_chance
+
+        total_reward = 0
+        if success:
+            total_reward = random.randint(data["min_reward"], data["max_reward"])
+        total_loss = random.randint(data["min_loss"], data["max_loss"]) if not success else 0
+
+        per_member_reward = total_reward // len(members) if success else 0
+        per_member_loss = total_loss // len(members) if not success else 0
+
+        member_lines = []
+        caught_members = []
+        any_caught = False
+
+        for member in members:
+            user_config = cog.config.user(member)
+            inventory = await user_config.inventory()
+            equipped = await user_config.equipped()
+            heat = await cog._get_effective_heat(member)
+            debt = await user_config.debt()
+            active = await user_config.active_heist()
+            tax_agreed = active.get("tax_agreed", False) if active else False
+            tool_boost = 0.0
+            used_tool = None
+            equipped_tool = equipped["tool"]
+            if (
+                equipped_tool
+                and inventory.get(equipped_tool, 0) > 0
+                and ITEMS.get(equipped_tool, (None, {}))[1].get("for_heist") == heist_type
+            ):
+                tool_data = ITEMS[equipped_tool][1]
+                tool_boost = tool_data.get("boost", 0.0)
+                used_tool = equipped_tool
+                inventory[used_tool] = max(0, inventory.get(used_tool, 0) - 1)
+                if inventory[used_tool] == 0:
+                    inventory.pop(used_tool, None)
+                await user_config.inventory.set(inventory)
+
+            lines = [f"**{member.display_name}**"]
+
+            if success:
+                actual_reward = per_member_reward
+                if tool_boost > 0:
+                    actual_reward = int(actual_reward * (1 + tool_boost))
+                try:
+                    await bank.deposit_credits(member, actual_reward)
+                    lines.append(f"+{actual_reward:,} {currency_name}")
+                except errors.BalanceTooHigh:
+                    lines.append("Balance already at maximum.")
+            else:
+                loss = per_member_loss
+                reduction = 0.0
+                equipped_shield = equipped["shield"]
+                if equipped_shield and inventory.get(equipped_shield, 0) > 0:
+                    shield_data = ITEMS.get(equipped_shield, (None, {}))[1]
+                    reduction = shield_data.get("reduction", 0.0)
+                    inventory[equipped_shield] = max(0, inventory.get(equipped_shield, 0) - 1)
+                    if inventory[equipped_shield] == 0:
+                        inventory.pop(equipped_shield, None)
+                    await user_config.inventory.set(inventory)
+                loss = int(loss * (1 - reduction))
+                balance = await bank.get_balance(member)
+                if balance >= loss:
+                    await bank.withdraw_credits(member, loss)
+                    lines.append(f"-{loss:,} {currency_name}")
+                else:
+                    debt_add = loss
+                    if tax_agreed:
+                        tax = int(loss * 0.2)
+                        debt_add += tax
+                    await user_config.debt.set(debt + debt_add)
+                    lines.append(f"Debt +{debt_add:,} {currency_name}")
+
+            heat += 1
+            now_ts = datetime.datetime.now(datetime.timezone.utc).timestamp()
+            await user_config.heat.set(heat)
+            await user_config.heat_last_set.set(now_ts)
+
+            base_police_chance = data["police_chance"]
+            adjusted_police = min(base_police_chance + (heat * 0.02), 0.9)
+            member_caught = random.random() < adjusted_police
+
+            if member_caught:
+                any_caught = True
+                caught_members.append(member)
+                await user_config.heat.set(0)
+                bail_amount = int(data["max_loss"] * random.uniform(0.5, 1.0))
+                jail_duration = data["jail_time"]
+                end_time = datetime.datetime.now(datetime.timezone.utc) + jail_duration
+                await user_config.jail.set(
+                    {
+                        "end_time": end_time.timestamp(),
+                        "bail_amount": bail_amount,
+                    }
+                )
+                end_ts = int(end_time.timestamp())
+                tax = int(bail_amount * 0.15)
+                lines.append(f"🚨 Caught - jail until <t:{end_ts}:R>")
+            else:
+                lines.append("✅ Got away clean")
+
+            material_heat = await user_config.material_heat()
+            material_heat += 1
+            await user_config.material_heat.set(material_heat)
+            material_drop_chance = data.get("material_drop_chance", 0.0)
+            adjusted_chance = min(material_drop_chance + (material_heat * 0.04), 0.9)
+            if random.random() < adjusted_chance:
+                await user_config.material_heat.set(0)
+                materials = data.get("material_tiers") or [
+                    k for k, v in ITEMS.items() if v[1].get("type") == "material"
+                ]
+                if materials:
+                    dropped = random.choice(materials)
+                    qty = random.randint(1, 2)
+                    inventory[dropped] = inventory.get(dropped, 0) + qty
+                    await user_config.inventory.set(inventory)
+                    lines.append(f"-# Found {qty}× {fmt(dropped)}")
+
+            await user_config.active_heist.clear()
+            member_lines.append("\n".join(lines))
+
+        if any_caught:
+            narrative = random.choice(_CREW_FLAVOUR_CAUGHT)
+            colour = 0xFF0000
+        elif success:
+            narrative = random.choice(_CREW_FLAVOUR_SUCCESS)
+            colour = 0xA020F0
+        else:
+            narrative = random.choice(_CREW_FLAVOUR_FAIL)
+            colour = 0xFF6600
+
+        status = "✅ Success" if success else "❌ Failed"
+        if any_caught:
+            status += " - 🚨 Some Caught"
+
+        mentions = " ".join(m.mention for m in members)
+        header = f"## 👥 Crew Robbery - {status}\n{mentions}\n*{narrative}*"
+
+        components: list = [discord.ui.TextDisplay(header)]
+
+        if success:
+            components.append(discord.ui.Separator())
+            components.append(
+                discord.ui.TextDisplay(
+                    f"**Total haul:** {total_reward:,} {currency_name} split {len(members)} ways\n"
+                    f"**Per member:** ~{per_member_reward:,} {currency_name}"
+                )
+            )
+        else:
+            components.append(discord.ui.Separator())
+            components.append(
+                discord.ui.TextDisplay(
+                    f"**Total loss:** {total_loss:,} {currency_name} split {len(members)} ways"
+                )
+            )
+
+        components.append(discord.ui.Separator())
+        components.append(
+            discord.ui.TextDisplay("**Individual results:**\n" + "\n\n".join(member_lines))
+        )
+
+        view = discord.ui.LayoutView(timeout=None)
+        view.add_item(discord.ui.Container(*components, accent_colour=discord.Colour(colour)))
+
+        try:
+            await channel.send(view=view)
+        except discord.Forbidden:
+            log.warning("Cannot send crew result to %s", channel.id)
+
+    except Exception as e:
+        log.error("resolve_crew_heist error: %s", e, exc_info=True)
+        for member in members:
+            with contextlib.suppress(Exception):
+                await cog.config.user(member).active_heist.clear()
