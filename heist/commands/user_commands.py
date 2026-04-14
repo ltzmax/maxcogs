@@ -27,6 +27,7 @@ import random
 
 import discord
 from redbot.core import bank, commands
+from redbot.core.utils.chat_formatting import humanize_number
 
 from ..utils import HEISTS, ITEMS, fmt
 from ..views import CraftView, CrewLobbyView, EquipView, HeistSelectionView, ShopView
@@ -322,6 +323,7 @@ class UserCommands:
         active = await self.config.user(ctx.author).active_heist()
         jail = await self.config.user(ctx.author).jail()
         heat = await self._get_effective_heat(ctx.author)
+        stats = await self.config.user(ctx.author).stats()
 
         lines = [f"## 📊 {ctx.author.display_name}'s Profile"]
 
@@ -350,7 +352,15 @@ class UserCommands:
         else:
             lines.append("\n**🚨 Jail:** Free")
 
-        lines.append(f"\n**🌡️ Heat:** {_heat_bar(heat)}")
+        total = stats.get("success", 0) + stats.get("fail", 0) + stats.get("caught", 0)
+        lines.append(
+            f"\n**📈 Heist Stats**\n"
+            f"✅ Success: {humanize_number(stats.get('success', 0))}\n"
+            f"❌ Failed: {humanize_number(stats.get('fail', 0))}\n"
+            f"🚨 Caught: {humanize_number(stats.get('caught', 0))}\n"
+            f"Total: {humanize_number(total)}"
+        )
+        lines.append(f"\n**🌡️ Heat:**\n{_heat_bar(heat)}")
         view = discord.ui.LayoutView(timeout=None)
         view.add_item(discord.ui.Container(discord.ui.TextDisplay("\n".join(lines))))
         await ctx.send(view=view)

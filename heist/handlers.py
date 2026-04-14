@@ -317,6 +317,15 @@ async def resolve_heist(
         else:
             colour = 0xFF6600
 
+        # Update lifetime stats
+        async with user_config.stats() as stats:
+            if caught:
+                stats["caught"] = stats.get("caught", 0) + 1
+            elif success:
+                stats["success"] = stats.get("success", 0) + 1
+            else:
+                stats["fail"] = stats.get("fail", 0) + 1
+
         heist_emoji = data.get("emoji", "🎭")
         result_view = _build_result_view(
             heist_type=heist_type,
@@ -482,6 +491,13 @@ async def resolve_crew_heist(
                     lines.append(f"-# Found {qty}× {fmt(dropped)}")
 
             await user_config.active_heist.clear()
+            async with user_config.stats() as stats:
+                if member_caught:
+                    stats["caught"] = stats.get("caught", 0) + 1
+                elif success:
+                    stats["success"] = stats.get("success", 0) + 1
+                else:
+                    stats["fail"] = stats.get("fail", 0) + 1
             member_lines.append("\n".join(lines))
 
         if any_caught:

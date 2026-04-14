@@ -68,6 +68,11 @@ class Heist(UserCommands, OwnerCommands, commands.Cog):
             "heat": 0,
             "material_heat": 0,
             "heat_last_set": None,
+            "stats": {
+                "success": 0,
+                "fail": 0,
+                "caught": 0,
+            },
         }
         default_global = {
             "heist_settings": {
