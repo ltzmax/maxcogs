@@ -192,7 +192,7 @@ async def resolve_heist(
                     if event_multiplier > 1:
                         msg_parts.append(
                             f"**+{reward:,} {currency_name}** added to your balance. "
-                            f"🎉 {event_multiplier}x event! (base: {base_reward:,})"
+                            f"🎉 {event_multiplier}x event! (base: {base_reward:,} {currency_name})"
                         )
                     else:
                         msg_parts.append(f"**+{reward:,} {currency_name}** added to your balance.")
