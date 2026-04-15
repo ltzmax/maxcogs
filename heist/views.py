@@ -34,6 +34,7 @@ from .handlers import schedule_resolve
 from .meta import _PARAM_META
 from .utils import HEISTS, ITEMS, RECIPES, fmt
 
+
 log = getLogger("red.cogs.heist.views")
 CREW_SIZE = 4
 LOBBY_TIMEOUT = 180  # 3 minutes
