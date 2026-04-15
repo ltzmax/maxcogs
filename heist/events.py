@@ -92,6 +92,9 @@ class _StartEventModal(discord.ui.Modal, title="Start Heist Event"):
         await self.event_view.cog.config.event_multiplier.set(mult)
         await self.event_view.cog.config.event_ends_at.set(ends_at)
 
+        self.event_view._cached_mult = mult
+        self.event_view._cached_ends_at = ends_at
+
         end_ts = int(ends_at)
         await interaction.response.send_message(
             f"🎉 **{mult}x reward event** started! Ends <t:{end_ts}:R> (<t:{end_ts}:f>).",
@@ -129,6 +132,8 @@ class _StopEventBtn(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         await self.event_view.cog.config.event_multiplier.set(1)
         await self.event_view.cog.config.event_ends_at.set(None)
+        self.event_view._cached_mult = 1
+        self.event_view._cached_ends_at = None
         await interaction.response.send_message("Event stopped.", ephemeral=True)
         self.event_view._build_content()
         with contextlib.suppress(discord.HTTPException):
