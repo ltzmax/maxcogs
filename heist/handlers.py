@@ -158,6 +158,8 @@ async def resolve_heist(
             inventory[used_tool] = max(0, inventory.get(used_tool, 0) - 1)
             if inventory[used_tool] == 0:
                 inventory.pop(used_tool, None)
+                equipped["tool"] = None
+                await user_config.equipped.set(equipped)
             await user_config.inventory.set(inventory)
 
         member_xp = await user_config.xp()
@@ -210,6 +212,8 @@ async def resolve_heist(
                 inventory[equipped_shield] = max(0, inventory.get(equipped_shield, 0) - 1)
                 if inventory[equipped_shield] == 0:
                     inventory.pop(equipped_shield, None)
+                    equipped["shield"] = None
+                    await user_config.equipped.set(equipped)
                 await user_config.inventory.set(inventory)
                 msg_parts.append(random.choice(_FLAVOUR_SHIELD))
 
