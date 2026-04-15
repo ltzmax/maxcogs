@@ -977,6 +977,12 @@ class _JoinCrewBtn(discord.ui.Button):
                 "You already have an active heist.", ephemeral=True
             )
 
+        xp = await cog.config.user(user).xp()
+        if get_level(xp) < 20:
+            return await interaction.response.send_message(
+                "You must be **level 20** or higher to join a crew robbery.", ephemeral=True
+            )
+
         self.lobby.members.append(user)
 
         # Block joining member from starting another heist while lobby is open

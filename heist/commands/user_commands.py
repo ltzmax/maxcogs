@@ -164,6 +164,10 @@ class UserCommands:
             return
         if not await self.check_jail(ctx, ctx.author):
             return
+        player_xp = await self.config.user(ctx.author).xp()
+        if get_level(player_xp) < 20:
+            return await ctx.send("You must be **level 20** or higher to organise a crew robbery.")
+
         if await self._has_active_heist(ctx.author, ctx.channel.id):
             return await ctx.send("You have an active heist ongoing. Wait for it to finish.")
 
