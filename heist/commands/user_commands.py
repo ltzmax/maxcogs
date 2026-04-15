@@ -327,6 +327,7 @@ class UserCommands:
     @heist.command(name="profile")
     async def heist_status(self, ctx: commands.Context):
         """Check your active heist profile."""
+        await ctx.typing()
         active = await self.config.user(ctx.author).active_heist()
         jail = await self.config.user(ctx.author).jail()
         heat = await self._get_effective_heat(ctx.author)
@@ -385,6 +386,7 @@ class UserCommands:
     @heist.command(name="level")
     async def heist_level(self, ctx: commands.Context, member: discord.Member = commands.Author):
         """Check heist level and XP progress."""
+        await ctx.typing()
         xp = await self.config.user(member).xp()
         lvl, into, span, pct = xp_progress(xp)
         lv_bonus = level_success_bonus(lvl)
@@ -419,6 +421,7 @@ class UserCommands:
     @commands.bot_has_permissions(embed_links=True)
     async def check_cooldowns(self, ctx: commands.Context):
         """Check cooldowns for all heists."""
+        await ctx.typing()
         if not await self.check_jail(ctx, ctx.author):
             return
         cooldowns = await self.config.user(ctx.author).heist_cooldowns()
