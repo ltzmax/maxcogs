@@ -222,7 +222,7 @@ class HeistSelectionView(discord.ui.LayoutView):
         )
 
         lines = [
-            f"## 🎯 Choose Your Heist - Page {self.page + 1}/{self.total_pages}  ·  🎓 {lv_str}\n"
+            f"## 🎯 Choose Your Heist - Page {self.page + 1}/{self.total_pages}\n"
         ]
         for name, data in page_heists:
             loot_item = name if name in ITEMS and ITEMS[name][1].get("type") == "loot" else None
