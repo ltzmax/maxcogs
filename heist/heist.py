@@ -49,7 +49,7 @@ def _simple_view(text: str) -> discord.ui.LayoutView:
 class Heist(UserCommands, OwnerCommands, commands.Cog):
     """A game where players commit heists to steal valuable items or currency, using tools to boost success and shields to reduce losses, with a risk of getting caught by police!"""
 
-    __version__: Final[str] = "1.0.0"
+    __version__: Final[str] = "2.0.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/#heist"
 
