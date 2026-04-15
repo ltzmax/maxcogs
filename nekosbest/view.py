@@ -24,28 +24,51 @@ SOFTWARE.
 
 import discord
 
+class ImageButtonView(discord.ui.LayoutView):
+    def __init__(self, artist_href: str, source_url: str, image_url: str):
+        super().__init__(timeout=None)
+        self.add_item(discord.ui.Container(
+            discord.ui.ActionRow(
+                discord.ui.Button(style=discord.ButtonStyle.link, label="Artist", url=artist_href),
+                discord.ui.Button(style=discord.ButtonStyle.link, label="Source", url=source_url),
+                discord.ui.Button(style=discord.ButtonStyle.link, label="Open Image", url=image_url),
+            )
+        ))
 
-class ImageButtonView(discord.ui.View):
-    def __init__(self, artist_href, source_url, image):
-        super().__init__()
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.gray,
-                label="Artist",
-                url=artist_href,
-            )
-        )
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.gray,
-                label="Source",
-                url=source_url,
-            )
-        )
-        self.add_item(
-            discord.ui.Button(
-                style=discord.ButtonStyle.gray,
-                label="Open Image",
-                url=image,
-            )
-        )
+class _ConfirmView(discord.ui.View):
+    def __init__(self, author: discord.User):
+        super().__init__(timeout=60)
+        self.author = author
+        self.result: bool = False
+        self.message = None
+
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.danger)
+    async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.result = True
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(view=self)
+        self.stop()
+
+    @discord.ui.button(label="No", style=discord.ButtonStyle.secondary)
+    async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.result = False
+        for item in self.children:
+            item.disabled = True
+        await interaction.response.edit_message(view=self)
+        self.stop()
+
+    async def on_timeout(self):
+        self.result = False
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            import contextlib
+            with contextlib.suppress(discord.HTTPException):
+                await self.message.edit(view=self)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.author:
+            await interaction.response.send_message("This isn't your confirmation.", ephemeral=True)
+            return False
+        return True

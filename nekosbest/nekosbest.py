@@ -22,29 +22,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
+import contextlib
 from typing import Any, Final, Literal
 
 import aiohttp
 import discord
 import orjson
+from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_number
-from redbot.core.utils.views import ConfirmView
 
-from .core import ACTIONS, ICON, NEKOS
-from .view import ImageButtonView
+from .core import ACTIONS, NEKOS
+from .view import ImageButtonView, _ConfirmView
 
 
-log = logging.getLogger("red.maxcogs.nekosbest")
+log = getLogger("red.maxcogs.nekosbest")
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
-
 
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best + RolePlay Commands."""
 
-    __version__: Final[str] = "2.6.0"
+    __version__: Final[str] = "2.7.0"
     __author__: Final[str] = "MAX"
     __docs__: Final[str] = "https://cogs.maxapp.tv/#nekosbest"
 
@@ -85,43 +84,49 @@ class NekosBest(commands.Cog):
     async def imgembedgen(
         self, ctx: commands.Context, response: dict[str, Any], category: str
     ) -> None:
+        await ctx.typing()
         data = response["results"][0]
         artist = data["artist_name"]
         source = data["source_url"]
         artist_link = data["artist_href"]
         image_url = data["url"]
 
-        embed = discord.Embed(
-            title=f"Here's a picture of a {category}",
-            description=f"**Artist:** [{artist}]({artist_link})\n**Source:** {source}",
-            color=await ctx.embed_color(),
-        )
-        embed.set_image(url=image_url)
-        embed.set_footer(text="Powered by nekos.best", icon_url=ICON)
-        view = ImageButtonView(artist_link, source, image_url)
-        await ctx.send(embed=embed, view=view)
+        view = discord.ui.LayoutView(timeout=None)
+        view.add_item(discord.ui.Container(
+            discord.ui.TextDisplay(
+                f"## Here's a picture of a {category}\n"
+                f"**Artist:** [{artist}]({artist_link})\n"
+                f"**Source:** {source}"
+            ),
+            discord.ui.MediaGallery(
+                discord.MediaGalleryItem(discord.UnfurledMediaItem(url=image_url))
+            ),
+            discord.ui.Separator(),
+            discord.ui.ActionRow(
+                discord.ui.Button(style=discord.ButtonStyle.link, label="Artist", url=artist_link),
+                discord.ui.Button(style=discord.ButtonStyle.link, label="Source", url=source),
+                discord.ui.Button(style=discord.ButtonStyle.link, label="Open Image", url=image_url),
+            ),
+            discord.ui.TextDisplay(f"-# Powered by nekos.best"),
+        ))
+        await ctx.send(view=view)
 
     async def embedgen(self, ctx: commands.Context, member: discord.Member, action: str) -> None:
         url = await self._api_call(ctx, action)
         if url is None:
             return
-        # Count the command usage
+        await ctx.typing()
         user_config = self.config.user(ctx.author)
         command_counts = await user_config.command_counts()
-        if action not in command_counts:
-            command_counts[action] = 0
-        command_counts[action] += 1
+        command_counts[action] = command_counts.get(action, 0) + 1
         await user_config.command_counts.set(command_counts)
         count = command_counts[action]
 
-        # Count received actions for the target member
-        received_counts = {}
+        received_counts: dict[str, int] = {}
         if member and member != ctx.author:
             target_config = self.config.user(member)
             received_counts = await target_config.received_counts() or {}
-            if action not in received_counts:
-                received_counts[action] = 0
-            received_counts[action] += 1
+            received_counts[action] = received_counts.get(action, 0) + 1
             await target_config.received_counts.set(received_counts)
         received_count = received_counts.get(action, 0)
 
@@ -129,25 +134,24 @@ class NekosBest(commands.Cog):
         received_grammar = "times" if received_count > 1 else "time"
         action_fmt = ACTIONS.get(action, action)
         anime_name = url["results"][0]["anime_name"]
-        emb = discord.Embed(
-            colour=await ctx.embed_color(),
-            description=(
-                f"{ctx.author.mention} {action_fmt} {f'{member.mention}' if member and member != ctx.author else 'themselves!'}\n"
-            ),
-        )
-        emb.add_field(
-            name=" ",
-            value=(
-                f"**Anime Name**: {anime_name}\n"
-                f"{f'{member.display_name} has received {action} {humanize_number(received_count)} {received_grammar}!' if member and member != ctx.author else ''}\n"
-                f"{ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}"
-            ),
-        )
-        emb.set_image(url=url["results"][0]["url"])
-        emb.set_footer(text="Powered by nekos.best", icon_url=ICON)
-        await ctx.send(embed=emb)
+        image_url = url["results"][0]["url"]
 
-    # -------- image Commands ------->
+        target_str = f"{member.mention}" if member and member != ctx.author else "themselves!"
+        description = f"**{ctx.author.mention} {action_fmt} {target_str}**\n"
+        description += f"-# Anime: {anime_name}\n"
+        if member and member != ctx.author:
+            description += f"-# {member.display_name} has received {action} {humanize_number(received_count)} {received_grammar}\n"
+        description += f"-# {ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}"
+
+        view = discord.ui.LayoutView(timeout=None)
+        view.add_item(discord.ui.Container(
+            discord.ui.TextDisplay(description),
+            discord.ui.MediaGallery(
+                discord.MediaGalleryItem(discord.UnfurledMediaItem(url=image_url))
+            ),
+            discord.ui.TextDisplay("-# Powered by nekos.best"),
+        ))
+        await ctx.send(view=view)
 
     @commands.group()
     @commands.guild_only()
@@ -156,10 +160,10 @@ class NekosBest(commands.Cog):
         """Settings for nekosbest cog."""
 
     @nekoset.command()
-    @commands.is_owner()  # It clears all users across all servers so needs to be owner.
+    @commands.is_owner()
     async def resetall(self, ctx: commands.Context) -> None:
         """Reset all command counts."""
-        view = ConfirmView(ctx.author, disable_buttons=True)
+        view = _ConfirmView(ctx.author)
         view.message = await ctx.send("Are you sure you want to reset everything?", view=view)
         await view.wait()
         if view.result:
@@ -171,7 +175,7 @@ class NekosBest(commands.Cog):
     @nekoset.command()
     async def reset(self, ctx: commands.Context, member: discord.Member) -> None:
         """Reset a user's command counts."""
-        view = ConfirmView(ctx.author, disable_buttons=True)
+        view = _ConfirmView(ctx.author)
         view.message = await ctx.send(
             f"Are you sure you want to reset everything for {member.mention}?",
             view=view,
@@ -179,10 +183,7 @@ class NekosBest(commands.Cog):
         await view.wait()
         if view.result:
             await self.config.user(member).clear()
-            await ctx.send(
-                f"{member.mention}'s command counts have been reset.",
-                mention_author=False,
-            )
+            await ctx.send(f"{member.mention}'s command counts have been reset.", mention_author=False)
         else:
             await ctx.send("Reset cancelled.")
 
@@ -213,8 +214,6 @@ class NekosBest(commands.Cog):
         """Send a random husbando image."""
         url = await self._api_call(ctx, "husbando")
         await self.imgembedgen(ctx, url, "husbando")
-
-    # --------- ROLEPLAY COMMANDS ------------>
 
     @commands.command()
     @commands.bot_has_permissions(embed_links=True)
