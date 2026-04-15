@@ -36,6 +36,7 @@ from .handlers import resolve_heist, schedule_resolve
 from .utils import HEISTS, ITEMS
 from .views import ConfirmLayoutView
 
+
 log = getLogger("red.cogs.heist")
 
 

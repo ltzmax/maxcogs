@@ -26,6 +26,7 @@ import math
 
 from red_commons.logging import getLogger
 
+
 log = getLogger("red.cogs.heist.leveling")
 
 MAX_LEVEL = 120
