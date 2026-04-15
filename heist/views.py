@@ -31,6 +31,7 @@ from red_commons.logging import getLogger
 from redbot.core import bank, commands
 
 from .handlers import schedule_resolve
+from .leveling import get_level
 from .meta import _PARAM_META
 from .utils import HEISTS, ITEMS, RECIPES, fmt
 
