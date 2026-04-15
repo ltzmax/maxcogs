@@ -446,7 +446,7 @@ HEISTS: dict[str, dict] = {
         "min_reward": 0,
         "max_reward": 300,
         "cooldown": datetime.timedelta(minutes=30),
-        "min_success": 50,
+        "min_success": 70,
         "max_success": 80,
         "duration": datetime.timedelta(minutes=2),
         "min_loss": 100,
@@ -454,6 +454,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.05,
         "jail_time": datetime.timedelta(hours=1),
         "material_drop_chance": 0.2,
+        "xp_reward": 15,
     },
     "atm_smash": {
         "emoji": "🏧",
@@ -461,7 +462,7 @@ HEISTS: dict[str, dict] = {
         "min_reward": 500,
         "max_reward": 3000,
         "cooldown": datetime.timedelta(minutes=45),
-        "min_success": 35,
+        "min_success": 40,
         "max_success": 65,
         "duration": datetime.timedelta(minutes=3),
         "min_loss": 300,
@@ -469,6 +470,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.05,
         "jail_time": datetime.timedelta(hours=2),
         "material_drop_chance": 0.25,
+        "xp_reward": 30,
     },
     "store_robbery": {
         "emoji": "🏬",
@@ -476,7 +478,7 @@ HEISTS: dict[str, dict] = {
         "min_reward": 1000,
         "max_reward": 5000,
         "cooldown": datetime.timedelta(hours=1),
-        "min_success": 30,
+        "min_success": 50,
         "max_success": 60,
         "duration": datetime.timedelta(minutes=5),
         "min_loss": 500,
@@ -484,6 +486,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.15,
         "jail_time": datetime.timedelta(hours=3),
         "material_drop_chance": 0.3,
+        "xp_reward": 40,
     },
     "jewelry_store": {
         "emoji": "💎",
@@ -499,6 +502,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.2,
         "jail_time": datetime.timedelta(hours=4),
         "material_drop_chance": 0.35,
+        "xp_reward": 60,
     },
     "fight_club": {
         "emoji": "🥊",
@@ -514,6 +518,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.25,
         "jail_time": datetime.timedelta(hours=5),
         "material_drop_chance": 0.4,
+        "xp_reward": 75,
     },
     "art_gallery": {
         "emoji": "🖼️",
@@ -529,6 +534,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.3,
         "jail_time": datetime.timedelta(hours=6),
         "material_drop_chance": 0.45,
+        "xp_reward": 90,
     },
     "casino_vault": {
         "emoji": "🎰",
@@ -544,6 +550,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.35,
         "jail_time": datetime.timedelta(hours=8),
         "material_drop_chance": 0.5,
+        "xp_reward": 120,
     },
     "museum_relic": {
         "emoji": "🏺",
@@ -559,6 +566,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.4,
         "jail_time": datetime.timedelta(hours=12),
         "material_drop_chance": 0.55,
+        "xp_reward": 120,
     },
     "luxury_yacht": {
         "emoji": "🛥️",
@@ -574,6 +582,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.45,
         "jail_time": datetime.timedelta(hours=24),
         "material_drop_chance": 0.6,
+        "xp_reward": 120,
     },
     "street_bike": {
         "emoji": "🚲",
@@ -589,6 +598,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.1,
         "jail_time": datetime.timedelta(hours=2),
         "material_drop_chance": 0.15,
+        "xp_reward": 25,
     },
     "street_motorcycle": {
         "emoji": "🏍️",
@@ -604,6 +614,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.15,
         "jail_time": datetime.timedelta(hours=3),
         "material_drop_chance": 0.2,
+        "xp_reward": 35,
     },
     "street_car": {
         "emoji": "🚗",
@@ -619,6 +630,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.2,
         "jail_time": datetime.timedelta(hours=4),
         "material_drop_chance": 0.25,
+        "xp_reward": 50,
     },
     "corporate": {
         "emoji": "🏢",
@@ -634,6 +646,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.3,
         "jail_time": datetime.timedelta(hours=8),
         "material_drop_chance": 0.35,
+        "xp_reward": 100,
     },
     "bank": {
         "emoji": "🏦",
@@ -649,6 +662,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.35,
         "jail_time": datetime.timedelta(hours=12),
         "material_drop_chance": 0.45,
+        "xp_reward": 160,
     },
     "elite": {
         "emoji": "💎",
@@ -664,6 +678,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.4,
         "jail_time": datetime.timedelta(hours=12),
         "material_drop_chance": 0.5,
+        "xp_reward": 200,
     },
     "crew_robbery": {
         "emoji": "👥",
@@ -679,6 +694,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.45,
         "jail_time": datetime.timedelta(hours=16),
         "material_drop_chance": 0.6,
+        "xp_reward": 300,
         "crew_size": 4,
     },
     "vending_machine": {
@@ -687,7 +703,7 @@ HEISTS: dict[str, dict] = {
         "min_reward": 10,
         "max_reward": 80,
         "cooldown": datetime.timedelta(minutes=10),
-        "min_success": 70,
+        "min_success": 80,
         "max_success": 95,
         "duration": datetime.timedelta(seconds=30),
         "min_loss": 5,
@@ -695,6 +711,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.01,
         "jail_time": datetime.timedelta(minutes=15),
         "material_drop_chance": 0.05,
+        "xp_reward": 9,
     },
     "parking_meter": {
         "emoji": "🅿️",
@@ -710,6 +727,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.03,
         "jail_time": datetime.timedelta(minutes=30),
         "material_drop_chance": 0.08,
+        "xp_reward": 8,
     },
     "food_truck": {
         "emoji": "🚚",
@@ -725,6 +743,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.06,
         "jail_time": datetime.timedelta(hours=1),
         "material_drop_chance": 0.15,
+        "xp_reward": 20,
     },
     "hospital_pharmacy": {
         "emoji": "🏥",
@@ -740,6 +759,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.18,
         "jail_time": datetime.timedelta(hours=4),
         "material_drop_chance": 0.3,
+        "xp_reward": 50,
     },
     "stock_exchange": {
         "emoji": "📈",
@@ -755,6 +775,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.22,
         "jail_time": datetime.timedelta(hours=6),
         "material_drop_chance": 0.35,
+        "xp_reward": 85,
     },
     "gold_reserve": {
         "emoji": "🪙",
@@ -770,6 +791,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.38,
         "jail_time": datetime.timedelta(hours=10),
         "material_drop_chance": 0.45,
+        "xp_reward": 130,
         "material_tiers": ["scrap_metal", "tech_parts", "rare_alloy", "military_grade_alloy"],
     },
     "military_depot": {
@@ -786,6 +808,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.42,
         "jail_time": datetime.timedelta(hours=14),
         "material_drop_chance": 0.5,
+        "xp_reward": 150,
         "material_tiers": ["rare_alloy", "classified_docs", "military_grade_alloy"],
     },
     "space_agency": {
@@ -802,6 +825,7 @@ HEISTS: dict[str, dict] = {
         "police_chance": 0.5,
         "jail_time": datetime.timedelta(hours=24),
         "material_drop_chance": 0.55,
+        "xp_reward": 220,
         "material_tiers": ["rare_alloy", "classified_docs", "military_grade_alloy"],
     },
 }

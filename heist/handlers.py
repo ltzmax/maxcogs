@@ -32,6 +32,7 @@ from red_commons.logging import getLogger
 from redbot.core import bank, errors
 
 from .events import get_event_multiplier
+from .leveling import award_xp, level_success_bonus, xp_bar, xp_progress
 from .meta import (
     _CREW_FLAVOUR_CAUGHT,
     _CREW_FLAVOUR_FAIL,
@@ -44,7 +45,6 @@ from .meta import (
     _FLAVOUR_TOOL,
 )
 from .utils import ITEMS, fmt
-
 
 log = getLogger("red.cogs.heist.handlers")
 
@@ -159,8 +159,12 @@ async def resolve_heist(
                 inventory.pop(used_tool, None)
             await user_config.inventory.set(inventory)
 
+        member_xp = await user_config.xp()
+        member_level = xp_progress(member_xp)[0]
+        lv_bonus = level_success_bonus(member_level)
+
         base_success = random.randint(data["min_success"], data["max_success"])
-        success_chance = min((base_success + int(tool_boost * 100)) / 100, 1.0)
+        success_chance = min((base_success + int(tool_boost * 100)) / 100 + lv_bonus, 1.0)
         success = random.random() < success_chance
 
         loot_item = (
@@ -325,6 +329,20 @@ async def resolve_heist(
                 stats["success"] = stats.get("success", 0) + 1
             else:
                 stats["fail"] = stats.get("fail", 0) + 1
+
+        # Award XP
+        old_level, new_level, xp_gained = await award_xp(cog, member, heist_type, success, caught)
+        new_xp = await user_config.xp()
+        lvl, into, span, pct = xp_progress(new_xp)
+        if caught:
+            msg_parts.append("-# 🎓 No XP earned (caught)")
+        else:
+            level_up_str = (
+                f" — **Level up! {old_level} -> {new_level}** 🎉" if new_level > old_level else ""
+            )
+            msg_parts.append(
+                f"-# 🎓 +{xp_gained} XP{level_up_str} · Lv.{lvl} {xp_bar(pct)} {into:,}/{span:,}"
+            )
 
         heist_emoji = data.get("emoji", "🎭")
         result_view = _build_result_view(
@@ -498,6 +516,18 @@ async def resolve_crew_heist(
                     stats["success"] = stats.get("success", 0) + 1
                 else:
                     stats["fail"] = stats.get("fail", 0) + 1
+
+            old_lv, new_lv, xp_gained = await award_xp(
+                cog, member, heist_type, success, member_caught
+            )
+            new_xp = await cog.config.user(member).xp()
+            lvl, _into, _span, _pct = xp_progress(new_xp)
+            if member_caught:
+                lines.append("-# 🎓 No XP earned (caught)")
+            else:
+                lv_up = f" · Level up! {old_lv} -> {new_lv} 🎉" if new_lv > old_lv else ""
+                lines.append(f"-# 🎓 +{xp_gained} XP · Lv.{lvl}{lv_up}")
+
             member_lines.append("\n".join(lines))
 
         if any_caught:

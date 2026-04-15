@@ -28,7 +28,6 @@ import datetime
 import discord
 from red_commons.logging import getLogger
 
-
 log = getLogger("red.cogs.heist.events")
 
 

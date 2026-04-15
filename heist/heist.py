@@ -36,7 +36,6 @@ from .handlers import resolve_heist, schedule_resolve
 from .utils import HEISTS, ITEMS
 from .views import ConfirmLayoutView
 
-
 log = getLogger("red.cogs.heist")
 
 
@@ -73,6 +72,7 @@ class Heist(UserCommands, OwnerCommands, commands.Cog):
                 "fail": 0,
                 "caught": 0,
             },
+            "xp": 0,
         }
         default_global = {
             "heist_settings": {
@@ -302,6 +302,7 @@ class Heist(UserCommands, OwnerCommands, commands.Cog):
             "police_chance": custom.get("police_chance", defaults.get("police_chance", 0.0)),
             "material_drop_chance": defaults.get("material_drop_chance", 0.0),
             "material_tiers": defaults.get("material_tiers"),
+            "xp_reward": defaults.get("xp_reward", 50),
             "jail_time": datetime.timedelta(
                 seconds=custom.get(
                     "jail_time",

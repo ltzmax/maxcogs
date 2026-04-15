@@ -34,7 +34,6 @@ from .handlers import schedule_resolve
 from .meta import _PARAM_META
 from .utils import HEISTS, ITEMS, RECIPES, fmt
 
-
 log = getLogger("red.cogs.heist.views")
 CREW_SIZE = 4
 LOBBY_TIMEOUT = 180  # 3 minutes
@@ -187,12 +186,20 @@ class _HeistStartedView(discord.ui.LayoutView):
 
 
 class HeistSelectionView(discord.ui.LayoutView):
-    def __init__(self, cog, ctx: commands.Context, heist_settings: dict, currency_name: str):
+    def __init__(
+        self,
+        cog,
+        ctx: commands.Context,
+        heist_settings: dict,
+        currency_name: str,
+        player_level: int = 1,
+    ):
         super().__init__(timeout=120)
         self.cog = cog
         self.ctx = ctx
         self.message = None
         self.currency_name = currency_name
+        self.player_level = player_level
         self.all_heists = list(heist_settings.items())
         self.total_pages = max(1, -(-len(self.all_heists) // HEISTS_PER_PAGE))
         self.page = 0
@@ -203,7 +210,18 @@ class HeistSelectionView(discord.ui.LayoutView):
         start = self.page * HEISTS_PER_PAGE
         page_heists = self.all_heists[start : start + HEISTS_PER_PAGE]
 
-        lines = [f"## 🎯 Choose Your Heist - Page {self.page + 1}/{self.total_pages}\n"]
+        from .leveling import level_success_bonus
+
+        lv_bonus = level_success_bonus(self.player_level)
+        lv_str = (
+            f"+{lv_bonus * 100:.0f}% from Lv.{self.player_level}"
+            if lv_bonus > 0
+            else f"Lv.{self.player_level}"
+        )
+
+        lines = [
+            f"## 🎯 Choose Your Heist - Page {self.page + 1}/{self.total_pages}  ·  🎓 {lv_str}\n"
+        ]
         for name, data in page_heists:
             loot_item = name if name in ITEMS and ITEMS[name][1].get("type") == "loot" else None
             if loot_item:
@@ -213,9 +231,11 @@ class HeistSelectionView(discord.ui.LayoutView):
             risk_label = _risk_indicator(data["police_chance"], data["risk"])
             cooldown_str = _cooldown_display(data["cooldown"])
             duration_min = int(data["duration"].total_seconds() // 60)
+            eff_min = min(data["min_success"] + int(lv_bonus * 100), 100)
+            eff_max = min(data["max_success"] + int(lv_bonus * 100), 100)
             lines.append(
                 f"**{data['emoji']} {fmt(name)}** - {risk_label}\n"
-                f"-# Reward: {reward_str} · Success: {data['min_success']}–{data['max_success']}%"
+                f"-# Reward: {reward_str} · Success: {eff_min}–{eff_max}%"
                 f" · Cooldown: {cooldown_str} · Duration: {duration_min}m\n"
             )
 

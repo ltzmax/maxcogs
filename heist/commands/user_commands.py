@@ -29,6 +29,7 @@ import discord
 from redbot.core import bank, commands
 from redbot.core.utils.chat_formatting import humanize_number
 
+from ..leveling import MAX_LEVEL, get_level, level_success_bonus, xp_bar, xp_progress
 from ..utils import HEISTS, ITEMS, fmt
 from ..views import CraftView, CrewLobbyView, EquipView, HeistSelectionView, ShopView
 
@@ -144,7 +145,9 @@ class UserCommands:
             }
 
         currency_name = await bank.get_currency_name(ctx.guild)
-        view = HeistSelectionView(self, ctx, heist_settings, currency_name)
+        player_xp = await self.config.user(ctx.author).xp()
+        player_level = get_level(player_xp)
+        view = HeistSelectionView(self, ctx, heist_settings, currency_name, player_level)
         view.message = await ctx.send(view=view)
 
     @heist.command(name="crew")
@@ -361,6 +364,49 @@ class UserCommands:
             f"Total: {humanize_number(total)}"
         )
         lines.append(f"\n**🌡️ Heat:**\n{_heat_bar(heat)}")
+
+        xp = await self.config.user(ctx.author).xp()
+        lvl, into, span, pct = xp_progress(xp)
+        lv_bonus = level_success_bonus(lvl)
+        lines.append(
+            f"\n**🎓 Level {lvl}** / {MAX_LEVEL}\n"
+            f"{xp_bar(pct)} {humanize_number(into)}/{humanize_number(span)} XP"
+            + (f"  ·  +{lv_bonus * 100:.0f}% success bonus" if lv_bonus > 0 else "")
+        )
+
+        view = discord.ui.LayoutView(timeout=None)
+        view.add_item(discord.ui.Container(discord.ui.TextDisplay("\n".join(lines))))
+        await ctx.send(view=view)
+
+    @heist.command(name="level")
+    async def heist_level(self, ctx: commands.Context, member: discord.Member = commands.Author):
+        """Check heist level and XP progress."""
+        xp = await self.config.user(member).xp()
+        lvl, into, span, pct = xp_progress(xp)
+        lv_bonus = level_success_bonus(lvl)
+
+        # This will need to be here, please do not remove or move.
+        from ..leveling import XP_TABLE
+
+        if lvl >= MAX_LEVEL:
+            next_line = "-# Max level reached!"
+        else:
+            xp_needed = XP_TABLE[lvl] - xp
+            next_line = f"-# {humanize_number(xp_needed)} XP until level {lvl + 1}"
+
+        lines = [
+            f"## 🎓 {member.display_name}'s Level",
+            f"\n**Level {lvl}** / {MAX_LEVEL}",
+            f"{xp_bar(pct)} {humanize_number(into)}/{humanize_number(span)} XP",
+            next_line,
+        ]
+        if lv_bonus > 0:
+            lines.append(f"\n**Bonus:** +{lv_bonus * 100:.0f}% success chance on all heists")
+        else:
+            lines.append(
+                "\n-# Earn XP by completing heists to gain success bonuses (+0.5% per level, max +20% at Lv.40)"
+            )
+
         view = discord.ui.LayoutView(timeout=None)
         view.add_item(discord.ui.Container(discord.ui.TextDisplay("\n".join(lines))))
         await ctx.send(view=view)
