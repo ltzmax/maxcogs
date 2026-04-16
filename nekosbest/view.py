@@ -24,6 +24,7 @@ SOFTWARE.
 
 import discord
 
+
 class _ConfirmView(discord.ui.View):
     def __init__(self, author: discord.User):
         super().__init__(timeout=60)
