@@ -24,6 +24,7 @@ SOFTWARE.
 
 from typing import Final
 
+
 NEKOS: Final[str] = "https://nekos.best/api/v2/"
 ICON: Final[str] = "https://nekos.best/logo_short.png"
 ACTIONS: dict[str, str] = {

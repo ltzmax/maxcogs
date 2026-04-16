@@ -35,6 +35,7 @@ from redbot.core.utils.chat_formatting import humanize_number
 from .core import ACTIONS, NEKOS
 from .view import _ConfirmView
 
+
 log = getLogger("red.maxcogs.nekosbest")
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
 
