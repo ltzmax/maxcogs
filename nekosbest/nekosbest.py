@@ -35,9 +35,9 @@ from redbot.core.utils.chat_formatting import humanize_number
 from .core import ACTIONS, NEKOS
 from .view import _ConfirmView
 
-
 log = getLogger("red.maxcogs.nekosbest")
 RequestType = Literal["discord_deleted_user", "owner", "user", "user_strict"]
+
 
 class NekosBest(commands.Cog):
     """Sends random images from nekos.best + RolePlay Commands."""
@@ -91,23 +91,29 @@ class NekosBest(commands.Cog):
         image_url = data["url"]
 
         view = discord.ui.LayoutView(timeout=None)
-        view.add_item(discord.ui.Container(
-            discord.ui.TextDisplay(
-                f"## Here's a picture of a {category}\n"
-                f"**Artist:** [{artist}]({artist_link})\n"
-                f"**Source:** {source}"
-            ),
-            discord.ui.MediaGallery(
-                discord.MediaGalleryItem(discord.UnfurledMediaItem(url=image_url))
-            ),
-            discord.ui.Separator(),
-            discord.ui.ActionRow(
-                discord.ui.Button(style=discord.ButtonStyle.link, label="Artist", url=artist_link),
-                discord.ui.Button(style=discord.ButtonStyle.link, label="Source", url=source),
-                discord.ui.Button(style=discord.ButtonStyle.link, label="Open Image", url=image_url),
-            ),
-            discord.ui.TextDisplay("-# Powered by nekos.best"),
-        ))
+        view.add_item(
+            discord.ui.Container(
+                discord.ui.TextDisplay(
+                    f"## Here's a picture of a {category}\n"
+                    f"**Artist:** [{artist}]({artist_link})\n"
+                    f"**Source:** {source}"
+                ),
+                discord.ui.MediaGallery(
+                    discord.MediaGalleryItem(discord.UnfurledMediaItem(url=image_url))
+                ),
+                discord.ui.Separator(),
+                discord.ui.ActionRow(
+                    discord.ui.Button(
+                        style=discord.ButtonStyle.link, label="Artist", url=artist_link
+                    ),
+                    discord.ui.Button(style=discord.ButtonStyle.link, label="Source", url=source),
+                    discord.ui.Button(
+                        style=discord.ButtonStyle.link, label="Open Image", url=image_url
+                    ),
+                ),
+                discord.ui.TextDisplay("-# Powered by nekos.best"),
+            )
+        )
         await ctx.send(view=view)
 
     async def embedgen(self, ctx: commands.Context, member: discord.Member, action: str) -> None:
@@ -140,16 +146,20 @@ class NekosBest(commands.Cog):
         description += f"-# Anime: {anime_name}\n"
         if member and member != ctx.author:
             description += f"-# {member.display_name} has received {action} {humanize_number(received_count)} {received_grammar}\n"
-        description += f"-# {ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}"
+        description += (
+            f"-# {ctx.author.display_name} has used {action} {humanize_number(count)} {grammar}"
+        )
 
         view = discord.ui.LayoutView(timeout=None)
-        view.add_item(discord.ui.Container(
-            discord.ui.TextDisplay(description),
-            discord.ui.MediaGallery(
-                discord.MediaGalleryItem(discord.UnfurledMediaItem(url=image_url))
-            ),
-            discord.ui.TextDisplay("-# Powered by nekos.best"),
-        ))
+        view.add_item(
+            discord.ui.Container(
+                discord.ui.TextDisplay(description),
+                discord.ui.MediaGallery(
+                    discord.MediaGalleryItem(discord.UnfurledMediaItem(url=image_url))
+                ),
+                discord.ui.TextDisplay("-# Powered by nekos.best"),
+            )
+        )
         await ctx.send(view=view)
 
     @commands.group()
@@ -182,7 +192,9 @@ class NekosBest(commands.Cog):
         await view.wait()
         if view.result:
             await self.config.user(member).clear()
-            await ctx.send(f"{member.mention}'s command counts have been reset.", mention_author=False)
+            await ctx.send(
+                f"{member.mention}'s command counts have been reset.", mention_author=False
+            )
         else:
             await ctx.send("Reset cancelled.")
 

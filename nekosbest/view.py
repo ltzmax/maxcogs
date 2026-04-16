@@ -54,11 +54,14 @@ class _ConfirmView(discord.ui.View):
             item.disabled = True
         if self.message:
             import contextlib
+
             with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.author:
-            await interaction.response.send_message("This isn't your confirmation.", ephemeral=True)
+            await interaction.response.send_message(
+                "This isn't your confirmation.", ephemeral=True
+            )
             return False
         return True
