@@ -215,15 +215,13 @@ class HeistSelectionView(discord.ui.LayoutView):
         from .leveling import level_success_bonus
 
         lv_bonus = level_success_bonus(self.player_level)
-        lv_str = ( # noqa: F841
+        lv_str = (  # noqa: F841
             f"+{lv_bonus * 100:.0f}% from Lv.{self.player_level}"
             if lv_bonus > 0
             else f"Lv.{self.player_level}"
         )
 
-        lines = [
-            f"## 🎯 Choose Your Heist - Page {self.page + 1}/{self.total_pages}\n"
-        ]
+        lines = [f"## 🎯 Choose Your Heist - Page {self.page + 1}/{self.total_pages}\n"]
         for name, data in page_heists:
             loot_item = name if name in ITEMS and ITEMS[name][1].get("type") == "loot" else None
             if loot_item:
