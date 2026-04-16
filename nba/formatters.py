@@ -281,9 +281,10 @@ async def build_playoff_embeds(
     pages = []
     for result_set in result_sets:
         name = result_set.get("name", "")
-        if "PlayoffPicture" not in name:
+        # Only the *ConfPlayoffPicture sets contain actual series data
+        if "ConfPlayoffPicture" not in name:
             continue
-        conf = "East" if "East" in name else "West"
+        conf = "East" if name.startswith("East") else "West"
         headers = result_set["headers"]
         rows = [dict(zip(headers, r, strict=False)) for r in result_set.get("rowSet", [])]
         per_page = 4
@@ -294,13 +295,13 @@ async def build_playoff_embeds(
                 color=await ctx.embed_color(),
             )
             for series in chunk:
-                rank1 = series.get("RANK1", "?")
-                team1 = series.get("TEAM1_NAME") or series.get("TEAM1", "TBD")
-                rank2 = series.get("RANK2", "?")
-                team2 = series.get("TEAM2_NAME") or series.get("TEAM2", "TBD")
-                wins1 = series.get("TEAM1_WINS") or series.get("WINS1", 0)
-                wins2 = series.get("TEAM2_WINS") or series.get("WINS2", 0)
-                series_status = series.get("SERIES_TEXT") or f"{wins1}–{wins2}"
+                rank1 = series.get("HIGH_SEED_RANK", "?")
+                team1 = series.get("HIGH_SEED_TEAM") or "TBD"
+                rank2 = series.get("LOW_SEED_RANK", "?")
+                team2 = series.get("LOW_SEED_TEAM") or "TBD"
+                wins1 = series.get("HIGH_SEED_SERIES_W", 0)
+                wins2 = series.get("HIGH_SEED_SERIES_L", 0)
+                series_status = f"{wins1}–{wins2}"
                 emoji1 = team_emojis.get(team1, "")
                 emoji2 = team_emojis.get(team2, "")
                 label1 = f"{emoji1} ({rank1}) {team1}" if emoji1 else f"({rank1}) {team1}"
