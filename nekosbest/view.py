@@ -24,17 +24,6 @@ SOFTWARE.
 
 import discord
 
-class ImageButtonView(discord.ui.LayoutView):
-    def __init__(self, artist_href: str, source_url: str, image_url: str):
-        super().__init__(timeout=None)
-        self.add_item(discord.ui.Container(
-            discord.ui.ActionRow(
-                discord.ui.Button(style=discord.ButtonStyle.link, label="Artist", url=artist_href),
-                discord.ui.Button(style=discord.ButtonStyle.link, label="Source", url=source_url),
-                discord.ui.Button(style=discord.ButtonStyle.link, label="Open Image", url=image_url),
-            )
-        ))
-
 class _ConfirmView(discord.ui.View):
     def __init__(self, author: discord.User):
         super().__init__(timeout=60)

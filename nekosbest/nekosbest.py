@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import contextlib
 from typing import Any, Final, Literal
 
 import aiohttp
@@ -34,7 +33,7 @@ from redbot.core.bot import Red
 from redbot.core.utils.chat_formatting import humanize_number
 
 from .core import ACTIONS, NEKOS
-from .view import ImageButtonView, _ConfirmView
+from .view import _ConfirmView
 
 
 log = getLogger("red.maxcogs.nekosbest")
@@ -107,7 +106,7 @@ class NekosBest(commands.Cog):
                 discord.ui.Button(style=discord.ButtonStyle.link, label="Source", url=source),
                 discord.ui.Button(style=discord.ButtonStyle.link, label="Open Image", url=image_url),
             ),
-            discord.ui.TextDisplay(f"-# Powered by nekos.best"),
+            discord.ui.TextDisplay("-# Powered by nekos.best"),
         ))
         await ctx.send(view=view)
 
