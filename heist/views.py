@@ -68,9 +68,9 @@ class _HeistNavBtn(discord.ui.Button):
     def __init__(self, direction: str, view: "HeistSelectionView", disabled: bool = False):
         match direction:
             case "prev":
-                label, emoji = "Previous", "◀️"
+                label, emoji = "◀", None
             case "next":
-                label, emoji = "Next", "▶️"
+                label, emoji = "▶", None
         super().__init__(
             label=label, emoji=emoji, style=discord.ButtonStyle.secondary, disabled=disabled
         )
@@ -221,7 +221,7 @@ class HeistSelectionView(discord.ui.LayoutView):
             else f"Lv.{self.player_level}"
         )
 
-        lines = [f"## 🎯 Choose Your Heist - Page {self.page + 1}/{self.total_pages}\n"]
+        lines = [f"## 🎯 Choose Your Heist\n"]
         for name, data in page_heists:
             loot_item = name if name in ITEMS and ITEMS[name][1].get("type") == "loot" else None
             if loot_item:
@@ -252,20 +252,22 @@ class HeistSelectionView(discord.ui.LayoutView):
         select.disabled = disabled
         select_row = discord.ui.ActionRow(select)
 
-        nav_row = discord.ui.ActionRow()
-        if self.page > 0:
-            nav_row.add_item(_HeistNavBtn("prev", self, disabled=disabled))
-        if self.page < self.total_pages - 1:
-            nav_row.add_item(_HeistNavBtn("next", self, disabled=disabled))
+        nav_row = discord.ui.ActionRow(
+            _HeistNavBtn("prev", self, disabled=disabled or self.page == 0),
+            discord.ui.Button(
+                label=f"{self.page + 1}/{self.total_pages}",
+                style=discord.ButtonStyle.secondary,
+                disabled=True,
+            ),
+            _HeistNavBtn("next", self, disabled=disabled or self.page == self.total_pages - 1),
+        )
 
         components: list = [
             discord.ui.TextDisplay("\n".join(lines)),
             discord.ui.Separator(),
             select_row,
+            nav_row,
         ]
-        if nav_row.children:
-            components.append(nav_row)
-
         self.add_item(discord.ui.Container(*components))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -285,14 +287,8 @@ class HeistSelectionView(discord.ui.LayoutView):
 
 class _ShopNavBtn(discord.ui.Button):
     def __init__(self, direction: str, shop_view: "ShopView", disabled: bool = False):
-        match direction:
-            case "prev":
-                label, emoji = "Previous", "◀️"
-            case "next":
-                label, emoji = "Next", "▶️"
-        super().__init__(
-            label=label, emoji=emoji, style=discord.ButtonStyle.secondary, disabled=disabled
-        )
+        label = "◀" if direction == "prev" else "▶"
+        super().__init__(label=label, style=discord.ButtonStyle.secondary, disabled=disabled)
         self.direction = direction
         self.shop_view = shop_view
 
@@ -302,7 +298,6 @@ class _ShopNavBtn(discord.ui.Button):
                 self.shop_view.page -= 1
             case "next" if self.shop_view.page < len(self.shop_view.pages) - 1:
                 self.shop_view.page += 1
-        # Refresh costs from config so custom prices are always current
         self.shop_view.costs = {
             name: await self.shop_view.cog.get_item_cost(name)
             for name, (_, data) in ITEMS.items()
@@ -372,7 +367,7 @@ class ShopView(discord.ui.LayoutView):
             if data["type"] == item_type and "cost" in data
         ]
 
-        lines = [f"## 🛒 Heist Shop - {section_label}  ({self.page + 1}/{total})\n"]
+        lines = [f"## 🛒 Heist Shop - {section_label}\n"]
         for name, emoji, data in items:
             cost = self.costs.get(name, data.get("cost", 0))
             line = f"**{emoji} {fmt(name)}** - {cost:,} {self.currency_name}\n"
@@ -404,20 +399,22 @@ class ShopView(discord.ui.LayoutView):
         select = _ShopSelect(self.cog, options)
         select.disabled = disabled
 
-        nav_row = discord.ui.ActionRow()
-        if self.page > 0:
-            nav_row.add_item(_ShopNavBtn("prev", self, disabled=disabled))
-        if self.page < len(self.pages) - 1:
-            nav_row.add_item(_ShopNavBtn("next", self, disabled=disabled))
+        nav_row = discord.ui.ActionRow(
+            _ShopNavBtn("prev", self, disabled=disabled or self.page == 0),
+            discord.ui.Button(
+                label=f"{self.page + 1}/{len(self.pages)}",
+                style=discord.ButtonStyle.secondary,
+                disabled=True,
+            ),
+            _ShopNavBtn("next", self, disabled=disabled or self.page == len(self.pages) - 1),
+        )
 
         components: list = [
             discord.ui.TextDisplay("".join(lines)),
             discord.ui.Separator(),
             discord.ui.ActionRow(select),
+            nav_row,
         ]
-        if nav_row.children:
-            components.append(nav_row)
-
         self.add_item(discord.ui.Container(*components))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:

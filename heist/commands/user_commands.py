@@ -369,16 +369,6 @@ class UserCommands:
             f"Total: {humanize_number(total)}"
         )
         lines.append(f"\n**🌡️ Heat:**\n{_heat_bar(heat)}")
-
-        xp = await self.config.user(ctx.author).xp()
-        lvl, into, span, pct = xp_progress(xp)
-        lv_bonus = level_success_bonus(lvl)
-        lines.append(
-            f"\n**🎓 Level {lvl}** / {MAX_LEVEL}\n"
-            f"{xp_bar(pct)} {humanize_number(into)}/{humanize_number(span)} XP"
-            + (f"  ·  +{lv_bonus * 100:.0f}% success bonus" if lv_bonus > 0 else "")
-        )
-
         view = discord.ui.LayoutView(timeout=None)
         view.add_item(discord.ui.Container(discord.ui.TextDisplay("\n".join(lines))))
         await ctx.send(view=view)
