@@ -168,7 +168,7 @@ class History(commands.Cog):
                 display_year: str = format_year(year)
                 lines.append(f"**{display_year}**\n-# {text}\n")
             lines.append(
-                f"-# Source: muffinlabs · Timezone: {user_tz} · Page {current_page}/{total_pages}"
+                f"-# Source: muffinlabs · Timezone: {user_tz}"
             )
             pages.append("\n".join(lines))
 
