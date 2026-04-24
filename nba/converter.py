@@ -33,7 +33,7 @@ log = getLogger("red.maxcogs.nba.converter")
 
 TODAY_SCOREBOARD = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"
 SCHEDULE_URL = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_2.json"
-ESPN_NBA_NEWS = "http://www.espn.com/espn/rss/nba/news"
+ESPN_NBA_NEWS = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news"
 ESPN_NBA_STANDINGS = "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings"
 PLAYBYPLAY = "https://cdn.nba.com/static/json"
 

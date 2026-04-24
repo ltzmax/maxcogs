@@ -37,9 +37,8 @@ async def build_schedule_embeds(
     ctx: commands.Context,
     games: list[dict],
     team: str | None,
-) -> list[discord.Embed]:
-    """Build paginated embeds for upcoming NBA schedule."""
-    # NBA season typically runs from October to June, with the offseason in July, August, and September.
+) -> list[str]:
+    """Build paginated V2 text pages for upcoming NBA schedule."""
     now = datetime.now()
     is_offseason = (
         (now.month == 6 and now.day >= 21)
@@ -50,7 +49,6 @@ async def build_schedule_embeds(
         year = now.year
         offseason_start = int(datetime(year, 6, 21, tzinfo=timezone.utc).timestamp())
         offseason_end = int(datetime(year, 10, 15, tzinfo=timezone.utc).timestamp())
-
         await ctx.send(
             "Season schedule is not available during the offseason.\n"
             f"Offseason: <t:{offseason_start}:D> to <t:{offseason_end}:D>\n"
@@ -61,30 +59,25 @@ async def build_schedule_embeds(
     if not games:
         await ctx.send("No games found yet. Check <https://www.nba.com/schedule>.")
         return []
+
     pages = []
-    for i in range(0, len(games), 6):
-        embed = discord.Embed(
-            title=f"NBA Schedule{' for ' + team.capitalize() if team else ''}",
-            description="Upcoming NBA games.",
-            color=await ctx.embed_color(),
-        )
-        for game in islice(games, i, i + 6):
-            arena_info = game.get("arena", "Unknown")
-            city_info = f"{game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}"
-            embed.add_field(
-                name=f"{game['home_team']} vs {game['away_team']}",
-                value=(
-                    f"- **Start**: <t:{game['timestamp']}:F> "
-                    f"(<t:{game['timestamp']}:R>)\n"
-                    f"- **Arena**: {arena_info}\n"
-                    f"- **City**: {city_info}"
-                ),
-                inline=False,
+    per_page = 6
+    total = math.ceil(len(games) / per_page)
+    title = f"## 🏀 NBA Schedule{' - ' + team.capitalize() if team else ''}\n"
+    for page_num, i in enumerate(range(0, len(games), per_page), start=1):
+        chunk = list(islice(games, i, i + per_page))
+        lines = [title]
+        for game in chunk:
+            arena = game.get("arena", "Unknown")
+            city = f"{game.get('arena_city', 'Unknown')}, {game.get('arenastate', 'Unknown')}"
+            ts = game["timestamp"]
+            lines.append(
+                f"**{game['home_team']} vs {game['away_team']}**\n"
+                f"-# 🕐 <t:{ts}:F> (<t:{ts}:R>)\n"
+                f"-# 🏟️ {arena}, {city}\n"
             )
-        embed.set_footer(
-            text=(f"Page {i // 6 + 1}/{math.ceil(len(games) / 6)} | 🏀Provided by NBA.com")
-        )
-        pages.append(embed)
+        lines.append(f"-# 🏀 Provided by NBA.com")
+        pages.append("\n".join(lines))
     return pages
 
 
@@ -203,33 +196,30 @@ async def build_scoreboard_embeds(
 async def build_news_embeds(
     ctx: commands.Context,
     news: list[dict],
-) -> list[discord.Embed]:
-    """Build paginated embeds for news."""
+) -> list[str]:
+    """Build paginated V2 text pages for NBA news from ESPN JSON API."""
     if not news:
         await ctx.send("No news found from ESPN.")
         return []
+ 
     pages = []
-    for i in range(0, len(news), 5):
-        desc = ""
-        for article in islice(news, i, i + 5):
-            title = article.get("title", "No Title")
-            summary = article.get("summary", "No Summary")
-            url = article.get("link", "No URL")
-            desc += (
-                f"{header(title, 'medium')}\n"
-                f"{box(summary, lang='yaml')}\n"
-                f"> [Read More Here]({url})\n"
-            )
-        embed = discord.Embed(
-            title="Latest NBA News",
-            description=desc or "No content available.",
-            color=await ctx.embed_color(),
-        )
-        embed.set_footer(
-            text=(f"🏀Provided by ESPN | Page {i // 5 + 1}/{math.ceil(len(news) / 5)}")
-        )
-        pages.append(embed)
+    per_page = 6
+    total = math.ceil(len(news) / per_page)
+    for page_num in range(1, total + 1):
+        chunk = news[(page_num - 1) * per_page : page_num * per_page]
+        lines = ["## \U0001f4f0 Latest NBA News\n"]
+        for article in chunk:
+            headline = article.get("headline", "No Title")
+            description = article.get("description", "").strip()
+            url = article.get("links", {}).get("web", {}).get("href", "")
+            lines.append(f"**[{headline}]({url})**" if url else f"**{headline}**")
+            if description:
+                lines.append(f"-# {description[:150]}")
+            lines.append("")
+        lines.append(f"-# \U0001f3c0 Provided by ESPN")
+        pages.append("\n".join(lines))
     return pages
+
 
 
 def build_pregame_embed(
@@ -262,8 +252,8 @@ def build_pregame_embed(
 async def build_playoff_embeds(
     ctx: commands.Context,
     data: dict,
-) -> list[discord.Embed]:
-    """Build paginated embeds for the NBA playoff picture from nba_api PlayoffPicture."""
+) -> list[str]:
+    """Build paginated V2 text pages for the NBA playoff picture."""
     now = datetime.now()
     is_not_playoffs = (
         (now.month < 4)
@@ -277,23 +267,21 @@ async def build_playoff_embeds(
             "Check <https://www.nba.com/standings> for updates."
         )
         return []
+
     result_sets = data.get("resultSets") or []
     pages = []
     for result_set in result_sets:
         name = result_set.get("name", "")
-        # Only the *ConfPlayoffPicture sets contain actual series data
         if "ConfPlayoffPicture" not in name:
             continue
         conf = "East" if name.startswith("East") else "West"
         headers = result_set["headers"]
         rows = [dict(zip(headers, r, strict=False)) for r in result_set.get("rowSet", [])]
         per_page = 4
-        for i in range(0, len(rows), per_page):
+        total = math.ceil(len(rows) / per_page)
+        for page_num, i in enumerate(range(0, len(rows), per_page), start=1):
             chunk = rows[i : i + per_page]
-            embed = discord.Embed(
-                title=f"🏆 NBA Playoff Picture - {conf}ern Conference",
-                color=await ctx.embed_color(),
-            )
+            lines = [f"## 🏆 NBA Playoff Picture - {conf}ern Conference\n"]
             for series in chunk:
                 rank1 = series.get("HIGH_SEED_RANK", "?")
                 team1 = series.get("HIGH_SEED_TEAM") or "TBD"
@@ -301,27 +289,24 @@ async def build_playoff_embeds(
                 team2 = series.get("LOW_SEED_TEAM") or "TBD"
                 wins1 = series.get("HIGH_SEED_SERIES_W", 0)
                 wins2 = series.get("HIGH_SEED_SERIES_L", 0)
-                series_status = f"{wins1}–{wins2}"
                 emoji1 = team_emojis.get(team1, "")
                 emoji2 = team_emojis.get(team2, "")
                 label1 = f"{emoji1} ({rank1}) {team1}" if emoji1 else f"({rank1}) {team1}"
                 label2 = f"{emoji2} ({rank2}) {team2}" if emoji2 else f"({rank2}) {team2}"
-                embed.add_field(
-                    name=f"{label1} vs {label2}",
-                    value=f"Series: **{series_status}**",
-                    inline=False,
+                lines.append(
+                    f"**{label1} vs {label2}**\n"
+                    f"-# Series: {wins1}–{wins2}\n"
                 )
-            total = math.ceil(len(rows) / per_page)
-            embed.set_footer(text=f"🏀 Provided by NBA.com | Page {i // per_page + 1}/{total}")
-            pages.append(embed)
+            lines.append(f"-# 🏀 Provided by NBA.com")
+            pages.append("\n".join(lines))
     return pages
 
 
 async def build_standings_embeds(
     ctx: commands.Context,
     data: dict,
-) -> list[discord.Embed]:
-    """Build West-then-East standings embeds from ESPN standings API."""
+) -> list[str]:
+    """Build West-then-East standings V2 text pages from ESPN standings API."""
     children = data.get("children", [])
     if not children:
         await ctx.send("No standings data available at the moment. Try again later.")
@@ -341,9 +326,9 @@ async def build_standings_embeds(
             return 99
 
         entries = sorted(entries, key=get_rank)
-        header = f"{'#':<3} {'Team':<14} {'W':<4} {'L':<4} {'PCT':<6} {'GB':<5} {'L10':<5} {'STK'}"
-        divider = "-" * len(header)
-        rows = [header, divider]
+        col_header = f"{'#':<3} {'Team':<14} {'W':<4} {'L':<4} {'PCT':<6} {'GB':<5} {'L10':<5} {'STK'}"
+        divider = "-" * len(col_header)
+        rows = [col_header, divider]
 
         for entry in entries:
             team = entry.get("team", {})
@@ -364,13 +349,12 @@ async def build_standings_embeds(
             )
 
         table = box("\n".join(rows), lang="prolog")
-        embed = discord.Embed(
-            title=f"🏀 NBA Standings - {conf_name}",
-            description=table,
-            color=await ctx.embed_color(),
+        page = (
+            f"## 🏀 NBA Standings - {conf_name}\n"
+            f"{table}\n"
+            f"-# 🏀 Provided by ESPN · Full standings at nba.com/standings"
         )
-        embed.set_footer(text="🏀 Provided by ESPN | Full standings at nba.com/standings")
-        pages.append(embed)
+        pages.append(page)
 
     return pages
 

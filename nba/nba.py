@@ -30,7 +30,6 @@ from typing import Any, Final
 
 import aiohttp
 import discord
-import feedparser
 import orjson
 from discord.ext import tasks
 from red_commons.logging import getLogger
@@ -559,15 +558,15 @@ class NBA(NBACommands, commands.Cog):
             return None
 
     async def fetch_news(self, ctx: commands.Context) -> list[dict] | None:
-        """Fetch and parse NBA news feed."""
+        """Fetch and parse NBA news from ESPN JSON API."""
         data = await self.fetch_data(ESPN_NBA_NEWS, ctx)
         if not data:
             return None
         try:
-            feed = feedparser.parse(data)
-            return feed.get("entries", [])
-        except Exception as e:
-            log.error("Failed to parse ESPN news: %s", e)
+            parsed = orjson.loads(data)
+            return parsed.get("articles", [])
+        except orjson.JSONDecodeError as e:
+            log.error("Failed to decode ESPN news: %s", e)
             return None
 
     async def fetch_standings(self, ctx: commands.Context) -> dict | None:

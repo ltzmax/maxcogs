@@ -26,10 +26,10 @@ import asyncio
 
 import discord
 import orjson
+from dcv2nav import LayoutViewPaginator
 from nba_api.stats.endpoints import playoffpicture
 from red_commons.logging import getLogger
 from redbot.core import app_commands, commands
-from redbot.core.utils.views import SimpleMenu
 
 from ..converter import (
     NBA_STATS_HEADERS,
@@ -381,7 +381,12 @@ class NBACommands:
                 games = [g for g in games if team in (g["home_team"] + g["away_team"]).lower()]
             pages = await build_schedule_embeds(ctx, games, team)
             if pages:
-                await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+                view = LayoutViewPaginator(pages, ctx)
+                view.message = await ctx.send(
+                    view=view,
+                    reference=ctx.message.to_reference(fail_if_not_exists=False),
+                    mention_author=False,
+                )
         except orjson.JSONDecodeError as e:
             log.error("Failed to fetch schedule: %s", e)
             await ctx.send("Error fetching schedule. Try again later.")
@@ -404,7 +409,12 @@ class NBACommands:
             return
         pages = await build_news_embeds(ctx, news)
         if pages:
-            await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+            view = LayoutViewPaginator(pages, ctx)
+            view.message = await ctx.send(
+                view=view,
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
 
     @nba.command(aliases=["score", "scores"])
     @commands.bot_has_permissions(embed_links=True)
@@ -467,7 +477,12 @@ class NBACommands:
             return await ctx.send("Failed to fetch playoff data. Try again later.")
         pages = await build_playoff_embeds(ctx, data)
         if pages:
-            await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+            view = LayoutViewPaginator(pages, ctx)
+            view.message = await ctx.send(
+                view=view,
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
 
     @nba.command(name="standings")
     @commands.bot_has_permissions(embed_links=True)
@@ -487,4 +502,9 @@ class NBACommands:
             return
         pages = await build_standings_embeds(ctx, data)
         if pages:
-            await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+            view = LayoutViewPaginator(pages, ctx)
+            view.message = await ctx.send(
+                view=view,
+                reference=ctx.message.to_reference(fail_if_not_exists=False),
+                mention_author=False,
+            )
