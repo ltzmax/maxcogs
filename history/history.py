@@ -27,11 +27,10 @@ from typing import Any, Final
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import aiohttp
-import discord
+from dcv2nav import LayoutViewPaginator
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
-from redbot.core.utils.menus import SimpleMenu
 
 from .utils import fetch_events, format_year
 
@@ -156,22 +155,22 @@ class History(commands.Cog):
         if not events:
             return await ctx.send(f"No notable events found for {display_date}.")
 
-        pages: list[discord.Embed] = []
+        pages: list[str] = []
         items_per_page: int = 10
+        total_pages: int = (len(events) - 1) // items_per_page + 1
         for i in range(0, len(events), items_per_page):
             chunk = events[i : i + items_per_page]
-            embed = discord.Embed(
-                title=f"On This Day: {display_date}", color=await ctx.embed_color()
-            )
+            current_page: int = i // items_per_page + 1
+            lines = [f"## 📅 On This Day: {display_date}\n"]
             for event in chunk:
                 year: str | int = event.get("year", "Unknown Year")
                 text: str = event.get("text", "No description available.")
                 display_year: str = format_year(year)
-                embed.add_field(name=display_year, value=text, inline=False)
-            current_page: int = i // items_per_page + 1
-            total_pages: int = (len(events) - 1) // items_per_page + 1
-            embed.set_footer(
-                text=f"Source: muffinlabs | Timezone: {user_tz} | Page {current_page}/{total_pages}",
+                lines.append(f"**{display_year}**\n-# {text}\n")
+            lines.append(
+                f"-# Source: muffinlabs · Timezone: {user_tz} · Page {current_page}/{total_pages}"
             )
-            pages.append(embed)
-        await SimpleMenu(pages, disable_after_timeout=True, timeout=120).start(ctx)
+            pages.append("\n".join(lines))
+
+        view = LayoutViewPaginator(pages, ctx)
+        view.message = await ctx.send(view=view)

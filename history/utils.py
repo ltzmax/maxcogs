@@ -60,7 +60,17 @@ def format_year(year: int | str | None) -> str:
         if year_str == "unknown year":
             return "Unknown Year"
 
+        # Handle years already formatted with era suffix from the API (e.g. "1479 bc", "500 ad")
+        is_bc = year_str.endswith(" bc")
+        is_ad = year_str.endswith(" ad")
+        if is_bc or is_ad:
+            year_str = year_str[: year_str.rfind(" ")].strip()
+
         year_int: int = int(year_str)
+
+        # If the API already told us it's BC, make it negative for the formatter below
+        if is_bc:
+            year_int = -abs(year_int)
         if year_int < 0:
             formatted_year: str = (
                 f"{abs(year_int)} {DEFAULT_ERA_NOTATION}"
