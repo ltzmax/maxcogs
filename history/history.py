@@ -157,19 +157,17 @@ class History(commands.Cog):
 
         pages: list[str] = []
         items_per_page: int = 10
-        total_pages: int = (len(events) - 1) // items_per_page + 1
+        (len(events) - 1) // items_per_page + 1
         for i in range(0, len(events), items_per_page):
             chunk = events[i : i + items_per_page]
-            current_page: int = i // items_per_page + 1
+            i // items_per_page + 1
             lines = [f"## 📅 On This Day: {display_date}\n"]
             for event in chunk:
                 year: str | int = event.get("year", "Unknown Year")
                 text: str = event.get("text", "No description available.")
                 display_year: str = format_year(year)
                 lines.append(f"**{display_year}**\n-# {text}\n")
-            lines.append(
-                f"-# Source: muffinlabs · Timezone: {user_tz}"
-            )
+            lines.append(f"-# Source: muffinlabs · Timezone: {user_tz}")
             pages.append("\n".join(lines))
 
         view = LayoutViewPaginator(pages, ctx)

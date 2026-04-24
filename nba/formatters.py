@@ -28,7 +28,7 @@ from itertools import islice
 
 import discord
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import box, header, rich_markup
+from redbot.core.utils.chat_formatting import box, rich_markup
 
 from .converter import get_leaders_info, get_time_bounds, parse_duration, periods, team_emojis
 
@@ -62,9 +62,9 @@ async def build_schedule_embeds(
 
     pages = []
     per_page = 6
-    total = math.ceil(len(games) / per_page)
+    math.ceil(len(games) / per_page)
     title = f"## 🏀 NBA Schedule{' - ' + team.capitalize() if team else ''}\n"
-    for page_num, i in enumerate(range(0, len(games), per_page), start=1):
+    for _page_num, i in enumerate(range(0, len(games), per_page), start=1):
         chunk = list(islice(games, i, i + per_page))
         lines = [title]
         for game in chunk:
@@ -76,7 +76,7 @@ async def build_schedule_embeds(
                 f"-# 🕐 <t:{ts}:F> (<t:{ts}:R>)\n"
                 f"-# 🏟️ {arena}, {city}\n"
             )
-        lines.append(f"-# 🏀 Provided by NBA.com")
+        lines.append("-# 🏀 Provided by NBA.com")
         pages.append("\n".join(lines))
     return pages
 
@@ -201,7 +201,7 @@ async def build_news_embeds(
     if not news:
         await ctx.send("No news found from ESPN.")
         return []
- 
+
     pages = []
     per_page = 6
     total = math.ceil(len(news) / per_page)
@@ -216,10 +216,9 @@ async def build_news_embeds(
             if description:
                 lines.append(f"-# {description[:150]}")
             lines.append("")
-        lines.append(f"-# \U0001f3c0 Provided by ESPN")
+        lines.append("-# \U0001f3c0 Provided by ESPN")
         pages.append("\n".join(lines))
     return pages
-
 
 
 def build_pregame_embed(
@@ -278,8 +277,8 @@ async def build_playoff_embeds(
         headers = result_set["headers"]
         rows = [dict(zip(headers, r, strict=False)) for r in result_set.get("rowSet", [])]
         per_page = 4
-        total = math.ceil(len(rows) / per_page)
-        for page_num, i in enumerate(range(0, len(rows), per_page), start=1):
+        math.ceil(len(rows) / per_page)
+        for _page_num, i in enumerate(range(0, len(rows), per_page), start=1):
             chunk = rows[i : i + per_page]
             lines = [f"## 🏆 NBA Playoff Picture - {conf}ern Conference\n"]
             for series in chunk:
@@ -293,11 +292,8 @@ async def build_playoff_embeds(
                 emoji2 = team_emojis.get(team2, "")
                 label1 = f"{emoji1} ({rank1}) {team1}" if emoji1 else f"({rank1}) {team1}"
                 label2 = f"{emoji2} ({rank2}) {team2}" if emoji2 else f"({rank2}) {team2}"
-                lines.append(
-                    f"**{label1} vs {label2}**\n"
-                    f"-# Series: {wins1}–{wins2}\n"
-                )
-            lines.append(f"-# 🏀 Provided by NBA.com")
+                lines.append(f"**{label1} vs {label2}**\n-# Series: {wins1}–{wins2}\n")
+            lines.append("-# 🏀 Provided by NBA.com")
             pages.append("\n".join(lines))
     return pages
 
@@ -326,7 +322,9 @@ async def build_standings_embeds(
             return 99
 
         entries = sorted(entries, key=get_rank)
-        col_header = f"{'#':<3} {'Team':<14} {'W':<4} {'L':<4} {'PCT':<6} {'GB':<5} {'L10':<5} {'STK'}"
+        col_header = (
+            f"{'#':<3} {'Team':<14} {'W':<4} {'L':<4} {'PCT':<6} {'GB':<5} {'L10':<5} {'STK'}"
+        )
         divider = "-" * len(col_header)
         rows = [col_header, divider]
 

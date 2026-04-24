@@ -221,7 +221,7 @@ class HeistSelectionView(discord.ui.LayoutView):
             else f"Lv.{self.player_level}"
         )
 
-        lines = [f"## 🎯 Choose Your Heist\n"]
+        lines = ["## 🎯 Choose Your Heist\n"]
         for name, data in page_heists:
             loot_item = name if name in ITEMS and ITEMS[name][1].get("type") == "loot" else None
             if loot_item:
@@ -359,7 +359,7 @@ class ShopView(discord.ui.LayoutView):
     def _build_content(self, disabled: bool = False):
         self.clear_items()
         section_label, item_type = self.pages[self.page]
-        total = len(self.pages)
+        len(self.pages)
 
         items = [
             (name, emoji, data)
