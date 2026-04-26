@@ -37,6 +37,35 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 logger = getLogger("red.maxcogs.earthquake")
 
+# Maps common country names to all USGS place string variants for that country.
+# USGS uses adjective forms for seas/regions (e.g. "Norwegian Sea" not "Norway Sea").
+COUNTRY_VARIANTS: dict[str, list[str]] = {
+    "norway": ["norway", "norwegian"],
+    "greece": ["greece", "greek"],
+    "turkey": ["turkey", "turkish"],
+    "france": ["france", "french"],
+    "ireland": ["ireland", "irish"],
+    "iceland": ["iceland", "icelandic"],
+    "philippines": ["philippines", "philippine"],
+    "portugal": ["portugal", "portuguese"],
+    "sweden": ["sweden", "swedish"],
+    "denmark": ["denmark", "danish"],
+    "finland": ["finland", "finnish"],
+    "poland": ["poland", "polish"],
+    "india": ["india", "indian ocean"],
+    "iran": ["iran", "iranian"],
+    "china": ["china", "chinese"],
+    "russia": ["russia", "russian"],
+}
+
+
+def _country_matches(country_filter: str, place: str) -> bool:
+    """Check if a USGS place string matches a country filter, including regional variants."""
+    cf = country_filter.strip().lower()
+    pl = place.lower()
+    variants = COUNTRY_VARIANTS.get(cf, [cf])
+    return any(v in pl for v in variants)
+
 
 class Earthquake(commands.Cog):
     """Real-time worldwide earthquake alerts from USGS."""
@@ -60,6 +89,7 @@ class Earthquake(commands.Cog):
         }
         default_global = {
             "last_processed_time": 0,
+            "seen_ids": [],
         }
         self.config.register_guild(**default_settings)
         self.config.register_global(**default_global)
@@ -97,7 +127,7 @@ class Earthquake(commands.Cog):
             logger.error("Invalid min_magnitude value: %s", min_magnitude)
             return []
 
-        url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
+        url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson"
         async with self.session.get(url, timeout=10) as response:
             if response.status != 200:
                 logger.error(
@@ -121,10 +151,10 @@ class Earthquake(commands.Cog):
                 and eq["properties"]["mag"] >= min_magnitude
             ]
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.earthquake_check.cancel()
         if not self.session.closed:
-            self.bot.loop.create_task(self.session.close())
+            await self.session.close()
 
     @tasks.loop(seconds=60)
     async def earthquake_check(self):
@@ -145,10 +175,13 @@ class Earthquake(commands.Cog):
                 return
 
             last_processed_time = await self.config.last_processed_time()
+            seen_ids: list = await self.config.seen_ids()
+
             valid_earthquakes = [
                 eq
                 for eq in earthquakes
                 if eq["properties"].get("time", 0) > last_processed_time
+                and eq["id"] not in seen_ids
                 and isinstance(eq["properties"].get("mag"), (int, float))
                 and "time" in eq["properties"]
             ]
@@ -158,6 +191,10 @@ class Earthquake(commands.Cog):
             if not new_earthquakes:
                 return
 
+            # Update seen IDs keep last 500 to avoid unbounded growth
+            new_ids = [eq["id"] for eq in new_earthquakes]
+            updated_ids = (seen_ids + new_ids)[-500:]
+            await self.config.seen_ids.set(updated_ids)
             await self.config.last_processed_time.set(new_earthquakes[0]["properties"]["time"])
             for guild_id, settings in guild_settings.items():
                 channel_id = settings.get("channel")
@@ -178,7 +215,7 @@ class Earthquake(commands.Cog):
                         continue
                     if country_filter:
                         place = earthquake["properties"].get("place", "")
-                        if country_filter.lower() not in place.lower():
+                        if not _country_matches(country_filter, place):
                             continue
                     await self.post_earthquake(guild, channel, earthquake)
 
@@ -248,33 +285,51 @@ class Earthquake(commands.Cog):
             and isinstance(geometry["coordinates"][2], (int, float))
             else "Unknown"
         )
-        tsunami = "Yes" if properties.get("tsunami", 0) == 1 else "No"
+        tsunami = "⚠️ Yes" if properties.get("tsunami", 0) == 1 else "No"
         felt_reports = properties.get("felt")
         alert_level = properties.get("alert")
+        safety_message = await self.config.guild(guild).safety_message()
 
-        use_webhook = await self.config.guild(guild).use_webhook()
-        embed = discord.Embed(
-            title=f"Magnitude {magnitude:.1f} Earthquake",
-            description=f"**Location:** {place}\n**Time:** {time}",
-            url=url,
-            color=self.get_magnitude_color(magnitude),
+        mag_emoji = (
+            "🟢"
+            if magnitude < 3.0
+            else "🟡"
+            if magnitude < 5.0
+            else "🟠"
+            if magnitude < 7.0
+            else "🔴"
         )
 
-        details = []
-        details.append(f"**Depth:** {depth} km" if depth != "Unknown" else "**Depth:** Unknown")
-        details.append(f"**Tsunami Warning:** {tsunami}")
+        lines = [
+            f"## {mag_emoji} Magnitude {magnitude:.1f} Earthquake\n",
+            f"**📍 Location:** {place}",
+            f"**🕐 Time:** {time}",
+            f"**⬇️ Depth:** {depth} km",
+            f"**🌊 Tsunami Warning:** {tsunami}",
+        ]
         if felt_reports is not None:
-            details.append(f"**Felt Reports:** {felt_reports}")
+            lines.append(f"**🤝 Felt Reports:** {felt_reports}")
         if alert_level is not None:
-            details.append(f"**Alert Level:** {alert_level.capitalize()}")
+            lines.append(f"**🚨 Alert Level:** {alert_level.capitalize()}")
+        lines.append(f"\n-# ⚠️ {safety_message}")
+        lines.append(f"-# USGS · ID: {earthquake['id']}")
 
-        embed.add_field(name="Details", value="\n".join(details), inline=False)
-        embed.add_field(
-            name="Safety Reminder",
-            value=await self.config.guild(guild).safety_message(),
-            inline=False,
+        view = discord.ui.LayoutView(timeout=None)
+        view.add_item(
+            discord.ui.Container(
+                discord.ui.TextDisplay("\n".join(lines)),
+                discord.ui.Separator(),
+                discord.ui.ActionRow(
+                    discord.ui.Button(
+                        label="View on USGS",
+                        style=discord.ButtonStyle.link,
+                        url=url,
+                        emoji="🌍",
+                    )
+                ),
+            )
         )
-        embed.set_footer(text=f"USGS | ID: {earthquake['id']}")
+
         ping_role_id = await self.config.guild(guild).ping_role()
         content = (
             guild.get_role(ping_role_id).mention
@@ -282,14 +337,15 @@ class Earthquake(commands.Cog):
             else ""
         )
 
+        use_webhook = await self.config.guild(guild).use_webhook()
         sent = False
         if use_webhook and channel.permissions_for(guild.me).manage_webhooks:
             wh = await self.get_or_create_webhook(channel)
             if wh:
                 try:
                     await wh.send(
-                        content=content,
-                        embed=embed,
+                        content=content or None,
+                        view=view,
                         username=self.bot.user.name,
                         avatar_url=(str(self.bot.user.avatar) if self.bot.user.avatar else None),
                         allowed_mentions=discord.AllowedMentions(roles=True),
@@ -299,10 +355,7 @@ class Earthquake(commands.Cog):
                     logger.error("Failed to send via webhook in %s: %s", guild.name, e)
 
         if not sent:
-            if (
-                not channel.permissions_for(guild.me).send_messages
-                or not channel.permissions_for(guild.me).embed_links
-            ):
+            if not channel.permissions_for(guild.me).send_messages:
                 logger.warning(
                     "Missing permissions in %s (%s) for earthquake alerts",
                     channel.name,
@@ -311,23 +364,12 @@ class Earthquake(commands.Cog):
                 return
             try:
                 await channel.send(
-                    content=content,
-                    embed=embed,
+                    content=content or None,
+                    view=view,
                     allowed_mentions=discord.AllowedMentions(roles=True),
                 )
             except (discord.Forbidden, discord.HTTPException) as e:
                 logger.error("Failed to send earthquake alert in %s: %s", guild.name, e)
-
-    @staticmethod
-    def get_magnitude_color(magnitude: float) -> discord.Color:
-        """Return a color based on earthquake magnitude."""
-        if magnitude < 3.0:
-            return discord.Color.green()
-        elif magnitude < 5.0:
-            return discord.Color.gold()
-        elif magnitude < 7.0:
-            return discord.Color.orange()
-        return discord.Color.red()
 
     @earthquake_check.before_loop
     async def before_earthquake_check(self):
@@ -462,40 +504,26 @@ class Earthquake(commands.Cog):
             )
 
     @earthquakeset.command(name="settings")
-    @commands.bot_has_permissions(embed_links=True)
     async def show_settings(self, ctx: commands.Context):
         """Show current earthquake alert settings."""
         settings = await self.config.guild(ctx.guild).all()
         channel = ctx.guild.get_channel(settings["channel"]) if settings["channel"] else None
         ping_role = ctx.guild.get_role(settings["ping_role"]) if settings["ping_role"] else None
 
-        embed = discord.Embed(title="Earthquake Alert Settings", color=await ctx.embed_color())
-        embed.add_field(
-            name="Alert Channel",
-            value=channel.mention if channel else "None",
-            inline=False,
+        lines = [
+            "## ⚙️ Earthquake Alert Settings\n",
+            f"**📢 Alert Channel:** {channel.mention if channel else 'Not set'}",
+            f"**🔔 Ping Role:** {ping_role.mention if ping_role else 'None'}",
+            f"**📊 Minimum Magnitude:** {settings['min_magnitude']:.1f}",
+            f"**🔗 Webhook:** {'Enabled' if settings['use_webhook'] else 'Disabled'}",
+            f"**🌍 Country Filter:** {settings['country_filter'] if settings['country_filter'] else 'Global (no filter)'}",
+            f"**⚠️ Safety Message:** {settings['safety_message']}",
+        ]
+
+        view = discord.ui.LayoutView(timeout=120)
+        view.add_item(
+            discord.ui.Container(
+                discord.ui.TextDisplay("\n".join(lines)),
+            )
         )
-        embed.add_field(
-            name="Ping Role",
-            value=ping_role.mention if ping_role else "None",
-            inline=False,
-        )
-        embed.add_field(
-            name="Minimum Magnitude",
-            value=f"{settings['min_magnitude']:.1f}",
-            inline=False,
-        )
-        embed.add_field(
-            name="Use Webhook",
-            value="Enabled" if settings["use_webhook"] else "Disabled",
-            inline=False,
-        )
-        embed.add_field(
-            name="Country Filter",
-            value=settings["country_filter"]
-            if settings["country_filter"]
-            else "Global (no filter)",
-            inline=False,
-        )
-        embed.add_field(name="Safety Message", value=settings["safety_message"], inline=False)
-        await ctx.send(embed=embed)
+        await ctx.send(view=view)
