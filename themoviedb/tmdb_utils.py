@@ -76,6 +76,7 @@ PREDEFINED_CHANNELS = {
         "id": "UCLRlryMfL8ffxzrtqv0_k_w",
         "name": "KinoCheck - Your Ultimate Movie Destination!.",
     },
+    "vertical": {"id": "UCpR3kmSyTYszJHWEcmpcnFQ", "name": "Vertical Official"},
 }
 
 
