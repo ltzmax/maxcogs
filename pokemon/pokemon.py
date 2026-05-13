@@ -49,7 +49,7 @@ class Pokemon(WhosThatPokemonCommands, TcgcardCommands, PokeinfoCommands, comman
 
     __author__: Final[tuple[str, ...]] = ("@306810730055729152", "max", "flame442")
     __version__: Final[str] = "2.5.0"
-    __docs__: Final[str] = "https://cogs.maxapp.tv/#pokemon"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Pokemon.md"
 
     def __init__(self, bot: Red):
         self.bot: Red = bot

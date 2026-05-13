@@ -1,0 +1,28 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "HoneyCombs",
+    "install_msg": "Thanks for installing. Run `[p]honeycombs` to start the game.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "Play a Honeycombs challenge game.",
+    "short": "Play a Honeycombs challenge game.",
+    "hidden": false,
+    "min_bot_version": "3.5.24",
+    "tags": [
+        "honeycombs",
+        "fun",
+        "economy"
+    ],
+    "permissions": [
+        "embed_links",
+        "attach_files"
+    ],
+    "requirements": [],
+    "min_python_version": [
+        3,
+        10,
+        0
+    ],
+    "end_user_data_statement": "This cog saves Discord user IDs to add you to the games you participate in, but these IDs are deleted once the game concludes. It does not store any End User Data.",
+    "type": "COG"
+}

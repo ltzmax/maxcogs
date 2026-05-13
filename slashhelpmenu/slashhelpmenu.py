@@ -46,7 +46,7 @@ class SlashHelpMenu(commands.Cog):
 
     __version__ = "1.2.0"
     __author__ = "MAX"
-    __docs__ = "https://cogs.maxapp.tv/#slashhelpmenu"
+    __docs__ = "https://github.com/ltzmax/maxcogs/blob/master/docs/SlashHelpMenu.md"
 
     def __init__(self, bot: Red):
         self.bot = bot

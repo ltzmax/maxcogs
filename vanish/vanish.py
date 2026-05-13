@@ -42,7 +42,7 @@ class Vanish(commands.Cog):
 
     __version__: Final[str] = "1.1.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://cogs.maxapp.tv/#vanish"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Vanish.md"
 
     def __init__(self, bot):
         self.bot = bot

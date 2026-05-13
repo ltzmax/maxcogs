@@ -72,7 +72,7 @@ class Earthquake(commands.Cog):
 
     __version__: Final[str] = "1.3.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://cogs.maxcogs.tv/#earthquake"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/Earthquake.md"
 
     def __init__(self, bot):
         self.bot = bot

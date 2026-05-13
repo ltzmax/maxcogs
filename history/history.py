@@ -43,7 +43,7 @@ class History(commands.Cog):
 
     __version__: Final[str] = "1.5.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://cogs.maxapp.tv/#history"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/History.md"
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot

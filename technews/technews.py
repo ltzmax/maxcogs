@@ -46,7 +46,7 @@ class TechNews(commands.Cog):
 
     __version__: Final[str] = "1.2.0"
     __author__: Final[str] = "MAX"
-    __docs__: Final[str] = "https://cogs.maxapp.tv/#technews"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/TechNews.md"
 
     def __init__(self, bot: Red):
         self.bot = bot

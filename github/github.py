@@ -70,7 +70,7 @@ class GitHub(commands.Cog):
 
     __version__: Final[str] = "1.0.1"
     __author__: Final[list[str]] = ["MAX", "Obi-Wan3"]
-    __docs__: Final[str] = "https://cogs.maxapp.tv/#github"
+    __docs__: Final[str] = "https://github.com/ltzmax/maxcogs/blob/master/docs/GitHub.md"
 
     def __init__(self, bot):
         self.bot = bot
