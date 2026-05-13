@@ -177,9 +177,7 @@ async def send_log(
     embed.add_field(name="Jump URL", value=f"[Jump to message]({message.jump_url})", inline=True)
     # For forwarded messages, attachments live in the snapshot, not on the message itself.
     snapshot_attachments = [
-        a
-        for snapshot in (message.message_snapshots or [])
-        for a in snapshot.attachments
+        a for snapshot in (message.message_snapshots or []) for a in snapshot.attachments
     ]
     all_attachments = message.attachments or snapshot_attachments
     if all_attachments:
