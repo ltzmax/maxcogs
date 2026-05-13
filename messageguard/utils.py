@@ -145,12 +145,25 @@ async def send_log(
             guild.id,
         )
         return
-    content = message.content or "*No text content*"
+    # Forwarded messages have empty .content; the original text lives in message_snapshots.
+    content = message.content
+    if not content and message.message_snapshots:
+        snapshot_parts = []
+        for snapshot in message.message_snapshots:
+            if snapshot.content:
+                snapshot_parts.append(snapshot.content)
+        content = "\n".join(snapshot_parts) if snapshot_parts else ""
+    content = content or "*No text content*"
     if len(content) > 4096:
         content = content[:4093] + "..."
 
+    is_forward = (
+        message.reference is not None
+        and message.reference.type == discord.MessageReferenceType.forward
+    )
+    title = f"[{feature}] {'Forwarded ' if is_forward else ''}Message Deleted"
     embed = discord.Embed(
-        title=f"[{feature}] Message Deleted",
+        title=title,
         description=content,
         color=color,
         timestamp=message.created_at,
