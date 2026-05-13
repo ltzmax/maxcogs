@@ -23,7 +23,6 @@ SOFTWARE.
 """
 
 import asyncio
-import logging
 import random
 from datetime import datetime, timedelta, timezone
 from io import BytesIO

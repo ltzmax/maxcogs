@@ -30,11 +30,7 @@ import discord
 from red_commons.logging import getLogger
 from redbot.core import commands
 
-from .formatters import (
-    PokemonSection,
-    build_locations_text,
-    build_section_text,
-)
+from .formatters import PokemonSection, build_locations_text, build_section_text
 
 
 log = getLogger("red.maxcogs.whosthatpokemon.views")

@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
 import random
 
 import discord
-from redbot.core import bank
 from red_commons.logging import getLogger
+from redbot.core import bank
 
 
 log = getLogger("red.maxcogs.honeycombs.view")

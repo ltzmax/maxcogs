@@ -46,7 +46,9 @@ class AFK(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=9876543234567876543, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=9876543234567876543, force_registration=True
+        )
 
         default_guild = {
             "afk_role": None,
@@ -279,11 +281,15 @@ class AFK(commands.Cog):
             return await ctx.send("Please provide at least 5 seconds, or leave blank to disable.")
 
         if seconds is not None and seconds > 3600:
-            return await ctx.send("Please provide a number of seconds no greater than 3600 (1 hour), or leave blank to disable.")
+            return await ctx.send(
+                "Please provide a number of seconds no greater than 3600 (1 hour), or leave blank to disable."
+            )
 
         await self.config.member(ctx.author).delete_after.set(seconds)
         if seconds is None:
-            text = "## ⏱️ AFK Notification Duration\nAFK notifications will now persist indefinitely."
+            text = (
+                "## ⏱️ AFK Notification Duration\nAFK notifications will now persist indefinitely."
+            )
         else:
             text = f"## ⏱️ AFK Notification Duration\nAFK notifications will now be deleted after {seconds} second(s)."
 
@@ -358,7 +364,9 @@ class AFK(commands.Cog):
             text = "## 🎭 AFK Role\nAFK role has been **cleared**. No role will be assigned when members go AFK."
         else:
             if role >= ctx.guild.me.top_role:
-                return await ctx.send("I can't assign that role, it's equal to or above my highest role.")
+                return await ctx.send(
+                    "I can't assign that role, it's equal to or above my highest role."
+                )
             await self.config.guild(ctx.guild).afk_role.set(role.id)
             text = (
                 f"## 🎭 AFK Role\nAFK role set to **{discord.utils.escape_markdown(role.name)}**."
