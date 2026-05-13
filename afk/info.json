@@ -1,0 +1,26 @@
+{
+    "author": [
+        "max"
+    ],
+    "name": "AFK",
+    "install_msg": "Thanks for installing.\nIf you enjoy my work, you can donate at [buymeacoffee](<https://buymeacoffee.com/ltzmax>)",
+    "description": "AFK Cog that provides AFK functionality for your server.",
+    "short": "AFK Cog that provides AFK functionality for your server.",
+    "hidden": false,
+    "min_bot_version": "3.5.24",
+    "tags": [
+        "afk",
+        "away from keyboard"
+    ],
+    "permissions": [
+        "embed_links"
+    ],
+    "requirements": ["git+https://github.com/ltzmax/maxcogs-utils.git"],
+    "min_python_version": [
+        3,
+        10,
+        0
+    ],
+    "end_user_data_statement": "This cog does not store any End User Data.",
+    "type": "COG"
+}

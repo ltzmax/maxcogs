@@ -25,6 +25,8 @@ To install any cog you want:
 ```
 ---------------------------------------------------------------
 ## Cogs on this repo:
+- AFK
+    - AFK status cog.
 - Autopublisher
     - Automatically publish messages in news channels
 - Counting
@@ -44,7 +46,7 @@ To install any cog you want:
 - History
     - A cog to display historical events for the current day in your timezone.
 - HonyComps
-    - Play a game similar to Sugar Honeycombs, inspired by the Netflix series Squid Game.
+    - Play Honeycombs.
 - Lockdown
     - Let moderators lockdown a channel to prevent messages from being sent.
 - MessageGuard
