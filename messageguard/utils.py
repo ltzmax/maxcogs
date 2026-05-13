@@ -175,8 +175,15 @@ async def send_log(
     embed.add_field(name="Channel", value=message.channel.mention, inline=True)
     embed.add_field(name="Author", value=message.author.mention, inline=True)
     embed.add_field(name="Jump URL", value=f"[Jump to message]({message.jump_url})", inline=True)
-    if message.attachments:
-        attachment_urls = [a.url for a in message.attachments]
+    # For forwarded messages, attachments live in the snapshot, not on the message itself.
+    snapshot_attachments = [
+        a
+        for snapshot in (message.message_snapshots or [])
+        for a in snapshot.attachments
+    ]
+    all_attachments = message.attachments or snapshot_attachments
+    if all_attachments:
+        attachment_urls = [a.url for a in all_attachments]
         current_field: list[str] = []
         field_index = 1
         for url in attachment_urls:
