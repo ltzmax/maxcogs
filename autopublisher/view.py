@@ -23,18 +23,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone as dt_timezone
+from urllib.parse import urlencode
 
 import discord
 import pytz
 from red_commons.logging import getLogger
 from redbot.core import commands
-from redbot.core.utils.chat_formatting import box, humanize_number
 
 from .utils import get_next_reset_times, get_owner_timezone
 
 
 log = getLogger("red.maxcogs.autopublisher.view")
+_STATS_IMAGE_BASE = "https://web.entpy.com/admin/graphs/activity-summary.png"
 
 
 class IgnoredNewsChannelsView(discord.ui.LayoutView):
@@ -158,102 +159,49 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
             log.error(f"Failed to update view after unignore: {e}")
 
 
-def _build_metrics_panel(
+def _build_stats_image_url(
     weekly: int,
     monthly: int,
     yearly: int,
     total: int,
     owner_tz: "pytz.timezone",
+) -> str:
+    """Build the stats image URL with query parameters."""
+    params: dict[str, str | int] = {
+        "weekly": weekly,
+        "monthly": monthly,
+        "yearly": yearly,
+        "total": total,
+        "header": owner_tz.zone,
+    }
+    return f"{_STATS_IMAGE_BASE}?{urlencode(params)}"
+
+
+def _build_schedule_text(
+    owner_tz: "pytz.timezone",
     last_count_time: str | None,
     next_weekly_ts: int,
     next_monthly_ts: int,
     next_yearly_ts: int,
-) -> tuple[str, str]:
-    """
-    autopublisher stats bar chart and rates panel builder.
-    """
-    BAR_WIDTH = 20
-    FILL = "●"
-    EMPTY = "○"
-
-    def bar(val: int) -> str:
-        filled = min(round(val / 60), BAR_WIDTH)
-        return FILL * filled + EMPTY * (BAR_WIDTH - filled)
-
-    def rate(val: int, days: int) -> str:
-        return f"{val / days:.1f}" if days > 0 else "N/A"
-
-    import calendar
-    from datetime import timezone as dt_timezone
-
-    now = datetime.now(owner_tz)
-    days_in_month = calendar.monthrange(now.year, now.month)[1]
-    day_of_year = now.timetuple().tm_yday
-    now.weekday() + 1
-
-    weekly_avg = rate(weekly, 7)
-    monthly_avg = rate(monthly, days_in_month)
-    yearly_avg = rate(yearly, day_of_year)
-    daily_rate = yearly / day_of_year if day_of_year > 0 and yearly > 0 else 0
-    yearly_projected_max = max(daily_rate * 365, 1)
-
-    def yearly_bar(val: int) -> str:
-        filled = min(round((val / yearly_projected_max) * BAR_WIDTH), BAR_WIDTH)
-        return FILL * filled + EMPTY * (BAR_WIDTH - filled)
-
-    def total_bar(val: int) -> str:
-        filled = min(round((val / 100_000) * BAR_WIDTH), BAR_WIDTH)
-        return FILL * filled + EMPTY * (BAR_WIDTH - filled)
-
-    pct_weekly_of_monthly = f"{(weekly / monthly * 100):.1f}%" if monthly else "N/A"
-    pct_yearly_of_total = f"{(yearly / total * 100):.1f}%" if total else "N/A"
-
+) -> str:
+    """Build the reset schedule text block."""
     last_pub = "Never"
     if last_count_time:
         try:
-            dt = datetime.fromisoformat(last_count_time)
-            dt = dt.replace(tzinfo=dt_timezone.utc)
+            dt = datetime.fromisoformat(last_count_time).replace(tzinfo=dt_timezone.utc)
             ts = int(dt.timestamp())
             last_pub = f"<t:{ts}:R> (<t:{ts}:f>)"
         except ValueError:
             last_pub = "Invalid timestamp"
 
-    W = 44  # panel inner width
-
-    def row(label: str, val: int) -> str:
-        label_col = f"{label:<9}"
-        count_col = f"{humanize_number(val):>7}"
-        return f"{label_col} {bar(val)} {count_col}"
-
-    def kv(label: str, value: str) -> str:
-        return f"{label:<26}  {value}"
-
-    chart_lines = [
-        "AUTOPUBLISHER STATS ".center(W),
-        "",
-        row("Weekly", weekly),
-        row("Monthly", monthly),
-        f"{'Yearly':<9} {yearly_bar(yearly)} {humanize_number(yearly):>7}",
-        f"{'Total':<9} {total_bar(total)} {humanize_number(total):>7}",
-        "",
-        "RATES  (derived from current period totals)",
-        kv("Weekly avg / day", weekly_avg),
-        kv("Monthly avg / day", monthly_avg),
-        kv("Yearly avg / day", yearly_avg),
-        kv("Weekly % of monthly", pct_weekly_of_monthly),
-        kv("Yearly % of total", pct_yearly_of_total),
-    ]
-    chart_str = "\n".join(chart_lines)
-    schedule_lines = [
+    lines = [
         "**🗓️  Reset Schedule**",
-        f"Timezone `{owner_tz.zone}`",
         f"Last published {last_pub}",
         f"Next weekly reset <t:{next_weekly_ts}:R> (<t:{next_weekly_ts}:f>)",
         f"Next monthly reset <t:{next_monthly_ts}:R> (<t:{next_monthly_ts}:f>)",
         f"Next yearly reset <t:{next_yearly_ts}:R> (<t:{next_yearly_ts}:f>)",
     ]
-    schedule_str = "\n".join(schedule_lines)
-    return chart_str, schedule_str
+    return "\n".join(lines)
 
 
 class MetricsView(discord.ui.LayoutView):
@@ -294,20 +242,19 @@ class MetricsView(discord.ui.LayoutView):
 
         next_weekly_ts, next_monthly_ts, next_yearly_ts = get_next_reset_times(self.owner_tz)
 
-        chart_str, schedule_str = _build_metrics_panel(
-            weekly,
-            monthly,
-            yearly,
-            total,
+        image_url = _build_stats_image_url(weekly, monthly, yearly, total, self.owner_tz)
+        schedule_str = _build_schedule_text(
             self.owner_tz,
             last_count_time,
             next_weekly_ts,
             next_monthly_ts,
             next_yearly_ts,
         )
-        panel_box = box(chart_str, lang="prolog")
+
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
-        self.container.add_item(discord.ui.TextDisplay(panel_box))
+        self.container.add_item(
+            discord.ui.MediaGallery(discord.MediaGalleryItem(media=image_url))
+        )
         self.container.add_item(discord.ui.Separator())
         self.container.add_item(discord.ui.TextDisplay(schedule_str))
         self.container.add_item(discord.ui.Separator())
