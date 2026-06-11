@@ -69,6 +69,8 @@ To install any cog you want:
     - Search for informations of movies and TV shows from themoviedb.org.
 - Vanish
     - This will allow you to self-timeout yourself, similar to Twitch's timeout command from streamelemets and fossabot and probably hundered of other twitch bots.
+- WorldCup
+    - FIFA World Cup info and news for your server.
 
 ## Credits:
 - [Red Discord server community](https://discord.gg/red) For all the help with coding.
