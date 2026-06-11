@@ -146,7 +146,7 @@ class WorldCup(commands.Cog):
             log.error("BBC RSS parse error: %s", e)
             return []
 
-    @commands.group(name="worldcup", aliases=["wc"])
+    @commands.hybrid_group(name="worldcup", aliases=["wc"])
     async def worldcup(self, ctx: commands.Context) -> None:
         """FIFA World Cup commands."""
 
