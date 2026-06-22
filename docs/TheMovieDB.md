@@ -96,4 +96,3 @@ You can write the full name of the TV show to get more accurate results.<br/>
  - Usage: `[p]tvshow <query>`
  - Slash Usage: `/tvshow <query>`
  - Aliases: `tv`
-

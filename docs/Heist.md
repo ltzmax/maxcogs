@@ -179,4 +179,3 @@ Attempt a heist to steal items.<br/>
 
  - Usage: `[p]heist start`
  - Slash Usage: `/heist start`
-

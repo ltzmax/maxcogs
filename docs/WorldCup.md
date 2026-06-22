@@ -34,4 +34,3 @@ Browse all World Cup 2026 matches.<br/>
 Group stage standings.<br/>
 
  - Usage: `[p]worldcup standings`
-

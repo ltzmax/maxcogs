@@ -20,4 +20,3 @@ Settings for the slash help menu.<br/>
 Whether the help menu should be sent as an ephemeral message.<br/>
 
  - Usage: `[p]slashhelpset toggle <toggle>`
-

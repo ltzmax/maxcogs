@@ -61,13 +61,13 @@ Pass a role name/mention to set it, or nothing to clear it.<br/>
 Extended Arg Info
 
 > ### role: Optional[discord.role.Role] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 
 ### [p]afkset nickname
 
@@ -100,4 +100,3 @@ Extended Arg Info
 > ```
 > A number without decimal places.
 > ```
-

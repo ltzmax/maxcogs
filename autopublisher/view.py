@@ -23,7 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from datetime import datetime, timezone as dt_timezone
+from datetime import datetime
+from datetime import timezone as dt_timezone
 from urllib.parse import urlencode
 
 import discord
@@ -252,9 +253,7 @@ class MetricsView(discord.ui.LayoutView):
         )
 
         self.container = discord.ui.Container(accent_color=discord.Color.blurple())
-        self.container.add_item(
-            discord.ui.MediaGallery(discord.MediaGalleryItem(media=image_url))
-        )
+        self.container.add_item(discord.ui.MediaGallery(discord.MediaGalleryItem(media=image_url)))
         self.container.add_item(discord.ui.Separator())
         self.container.add_item(discord.ui.TextDisplay(schedule_str))
         self.container.add_item(discord.ui.Separator())

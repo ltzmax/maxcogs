@@ -18,8 +18,8 @@ Reset a specific user's Easter hunt data.<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -27,8 +27,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 
 ### [p]ownerset setshards
 
@@ -39,8 +39,8 @@ Set a user's shard amount.<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -48,8 +48,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 > ### amount: int
 > ```
 > A number without decimal places.
@@ -66,8 +66,8 @@ Use the achievement key from [p]easterhunt achievements.<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -75,7 +75,7 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
+>
 > ### value: bool
 > ```
 > Can be 1, 0, true, false, t, f
@@ -108,8 +108,8 @@ Set a user's hidden gems amount.<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -117,8 +117,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 > ### amount: int
 > ```
 > A number without decimal places.
@@ -133,8 +133,8 @@ Reset a specific user's shift time and active states.<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -142,8 +142,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 
 ## [p]easterhunt (Hybrid Command)
 
@@ -196,8 +196,8 @@ Give some of your eggs to another user!<br/>
 Extended Arg Info
 
 > ### member: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -205,7 +205,7 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
+>
 > ### amount: int = 1
 > ```
 > A number without decimal places.
@@ -244,8 +244,8 @@ Why are not all the eggs listed?<br/>
 Extended Arg Info
 
 > ### member: Optional[discord.member.Member] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -253,8 +253,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 
 ### [p]easterhunt sellgems (Hybrid Command)
 
@@ -315,8 +315,8 @@ Check your Easter haul!<br/>
 Extended Arg Info
 
 > ### member: Optional[discord.member.Member] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -324,8 +324,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 
 ### [p]easterhunt progress (Hybrid Command)
 
@@ -333,4 +333,3 @@ Check your Easter Hunt progress!<br/>
 
  - Usage: `[p]easterhunt progress`
  - Slash Usage: `/easterhunt progress`
-

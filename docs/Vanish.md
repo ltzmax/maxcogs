@@ -49,4 +49,3 @@ Disabled by default.<br/>
 - `<on_off>`: `True` to enable, `False` to disable.<br/>
 
  - Usage: `[p]vanishconfig toggle <on_off>`
-

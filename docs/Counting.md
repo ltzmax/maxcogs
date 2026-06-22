@@ -35,13 +35,13 @@ Example: `[p]countingset roles ruinrole @Role 5m` to set a role for 5 minutes.<b
 Extended Arg Info
 
 > ### role: Optional[discord.role.Role] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 > ### duration: Optional[str] = None
 > ```
 > You will need a number to set duration for.
@@ -63,13 +63,13 @@ Only guild owners can set these roles. If no roles are provided, clears the list
 Extended Arg Info
 
 > ### *roles: discord.role.Role
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 
 #### [p]countingset roles exclude
 
@@ -80,13 +80,13 @@ Set roles to exclude from receiving the ruin role.<br/>
 Extended Arg Info
 
 > ### *roles: discord.role.Role
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 
 ### [p]countingset misc
 
@@ -157,14 +157,14 @@ Set or clear the counting channel.<br/>
 Extended Arg Info
 
 > ### channel: Optional[discord.channel.TextChannel] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by channel URL.
 >     4. Lookup by name
-> 
->     
+>
+>
 
 ### [p]countingset messages
 
@@ -299,8 +299,8 @@ Show counting stats for a user.<br/>
 Extended Arg Info
 
 > ### user: Optional[discord.member.Member] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -308,8 +308,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 
 ### [p]counting leaderboard (Hybrid Command)
 
@@ -322,4 +322,3 @@ Please note that the leaderboard only includes users who have counted at least o
  - Slash Usage: `/counting leaderboard`
  - Aliases: `lb`
  - Cooldown: `1 per 10.0 seconds`
-

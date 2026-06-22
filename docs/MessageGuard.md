@@ -205,4 +205,3 @@ Add a role to the forwarding whitelist.<br/>
 Toggle sending warnings when forwarded messages are deleted.<br/>
 
  - Usage: `[p]forwarddeleter togglewarn`
-
