@@ -37,13 +37,13 @@ Only those who have the role can add / remove feeds, if they dont have the role,
 Extended Arg Info
 
 > ### role: discord.role.Role = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 
 ### [p]githubset limit
 
@@ -80,14 +80,14 @@ Set the default GitHub RSS feed channel.<br/>
 Extended Arg Info
 
 > ### channel: discord.channel.TextChannel
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by channel URL.
 >     4. Lookup by name
-> 
->     
+>
+>
 
 ### [p]githubset listall
 
@@ -104,8 +104,8 @@ Rename a user's GitHub RSS feed.<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -113,8 +113,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
-> 
+>
+>
 
 ### [p]githubset notify
 
@@ -145,8 +145,8 @@ Extended Arg Info
 
 > ### hex_color: Union[discord.colour.Colour, github.converters.ExplicitNone]
 > Converts to a :class:`~discord.Colour`.
-> 
->     
+>
+>
 
 ### [p]githubset forceall
 
@@ -163,8 +163,8 @@ Set a channel override for a feed (leave empty to reset).<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -172,21 +172,21 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
->     
+>
+>
 > ### feed_name: str
 > ```
 > The name of your feed.
 > ```
 > ### channel: discord.channel.TextChannel = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by channel URL.
 >     4. Lookup by name
-> 
->     
+>
+>
 
 ### [p]githubset force
 
@@ -197,8 +197,8 @@ Force a specific GitHub feed to post the last commit.<br/>
 Extended Arg Info
 
 > ### user: discord.member.Member
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
@@ -206,8 +206,8 @@ Extended Arg Info
 >     5. Lookup by user name.
 >     6. Lookup by global name.
 >     7. Lookup by guild nickname.
-> 
-> 
+>
+>
 
 ## [p]github
 
@@ -258,4 +258,3 @@ Remove a GitHub RSS feed from the server.<br/>
 
  - Usage: `[p]github remove <name>`
  - Aliases: `delete`
-

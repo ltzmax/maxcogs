@@ -62,4 +62,3 @@ This shows global stats across all servers in an interactive view.<br/>
 
  - Usage: `[p]autopublisher stats`
  - Restricted to: `BOT_OWNER`
-

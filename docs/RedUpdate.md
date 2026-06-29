@@ -56,4 +56,3 @@ Note: If you do not have a fork, you can use `updatered` to update to latest sta
  - Usage: `[p]forkupdate`
  - Restricted to: `BOT_OWNER`
  - Aliases: `updatefork`
-
