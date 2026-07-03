@@ -47,4 +47,3 @@ You can optionally specify generation from `gen1` to `gen9` only.<br/>
  - Slash Usage: `/whosthatpokemon [generation=None]`
  - Aliases: `wtp`
  - Cooldown: `1 per 30.0 seconds`
-

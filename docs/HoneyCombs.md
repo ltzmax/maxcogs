@@ -132,4 +132,3 @@ The default winning price is 100 credits.<br/>
 
  - Usage: `[p]honeycombset winningprice <amount>`
  - Restricted to: `BOT_OWNER`
-

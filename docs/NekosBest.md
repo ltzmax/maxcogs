@@ -394,4 +394,3 @@ Teeheeeheheh at a user.<br/>
 Wag at a user.<br/>
 
  - Usage: `[p]wag <member>`
-

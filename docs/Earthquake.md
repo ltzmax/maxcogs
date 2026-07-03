@@ -29,13 +29,13 @@ Set or clear the role to ping for earthquake alerts.<br/>
 Extended Arg Info
 
 > ### role: Optional[discord.role.Role]
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by name
-> 
->     
+>
+>
 
 ### [p]earthquakeset webhook
 
@@ -114,12 +114,11 @@ Set or clear the channel for earthquake alerts.<br/>
 Extended Arg Info
 
 > ### channel: Optional[discord.channel.TextChannel]
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by channel URL.
 >     4. Lookup by name
-> 
->     
-
+>
+>

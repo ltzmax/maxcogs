@@ -50,4 +50,3 @@ Manage thread(s) with Kofu.<br/>
 Close and archive a thread post.<br/>
 
  - Usage: `[p]thread close [reason]`
-

@@ -46,16 +46,16 @@ Check when a user accepted the ToS, or whether they have at all.<br/>
 Extended Arg Info
 
 > ### user: Optional[discord.user.User] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
 >     4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
 >     5. Lookup by user name.
 >     6. Lookup by global name.
-> 
->     
+>
+>
 
 ### [p]tosconfig toggle
 
@@ -134,14 +134,13 @@ If no user is specified, resets for the command invoker.<br/>
 Extended Arg Info
 
 > ### user: Optional[discord.user.User] = None
-> 
-> 
+>
+>
 >     1. Lookup by ID.
 >     2. Lookup by mention.
 >     3. Lookup by username#discriminator (deprecated).
 >     4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
 >     5. Lookup by user name.
 >     6. Lookup by global name.
-> 
->     
-
+>
+>

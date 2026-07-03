@@ -171,4 +171,3 @@ Get latest NBA news.<br/>
  - Usage: `[p]nba news`
  - Slash Usage: `/nba news`
  - Cooldown: `1 per 3.0 seconds`
-

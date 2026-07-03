@@ -38,4 +38,3 @@ Optionally provide month (1-12) and day (1-31) for a custom date.<br/>
  - Usage: `[p]history [month=None] [day=None]`
  - Slash Usage: `/history [month=None] [day=None]`
  - Cooldown: `1 per 10.0 seconds`
-

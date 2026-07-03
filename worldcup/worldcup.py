@@ -24,10 +24,10 @@ SOFTWARE.
 
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from typing import Final
 
 import aiohttp
 import discord
-from typing import Final
 from dcv2nav import LayoutViewPaginator, SelectPaginator
 from red_commons.logging import getLogger
 from redbot.core import commands
@@ -66,7 +66,6 @@ def _fmt_date(date_str: str | None) -> str:
 
 class WorldCup(commands.Cog):
     """FIFA World Cup info and news for your server."""
-
 
     __version__: Final[str] = "1.0.0"
     __author__: Final[str] = "MAX"

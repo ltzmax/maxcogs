@@ -31,4 +31,3 @@ The bot will only post articles newer than the last one it posted.<br/>
 Check the current tech news posting status for this server.<br/>
 
  - Usage: `[p]technews status`
-

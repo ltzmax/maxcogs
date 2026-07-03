@@ -175,4 +175,3 @@ View the Plague Game settings.<br/>
 
  - Usage: `[p]plagueset settings`
  - Aliases: `showsettings`
-

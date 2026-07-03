@@ -16,14 +16,14 @@ Extended Arg Info
 
 > ### from_currency: str
 > - Autocomplete: False
-> 
+>
 > The currency to convert from (e.g., USD)
 >
 > ### to_currency: str
 > - Autocomplete: False
-> 
+>
 > The currency to convert to (e.g., EUR, peso)
-> 
+>
 
 ## [p]currencyset
 
@@ -37,4 +37,3 @@ Setup currency cog.<br/>
 Explains how to get an ExchangeRate-API key.<br/>
 
  - Usage: `[p]currencyset setup`
-
