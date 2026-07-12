@@ -75,9 +75,10 @@ class NekosBest(commands.Cog):
                     "Something went wrong while trying to contact API. Status code: %s",
                     response.status,
                 )
-                return await ctx.send(
+                await ctx.send(
                     "Something went wrong while trying to contact API. Please try again later.",
                 )
+                return None
             data = await response.read()
             return orjson.loads(data)
 
@@ -85,7 +86,11 @@ class NekosBest(commands.Cog):
         self, ctx: commands.Context, response: dict[str, Any], category: str
     ) -> None:
         await ctx.typing()
-        data = response["results"][0]
+        results = response.get("results")
+        if not results:
+            await ctx.send("The API returned no data. Try again in a moment.")
+            return
+        data = results[0]
         artist = data["artist_name"]
         source = data["source_url"]
         artist_link = data["artist_href"]
@@ -121,6 +126,10 @@ class NekosBest(commands.Cog):
         url = await self._api_call(ctx, action)
         if url is None:
             return
+        results = url.get("results")
+        if not results:
+            await ctx.send("The API returned no data. Try again in a moment.")
+            return
         await ctx.typing()
         user_config = self.config.user(ctx.author)
         command_counts = await user_config.command_counts()
@@ -139,8 +148,8 @@ class NekosBest(commands.Cog):
         grammar = "times" if count > 1 else "time"
         received_grammar = "times" if received_count > 1 else "time"
         action_fmt = ACTIONS.get(action, action)
-        anime_name = url["results"][0]["anime_name"]
-        image_url = url["results"][0]["url"]
+        anime_name = results[0]["anime_name"]
+        image_url = results[0]["url"]
 
         target_str = f"{member.mention}" if member and member != ctx.author else "themselves!"
         description = f"**{ctx.author.mention} {action_fmt} {target_str}**\n"
