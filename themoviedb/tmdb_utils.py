@@ -77,7 +77,10 @@ PREDEFINED_CHANNELS = {
         "name": "KinoCheck - Your Ultimate Movie Destination!.",
     },
     "vertical": {"id": "UCpR3kmSyTYszJHWEcmpcnFQ", "name": "Vertical Official"},
-    "igntrailer": {"id": "UCWJ5MfdQZ6jXbF5gYuSAf5Q", "name": "IGN Movie Trailers"} # almost same as kinocheck but with more unseen trailers.
+    "igntrailer": {
+        "id": "UCWJ5MfdQZ6jXbF5gYuSAf5Q",
+        "name": "IGN Movie Trailers",
+    },  # almost same as kinocheck but with more unseen trailers.
 }
 
 
