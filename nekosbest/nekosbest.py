@@ -49,7 +49,9 @@ class NekosBest(commands.Cog):
 
     def __init__(self, bot: Red) -> None:
         self.bot: Red = bot
-        self.session: aiohttp.ClientSession = aiohttp.ClientSession()
+        self.session: aiohttp.ClientSession = aiohttp.ClientSession(
+            headers={"User-Agent": "MaxCogs-NekosBest (https://github.com/ltzmax/maxcogs)"}
+        )
         self.config = Config.get_conf(self, identifier=1234567890)
         default_user = {"command_counts": {}, "received_counts": {}}
         self.config.register_user(**default_user)
@@ -213,6 +215,8 @@ class NekosBest(commands.Cog):
     async def waifu(self, ctx: commands.Context) -> None:
         """Send a random waifu image."""
         url = await self._api_call(ctx, "waifu")
+        if url is None:
+            return
         await self.imgembedgen(ctx, url, "waifu")
 
     @commands.hybrid_command()
@@ -220,6 +224,8 @@ class NekosBest(commands.Cog):
     async def nekos(self, ctx: commands.Context) -> None:
         """Send a random neko image."""
         url = await self._api_call(ctx, "neko")
+        if url is None:
+            return
         await self.imgembedgen(ctx, url, "neko")
 
     @commands.hybrid_command()
@@ -227,6 +233,8 @@ class NekosBest(commands.Cog):
     async def kitsune(self, ctx: commands.Context) -> None:
         """Send a random kitsune image."""
         url = await self._api_call(ctx, "kitsune")
+        if url is None:
+            return
         await self.imgembedgen(ctx, url, "kitsune")
 
     @commands.hybrid_command()
@@ -234,6 +242,8 @@ class NekosBest(commands.Cog):
     async def husbando(self, ctx: commands.Context) -> None:
         """Send a random husbando image."""
         url = await self._api_call(ctx, "husbando")
+        if url is None:
+            return
         await self.imgembedgen(ctx, url, "husbando")
 
     @commands.command()
