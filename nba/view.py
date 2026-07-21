@@ -28,7 +28,7 @@ import aiohttp
 import discord
 from red_commons.logging import getLogger
 
-from .converter import PLAYBYPLAY
+from .converter import NBA_CDN_HEADERS, PLAYBYPLAY
 
 
 log = getLogger("red.maxcogs.nba.view")
@@ -66,7 +66,10 @@ class PlayByPlay(discord.ui.View):
     async def view_play_by_play(self, interaction: discord.Interaction, button: discord.ui.Button):
         url = f"{PLAYBYPLAY}/liveData/playbyplay/playbyplay_{self.game_id}.json"
         try:
-            async with aiohttp.ClientSession() as session, session.get(url) as response:
+            async with (
+                aiohttp.ClientSession(headers=NBA_CDN_HEADERS) as session,
+                session.get(url) as response,
+            ):
                 if response.status != 200:
                     return await interaction.response.send_message(
                         f"Failed to fetch play-by-play data (status {response.status}).",

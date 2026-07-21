@@ -40,6 +40,7 @@ from .commands.nba_commands import NBACommands
 from .converter import (
     ESPN_NBA_NEWS,
     ESPN_NBA_STANDINGS,
+    NBA_CDN_HEADERS,
     SCHEDULE_URL,
     TEAM_EMOJI_NAMES,
     TEAM_NAME_TO_API,
@@ -81,7 +82,7 @@ class NBA(NBACommands, commands.Cog):
             "pregame_role": None,
         }
         self.config.register_guild(**default_guild)
-        self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession(headers=NBA_CDN_HEADERS)
         self.data_path = cog_data_path(self)
         self.data_path.mkdir(parents=True, exist_ok=True)
         self.db_path = self.data_path / "game_scores.db"
