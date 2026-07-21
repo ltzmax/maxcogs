@@ -36,7 +36,6 @@ body:
         - slashhelpmenu
         - themoviedb
         - vanish
-        - worldcup
     validations:
       required: true
   - type: input
