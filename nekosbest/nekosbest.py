@@ -52,7 +52,7 @@ class NekosBest(commands.Cog):
         self.session: aiohttp.ClientSession = aiohttp.ClientSession(
             headers={"User-Agent": "MaxCogsNekosBest (https://github.com/ltzmax/maxcogs)"}
         )
-        
+
         self.config = Config.get_conf(self, identifier=1234567890)
         default_user = {"command_counts": {}, "received_counts": {}}
         self.config.register_user(**default_user)
