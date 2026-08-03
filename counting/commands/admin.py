@@ -468,7 +468,7 @@ class AdminCommands(commands.Cog):
             ("Silent Mode", bool_to_status(settings["use_silent"])),
             ("Reactions", bool_to_status(settings["toggle_reactions"])),
             ("Reaction Emoji", settings["default_reaction"]),
-            ("Same User Counts", bool_to_status(not settings["same_user_to_count"])),
+            ("Same User Count", bool_to_status(settings["same_user_to_count"])),
             (
                 "Min Account Age",
                 f"{settings['min_account_age']} days{' (disabled)' if settings['min_account_age'] == 0 else ''}",
