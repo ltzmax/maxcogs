@@ -22,24 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import math
-
 from red_commons.logging import getLogger
 
 
 log = getLogger("red.cogs.heist.leveling")
 
 MAX_LEVEL = 120
+BASE_XP_REWARD = 212
+_WOW_XP_TABLE = [
+    400, 900, 1400, 2100, 2800, 3600, 4500, 5400, 6500, 7600,
+    8800, 10100, 11400, 12900, 14400, 16000, 17700, 19400, 21300, 23200,
+    25200, 27300, 29400, 31700, 34000, 36400, 38900, 41400, 44300, 47400,
+    50800, 54500, 58600, 62800, 67100, 71600, 76100, 80800, 85700, 90700,
+    95800, 101000, 106300, 111800, 117500, 123200, 129100, 135100, 141200, 147500,
+    153900, 160400, 167100, 173900, 180800, 187900, 195000, 202300, 209800,
+]
 
-# XP table
-# WoW-style: each level requires progressively more XP.
-# Formula: xp_for_level(n) = floor(100 * n * (1 + 0.12 * n))
-# Level 1 -> 2: 212 XP, Level 50 -> 51: ~36,200 XP, Level 119 -> 120: ~207,000 XP
+
+def _level_up_cost(n: int) -> int:
+    """XP required to go from level `n` to level `n + 1`."""
+    if n <= len(_WOW_XP_TABLE):
+        return _WOW_XP_TABLE[n - 1]
+    # Beyond real WoW's level-60 cap: continue the same accelerating curve.
+    return round(65 * n**2 - 190 * n - 6100)
 
 
 def _compute_threshold(level: int) -> int:
     """XP required to reach `level` from level 1 (cumulative)."""
-    return sum(math.floor(100 * n * (1 + 0.12 * n)) for n in range(1, level))
+    return sum(_level_up_cost(n) for n in range(1, level))
 
 
 # Precompute cumulative XP thresholds for all levels.
@@ -111,6 +121,14 @@ async def award_xp(
     - Caught: 0 XP
     - Fail: 20% of base XP
     - Success: full base XP
+
+    Every heist type awards the same flat BASE_XP_REWARD, which then scales
+    with the player's current level at the same rate the level-up cost curve
+    grows. A level-119 heist pays ~57x what a level-1 heist pays, matching
+    how much more XP a level-119 player needs to level up in the first
+    place so the number of heists needed per level stays roughly constant
+    (~14) instead of trivializing into 1 heist = 1 level, or ballooning as
+    levels climb.
     """
     if caught:
         return (
@@ -119,14 +137,13 @@ async def award_xp(
             0,
         )
 
-    from .utils import HEISTS
-
-    heist_data = HEISTS.get(heist_type, {})
-    base_xp = heist_data.get("xp_reward", 50)
-
-    xp_gained = base_xp if success else max(1, int(base_xp * 0.20))
     old_xp = await cog.config.user(member).xp()
     old_level = get_level(old_xp)
+
+    level_multiplier = _level_up_cost(old_level) / _level_up_cost(1)
+    scaled_base_xp = max(1, round(BASE_XP_REWARD * level_multiplier))
+
+    xp_gained = scaled_base_xp if success else max(1, int(scaled_base_xp * 0.20))
     new_xp = old_xp + xp_gained
     new_level = min(get_level(new_xp), MAX_LEVEL)
 

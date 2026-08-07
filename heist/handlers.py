@@ -343,7 +343,7 @@ async def resolve_heist(
             msg_parts.append("-# 🎓 No XP earned (caught)")
         else:
             level_up_str = (
-                f" — **Level up! {old_level} -> {new_level}** 🎉" if new_level > old_level else ""
+                f" - **Level up! {old_level} -> {new_level}** 🎉" if new_level > old_level else ""
             )
             msg_parts.append(
                 f"-# 🎓 +{xp_gained} XP{level_up_str} · Lv.{lvl} {xp_bar(pct)} {into:,}/{span:,}"
