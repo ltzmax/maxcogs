@@ -31,7 +31,6 @@ from red_commons.logging import getLogger
 from redbot.core import bank, commands
 
 from .handlers import schedule_resolve
-from .leveling import get_level
 from .meta import _PARAM_META
 from .utils import HEISTS, ITEMS, RECIPES, fmt
 
@@ -974,8 +973,8 @@ class _JoinCrewBtn(discord.ui.Button):
                 "You already have an active heist.", ephemeral=True
             )
 
-        xp = await cog.config.user(user).xp()
-        if get_level(xp) < 20:
+        member_level = await cog.config.user(user).level()
+        if member_level < 20:
             return await interaction.response.send_message(
                 "You must be **level 20** or higher to join a crew robbery.", ephemeral=True
             )

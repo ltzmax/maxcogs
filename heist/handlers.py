@@ -162,8 +162,7 @@ async def resolve_heist(
                 await user_config.equipped.set(equipped)
             await user_config.inventory.set(inventory)
 
-        member_xp = await user_config.xp()
-        member_level = xp_progress(member_xp)[0]
+        member_level = await user_config.level()
         lv_bonus = level_success_bonus(member_level)
 
         base_success = random.randint(data["min_success"], data["max_success"])
@@ -338,7 +337,7 @@ async def resolve_heist(
         # Award XP
         old_level, new_level, xp_gained = await award_xp(cog, member, heist_type, success, caught)
         new_xp = await user_config.xp()
-        lvl, into, span, pct = xp_progress(new_xp)
+        lvl, into, span, pct = xp_progress(new_xp, new_level)
         if caught:
             msg_parts.append("-# 🎓 No XP earned (caught)")
         else:
@@ -526,7 +525,7 @@ async def resolve_crew_heist(
                 cog, member, heist_type, success, member_caught
             )
             new_xp = await cog.config.user(member).xp()
-            lvl, _into, _span, _pct = xp_progress(new_xp)
+            lvl, _into, _span, _pct = xp_progress(new_xp, new_lv)
             if member_caught:
                 lines.append("-# 🎓 No XP earned (caught)")
             else:

@@ -33,6 +33,7 @@ from redbot.core import Config, bank, commands
 from .commands.owner_commands import OwnerCommands
 from .commands.user_commands import UserCommands
 from .handlers import resolve_heist, schedule_resolve
+from .leveling import get_level
 from .utils import HEISTS, ITEMS
 from .views import ConfirmLayoutView
 
@@ -74,6 +75,7 @@ class Heist(UserCommands, OwnerCommands, commands.Cog):
                 "caught": 0,
             },
             "xp": 0,
+            "level": 1,
         }
         default_global = {
             "heist_settings": {
@@ -321,6 +323,15 @@ class Heist(UserCommands, OwnerCommands, commands.Cog):
     async def cog_load(self):
         all_users = await self.config.all_users()
         for user_id, data in all_users.items():
+            # One-time backfill: players who have xp but no stored level yet
+            # (i.e. from before `level` was added to the schema) get their
+            # level computed once from their existing xp. After this, level
+            # only ever ratchets forward in award_xp, it's never
+            # recomputed from xp again, so later curve tuning can't demote
+            # anyone who's already leveled up.
+            if "xp" in data and "level" not in data:
+                await self.config.user_from_id(user_id).level.set(get_level(data["xp"]))
+
             active = data.get("active_heist")
             if active:
                 now = datetime.datetime.now(datetime.timezone.utc).timestamp()

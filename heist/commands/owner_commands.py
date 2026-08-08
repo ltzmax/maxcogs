@@ -28,6 +28,7 @@ import discord
 from redbot.core import commands
 
 from ..events import EventView
+from ..leveling import MAX_LEVEL, XP_TABLE
 from ..utils import HEISTS, ITEMS, fmt
 from ..views import HeistConfigView, ItemPriceConfigView
 
@@ -151,6 +152,31 @@ class OwnerCommands:
         else:
             await self.config.user(member).heist_cooldowns.set({})
             await ctx.send(f"Reset all heist cooldowns for {member.display_name}.")
+
+    @heistset.command(name="setlevel")
+    async def heistset_setlevel(
+        self, ctx: commands.Context, member: discord.Member, level: int
+    ):
+        """Manually set a member's heist level.
+
+        This is a safety net for the level migration, use it if a member's
+        level didn't get backfilled correctly, or to hand-correct someone
+        after manual data changes. Also sets their XP to the exact threshold
+        for that level, so their progress bar starts at 0% into the level
+        rather than showing a mismatched XP total.
+
+        **Arguments**
+        - `<member>` The member to update.
+        - `<level>` The level to set them to (1-120).
+        """
+        if not 1 <= level <= MAX_LEVEL:
+            return await ctx.send(f"Level must be between 1 and {MAX_LEVEL}.")
+        xp_for_level = XP_TABLE[level - 1]
+        await self.config.user(member).level.set(level)
+        await self.config.user(member).xp.set(xp_for_level)
+        await ctx.send(
+            f"Set {member.display_name}'s level to **{level}** ({xp_for_level:,} XP)."
+        )
 
     @heistset.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)

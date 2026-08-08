@@ -29,7 +29,7 @@ import discord
 from redbot.core import bank, commands
 from redbot.core.utils.chat_formatting import humanize_number
 
-from ..leveling import MAX_LEVEL, get_level, level_success_bonus, xp_bar, xp_progress
+from ..leveling import MAX_LEVEL, level_success_bonus, xp_bar, xp_progress
 from ..utils import HEISTS, ITEMS, fmt
 from ..views import CraftView, CrewLobbyView, EquipView, HeistSelectionView, ShopView
 
@@ -145,8 +145,7 @@ class UserCommands:
             }
 
         currency_name = await bank.get_currency_name(ctx.guild)
-        player_xp = await self.config.user(ctx.author).xp()
-        player_level = get_level(player_xp)
+        player_level = await self.config.user(ctx.author).level()
         view = HeistSelectionView(self, ctx, heist_settings, currency_name, player_level)
         view.message = await ctx.send(view=view)
 
@@ -164,8 +163,8 @@ class UserCommands:
             return
         if not await self.check_jail(ctx, ctx.author):
             return
-        player_xp = await self.config.user(ctx.author).xp()
-        if get_level(player_xp) < 20:
+        player_level = await self.config.user(ctx.author).level()
+        if player_level < 20:
             return await ctx.send("You must be **level 20** or higher to organise a crew robbery.")
 
         if await self._has_active_heist(ctx.author, ctx.channel.id):
@@ -378,7 +377,8 @@ class UserCommands:
         """Check heist level and XP progress."""
         await ctx.typing()
         xp = await self.config.user(member).xp()
-        lvl, into, span, pct = xp_progress(xp)
+        lvl = await self.config.user(member).level()
+        lvl, into, span, pct = xp_progress(xp, lvl)
         lv_bonus = level_success_bonus(lvl)
 
         # This will need to be here, please do not remove or move.

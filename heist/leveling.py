@@ -76,14 +76,14 @@ def xp_for_next_level(total_xp: int) -> int:
     return XP_TABLE[level] - total_xp
 
 
-def xp_progress(total_xp: int) -> tuple[int, int, int, float]:
+def xp_progress(total_xp: int, level: int) -> tuple[int, int, int, float]:
     """Return (level, xp_into_level, xp_needed_for_level, pct).
 
-    xp_into_level: XP earned since start of current level.
-    xp_needed_for_level: total XP span of current level.
-    pct: 0.0–1.0 progress through current level.
+    `level` is the player's stored level (see note on award_xp below on why
+    this isn't derived from total_xp here). xp_into_level: XP earned since
+    start of current level. xp_needed_for_level: total XP span of current
+    level. pct: 0.0-1.0 progress through current level.
     """
-    level = get_level(total_xp)
     if level >= MAX_LEVEL:
         return MAX_LEVEL, 0, 0, 1.0
     level_start = XP_TABLE[level - 1]
@@ -124,32 +124,42 @@ async def award_xp(
 
     Every heist type awards the same flat BASE_XP_REWARD, which then scales
     with the player's current level at the same rate the level-up cost curve
-    grows. A level-119 heist pays ~57x what a level-1 heist pays, matching
-    how much more XP a level-119 player needs to level up in the first
-    place so the number of heists needed per level stays roughly constant
-    (~14) instead of trivializing into 1 heist = 1 level, or ballooning as
-    levels climb.
-    """
-    if caught:
-        return (
-            get_level(await cog.config.user(member).xp()),
-            get_level(await cog.config.user(member).xp()),
-            0,
-        )
+    grows, so the number of heists needed per level stays roughly constant
+    instead of trivializing into 1 heist = 1 level, or ballooning as levels
+    climb.
 
+    IMPORTANT: level is read from the stored `level` config field, not
+    recomputed from xp against XP_TABLE. It only ever ratchets forward from
+    that stored value. If it were recomputed from scratch every time, tuning
+    the XP curve later (like we did repeatedly this session) would silently
+    change everyone's displayed level based on the same stored xp number,
+    which looks like a "reset" even though no xp was lost. Storing level and
+    only ever advancing it forward means past progress is never revisited by
+    future curve tweaks.
+    """
     old_xp = await cog.config.user(member).xp()
-    old_level = get_level(old_xp)
+    old_level = await cog.config.user(member).level()
+
+    if caught:
+        return old_level, old_level, 0
 
     level_multiplier = _level_up_cost(old_level) / _level_up_cost(1)
     scaled_base_xp = max(1, round(BASE_XP_REWARD * level_multiplier))
 
     xp_gained = scaled_base_xp if success else max(1, int(scaled_base_xp * 0.20))
     new_xp = old_xp + xp_gained
-    new_level = min(get_level(new_xp), MAX_LEVEL)
+
+    # Ratchet forward from the stored level only — never recompute from
+    # scratch, so a future curve change can't demote anyone.
+    new_level = old_level
+    while new_level < MAX_LEVEL and new_xp >= XP_TABLE[new_level]:
+        new_level += 1
 
     # Cap XP at max level threshold
     if new_level >= MAX_LEVEL:
         new_xp = min(new_xp, XP_TABLE[MAX_LEVEL - 1])
 
     await cog.config.user(member).xp.set(new_xp)
+    if new_level != old_level:
+        await cog.config.user(member).level.set(new_level)
     return old_level, new_level, xp_gained
