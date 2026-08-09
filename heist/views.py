@@ -25,6 +25,7 @@ SOFTWARE.
 import asyncio
 import contextlib
 import datetime
+from typing import Any, Optional
 
 import discord
 from red_commons.logging import getLogger
@@ -63,27 +64,52 @@ def _cooldown_display(td: datetime.timedelta) -> str:
     return f"{secs / 3600:.1f}h"
 
 
-class _HeistNavBtn(discord.ui.Button):
-    def __init__(self, direction: str, view: "HeistSelectionView", disabled: bool = False):
-        match direction:
-            case "prev":
-                label, emoji = "◀", None
-            case "next":
-                label, emoji = "▶", None
+class _PageNavBtn(discord.ui.Button):
+    """Shared prev/next button for any paginated view in this file.
+
+    Works with any view that exposes ``.page`` (int), either ``.total_pages``
+    or ``.pages`` (list, uses its length), and ``._build_content()``. If the
+    view defines an async ``._on_navigate()`` hook, it's awaited before the
+    rebuild — used by ShopView to refresh live prices when the page changes.
+
+    This replaces what used to be four separate, nearly-identical button
+    classes (one per paginated view).
+    """
+
+    def __init__(
+        self,
+        direction: str,
+        parent_view: Any,
+        disabled: bool = False,
+        label: Optional[str] = None,
+        emoji: Optional[str] = None,
+    ) -> None:
+        default_label = "◀" if direction == "prev" else "▶"
         super().__init__(
-            label=label, emoji=emoji, style=discord.ButtonStyle.secondary, disabled=disabled
+            label=label if label is not None else default_label,
+            emoji=emoji,
+            style=discord.ButtonStyle.secondary,
+            disabled=disabled,
         )
         self.direction = direction
-        self.heist_view = view
+        self.parent_view = parent_view
 
-    async def callback(self, interaction: discord.Interaction):
+    def _total_pages(self) -> int:
+        total_pages = getattr(self.parent_view, "total_pages", None)
+        return total_pages if total_pages is not None else len(self.parent_view.pages)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        total = self._total_pages()
         match self.direction:
-            case "prev" if self.heist_view.page > 0:
-                self.heist_view.page -= 1
-            case "next" if self.heist_view.page < self.heist_view.total_pages - 1:
-                self.heist_view.page += 1
-        self.heist_view._build_content()
-        await interaction.response.edit_message(view=self.heist_view)
+            case "prev" if self.parent_view.page > 0:
+                self.parent_view.page -= 1
+            case "next" if self.parent_view.page < total - 1:
+                self.parent_view.page += 1
+        on_navigate = getattr(self.parent_view, "_on_navigate", None)
+        if on_navigate:
+            await on_navigate()
+        self.parent_view._build_content()
+        await interaction.response.edit_message(view=self.parent_view)
 
 
 class _HeistSelect(discord.ui.Select):
@@ -252,13 +278,13 @@ class HeistSelectionView(discord.ui.LayoutView):
         select_row = discord.ui.ActionRow(select)
 
         nav_row = discord.ui.ActionRow(
-            _HeistNavBtn("prev", self, disabled=disabled or self.page == 0),
+            _PageNavBtn("prev", self, disabled=disabled or self.page == 0),
             discord.ui.Button(
                 label=f"{self.page + 1}/{self.total_pages}",
                 style=discord.ButtonStyle.secondary,
                 disabled=True,
             ),
-            _HeistNavBtn("next", self, disabled=disabled or self.page == self.total_pages - 1),
+            _PageNavBtn("next", self, disabled=disabled or self.page == self.total_pages - 1),
         )
 
         components: list = [
@@ -282,28 +308,6 @@ class HeistSelectionView(discord.ui.LayoutView):
         if self.message:
             with contextlib.suppress(discord.HTTPException):
                 await self.message.edit(view=self)
-
-
-class _ShopNavBtn(discord.ui.Button):
-    def __init__(self, direction: str, shop_view: "ShopView", disabled: bool = False):
-        label = "◀" if direction == "prev" else "▶"
-        super().__init__(label=label, style=discord.ButtonStyle.secondary, disabled=disabled)
-        self.direction = direction
-        self.shop_view = shop_view
-
-    async def callback(self, interaction: discord.Interaction):
-        match self.direction:
-            case "prev" if self.shop_view.page > 0:
-                self.shop_view.page -= 1
-            case "next" if self.shop_view.page < len(self.shop_view.pages) - 1:
-                self.shop_view.page += 1
-        self.shop_view.costs = {
-            name: await self.shop_view.cog.get_item_cost(name)
-            for name, (_, data) in ITEMS.items()
-            if "cost" in data
-        }
-        self.shop_view._build_content()
-        await interaction.response.edit_message(view=self.shop_view)
 
 
 class _ShopSelect(discord.ui.Select):
@@ -355,6 +359,14 @@ class ShopView(discord.ui.LayoutView):
         self.page = 0
         self._build_content()
 
+    async def _on_navigate(self) -> None:
+        """Refresh live item costs when the page changes."""
+        self.costs = {
+            name: await self.cog.get_item_cost(name)
+            for name, (_, data) in ITEMS.items()
+            if "cost" in data
+        }
+
     def _build_content(self, disabled: bool = False):
         self.clear_items()
         section_label, item_type = self.pages[self.page]
@@ -399,13 +411,13 @@ class ShopView(discord.ui.LayoutView):
         select.disabled = disabled
 
         nav_row = discord.ui.ActionRow(
-            _ShopNavBtn("prev", self, disabled=disabled or self.page == 0),
+            _PageNavBtn("prev", self, disabled=disabled or self.page == 0),
             discord.ui.Button(
                 label=f"{self.page + 1}/{len(self.pages)}",
                 style=discord.ButtonStyle.secondary,
                 disabled=True,
             ),
-            _ShopNavBtn("next", self, disabled=disabled or self.page == len(self.pages) - 1),
+            _PageNavBtn("next", self, disabled=disabled or self.page == len(self.pages) - 1),
         )
 
         components: list = [
@@ -804,29 +816,6 @@ class _ItemSelect(discord.ui.Select):
         await interaction.response.edit_message(view=self.price_view)
 
 
-class _ItemPageNavBtn(discord.ui.Button):
-    def __init__(self, direction: str, price_view: "ItemPriceConfigView", disabled: bool = False):
-        match direction:
-            case "prev":
-                label, emoji = "Previous", "◀️"
-            case "next":
-                label, emoji = "Next", "▶️"
-        super().__init__(
-            label=label, emoji=emoji, style=discord.ButtonStyle.secondary, disabled=disabled
-        )
-        self.direction = direction
-        self.price_view = price_view
-
-    async def callback(self, interaction: discord.Interaction):
-        match self.direction:
-            case "prev" if self.price_view.page > 0:
-                self.price_view.page -= 1
-            case "next" if self.price_view.page < self.price_view.total_pages - 1:
-                self.price_view.page += 1
-        self.price_view._build_content()
-        await interaction.response.edit_message(view=self.price_view)
-
-
 class _SetPriceBtn(discord.ui.Button):
     def __init__(self, price_view: "ItemPriceConfigView", disabled: bool = False):
         super().__init__(
@@ -902,9 +891,9 @@ class ItemPriceConfigView(discord.ui.LayoutView):
         select_row = discord.ui.ActionRow(_ItemSelect(self, self.page, disabled=disabled))
         nav_row = discord.ui.ActionRow()
         if self.page > 0:
-            nav_row.add_item(_ItemPageNavBtn("prev", self, disabled=disabled))
+            nav_row.add_item(_PageNavBtn("prev", self, disabled=disabled, label="Previous", emoji="◀️"))
         if self.page < self.total_pages - 1:
-            nav_row.add_item(_ItemPageNavBtn("next", self, disabled=disabled))
+            nav_row.add_item(_PageNavBtn("next", self, disabled=disabled, label="Next", emoji="▶️"))
         nav_row.add_item(_SetPriceBtn(self, disabled=disabled))
 
         self.add_item(
@@ -1383,29 +1372,6 @@ class _CraftBtn(discord.ui.Button):
         )
 
 
-class _CraftNavBtn(discord.ui.Button):
-    def __init__(self, direction: str, craft_view: "CraftView", disabled: bool = False):
-        match direction:
-            case "prev":
-                label, emoji = "Previous", "◀️"
-            case "next":
-                label, emoji = "Next", "▶️"
-        super().__init__(
-            label=label, emoji=emoji, style=discord.ButtonStyle.secondary, disabled=disabled
-        )
-        self.direction = direction
-        self.craft_view = craft_view
-
-    async def callback(self, interaction: discord.Interaction):
-        match self.direction:
-            case "prev" if self.craft_view.page > 0:
-                self.craft_view.page -= 1
-            case "next" if self.craft_view.page < self.craft_view.total_pages - 1:
-                self.craft_view.page += 1
-        self.craft_view._build_content()
-        await interaction.response.edit_message(view=self.craft_view)
-
-
 def _craft_desc(recipe: dict) -> str:
     mats = ", ".join(f"{qty}× {fmt(m)}" for m, qty in recipe["materials"].items())
     return mats[:100]
@@ -1472,9 +1438,9 @@ class CraftView(discord.ui.LayoutView):
         )
         nav_row = discord.ui.ActionRow()
         if self.page > 0:
-            nav_row.add_item(_CraftNavBtn("prev", self, disabled=disabled))
+            nav_row.add_item(_PageNavBtn("prev", self, disabled=disabled, label="Previous", emoji="◀️"))
         if self.page < self.total_pages - 1:
-            nav_row.add_item(_CraftNavBtn("next", self, disabled=disabled))
+            nav_row.add_item(_PageNavBtn("next", self, disabled=disabled, label="Next", emoji="▶️"))
         nav_row.add_item(craft_btn)
 
         components: list = [
