@@ -24,9 +24,9 @@ SOFTWARE.
 
 import asyncio
 from typing import Final
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import discord
-import pytz
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
 from redbot.core.bot import Red
@@ -155,7 +155,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
         Find your timezone here: https://whatismyti.me/
         """
         try:
-            pytz.timezone(timezone)
+            ZoneInfo(timezone)
             await self.config.timezone.set(timezone)
             message = (
                 f"Timezone set to {timezone}. Please reload the cog to apply changes:\n"
@@ -163,7 +163,7 @@ class AutoPublisher(DashboardIntegration, commands.Cog):
                 "-# You will see correct timezone without reload but scheduler will not work until reload is done."
             )
             await ctx.send(message)
-        except pytz.exceptions.UnknownTimeZoneError:
+        except ZoneInfoNotFoundError:
             await ctx.send(
                 "Invalid timezone. Please use a valid timezone like 'US/Pacific', 'Europe/London', or 'UTC'. "
                 "See <https://whatismyti.me> for your timezone."

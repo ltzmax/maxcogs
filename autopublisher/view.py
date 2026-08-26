@@ -26,9 +26,9 @@ SOFTWARE.
 from datetime import datetime
 from datetime import timezone as dt_timezone
 from urllib.parse import urlencode
+from zoneinfo import ZoneInfo
 
 import discord
-import pytz
 from red_commons.logging import getLogger
 from redbot.core import commands
 
@@ -161,25 +161,17 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
 
 
 def _build_stats_image_url(
-    weekly: int,
-    monthly: int,
-    yearly: int,
-    total: int,
-    owner_tz: "pytz.timezone",
+    weekly: int, monthly: int, yearly: int, total: int, owner_tz: ZoneInfo,
 ) -> str:
-    """Build the stats image URL with query parameters."""
     params: dict[str, str | int] = {
-        "weekly": weekly,
-        "monthly": monthly,
-        "yearly": yearly,
-        "total": total,
-        "header": owner_tz.zone,
+        "weekly": weekly, "monthly": monthly, "yearly": yearly, "total": total,
+        "header": owner_tz.key,
     }
     return f"{_STATS_IMAGE_BASE}?{urlencode(params)}"
 
 
 def _build_schedule_text(
-    owner_tz: "pytz.timezone",
+    owner_tz: ZoneInfo,
     last_count_time: str | None,
     next_weekly_ts: int,
     next_monthly_ts: int,
@@ -213,7 +205,7 @@ class MetricsView(discord.ui.LayoutView):
         self.cog = cog
         self.ctx: commands.Context | None = None
         self.message: discord.Message | None = None
-        self.owner_tz: pytz.timezone | None = None
+        self.owner_tz: ZoneInfo | None = None
 
         self.refresh_button = discord.ui.Button(
             label="Refresh", style=discord.ButtonStyle.green, emoji="🔄"

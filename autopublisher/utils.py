@@ -23,8 +23,8 @@ SOFTWARE.
 """
 
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from red_commons.logging import getLogger
 from redbot.core import Config, commands
@@ -33,16 +33,16 @@ from redbot.core import Config, commands
 logger = getLogger("red.maxcogs.autopublisher.utils")
 
 
-async def get_owner_timezone(config: Config) -> pytz.timezone:
+async def get_owner_timezone(config: Config) -> ZoneInfo:
     """Retrieve the owner's timezone from config, default to UTC."""
     timezone_str = await config.timezone()
     try:
-        tz = pytz.timezone(timezone_str)
+        tz = ZoneInfo(timezone_str)
         logger.debug(f"Retrieved timezone: {timezone_str}")
         return tz
-    except pytz.UnknownTimeZoneError:
+    except ZoneInfoNotFoundError:
         logger.warning(f"Invalid timezone in config: {timezone_str}, falling back to UTC")
-        return pytz.UTC
+        return ZoneInfo("UTC")
 
 
 async def initialize_scheduler(cog: commands.Cog) -> AsyncIOScheduler:
@@ -129,7 +129,7 @@ async def increment_published_count(config: Config) -> None:
         data["last_count_time"] = datetime.utcnow().isoformat()
 
 
-def get_next_reset_times(owner_tz: pytz.timezone) -> tuple[int, int, int]:
+def get_next_reset_times(owner_tz: ZoneInfo) -> tuple[int, int, int]:
     """Calculate next reset timestamps, ensuring correct timezone handling."""
     now = datetime.now(owner_tz)
 
@@ -137,29 +137,21 @@ def get_next_reset_times(owner_tz: pytz.timezone) -> tuple[int, int, int]:
     days_until_sunday = (6 - now.weekday()) % 7
     if days_until_sunday == 0:
         days_until_sunday = 7
-    next_weekly_naive = datetime(
-        year=now.year,
-        month=now.month,
-        day=now.day,
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0,
+    next_weekly = datetime(
+        year=now.year, month=now.month, day=now.day,
+        hour=0, minute=0, second=0, microsecond=0, tzinfo=owner_tz,
     ) + timedelta(days=days_until_sunday)
-    next_weekly = owner_tz.normalize(owner_tz.localize(next_weekly_naive, is_dst=False))
     next_weekly_ts = int(next_weekly.timestamp())
 
     # Monthly reset: First day of next month
     if now.month == 12:
-        next_month_naive = datetime(year=now.year + 1, month=1, day=1)
+        next_month = datetime(year=now.year + 1, month=1, day=1, tzinfo=owner_tz)
     else:
-        next_month_naive = datetime(year=now.year, month=now.month + 1, day=1)
-    next_month = owner_tz.normalize(owner_tz.localize(next_month_naive, is_dst=False))
+        next_month = datetime(year=now.year, month=now.month + 1, day=1, tzinfo=owner_tz)
     next_monthly_ts = int(next_month.timestamp())
 
     # Yearly reset: January 1st of next year
-    next_yearly_naive = datetime(year=now.year + 1, month=1, day=1)
-    next_yearly = owner_tz.normalize(owner_tz.localize(next_yearly_naive, is_dst=False))
+    next_yearly = datetime(year=now.year + 1, month=1, day=1, tzinfo=owner_tz)
     next_yearly_ts = int(next_yearly.timestamp())
 
     return next_weekly_ts, next_monthly_ts, next_yearly_ts
