@@ -161,10 +161,17 @@ class IgnoredNewsChannelsView(discord.ui.LayoutView):
 
 
 def _build_stats_image_url(
-    weekly: int, monthly: int, yearly: int, total: int, owner_tz: ZoneInfo,
+    weekly: int,
+    monthly: int,
+    yearly: int,
+    total: int,
+    owner_tz: ZoneInfo,
 ) -> str:
     params: dict[str, str | int] = {
-        "weekly": weekly, "monthly": monthly, "yearly": yearly, "total": total,
+        "weekly": weekly,
+        "monthly": monthly,
+        "yearly": yearly,
+        "total": total,
         "header": owner_tz.key,
     }
     return f"{_STATS_IMAGE_BASE}?{urlencode(params)}"

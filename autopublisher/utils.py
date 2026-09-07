@@ -138,8 +138,14 @@ def get_next_reset_times(owner_tz: ZoneInfo) -> tuple[int, int, int]:
     if days_until_sunday == 0:
         days_until_sunday = 7
     next_weekly = datetime(
-        year=now.year, month=now.month, day=now.day,
-        hour=0, minute=0, second=0, microsecond=0, tzinfo=owner_tz,
+        year=now.year,
+        month=now.month,
+        day=now.day,
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0,
+        tzinfo=owner_tz,
     ) + timedelta(days=days_until_sunday)
     next_weekly_ts = int(next_weekly.timestamp())
 
