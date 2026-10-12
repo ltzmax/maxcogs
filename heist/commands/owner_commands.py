@@ -154,9 +154,7 @@ class OwnerCommands:
             await ctx.send(f"Reset all heist cooldowns for {member.display_name}.")
 
     @heistset.command(name="setlevel")
-    async def heistset_setlevel(
-        self, ctx: commands.Context, member: discord.Member, level: int
-    ):
+    async def heistset_setlevel(self, ctx: commands.Context, member: discord.Member, level: int):
         """Manually set a member's heist level.
 
         This is a safety net for the level migration, use it if a member's
@@ -174,9 +172,7 @@ class OwnerCommands:
         xp_for_level = XP_TABLE[level - 1]
         await self.config.user(member).level.set(level)
         await self.config.user(member).xp.set(xp_for_level)
-        await ctx.send(
-            f"Set {member.display_name}'s level to **{level}** ({xp_for_level:,} XP)."
-        )
+        await ctx.send(f"Set {member.display_name}'s level to **{level}** ({xp_for_level:,} XP).")
 
     @heistset.command(name="settings")
     @commands.bot_has_permissions(embed_links=True)
