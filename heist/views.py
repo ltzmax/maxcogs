@@ -25,7 +25,7 @@ SOFTWARE.
 import asyncio
 import contextlib
 import datetime
-from typing import Any, Optional
+from typing import Any
 
 import discord
 from red_commons.logging import getLogger
@@ -81,8 +81,8 @@ class _PageNavBtn(discord.ui.Button):
         direction: str,
         parent_view: Any,
         disabled: bool = False,
-        label: Optional[str] = None,
-        emoji: Optional[str] = None,
+        label: str | None = None,
+        emoji: str | None = None,
     ) -> None:
         default_label = "◀" if direction == "prev" else "▶"
         super().__init__(
@@ -891,7 +891,9 @@ class ItemPriceConfigView(discord.ui.LayoutView):
         select_row = discord.ui.ActionRow(_ItemSelect(self, self.page, disabled=disabled))
         nav_row = discord.ui.ActionRow()
         if self.page > 0:
-            nav_row.add_item(_PageNavBtn("prev", self, disabled=disabled, label="Previous", emoji="◀️"))
+            nav_row.add_item(
+                _PageNavBtn("prev", self, disabled=disabled, label="Previous", emoji="◀️")
+            )
         if self.page < self.total_pages - 1:
             nav_row.add_item(_PageNavBtn("next", self, disabled=disabled, label="Next", emoji="▶️"))
         nav_row.add_item(_SetPriceBtn(self, disabled=disabled))
@@ -1438,7 +1440,9 @@ class CraftView(discord.ui.LayoutView):
         )
         nav_row = discord.ui.ActionRow()
         if self.page > 0:
-            nav_row.add_item(_PageNavBtn("prev", self, disabled=disabled, label="Previous", emoji="◀️"))
+            nav_row.add_item(
+                _PageNavBtn("prev", self, disabled=disabled, label="Previous", emoji="◀️")
+            )
         if self.page < self.total_pages - 1:
             nav_row.add_item(_PageNavBtn("next", self, disabled=disabled, label="Next", emoji="▶️"))
         nav_row.add_item(craft_btn)
